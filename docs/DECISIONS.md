@@ -233,3 +233,13 @@ Every client command is validated before it reaches content (brief §12): op ran
 (`StaticLocs`), NPC/player existence and view distance (15 tiles, RSProt's info default), button on an open interface,
 chat length. Invalid commands are dropped and counted. Stale clicks are legitimate (an NPC walked away), so the
 threshold is a rate: more than 50 invalid commands in a 100-tick window closes the session. The numbers are ours.
+
+## D-023 — plugin-api facades + KSP registry found via ServiceLoader
+
+Content modules see only `plugin-api` facades (`PlayerRef`, `PlayerScript`, `InvView`, `ItemTx`, ...); the engine is an
+`implementation` dependency of plugin-api, so content can't reach engine internals. `PlayerScript` is
+`@RestrictsSuspension`, so content can only suspend through engine suspension points (no thread hops); plugin-api
+starts the restricted lambda on the engine script's continuation. KSP (`tools/ksp-registry`) generates each content
+module's `<Module>Registry` and its `META-INF/services/tp.plugin.ContentRegistry` line; the server loads registries
+with `ServiceLoader`, which reads those generated index files (no classpath scanning). Duplicate handler keys fail at
+boot.

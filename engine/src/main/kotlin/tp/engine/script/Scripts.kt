@@ -5,7 +5,6 @@ import tp.engine.entity.Player
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.RestrictsSuspension
 import kotlin.coroutines.createCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -17,8 +16,10 @@ import kotlin.coroutines.suspendCoroutine
  */
 typealias Script<E> = suspend ScriptScope<E>.() -> Unit
 
-/** The receiver of every script. Suspension points live here; [RestrictsSuspension] keeps foreign suspends out. */
-@RestrictsSuspension
+/**
+ * The receiver of every script. Suspension points live here. Content never sees this type: plugin-api wraps it in a
+ * `@RestrictsSuspension` scope, which keeps foreign suspends (thread hops) out of content.
+ */
 class ScriptScope<E : Entity> internal constructor(val self: E) {
     /** Normal delay (D1): delays the entity for [ticks] and suspends this script until the delay ends (D3). */
     suspend fun delay(ticks: Int) {

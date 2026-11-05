@@ -35,6 +35,8 @@ include(
     ":net",
     ":engine",
     ":plugin-api",
+    ":content:gameframe",
+    ":content:dev",
     ":content:combat",
     ":content:pvp",
     ":services",
@@ -46,5 +48,6 @@ include(
     ":tools:replay",
     ":tools:wiki-import",
     ":tools:symbol-gen",
+    ":tools:ksp-registry",
 )
 // client/* (release client) is added in Phase 6; it is a separate Java/RuneLite build.

@@ -23,8 +23,8 @@ class Inventory internal constructor(val invId: Int, val size: Int, val stack: I
     private var dirtyCount = 0
     private var fullRefresh = true
 
-    /** Interface component the client shows this inventory in (-1 = none; the client still stores it by [invId]). */
-    var component: Int = -1
+    /** Whether changes are sent to the owner's client (start-transmit; the client binds it to components by id). */
+    var transmitted: Boolean = false
         internal set
 
     fun obj(slot: Int): Int = objs[slot]
@@ -54,20 +54,21 @@ class Inventory internal constructor(val invId: Int, val size: Int, val stack: I
         }
     }
 
-    /** Next send is a full update (login, rebinding to a component). */
+    /** Next send is a full update (login, start of transmit). */
     internal fun refreshAll() {
         fullRefresh = true
     }
 
     internal fun flush(session: ClientSession) {
+        if (!transmitted) return
         if (fullRefresh) {
-            session.send(ServerMessage.Inventory(component, invId, objs.copyOf(), counts.copyOf(), null))
+            session.send(ServerMessage.Inventory(invId, objs.copyOf(), counts.copyOf(), null))
         } else if (dirtyCount > 0) {
             val slots = IntArray(dirtyCount)
             var n = 0
             for (i in 0 until size) if (dirty[i]) slots[n++] = i
             // Parallel arrays indexed by slot (the adapter reads objs[slot]); only [slots] are sent.
-            session.send(ServerMessage.Inventory(component, invId, objs.copyOf(), counts.copyOf(), slots))
+            session.send(ServerMessage.Inventory(invId, objs.copyOf(), counts.copyOf(), slots))
         }
         fullRefresh = false
         if (dirtyCount > 0) {

@@ -2,9 +2,11 @@ plugins {
     id("tp.kotlin-api")
 }
 
-// Stable content API (explicit API mode). Content modules depend only on this and :symbols.
+// Stable content API (explicit API mode). Content modules depend only on this and :symbols; the engine stays an
+// implementation detail behind the facades here (brief §1, §6).
 dependencies {
     api(project(":util"))
     api(project(":symbols"))
-    api(libs.kotlinx.coroutines.core)
+    implementation(project(":engine"))
+    implementation(project(":protocol-api"))
 }

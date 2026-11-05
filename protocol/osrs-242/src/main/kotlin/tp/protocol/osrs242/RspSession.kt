@@ -143,6 +143,7 @@ internal class RspSession(
         private const val COMPONENT_MASK = 0xFFFF
         private const val EVENTS_LOW_MASK = 0xFFFFFFFFL
         private const val INT_BITS = 32
+        private const val INV_COMBINED_BASE = 1234
 
         /** Player-info move speeds (RSProt `PlayerAvatarExtendedInfo.setMoveSpeed` docs): 1 walk, 2 run, 127 teleport. */
         private const val MOVE_WALK = 1
@@ -226,15 +227,17 @@ internal class RspSession(
                 }
             }
 
+        /**
+         * Inventories go out with combined id `-(1234 + inv)` and the full update covers slots up to the last occupied
+         * one, as observed on live OSRS (RS Mod `UpdateInventory`); RSProt: positive combined ids crash the client.
+         */
         private fun inventory(m: ServerMessage.Inventory): OutgoingGameMessage {
-            val iface = if (m.component == -1) -1 else m.component ushr COMPONENT_SHIFT
-            val comp = if (m.component == -1) -1 else m.component and COMPONENT_MASK
+            val combined = -(INV_COMBINED_BASE + m.invId)
 
             fun packed(slot: Int): Long = if (m.objs[slot] < 0) InventoryObject.NULL else InventoryObject(m.objs[slot], m.counts[slot])
-            val slots = m.slots ?: return UpdateInvFull(iface, comp, m.invId, m.objs.size) { packed(it) }
+            val slots = m.slots ?: return UpdateInvFull(combined, m.invId, m.objs.indexOfLast { it >= 0 } + 1) { packed(it) }
             return UpdateInvPartial(
-                iface,
-                comp,
+                combined,
                 m.invId,
                 object : UpdateInvPartial.IndexedObjectProvider(slots.iterator()) {
                     override fun provide(slot: Int): Long = InventoryObject(slot, m.objs[slot].coerceAtLeast(-1), m.counts[slot])

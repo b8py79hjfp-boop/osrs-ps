@@ -1,0 +1,63 @@
+package tp.content.gameframe
+
+import tp.plugin.ContentPlugin
+import tp.plugin.ContentScope
+import tp.plugin.IfEvents
+import tp.plugin.PlayerRef
+import tp.symbols.Components
+import tp.symbols.Interfaces
+
+/**
+ * Fixed-mode gameframe (toplevel 548) with every standard overlay and side tab. Overlay list and targets: RS Mod
+ * `StandardOverlays.open` (its `toplevel_target_*` names map to `toplevel:*` components in fixed mode).
+ */
+public class Gameframe : ContentPlugin {
+    override fun ContentScope.register() {
+        onLogin { openGameframe() }
+    }
+
+    private fun PlayerRef.openGameframe() {
+        openTop(Interfaces.TOPLEVEL)
+        for ((iface, target) in OVERLAYS) openOverlay(target, iface)
+        // Inventory tab item ops (RS Mod `InvOpenScript`).
+        ifEvents(Components.Inventory.ITEMS, 0..INV_LAST_SLOT, INV_ITEM_EVENTS)
+    }
+
+    private companion object {
+        /** Backpack slots 0..27. */
+        const val INV_LAST_SLOT = 27
+
+        @Suppress("MagicNumber") // op numbers
+        val INV_ITEM_EVENTS: Long =
+            IfEvents.op(2) or IfEvents.op(3) or IfEvents.op(4) or IfEvents.op(6) or IfEvents.op(7) or IfEvents.op(10) or
+                IfEvents.TGT_OBJ or IfEvents.TGT_NPC or IfEvents.TGT_LOC or IfEvents.TGT_PLAYER or IfEvents.TGT_INV or
+                IfEvents.TGT_COM or IfEvents.DEPTH1 or IfEvents.DRAG_TARGET or IfEvents.TARGET
+
+        val OVERLAYS: List<Pair<Int, Int>> =
+            listOf(
+                Interfaces.CHATBOX to Components.Toplevel.CHAT_CONTAINER,
+                Interfaces.BUFF_BAR to Components.Toplevel.BUFF_BAR,
+                Interfaces.STAT_BOOSTS_HUD to Components.Toplevel.STAT_BOOSTS_HUD,
+                Interfaces.PM_CHAT to Components.Toplevel.PM_CONTAINER,
+                Interfaces.HPBAR_HUD to Components.Toplevel.HPBAR_HUD,
+                Interfaces.PVP_ICONS to Components.Toplevel.PVP_ICONS,
+                Interfaces.ORBS to Components.Toplevel.ORBS,
+                Interfaces.XP_DROPS to Components.Toplevel.XP_DROPS,
+                Interfaces.POPOUT to Components.Toplevel.POPOUT,
+                Interfaces.STATS to Components.Toplevel.SIDE1,
+                Interfaces.SIDE_JOURNAL to Components.Toplevel.SIDE2,
+                Interfaces.INVENTORY to Components.Toplevel.SIDE3,
+                Interfaces.WORNITEMS to Components.Toplevel.SIDE4,
+                Interfaces.PRAYERBOOK to Components.Toplevel.SIDE5,
+                Interfaces.MAGIC_SPELLBOOK to Components.Toplevel.SIDE6,
+                Interfaces.FRIENDS to Components.Toplevel.SIDE9,
+                Interfaces.ACCOUNT to Components.Toplevel.SIDE8,
+                Interfaces.LOGOUT to Components.Toplevel.SIDE10,
+                Interfaces.SETTINGS_SIDE to Components.Toplevel.SIDE11,
+                Interfaces.EMOTE to Components.Toplevel.SIDE12,
+                Interfaces.MUSIC to Components.Toplevel.SIDE13,
+                Interfaces.SIDE_CHANNELS to Components.Toplevel.SIDE7,
+                Interfaces.COMBAT_INTERFACE to Components.Toplevel.SIDE0,
+            )
+    }
+}

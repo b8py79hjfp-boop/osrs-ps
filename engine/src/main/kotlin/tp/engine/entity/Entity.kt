@@ -31,6 +31,9 @@ abstract class Entity internal constructor(
     /** Current entity interaction (op/ap), or null. */
     internal var interaction: Interaction? = null
 
+    /** What the current interaction targets (read-only view for content). */
+    val interactionTarget: tp.engine.interact.InteractionTarget? get() = interaction?.target
+
     // Per-tick movement results for the info pass.
     internal var stepsThisTick = 0
     internal var teleportedThisTick = false

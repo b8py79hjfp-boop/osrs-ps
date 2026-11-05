@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":cache"))
     implementation(project(":net"))
     implementation(project(":engine"))
+    runtimeOnly(project(":content:gameframe"))
+    runtimeOnly(project(":content:dev"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
     implementation(project(":protocol:osrs-242"))

@@ -13,6 +13,7 @@ import tp.engine.World
 import tp.engine.WorldConfig
 import tp.engine.WorldData
 import tp.engine.map.StaticLocs
+import tp.plugin.PluginContent
 import tp.protocol.osrs242.Osrs242Network
 import tp.util.CoordGrid
 import tp.util.Revision
@@ -72,7 +73,9 @@ object WorldNode {
     /** Creates and starts one world with its rev-242 network on [gamePort]. */
     fun startWorld(data: BootData, rsa: RsaKeyPair, gamePort: Int, worldId: Int, seed: Long): World {
         val network = Osrs242Network(data.cache, rsa, gamePort)
-        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, DevContent)
+        val content = PluginContent.load()
+        logger.info { "content: ${content.summary}" }
+        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
         world.start()
         return world
     }

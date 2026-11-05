@@ -396,9 +396,9 @@ class World(
             )
         }
 
-    /** Shows [inv] in [component] (packed); the next send is a full update. */
-    fun bindInventory(inv: Inventory, component: Int) {
-        inv.component = component
+    /** Starts sending [inv] to its owner; the next send is a full update. */
+    fun transmitInventory(inv: Inventory) {
+        inv.transmitted = true
         inv.refreshAll()
     }
 

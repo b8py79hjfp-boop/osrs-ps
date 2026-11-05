@@ -63,12 +63,10 @@ sealed interface ServerMessage {
     data object VarpReset : ServerMessage
 
     /**
-     * Inventory contents for [invId] shown in [component] (-1 = not bound to a component). If [slots] is null this is a
-     * full update of [objs]/[counts] (index = slot); otherwise a partial update of only those slots (parallel arrays).
-     * Empty slots: obj -1.
+     * Inventory contents for [invId] (the client binds inventories to components itself, by id). If [slots] is null this
+     * is a full update of [objs]/[counts] (index = slot); otherwise a partial update of only those slots. Empty: obj -1.
      */
     class Inventory(
-        val component: Int,
         val invId: Int,
         val objs: IntArray,
         val counts: IntArray,
