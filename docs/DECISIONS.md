@@ -208,3 +208,8 @@ parallelised (13 s → 1.3 s), which also brought dev boot under 10 s (~3 s to l
   layout; a misaligned attempt fails fast on the block's jstr2 version bytes. Both paths are verified with the bot.
   Recorded in `protocol/osrs-242/rsprot/NOTICE.md`. The server logs which layout each login used
   (`JxLayoutStats`), so we learn whether any client sends the jx section. Upstream issue worth filing with RSProt.
+
+## D-005 OPEN-A (resolved) — CLIENT_CHEAT trailing byte (2026-11-05)
+
+RuneLite 1.13.6 `::pos` / `::tele` / `::run` decode and work with RSProt's unconditional trailing `g1`, so the real
+client sends the byte. No patch needed.

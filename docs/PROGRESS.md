@@ -4,7 +4,7 @@
 
 - [x] **Phase 0 — Scaffold** — done 2026-11-05; CI green on Temurin 25.0.5
 - [x] **Phase 1 — Cache and world data** — done 2026-11-05 (pending CI confirmation on JDK 25)
-- [ ] **Phase 2 — Networking and client** — built; waiting on the real-client check (see Blocking)
+- [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
 - [ ] Phase 3 — Engine core
 - [ ] Phase 4 — Combat and PvP
 - [ ] Phase 5 — Scale and operations
@@ -53,11 +53,12 @@
   - `tools/botswarm`: headless rev-242 client + `Swarm` runner. **Test 2 passes** (JS5, login, rebuild, player info,
     walk, second observer).
   - docs/CLIENT.md, docs/mechanics/movement.md.
+  - Real-client acceptance (user, Windows): two fixes found and made. jav_config `codebase` must be the world host
+    (RSProx `findCodebaseReplacementWorld`); rev-242 login without a jxSessionId section (vendored-decoder patch,
+    D-005 OPEN-B).
 
 ## Blocking
 
-- **Phase 2 DoD needs a human with a GUI:** run RuneLite via RSProx (docs/CLIENT.md) on Windows or Linux. Confirm
-  cache download, login, walking/running and seeing bots. This sandbox has no display. Report D-005 OPEN-A/B outcomes.
 - Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
   builds on JDK 21 locally (D-004); CI is the JDK 25 gate.
 
@@ -69,9 +70,10 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Real-client check (above), then Phase 3 plan: full tick pipeline, scripts/queues/timers/delays/interactions,
+1. Phase 3 plan: full tick pipeline, scripts/queues/timers/delays/interactions,
    plugin-api, varps/inventories/interfaces, tick inspector, replay, packet validation, item transactions.
-   Also: RSProx-compatible `.bin` recording behind a dev flag (brief §4.3).
+   Also: RSProx-compatible `.bin` recording behind a dev flag (brief §4.3); display-name packet (client says
+   "You must set a name before you can chat"); side-panel tabs, stats, run energy/orb.
 2. Ask for osrs-docs.com and oldschool.runescape.wiki to be reachable: brief §2's primary mechanics sources.
 
 ## Open questions
