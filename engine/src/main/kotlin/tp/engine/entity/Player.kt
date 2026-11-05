@@ -1,12 +1,16 @@
 package tp.engine.entity
 
 import tp.engine.World
+import tp.engine.inv.Inventory
 import tp.engine.script.AreaQueue
 import tp.engine.script.PlayerQueue
 import tp.engine.script.PlayerTimers
 import tp.engine.script.ProtectedAccess
+import tp.engine.stat.PlayerStats
+import tp.engine.vars.PlayerVars
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientSession
+import tp.protocol.api.ServerMessage
 import tp.util.CoordGrid
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -19,7 +23,23 @@ class Player internal constructor(
     val username: String,
     val session: ClientSession,
     spawn: CoordGrid,
+    /** Varps/varbits, sent at the end of the tick. */
+    val vars: PlayerVars,
 ) : Entity(world, spawn) {
+    val stats = PlayerStats()
+
+    /** Inventories by inv id; created through [World.inventory], mutated only by [World.transaction]. */
+    internal val invs = HashMap<Int, Inventory>()
+
+    /** Run energy 0..10000 (client shows /100). */
+    var runEnergy: Int = MAX_RUN_ENERGY
+        set(value) {
+            val v = value.coerceIn(0, MAX_RUN_ENERGY)
+            if (v != field) runEnergyDirty = true
+            field = v
+        }
+    private var runEnergyDirty = true
+
     override val size: Int get() = 1
 
     /** Persistent run toggle (run orb + energy arrive with stats). */
@@ -77,10 +97,26 @@ class Player internal constructor(
         return true
     }
 
+    /** Info pass: vars, stats, inventories and run energy changed this tick go out once. */
+    internal fun flushState() {
+        vars.flush(session)
+        stats.flush(session)
+        for (inv in invs.values) inv.flush(session)
+        if (runEnergyDirty) {
+            runEnergyDirty = false
+            session.send(ServerMessage.RunEnergy(runEnergy))
+        }
+    }
+
     internal fun avatarState(): AvatarState =
         AvatarState(coord.level, coord.x, coord.z, stepsThisTick, teleportedThisTick, isRunningNow)
 
     override fun toString(): String = "Player($slot, $username, $coord)"
+
+    companion object {
+        /** Full run energy: 100.00% (client shows energy / 100). */
+        const val MAX_RUN_ENERGY = 10_000
+    }
 }
 
 /** Build area (map region) rules. Source: RS Mod `BuildAreaUtils` (104-tile area, rebuild within 2 zones of the edge). */

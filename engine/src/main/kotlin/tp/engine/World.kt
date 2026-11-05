@@ -1,7 +1,6 @@
 package tp.engine
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.rsmod.routefinder.collision.CollisionFlagMap
 import tp.engine.entity.BuildArea
 import tp.engine.entity.Entity
 import tp.engine.entity.Npc
@@ -9,11 +8,15 @@ import tp.engine.entity.Player
 import tp.engine.interact.Interaction
 import tp.engine.interact.InteractionProcessor
 import tp.engine.interact.InteractionTarget
-import tp.engine.map.StaticLocs
+import tp.engine.inv.InvStack
+import tp.engine.inv.Inventory
+import tp.engine.inv.ItemJournal
+import tp.engine.inv.ItemTransaction
 import tp.engine.move.Movement
 import tp.engine.npc.NpcAi
 import tp.engine.script.ScriptRunner
 import tp.engine.ui.Interfaces
+import tp.engine.vars.PlayerVars
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.GameNetwork
 import tp.protocol.api.LoginDetails
@@ -55,11 +58,11 @@ data class WorldConfig(
  */
 class World(
     val config: WorldConfig,
-    collision: CollisionFlagMap,
+    val data: WorldData,
     private val network: GameNetwork,
     val content: ContentHandlers = ContentHandlers.NONE,
-    /** Static map locs for validating loc clicks. */
-    val locs: StaticLocs = StaticLocs.EMPTY,
+    /** Audit trail of committed item transactions. */
+    private val itemJournal: ItemJournal = ItemJournal.NONE,
 ) : LoginGate {
     /** The world's only RNG; content must use it (brief §5.2). */
     val rng: SplittableRandom = SplittableRandom(config.seed)
@@ -67,8 +70,8 @@ class World(
     var tick: Long = 0
         private set
 
-    val movement = Movement(collision)
-    internal val interactions = InteractionProcessor(collision, movement)
+    val movement = Movement(data.collision)
+    internal val interactions = InteractionProcessor(data.collision, movement)
     val interfaces = Interfaces()
     private val npcAi = NpcAi(this)
 
@@ -203,7 +206,7 @@ class World(
 
             is ClientCommand.OpLoc -> {
                 if (command.option !in OP_RANGE || !inBuildArea(player, command.x, command.z)) return invalid(player, command)
-                val loc = locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
+                val loc = data.locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
                 player.routeCtrl = command.ctrl
                 interact(player, loc, command.option)
             }
@@ -333,6 +336,7 @@ class World(
             }
             player.session.syncAvatar(player.avatarState())
             player.teleportedThisTick = false
+            player.flushState()
         }
         for (npc in npcs) if (npc != null) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
         network.buildInfos()
@@ -363,6 +367,39 @@ class World(
                 is InteractionTarget.OfPlayer -> content.opPlayer(option) to content.apPlayer(option)
             }
         player.interaction = Interaction(target, option, op, ap)
+    }
+
+    /**
+     * Runs [block] as one atomic item transaction for [player] (brief §12). If [block] returns false or any step fails,
+     * every change is rolled back and false is returned; otherwise the changes are journaled with [reason].
+     */
+    fun transaction(player: Player, reason: String, block: ItemTransaction.() -> Boolean): Boolean {
+        val tx = ItemTransaction(data.configs.objs)
+        val ok = tx.block() && !tx.failed
+        if (!ok) {
+            tx.rollback()
+            return false
+        }
+        if (!tx.isEmpty) itemJournal.record(tick, player.username, reason, tx.entries())
+        return true
+    }
+
+    /** [player]'s inventory [invId] (created empty on first use, sized from the `inv` config). */
+    fun inventory(player: Player, invId: Int, stack: InvStack = InvStack.NORMAL): Inventory =
+        player.invs.getOrPut(invId) {
+            Inventory(
+                invId,
+                data.configs.invs
+                    .getValue(invId)
+                    .size,
+                stack,
+            )
+        }
+
+    /** Shows [inv] in [component] (packed); the next send is a full update. */
+    fun bindInventory(inv: Inventory, component: Int) {
+        inv.component = component
+        inv.refreshAll()
     }
 
     fun setRunMode(player: Player, enabled: Boolean) {
@@ -407,7 +444,7 @@ class World(
                 logger.warn(e) { "login accept failed for ${request.username}" }
                 return
             }
-        addPlayer(Player(this, slot, request.username, session, config.spawn))
+        addPlayer(newPlayer(slot, request.username, session, config.spawn))
     }
 
     /** Registers a player whose session is already accepted (login, scenario runner, replay). */
@@ -418,13 +455,14 @@ class World(
         nextPidShuffle[player.slot] = tick + rng.nextInt(config.pidShuffle.first, config.pidShuffle.last + 1)
         player.session.beginGame(player.avatarState())
         player.session.syncAvatar(player.avatarState())
+        player.vars.sendAll(player.session)
         content.onLogin(player)
         logger.info { "login: $player ($playerCount online)" }
     }
 
     /** Creates a player bound to [session] in [slot] (scenario runner / replay: no network login). */
     fun newPlayer(slot: Int, username: String, session: tp.protocol.api.ClientSession, at: CoordGrid): Player =
-        Player(this, slot, username, session, at)
+        Player(this, slot, username, session, at, PlayerVars(data.configs.varps.size, data.configs.varbits))
 
     private fun logout(player: Player) {
         player.queue.onLogout()
