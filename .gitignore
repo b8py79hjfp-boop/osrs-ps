@@ -1,10 +1,11 @@
 # Jagex/RuneLite data and secrets — never in git (brief §0.6)
 .data/
 
-# Build
+# Build (anchored to Gradle output dirs; `build/` alone would also hide source packages named `build`)
 .gradle/
 .kotlin/
 build/
+!**/src/**/build/
 out/
 
 # IDE
