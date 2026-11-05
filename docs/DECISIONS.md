@@ -213,3 +213,16 @@ parallelised (13 s → 1.3 s), which also brought dev boot under 10 s (~3 s to l
 
 RuneLite 1.13.6 `::pos` / `::tele` / `::run` decode and work with RSProt's unconditional trailing `g1`, so the real
 client sends the byte. No patch needed.
+
+## D-020 — Interaction model: osrs-docs pseudocode for players and NPCs (2026-11-05)
+
+Henke splits "loc/obj interaction → movement → player/npc interaction"; osrs-docs gives one routine with two attempt
+blocks around movement. The brief requires osrs-docs' semantics exactly (§5.4), so we implement its pseudocode, and
+its "same concept applies for NPCs" for NPCs. Both models give the banker-vs-booth timing. Verifier SOURCE-CONFLICT
+recorded in tick.md.
+
+## D-021 — PID re-randomisation is per player (2026-11-05)
+
+OSRS Wiki "Player identification number": PID "will randomise every 100 to 150 game ticks ... for each player" (40–60
+on BH/PvP/tournament worlds). Each player gets their own window; on expiry they swap to a random position in the
+processing order (seeded world RNG). The scenario runner can force an order (`World.forcePidOrder`).

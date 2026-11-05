@@ -17,6 +17,14 @@ interface GameNetwork {
      */
     fun buildInfos()
 
+    /** An NPC entered the world at [index] (NPC-info slot). World thread. */
+    fun npcAdded(index: Int, type: Int, level: Int, x: Int, z: Int) {}
+
+    fun npcRemoved(index: Int) {}
+
+    /** Info pass: the NPC's tile this tick. A one-tile change is a walk step; anything else a teleport. */
+    fun npcSync(index: Int, level: Int, x: Int, z: Int) {}
+
     fun shutdown()
 }
 

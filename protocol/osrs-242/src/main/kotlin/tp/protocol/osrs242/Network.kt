@@ -20,6 +20,7 @@ import net.rsprot.protocol.game.incoming.misc.client.MapBuildComplete
 import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.misc.user.MoveMinimapClick
+import net.rsprot.protocol.game.outgoing.info.npcinfo.NpcAvatar
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
 import net.rsprot.protocol.loginprot.incoming.util.AuthenticationType
 import net.rsprot.protocol.loginprot.incoming.util.LoginBlock
@@ -66,6 +67,34 @@ class Osrs242Network(
 
     override fun buildInfos() {
         service?.infoProtocols?.update()
+    }
+
+    private val npcAvatars = HashMap<Int, NpcAvatar>()
+    private val npcLastCoord = HashMap<Int, IntArray>()
+
+    override fun npcAdded(index: Int, type: Int, level: Int, x: Int, z: Int) {
+        val net = service ?: return
+        npcAvatars[index] = net.npcAvatarFactory.alloc(index = index, id = type, level = level, x = x, z = z)
+        npcLastCoord[index] = intArrayOf(level, x, z)
+    }
+
+    override fun npcRemoved(index: Int) {
+        val net = service ?: return
+        npcAvatars.remove(index)?.let(net.npcAvatarFactory::release)
+        npcLastCoord.remove(index)
+    }
+
+    /** One-tile change = walk step (NpcAvatar.walk takes a delta); anything else = teleport. */
+    override fun npcSync(index: Int, level: Int, x: Int, z: Int) {
+        val avatar = npcAvatars[index] ?: return
+        val last = npcLastCoord.getValue(index)
+        val dx = x - last[1]
+        val dz = z - last[2]
+        if (level == last[0] && dx == 0 && dz == 0) return
+        if (level == last[0] && dx in -1..1 && dz in -1..1) avatar.walk(dx, dz) else avatar.teleport(level, x, z, jump = true)
+        last[0] = level
+        last[1] = x
+        last[2] = z
     }
 
     override fun shutdown() {

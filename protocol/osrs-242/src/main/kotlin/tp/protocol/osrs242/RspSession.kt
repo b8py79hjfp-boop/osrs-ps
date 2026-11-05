@@ -6,6 +6,7 @@ import net.rsprot.protocol.game.outgoing.info.util.isEmpty
 import net.rsprot.protocol.game.outgoing.info.util.onFailure
 import net.rsprot.protocol.game.outgoing.info.util.onSuccess
 import net.rsprot.protocol.game.outgoing.info.util.safeReleaseOrThrow
+import net.rsprot.protocol.game.outgoing.interfaces.IfCloseSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenTop
 import net.rsprot.protocol.game.outgoing.logout.Logout
@@ -92,6 +93,10 @@ internal class RspSession(
             is ServerMessage.Rebuild -> {
                 infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
                 session.queue(RebuildNormalV2(message.x shr ZONE_SHIFT, message.z shr ZONE_SHIFT, ROOT_WORLD))
+            }
+
+            is ServerMessage.CloseSub -> {
+                session.queue(IfCloseSub(message.destination))
             }
 
             ServerMessage.Logout -> {

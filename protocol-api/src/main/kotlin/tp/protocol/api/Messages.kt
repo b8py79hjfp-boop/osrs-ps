@@ -23,6 +23,9 @@ sealed interface ServerMessage {
     /** Opens [interfaceId] inside the parent component [destination] (packed `iface << 16 | comp`). */
     data class OpenSub(val destination: Int, val interfaceId: Int, val overlay: Boolean) : ServerMessage
 
+    /** Closes whatever is open in [destination] (packed component). */
+    data class CloseSub(val destination: Int) : ServerMessage
+
     /** Sets a client varp. */
     data class Varp(val id: Int, val value: Int) : ServerMessage
 
