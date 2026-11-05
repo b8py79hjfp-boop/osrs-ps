@@ -58,8 +58,10 @@ class ClientConfigServer(
         val world = worlds().firstOrNull { it.id == initialWorld }
         return template.lineSequence().joinToString("\n") { line ->
             when {
-                line.startsWith("codebase=") -> {
-                    "codebase=$publicBaseUrl/"
+                // The codebase is the initial world's game host (as in Jagex's own file), not this HTTP server: clients and
+                // RSProx (`ProxyTarget.findCodebaseReplacementWorld`) match it exactly against a world-list host.
+                line.startsWith("codebase=") && world != null -> {
+                    "codebase=http://${world.host}/"
                 }
 
                 line.startsWith("param=$PARAM_WORLD_LIST=") -> {

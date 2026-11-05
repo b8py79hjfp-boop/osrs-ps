@@ -29,7 +29,7 @@ For another machine on your LAN, pass the address clients should use:
 ./gradlew :server:run --args="--public-host 192.168.1.20"
 ```
 
-Check it: `http://<host>:8080/jav_config.ws` should show `codebase=http://<host>:8080/` and `param=25=242`.
+Check it: `http://<host>:8080/jav_config.ws` should show `codebase=http://<host>/` (the world's game host, no port) and `param=25=242`.
 
 ## 3. RSProx proxy target
 
@@ -65,6 +65,7 @@ there are no accounts until Phase 5 (D-018).
 
 | Symptom | Likely cause |
 |---|---|
+| RSProx log: `Required value was null` at `findCodebaseReplacementWorld` | jav_config `codebase` host must equal a world-list host. Fixed 2026-11-05: `git pull`. |
 | "Error connecting to server" | Server not running, or `game_server_port` / the host in `jav_config_url` is wrong. |
 | Stuck on "Loading..." / cache errors | JS5 not reachable, or a stale RuneLite cache for this target: delete RSProx's cache folder for the target and retry. |
 | "Login server rejected session" / RSA errors | `modulus` doesn't match `.data/rsa/modulus.hex` (regenerated keys?). Paste it again. |
