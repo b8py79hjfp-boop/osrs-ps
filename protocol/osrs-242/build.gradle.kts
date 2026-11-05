@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":cache"))
     implementation(project(":symbols"))
     api(project(":protocol:osrs-242:rsprot:api"))
+    implementation(project(":protocol:osrs-242:rsprot:shared"))
     implementation(libs.rsprot.buffer)
     implementation(platform(libs.netty.bom))
     implementation(libs.netty.buffer)

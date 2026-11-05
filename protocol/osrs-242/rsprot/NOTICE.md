@@ -7,4 +7,10 @@
 - Copied: `src/main` only. Benchmarks and tests are not vendored.
 - Depends on RSProt's published shared modules `net.rsprot:{buffer,crypto,compression,haproxy,protocol}:1.0.0-ALPHA-20261014`,
   verified byte-identical to the 242 commit's sources (`git diff 37c4eb46 67d21368 -- buffer crypto compression haproxy protocol/src` is empty).
-- Local modifications: none. Any change must be listed here with its reason and the RSProx evidence.
+- Local modifications (each with reason and evidence):
+  1. `shared/.../loginprot/incoming/codec/shared/LoginBlockDecoder.kt` (2026-11-05): the rev-242 login decode first
+     assumes **no jxSessionId section** between the RSA and XTEA blocks, then falls back to upstream's flag (+ string)
+     layout. XTEA decoding moved into `decodeXteaBlock` unchanged. Added `JxLayoutStats` counters.
+     Evidence: RuneLite 1.13.6 via RSProx failed upstream decoding with "Unterminated string" right after the RSA
+     block; RSProx's live proxy (`ClientLoginHandler.kt:166-167`) treats the bytes after RSA as the XTEA block.
+     DECISIONS D-005 OPEN-B.

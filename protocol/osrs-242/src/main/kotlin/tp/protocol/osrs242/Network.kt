@@ -15,6 +15,7 @@ import net.rsprot.protocol.api.implementation.DefaultInetAddressTracker
 import net.rsprot.protocol.api.js5.Js5GroupProvider
 import net.rsprot.protocol.api.login.GameLoginResponseHandler
 import net.rsprot.protocol.common.client.OldSchoolClientType
+import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.misc.client.MapBuildComplete
 import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
@@ -96,7 +97,11 @@ class Osrs242Network(
             object : GameConnectionHandler<RspSession> {
                 override fun onLogin(responseHandler: GameLoginResponseHandler<RspSession>, block: LoginBlock<AuthenticationType>) {
                     val net = service ?: return responseHandler.writeFailedResponse(LoginResponse.LoginServerOffline)
-                    logger.info { "login request: ${block.username} (crc ok=${block.crc.validate(js5.archiveCrcs)})" }
+                    logger.info {
+                        "login request: ${block.username} (crc ok=${block.crc.validate(js5.archiveCrcs)}, " +
+                            "jx section=${block.jxSessionId != null}; layouts so far: no-jx=${JxLayoutStats.noJx.get()}, " +
+                            "jx=${JxLayoutStats.withJx.get()})"
+                    }
                     gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs)))
                 }
 

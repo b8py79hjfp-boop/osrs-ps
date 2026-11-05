@@ -198,3 +198,13 @@ moderation (brief §12). Reconnects are refused (ConnectFail) until Phase 5 sess
 Test 2 boots a real world (cache decode, collision, JS5 pre-encode), solves proof of work at difficulty 18 and walks a
 player. It takes ~9 s here, over the brief's 1 s per-test budget, for the same reason as D-016. JS5 pre-encoding was
 parallelised (13 s → 1.3 s), which also brought dev boot under 10 s (~3 s to listening).
+
+## D-005 OPEN-B (resolved by local patch) — rev-242 login layout (2026-11-05)
+
+- **Evidence:** RuneLite 1.13.6 via RSProx failed upstream RSProt decoding with "Unterminated string" right after the
+  RSA block. RSProt reads a jxSessionId flag (+ string) there for version ≥ 242. RSProx's live proxy treats those
+  bytes as the start of the XTEA block.
+- **Choice:** local patch to the vendored `LoginBlockDecoder`. Decode the no-jx layout first, fall back to upstream's
+  layout; a misaligned attempt fails fast on the block's jstr2 version bytes. Both paths are verified with the bot.
+  Recorded in `protocol/osrs-242/rsprot/NOTICE.md`. The server logs which layout each login used
+  (`JxLayoutStats`), so we learn whether any client sends the jx section. Upstream issue worth filing with RSProt.

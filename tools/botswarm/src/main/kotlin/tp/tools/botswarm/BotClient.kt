@@ -190,7 +190,7 @@ class BotClient(
             writeByte(0) // external authenticator
             writeShort(rsa.size)
             write(rsa)
-            writeByte(0) // no jxSessionId (rev >= 242)
+            // No jxSessionId section: matches the rev-242 Java client (RuneLite) — D-005 OPEN-B.
             write(xteaEncrypt(xteaPlain, seed))
         }
     }

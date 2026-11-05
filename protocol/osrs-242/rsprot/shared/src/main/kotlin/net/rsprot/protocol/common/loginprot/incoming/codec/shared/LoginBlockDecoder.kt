@@ -16,6 +16,12 @@ import net.rsprot.protocol.loginprot.incoming.util.LoginBlock
 import net.rsprot.protocol.loginprot.incoming.util.LoginClientType
 import java.math.BigInteger
 
+/** tickperfect patch: counts which rev-242 login layout each login used (evidence for D-005 OPEN-B). */
+public object JxLayoutStats {
+    public val noJx: java.util.concurrent.atomic.AtomicLong = java.util.concurrent.atomic.AtomicLong()
+    public val withJx: java.util.concurrent.atomic.AtomicLong = java.util.concurrent.atomic.AtomicLong()
+}
+
 @Suppress("DuplicatedCode")
 public abstract class LoginBlockDecoder<T>(
     private val exp: BigInteger,
@@ -81,83 +87,107 @@ public abstract class LoginBlockDecoder<T>(
                     }
                 val sessionId = rsaBuffer.g8()
                 val authentication = decodeAuthentication(rsaBuffer)
-                var jxSessionId: String? = null
-                if (header.version >= 242) {
-                    val hasJxSessionId = buffer.g1() == 1
-                    if (hasJxSessionId) {
+                // tickperfect local patch (see protocol/osrs-242/rsprot/NOTICE.md, DECISIONS D-005 OPEN-B):
+                // the rev-242 Java client (RuneLite) sends no jxSessionId section between the RSA and XTEA blocks,
+                // which RSProx's live proxying also assumes. Decode that layout first; fall back to upstream's
+                // flag (+ string) layout. A misaligned attempt fails fast on the block's jstr2 version bytes.
+                val xteaStart = buffer.buffer.readerIndex()
+                return try {
+                    val block = decodeXteaBlock(header, buffer, betaWorld, seed, sessionId, authentication, null)
+                    JxLayoutStats.noJx.incrementAndGet()
+                    block
+                } catch (e: RuntimeException) {
+                    if (header.version < 242) throw e
+                    buffer.buffer.readerIndex(xteaStart)
+                    var jxSessionId: String? = null
+                    if (buffer.g1() == 1) {
                         jxSessionId = buffer.gjstr()
                     }
-                }
-                val xteaBuffer = buffer.buffer.xteaDecrypt(seed).toJagByteBuf()
-                try {
-                    val username = xteaBuffer.gjstr()
-                    val packedClientSettings = xteaBuffer.g1()
-                    val lowDetail = packedClientSettings and 0x1 != 0
-                    val resizable = packedClientSettings and 0x2 != 0
-                    val width = xteaBuffer.g2()
-                    val height = xteaBuffer.g2()
-                    val uuid =
-                        ByteArray(24) {
-                            xteaBuffer.g1().toByte()
-                        }
-                    val siteSettings = xteaBuffer.gjstr()
-                    val affiliate = xteaBuffer.g4()
-                    val deepLinkCount = xteaBuffer.g1()
-                    val deepLinks =
-                        if (deepLinkCount == 0) {
-                            emptyList()
-                        } else {
-                            List(deepLinkCount) {
-                                xteaBuffer.g4()
-                            }
-                        }
-                    val hostPlatformStats = decodeHostPlatformStats(xteaBuffer)
-                    val secondClientType = xteaBuffer.g1()
-                    // Since 237, the two no longer match on any client.
-                    // if (secondClientType != header.clientType.id) {
-                    //     throw UnsupportedClientException
-                    // }
-                    val reflectionCheckerConst = xteaBuffer.g4()
-                    val clientType =
-                        checkNotNull(header.clientType.toOldSchoolClientType()) {
-                            "Unsupported login client type: ${header.clientType}"
-                        }
-                    val crcDecoder = crcDecoders[clientType]
-                    val crcValues =
-                        if (betaWorld) {
-                            crcDecoder.decodeInitialBeta(xteaBuffer)
-                        } else {
-                            crcDecoder.decodeLive(xteaBuffer)
-                        }
-                    val crc = createCrcBlock(crcValues)
-                    return LoginBlock(
-                        header,
-                        seed,
-                        sessionId,
-                        username,
-                        lowDetail,
-                        resizable,
-                        width.toUShort(),
-                        height.toUShort(),
-                        uuid,
-                        siteSettings,
-                        affiliate,
-                        deepLinks,
-                        hostPlatformStats,
-                        secondClientType.toUByte(),
-                        reflectionCheckerConst,
-                        crc,
-                        authentication,
-                        jxSessionId,
-                    )
-                } finally {
-                    xteaBuffer.buffer.release()
+                    val block = decodeXteaBlock(header, buffer, betaWorld, seed, sessionId, authentication, jxSessionId)
+                    JxLayoutStats.withJx.incrementAndGet()
+                    block
                 }
             } finally {
                 rsaBuffer.buffer.release()
             }
         } finally {
             buffer.buffer.release()
+        }
+    }
+
+    private fun decodeXteaBlock(
+        header: LoginBlock.Header,
+        buffer: JagByteBuf,
+        betaWorld: Boolean,
+        seed: IntArray,
+        sessionId: Long,
+        authentication: T,
+        jxSessionId: String?,
+    ): LoginBlock<T> {
+        val xteaBuffer = buffer.buffer.xteaDecrypt(seed).toJagByteBuf()
+        try {
+            val username = xteaBuffer.gjstr()
+            val packedClientSettings = xteaBuffer.g1()
+            val lowDetail = packedClientSettings and 0x1 != 0
+            val resizable = packedClientSettings and 0x2 != 0
+            val width = xteaBuffer.g2()
+            val height = xteaBuffer.g2()
+            val uuid =
+                ByteArray(24) {
+                    xteaBuffer.g1().toByte()
+                }
+            val siteSettings = xteaBuffer.gjstr()
+            val affiliate = xteaBuffer.g4()
+            val deepLinkCount = xteaBuffer.g1()
+            val deepLinks =
+                if (deepLinkCount == 0) {
+                    emptyList()
+                } else {
+                    List(deepLinkCount) {
+                        xteaBuffer.g4()
+                    }
+                }
+            val hostPlatformStats = decodeHostPlatformStats(xteaBuffer)
+            val secondClientType = xteaBuffer.g1()
+            // Since 237, the two no longer match on any client.
+            // if (secondClientType != header.clientType.id) {
+            //     throw UnsupportedClientException
+            // }
+            val reflectionCheckerConst = xteaBuffer.g4()
+            val clientType =
+                checkNotNull(header.clientType.toOldSchoolClientType()) {
+                    "Unsupported login client type: ${header.clientType}"
+                }
+            val crcDecoder = crcDecoders[clientType]
+            val crcValues =
+                if (betaWorld) {
+                    crcDecoder.decodeInitialBeta(xteaBuffer)
+                } else {
+                    crcDecoder.decodeLive(xteaBuffer)
+                }
+            val crc = createCrcBlock(crcValues)
+            return LoginBlock(
+                header,
+                seed,
+                sessionId,
+                username,
+                lowDetail,
+                resizable,
+                width.toUShort(),
+                height.toUShort(),
+                uuid,
+                siteSettings,
+                affiliate,
+                deepLinks,
+                hostPlatformStats,
+                secondClientType.toUByte(),
+                reflectionCheckerConst,
+                crc,
+                authentication,
+                jxSessionId,
+            )
+        } finally {
+            xteaBuffer.buffer.release()
         }
     }
 
