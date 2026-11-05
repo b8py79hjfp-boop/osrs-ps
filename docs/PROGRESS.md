@@ -2,7 +2,7 @@
 
 ## Phase checklist
 
-- [x] **Phase 0 — Scaffold** — done 2026-11-05 (JDK 25 confirmation pending first CI run)
+- [x] **Phase 0 — Scaffold** — done 2026-11-05; CI green on Temurin 25.0.5
 - [ ] Phase 1 — Cache and world data
 - [ ] Phase 2 — Networking and client
 - [ ] Phase 3 — Engine core
@@ -26,14 +26,14 @@
 
 ## Blocking
 
-- None for Phase 1. JDK 25 can't be installed in this sandbox (D-004); the first CI run is the JDK 25 gate.
-- The repo has no git remote yet; it needs one for CI and durability.
+- None. Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
+  builds on JDK 21 locally (D-004); CI is the JDK 25 gate.
 
 ### Phase 0 acceptance (2026-11-05)
 
 `./gradlew setup` downloaded cache 2757 and pinned its SHA-256s. `./gradlew :server:run --args=--boot-check` logged
 `rev 242: 25 archives, 120,374 groups (23 populated archives, 174 ms)` and passed the archive 0/24 CRC and version
-spot-checks.
+spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.sha256`.
 
 ## Next
 

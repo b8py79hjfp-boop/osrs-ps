@@ -20,7 +20,7 @@ One entry per non-obvious choice: options considered, choice, why. Newest at the
 | RSProx rev-242 module? | **Yes.** `protocol/osrs-242`, `CURRENT_REVISION = 242`, `DecoderLoader.loadRevision242`. HEAD `f1081e91839fee9af02d090ade82dfc47e234120` (2026-11-04). | github.com/blurite/rsprox |
 | Latest `rsmod-pathfinder` / successor | Maven artifact `org.rsmod:rsmod-pathfinder:5.0.0` (2024-04-12, no release since). Successor: RS Mod's in-tree `engine/routefinder` (+ `api/route`), RS Mod HEAD `fa13b3f` 2025-09-30, ISC. See D-006. | Maven Central; github.com/rsmod/rsmod |
 | RuneLite bootstrap commit for rev 242 | **`b4dab8e7cfdef726c45d2772d60d8a633d397361`** in `runelite/static.runelite.net` ("Release 1.13.6", 2026-11-03T08:53:35Z) → RuneLite tag `runelite-parent-1.13.6` = `d62b158e83450b0708f053c753e3508c762a0803`. See D-007. | static.runelite.net git history |
-| JDK 25 latest patch | **Not verified** — foojay, api.adoptium.net and Temurin GitHub release downloads are blocked by this environment's network policy. Pinned as major `25`; CI's `setup-java` resolves the latest 25.0.x Temurin. Record the exact patch on first CI run. | — |
+| JDK 25 latest patch | **Temurin 25.0.5+8**, the version CI's `setup-java` resolved on 2026-11-05. The repo pins major `25`. foojay and adoptium are blocked in the dev sandbox. | CI run on `b8py79hjfp-boop/osrs-ps` |
 | Kotlin 2.4 | **2.4.21** (2.5.0-Beta2 exists; not used) | Maven Central |
 | Gradle 9.8 | **9.8.2** (wrapper SHA-256 `3b8a2577…8e98`, dist SHA-256 `21bd5da2…9607`, both verified) | services.gradle.org |
 | Netty 4.2 | **4.2.20.Final** | Maven Central |
@@ -94,3 +94,9 @@ Everything is in `gradle/libs.versions.toml`, checked 2026-11-05. Notable choice
 Maven Central rate-limits (429) this container's IP. A **local, uncommitted** init script
 (`~/.gradle/init.d/central-mirror.init.gradle.kts`) puts Google's Central mirror
 (`maven-central.storage-download.googleapis.com`) first. The repo build itself still declares only `mavenCentral()`.
+
+## D-010 — `.gitignore` and source packages named `build` (2026-11-05)
+
+An unanchored `build/` rule also matched `build-logic/src/main/kotlin/tp/build/`, so two task sources were never
+committed and the first CI run couldn't compile build-logic. Fix: keep `build/` for Gradle output and add
+`!**/src/**/build/`. Release gate: build from a fresh clone of the commit, never from the working copy.
