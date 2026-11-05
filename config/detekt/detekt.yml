@@ -3,7 +3,8 @@ style:
   MagicNumber:
     # Named constants with a KDoc source link are required for gameplay/protocol values.
     # Bit-twiddling widths (byte shifts/masks) are self-describing and exempt.
-    excludes: ['**/test/**', '**/*.gradle.kts']
+    # Cache decoders are opcode tables whose numbers ARE the format; each decoder cites its reference (D-015).
+    excludes: ['**/test/**', '**/*.gradle.kts', '**/tp/cache/config/**', '**/tp/cache/interfaces/**']
     ignoreNumbers: ['-1', '0', '1', '2', '3', '4', '8', '16', '24', '0xFF', '0xFFFF']
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
@@ -19,13 +20,21 @@ style:
     active: false
   ForbiddenComment:
     active: false
+  LoopWithTooManyJumpStatements:
+    # Opcode loops (`if (op == 0) break` + skip/continue) are the cache and packet formats' natural shape.
+    active: false
 potential-bugs:
   UnsafeCallOnNullableType:
     active: true
 complexity:
   LongMethod:
     allowedLines: 80
+    excludes: ['**/tp/cache/config/**', '**/tp/cache/interfaces/**']
   TooManyFunctions:
     active: false
+  NestedBlockDepth:
+    # level/x/z tile loops plus an opcode loop are inherently 5 deep.
+    allowedDepth: 6
   CyclomaticComplexMethod:
     allowedComplexity: 20
+    excludes: ['**/tp/cache/config/**', '**/tp/cache/interfaces/**']

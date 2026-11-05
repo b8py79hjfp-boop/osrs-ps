@@ -100,3 +100,66 @@ Maven Central rate-limits (429) this container's IP. A **local, uncommitted** in
 An unanchored `build/` rule also matched `build-logic/src/main/kotlin/tp/build/`, so two task sources were never
 committed and the first CI run couldn't compile build-logic. Fix: keep `build/` for Gradle output and add
 `!**/src/**/build/`. Release gate: build from a fresh clone of the commit, never from the working copy.
+
+## D-011 — Static collision semantics: client bridge rule (2026-11-05)
+
+- **Options:** RS Mod's rule (locs check the tile one level up; floor blocking uses the tile's own bridge bit) vs the
+  client's rule (every level checks the **level-1** tile's bridge bit, everything shifts down one, below 0 dropped).
+- **Choice:** the client's rule. Sources: RuneLite `MapImageDumper` (`getTileSetting(1, ...) & 2`) and the LostCity
+  engine's `CollisionManager`. Loc shape → flag rules adapted from RS Mod (ISC, header kept in `LocCollision.kt`).
+- **Why:** faithful first. RS Mod's variant would block bridge decks over water at level 0.
+- Details, sources and OPEN items: docs/mechanics/collision.md.
+
+## D-006 (final) — Routing library: vendored RS Mod routefinder (2026-11-05)
+
+- Vendored `rsmod/rsmod` `engine/routefinder` at `fa13b3f` (ISC) as module `routefinder/`, `src/main` unchanged,
+  with NOTICE.md and LICENSE. It replaces the stale `org.rsmod:rsmod-pathfinder:5.0.0` artifact. Built without
+  ktlint/detekt (`tp.kotlin-vendored`) so upstream diffs stay clean. Local changes must be listed in its NOTICE.md.
+
+## D-012 — Config groups with no reference decoder (2026-11-05)
+
+- 22 config types decode strictly (an unknown opcode or unread bytes fail boot and test 1).
+- **Not decoded:** groups 15, 19, 20 and 70 (named varclientstring, varclient, varobj, gamelogevent by RS Mod /
+  RuneLite, but neither has a decoder), plus 7, 22, 24–31, 37, 47, 54 and 71–73, which no reference names. Contents
+  observed: 20 and 70 are all empty `[00]`; 19 is 654 × `02 00`; 15 has 21 structured files that don't look like
+  varclientstring. All OPEN. They're plausibly client-only; revisit if a mechanic needs one.
+- Groups 18 (area) and 2 (hunt) decode, but every file in 2757 is empty, so their opcode layouts (RS Mod only)
+  are unverified against real data.
+
+## D-013 — Map archive layout and terrain trailer (2026-11-05)
+
+- Cache 2757's archive 5 is **unnamed**: a group id is the map-square id, file 0 is terrain, file 1 is locs, and
+  there's no XTEA (which is why OpenRS2 lists 0 keys). Source: RuneLite 1.13.6 `RegionLoader`. The named layout is
+  still supported for older caches.
+- Only groups with file ids exactly `[0..4]` are squares (2,949). Group 25287 (37 × 3-byte files) is skipped (OPEN).
+  Files 2–4 are unused (OPEN; likely spawn/area data).
+- Terrain files end with a u8 trailer: `0` on 2,948 squares, `1` plus a 9,563-byte extension on square (64, 73). The
+  extension is kept only as a size (OPEN; possibly Sailing-related). Strictness is preserved for anything else.
+
+## D-014 — Symbols generated as Java constant chains (2026-11-05)
+
+- **Problem:** objs (34,766) and locs (63,320) exceed one JVM class's 65,535-entry constant pool. Kotlin `object`s
+  can't inherit constants, and non-const `val`s lose `when`-constant use and hit the 64 KB `<clinit>` limit.
+- **Choice:** `tools/symbol-gen` (Kotlin) emits **Java** classes, each namespace a chain of ≤ 20,000-constant classes
+  (`Locs extends Locs$3 extends ...`). Verified: Kotlin resolves inherited Java statics via the subclass, as
+  compile-time constants. Shape follows RuneLite's gameval classes: flat namespaces, `DbTables.<Table>.ID/COL_*`,
+  `Interfaces.X` (id) and `Components.<Iface>.Y` (packed `iface << 16 | comp`).
+- Generated at build time into `symbols/build/generated` from `.data` (never committed: Jagex-derived). A fresh clone
+  must run `./gradlew setup` before `build`; CI already does.
+- Gameval groups 16–19 are unnamed by every reference; they're emitted as `Gameval16..19` (OPEN). Blank names
+  become `UNNAMED`, and collisions get `_<id>` (none occur in 2757).
+- Ids stay `Int` for now; typed wrappers are a Phase 3 plugin-api decision.
+
+## D-015 — detekt policy for decoders (2026-11-05)
+
+`MagicNumber`, `LongMethod` and `CyclomaticComplexMethod` are excluded for `tp/cache/config/**` and
+`tp/cache/interfaces/**`: opcode numbers are the format, and each decoder cites its reference loader.
+`LoopWithTooManyJumpStatements` is off (opcode loops). `NestedBlockDepth` allows 6 (tile loops). Everything else in
+detekt applies as before.
+
+## D-016 — Test 1 time budget (2026-11-05)
+
+The brief asks for each test to take < 1 s. Test 1 decodes ~200k configs, 992 interfaces and 2,949 map squares,
+builds full collision and generates ~210k symbols. That takes **3.9 s** on this 4-core sandbox. We accept the
+overrun rather than shrink the test's scope, which the brief also fixes. Revisit with JDK 25 + AOT cache numbers
+from CI.

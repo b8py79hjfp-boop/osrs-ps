@@ -32,6 +32,8 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     // Tests must be deterministic and headless (brief §9).
     systemProperty("java.awt.headless", "true")
+    // Test 1 holds the whole decoded cache + collision (~0.5 GiB).
+    maxHeapSize = "2g"
     // Test 1 needs the cache; it locates it from the repo root.
     systemProperty("tp.repoRoot", rootDir.absolutePath)
 }

@@ -9,13 +9,14 @@ Non-obvious choices go in `docs/DECISIONS.md`; phase plans in `docs/plans/phase-
 
 | What | Command |
 |---|---|
-| Build + lint + tests | `./gradlew build` |
+| Build + lint + tests (needs `setup` once: symbols are generated from the cache) | `./gradlew build` |
 | Format | `./gradlew spotlessApply` |
 | Download + verify cache 2757 into `.data/cache/242/` | `./gradlew setup` |
 | Login RSA keypair into `.data/rsa/` (prints modulus) | `./gradlew generateRsa` (`-Pforce` to regenerate) |
 | Boot the world node | `./gradlew :server:run` |
 | Boot check (CI) | `./gradlew :server:run --args=--boot-check` |
-| One module's tests | `./gradlew :cache:test` |
+| Test 1 (cache smoke) | `./gradlew :tools:symbol-gen:test` |
+| Inspect cache data | `./gradlew :tools:cache-dump:run --args="summary"` (also `config obj 4151`, `map 50 50`, `collision 3222 3218 0`) |
 
 JDK toolchain comes from `osrs.javaVersion` in `gradle.properties` (25). A machine without JDK 25 can override it in
 `~/.gradle/gradle.properties` — never change the repo value (DECISIONS D-004).
@@ -26,7 +27,8 @@ JDK toolchain comes from `osrs.javaVersion` in `gradle.properties` (25). A machi
 build-logic/        convention plugins: tp.kotlin-base / -library / -api (explicit API) / -app, tp.root (setup, generateRsa)
 util/               primitives, buffers, CoordGrid, typed ids, Revision (the only 242 in code)
 cache/              JS5 disk store, containers, XTEA, indexes, config decoders, maps -> collision
-symbols/            generated from cache archive 24 (gamevals)
+routefinder/        vendored RS Mod routefinder (ISC, unmodified; see its NOTICE.md) — collision flags, BFS, LoS
+symbols/            generated at build time from cache archive 24 (Java constant chains, D-014; never committed)
 protocol-api/       our message types + codec interfaces
 protocol/osrs-242/  revision implementation (vendored RSProt osrs-242, MIT)
 net/                Netty bootstrap, sessions, JS5, login, HTTP (jav_config / worldlist)
@@ -36,7 +38,7 @@ content/<area>/     plugins (combat, pvp, ...). Depend only on plugin-api + symb
 services/           account, social, exchange, hiscores (interfaces + in-process impls)
 server/             world-node main, config, wiring (composition root)
 hub/                hub main (Phase 5)
-tools/              cache-dump, scenario (golden tests), botswarm, replay, wiki-import
+tools/              symbol-gen (+ test 1), cache-dump, scenario (golden tests), botswarm, replay, wiki-import
 client/             release client (Phase 6): runelite fork, gamepatch, launcher, dist
 ```
 

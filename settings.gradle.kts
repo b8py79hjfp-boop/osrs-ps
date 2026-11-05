@@ -21,6 +21,7 @@ rootProject.name = "tickperfect"
 
 include(
     ":util",
+    ":routefinder",
     ":cache",
     ":symbols",
     ":protocol-api",
@@ -38,5 +39,6 @@ include(
     ":tools:botswarm",
     ":tools:replay",
     ":tools:wiki-import",
+    ":tools:symbol-gen",
 )
 // client/* (release client) is added in Phase 6; it is a separate Java/RuneLite build.

@@ -1,7 +1,7 @@
 package tp.cache.js5
 
+import tp.util.buf.ReadBuf
 import java.io.IOException
-import java.nio.ByteBuffer
 
 /**
  * A decoded JS5 archive index (the group table for one archive, stored as group `255/<archive>`).
@@ -9,16 +9,38 @@ import java.nio.ByteBuffer
  * Field order follows OpenRS2 `Js5Index.read` (https://github.com/openrs2/openrs2, cache/Js5Index.kt):
  * protocol, [version], flags, group count, delta-coded group ids, [name hashes], checksums,
  * [uncompressed checksums], [digests], [lengths], versions, file counts, delta-coded file ids, [file name hashes].
+ *
+ * Arrays are parallel and indexed by *slot* (position in the index), not by group id. Use [slotOf] to map an id.
  */
 class Js5Index(
     val protocol: Int,
     val version: Int,
     val groupIds: IntArray,
+    /** Group name hashes ([nameHash]), or null when the archive is unnamed. */
+    val groupNameHashes: IntArray?,
     val groupChecksums: IntArray,
     val groupVersions: IntArray,
     val fileCounts: IntArray,
+    /** Per slot: the file ids of that group, ascending. */
+    val fileIds: Array<IntArray>,
 ) {
     val groupCount: Int get() = groupIds.size
+
+    private val slotById: Map<Int, Int> =
+        HashMap<Int, Int>(groupIds.size * 2).also { m ->
+            for (slot in groupIds.indices) m[groupIds[slot]] = slot
+        }
+
+    private val slotByName: Map<Int, Int> =
+        HashMap<Int, Int>().also { m ->
+            groupNameHashes?.forEachIndexed { slot, hash -> m[hash] = slot }
+        }
+
+    /** Slot of [groupId], or -1 when the archive has no such group. */
+    fun slotOf(groupId: Int): Int = slotById[groupId] ?: -1
+
+    /** Group id whose name hashes to [name] (e.g. `m50_50`), or -1. */
+    fun groupIdByName(name: String): Int = slotByName[nameHash(name)]?.let { groupIds[it] } ?: -1
 
     companion object {
         private const val PROTOCOL_ORIGINAL = 5
@@ -35,20 +57,21 @@ class Js5Index(
 
         /** Two i32s per group: compressed and uncompressed length. */
         private const val LENGTH_BYTES = 8
-        private const val U8 = 0xFF
-        private const val U16 = 0xFFFF
+
+        /** JS5 name hash: Java `String.hashCode` of the lower-cased name (client `Js5Index.getGroupId`). */
+        fun nameHash(name: String): Int = name.lowercase().hashCode()
 
         fun decode(data: ByteArray): Js5Index {
-            val buf = ByteBuffer.wrap(data)
-            val protocol = buf.get().toInt() and U8
+            val buf = ReadBuf(data)
+            val protocol = buf.g1()
             if (protocol !in PROTOCOL_ORIGINAL..PROTOCOL_SMART) {
                 throw IOException("Unsupported index protocol $protocol")
             }
-            val version = if (protocol >= PROTOCOL_VERSIONED) buf.getInt() else 0
-            val flags = buf.get().toInt() and U8
+            val version = if (protocol >= PROTOCOL_VERSIONED) buf.g4() else 0
+            val flags = buf.g1()
             val smart = protocol >= PROTOCOL_SMART
 
-            fun count(): Int = if (smart) buf.getBigSmart() else buf.getShort().toInt() and U16
+            fun count(): Int = if (smart) buf.gSmart2or4() else buf.g2()
 
             val size = count()
             val groupIds = IntArray(size)
@@ -57,26 +80,25 @@ class Js5Index(
                 prev += count()
                 groupIds[i] = prev
             }
-            if (flags and FLAG_NAMED != 0) buf.skip(size * Int.SIZE_BYTES)
-            val checksums = IntArray(size) { buf.getInt() }
+            val named = flags and FLAG_NAMED != 0
+            val nameHashes = if (named) IntArray(size) { buf.g4() } else null
+            val checksums = IntArray(size) { buf.g4() }
             if (flags and FLAG_UNCOMPRESSED_CHECKSUMS != 0) buf.skip(size * Int.SIZE_BYTES)
             if (flags and FLAG_DIGESTS != 0) buf.skip(size * DIGEST_BYTES)
             if (flags and FLAG_LENGTHS != 0) buf.skip(size * LENGTH_BYTES)
-            val versions = IntArray(size) { buf.getInt() }
+            val versions = IntArray(size) { buf.g4() }
             val fileCounts = IntArray(size) { count() }
-            // File ids are delta-coded per group; Phase 1 keeps them (needed for multi-file groups).
-            for (g in 0 until size) repeat(fileCounts[g]) { count() }
-            if (flags and FLAG_NAMED != 0) buf.skip(fileCounts.sum() * Int.SIZE_BYTES)
-            if (buf.hasRemaining()) throw IOException("${buf.remaining()} trailing bytes in index")
-            return Js5Index(protocol, version, groupIds, checksums, versions, fileCounts)
+            val fileIds =
+                Array(size) { g ->
+                    var id = 0
+                    IntArray(fileCounts[g]) {
+                        id += count()
+                        id
+                    }
+                }
+            if (named) buf.skip(fileCounts.sum() * Int.SIZE_BYTES)
+            if (buf.isReadable) throw IOException("${buf.remaining} trailing bytes in index")
+            return Js5Index(protocol, version, groupIds, nameHashes, checksums, versions, fileCounts, fileIds)
         }
-
-        private fun ByteBuffer.skip(n: Int) {
-            position(position() + n)
-        }
-
-        /** Big smart: u16 when the top bit is clear, otherwise i32 with the top bit masked off. */
-        private fun ByteBuffer.getBigSmart(): Int =
-            if (get(position()) >= 0) getShort().toInt() and U16 else getInt() and Int.MAX_VALUE
     }
 }
