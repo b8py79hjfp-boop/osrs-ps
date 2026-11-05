@@ -26,10 +26,11 @@ fun main(args: Array<String>) {
             logger.info {
                 String.format(
                     Locale.ROOT,
-                    "rev %d: %d archives, %,d groups (%d ms)",
+                    "rev %d: %d archives, %,d groups (%d populated archives, %d ms)",
                     Revision.NUMBER,
                     cache.archiveCount,
                     cache.groupCount,
+                    cache.populatedArchiveCount,
                     (System.nanoTime() - started) / NANOS_PER_MILLI,
                 )
             }

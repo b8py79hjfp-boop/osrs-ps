@@ -2,7 +2,7 @@
 
 ## Phase checklist
 
-- [ ] **Phase 0 — Scaffold** — built; one done-criterion blocked (see below)
+- [x] **Phase 0 — Scaffold** — done 2026-11-05 (JDK 25 confirmation pending first CI run)
 - [ ] Phase 1 — Cache and world data
 - [ ] Phase 2 — Networking and client
 - [ ] Phase 3 — Engine core
@@ -26,20 +26,21 @@
 
 ## Blocking
 
-1. **OpenRS2 is blocked by this environment's network policy** (`archive.openrs2.org` → proxy 403), so `./gradlew setup`
-   can't download cache 2757 here and the boot log can't be verified against the real cache. Options: allow
-   `archive.openrs2.org` in the environment's network settings, or rely on CI (GitHub Actions has open egress).
-2. **JDK 25 can't be installed here** (D-004). The build is verified on JDK 21; the first CI run is the JDK 25 gate.
+- None for Phase 1. JDK 25 can't be installed in this sandbox (D-004); the first CI run is the JDK 25 gate.
+- The repo has no git remote yet; it needs one for CI and durability.
+
+### Phase 0 acceptance (2026-11-05)
+
+`./gradlew setup` downloaded cache 2757 and pinned its SHA-256s. `./gradlew :server:run --args=--boot-check` logged
+`rev 242: 25 archives, 120,374 groups (23 populated archives, 174 ms)` and passed the archive 0/24 CRC and version
+spot-checks.
 
 ## Next
 
-1. Unblock the cache, run `./gradlew setup` (this writes and commits `gradle/cache-checksums/242.sha256`), run the boot
-   check, and resolve D-008's group-count question.
-2. Phase 1 plan (`docs/plans/phase-1.md`): config decoders (obj first in the main session, the rest to `implementer`),
+1. Phase 1 plan (`docs/plans/phase-1.md`): config decoders (obj first in the main session, the rest to `implementer`),
    map/loc decoding, collision, gameval symbol generation from archive 24, cache-dump tool, test 1.
-3. Decide D-006 (routing library) during Phase 1.
+2. Decide D-006 (routing library) during Phase 1.
 
 ## Open questions
 
-- D-008: does OpenRS2's group count include master-index groups?
 - D-007: confirm the RuneLite 1.13.6 bootstrap against a live RSProx session in Phase 2.

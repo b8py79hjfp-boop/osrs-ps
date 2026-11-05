@@ -14,7 +14,14 @@ class Js5Cache private constructor(
     /** Indexed by archive id; null where the master index has no entry. */
     val archives: List<ArchiveInfo?>,
 ) : Closeable {
-    val archiveCount: Int get() = archives.count { it != null }
+    /**
+     * Number of master-index slots, including empty ones. Cache 2757 has 25 slots, two of them empty (16 and 23).
+     * This matches OpenRS2's "archives" figure and the client's master index (empty slots: CRC 0, version 0).
+     */
+    val archiveCount: Int get() = archives.size
+
+    /** Archives that actually have an index on disk. */
+    val populatedArchiveCount: Int get() = archives.count { it != null }
     val groupCount: Int get() = archives.sumOf { it?.index?.groupCount ?: 0 }
 
     fun archive(id: Int): ArchiveInfo? = archives.getOrNull(id)

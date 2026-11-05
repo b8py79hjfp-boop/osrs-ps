@@ -83,8 +83,11 @@ Everything is in `gradle/libs.versions.toml`, checked 2026-11-05. Notable choice
 - Structural checks (25 archives, 120,374 groups, master-index CRC/version spot-checks for archives 0 and 24) run in
   the `cache` reader at server boot (`--boot-check`) and, from Phase 1, in test 1.
 - Master-index CRC = CRC-32 over the container header + payload, excluding the version trailer.
-- **OPEN:** whether OpenRS2's "120,374 groups" counts the 25 master-index groups in addition to archive groups. Our
-  boot check uses the sum of index group counts. If the first real run shows 120,349 (or 120,399), revisit this.
+- **Resolved 2026-11-05 (first real run):** OpenRS2's figures are master-index **slots** (25: `idx255` holds 25 entries,
+  of which 16 and 23 are empty, size 0) and the **sum of index group counts** (120,374; master-index entries are not
+  included). `Js5Cache.archiveCount` counts slots; `populatedArchiveCount` = 23. The client's master index likewise
+  lists all 25 slots (CRC 0 / version 0 for the empty ones) — relevant for the Phase 2 login CRC check.
+- Pinned: `disk.zip` `940e86f3…d6e9`, `keys.json` `5984eac0…afa` (`[]`: 0 XTEA keys, matching OpenRS2).
 
 ## D-009 — Sandbox Maven mirror (2026-11-05)
 
