@@ -8,7 +8,10 @@ import net.rsprot.compression.provider.HuffmanCodecProvider
 import net.rsprot.crypto.rsa.RsaKeyPair
 import net.rsprot.protocol.api.AbstractNetworkServiceFactory
 import net.rsprot.protocol.api.GameConnectionHandler
+import net.rsprot.protocol.api.InetAddressTracker
 import net.rsprot.protocol.api.NetworkService
+import net.rsprot.protocol.api.handlers.INetAddressHandlers
+import net.rsprot.protocol.api.implementation.DefaultInetAddressTracker
 import net.rsprot.protocol.api.js5.Js5GroupProvider
 import net.rsprot.protocol.api.login.GameLoginResponseHandler
 import net.rsprot.protocol.common.client.OldSchoolClientType
@@ -79,6 +82,13 @@ class Osrs242Network(
 
         override fun getJs5GroupProvider(): Js5GroupProvider = js5
 
+        /** Log JS5 and game connections (not per-request) so client connectivity problems are visible. */
+        override fun getINetAddressHandlers(): INetAddressHandlers =
+            INetAddressHandlers(
+                js5InetAddressTracker = LoggingTracker("js5"),
+                gameInetAddressTracker = LoggingTracker("game"),
+            )
+
         override fun getGameMessageConsumerRepositoryProvider(): GameMessageConsumerRepositoryProvider<RspSession> =
             consumers()
 
@@ -86,6 +96,7 @@ class Osrs242Network(
             object : GameConnectionHandler<RspSession> {
                 override fun onLogin(responseHandler: GameLoginResponseHandler<RspSession>, block: LoginBlock<AuthenticationType>) {
                     val net = service ?: return responseHandler.writeFailedResponse(LoginResponse.LoginServerOffline)
+                    logger.info { "login request: ${block.username} (crc ok=${block.crc.validate(js5.archiveCrcs)})" }
                     gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs)))
                 }
 
@@ -97,6 +108,22 @@ class Osrs242Network(
                     responseHandler.writeFailedResponse(LoginResponse.ConnectFail)
                 }
             }
+    }
+
+    private class LoggingTracker(private val kind: String) : InetAddressTracker {
+        private val delegate = DefaultInetAddressTracker()
+
+        override fun register(address: String) {
+            delegate.register(address)
+            logger.info { "$kind connection from $address (${delegate.getCount(address)} open)" }
+        }
+
+        override fun deregister(address: String) {
+            delegate.deregister(address)
+            logger.info { "$kind disconnect from $address (${delegate.getCount(address)} open)" }
+        }
+
+        override fun getCount(address: String): Int = delegate.getCount(address)
     }
 
     /** Decoded packets -> [ClientCommand]s, delivered to the session currently being polled. */
@@ -141,6 +168,7 @@ class Osrs242Network(
         }
 
         override fun reject(reason: LoginRejection) {
+            logger.info { "login rejected: $username ($reason)" }
             handler.writeFailedResponse(
                 when (reason) {
                     LoginRejection.INVALID_CREDENTIALS -> LoginResponse.InvalidUsernameOrPassword
