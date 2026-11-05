@@ -12,4 +12,8 @@ val javaVersion = providers.gradleProperty("osrs.javaVersion").map(String::toInt
 kotlin {
     jvmToolchain(javaVersion)
     explicitApi()
+    compilerOptions {
+        // RSProt compiles with -Xjvm-default=all (interface default methods, no DefaultImpls); match it.
+        jvmDefault = org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode.NO_COMPATIBILITY
+    }
 }

@@ -90,10 +90,24 @@ public abstract class SetupCacheTask : DefaultTask() {
         if (!idx255.isFile || idx255.length() == 0L || idx255.length() % INDEX_ENTRY_SIZE != 0L) {
             throw GradleException("Extracted cache is malformed: $idx255 missing or not a multiple of $INDEX_ENTRY_SIZE bytes.")
         }
+        downloadJavConfig(client, File(out.parentFile.parentFile, "client/jav_config.ws"))
         logger.lifecycle(
             "rev ${revision.get()} cache ready at ${idx255.parentFile} " +
                 "(${idx255.length() / INDEX_ENTRY_SIZE} archives in idx255).",
         )
+    }
+
+    /**
+     * Jagex's live jav_config.ws: the template our HTTP endpoint rewrites (D-017). Never committed. Refreshed every run;
+     * fails if its revision param (25) doesn't match ours, which means the client moved on.
+     */
+    private fun downloadJavConfig(client: HttpClient, target: File) {
+        target.parentFile.mkdirs()
+        download(client, JAV_CONFIG_URL, target)
+        val rev = target.readLines(Charsets.ISO_8859_1).firstOrNull { it.startsWith("param=25=") }?.substringAfter("param=25=")
+        if (rev != revision.get()) {
+            logger.warn("Live jav_config.ws reports revision $rev, expected ${revision.get()}: OSRS has updated (see docs/REVISION-UPGRADE.md).")
+        }
     }
 
     private fun download(client: HttpClient, url: String, target: File) {
@@ -165,6 +179,7 @@ public abstract class SetupCacheTask : DefaultTask() {
         /** JS5 disk index entry: u24 size + u24 first sector. */
         const val INDEX_ENTRY_SIZE = 6L
         const val HTTP_OK = 200
+        const val JAV_CONFIG_URL = "https://oldschool.runescape.com/jav_config.ws"
         const val BUFFER_SIZE = 1 shl 16
     }
 }

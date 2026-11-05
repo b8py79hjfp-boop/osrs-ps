@@ -1,0 +1,201 @@
+package tp.protocol.osrs242
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.netty.buffer.Unpooled
+import net.rsprot.compression.HuffmanCodec
+import net.rsprot.compression.provider.DefaultHuffmanCodecProvider
+import net.rsprot.compression.provider.HuffmanCodecProvider
+import net.rsprot.crypto.rsa.RsaKeyPair
+import net.rsprot.protocol.api.AbstractNetworkServiceFactory
+import net.rsprot.protocol.api.GameConnectionHandler
+import net.rsprot.protocol.api.NetworkService
+import net.rsprot.protocol.api.js5.Js5GroupProvider
+import net.rsprot.protocol.api.login.GameLoginResponseHandler
+import net.rsprot.protocol.common.client.OldSchoolClientType
+import net.rsprot.protocol.game.incoming.misc.client.MapBuildComplete
+import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
+import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
+import net.rsprot.protocol.game.incoming.misc.user.MoveMinimapClick
+import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
+import net.rsprot.protocol.loginprot.incoming.util.AuthenticationType
+import net.rsprot.protocol.loginprot.incoming.util.LoginBlock
+import net.rsprot.protocol.loginprot.outgoing.LoginResponse
+import net.rsprot.protocol.loginprot.outgoing.util.AuthenticatorResponse
+import net.rsprot.protocol.message.codec.incoming.GameMessageConsumerRepositoryBuilder
+import net.rsprot.protocol.message.codec.incoming.provider.DefaultGameMessageConsumerRepositoryProvider
+import net.rsprot.protocol.message.codec.incoming.provider.GameMessageConsumerRepositoryProvider
+import tp.cache.js5.Js5Cache
+import tp.protocol.api.ClientCommand
+import tp.protocol.api.ClientSession
+import tp.protocol.api.GameNetwork
+import tp.protocol.api.LoginDetails
+import tp.protocol.api.LoginGate
+import tp.protocol.api.LoginRejection
+import tp.protocol.api.LoginRequest
+import tp.symbols.Seqs
+import java.io.IOException
+
+private val logger = KotlinLogging.logger {}
+
+/** Revision-242 [GameNetwork] on RSProt (D-005). Listens on [port] for game + JS5 (they share it). */
+@OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
+class Osrs242Network(
+    cache: Js5Cache,
+    private val rsa: RsaKeyPair,
+    private val port: Int,
+) : GameNetwork {
+    private val js5 = Js5Responses.build(cache)
+    private val huffman = loadHuffman(cache)
+    private var service: NetworkService<RspSession>? = null
+
+    val js5Summary: String get() = "${js5.groupCount} groups, ${js5.totalBytes / BYTES_PER_MIB} MiB pre-encoded"
+
+    override fun start(loginGate: LoginGate) {
+        val factory = Factory(loginGate)
+        val built = factory.build()
+        factory.service = built
+        built.setCommunicationThread(Thread.currentThread())
+        built.start()
+        service = built
+        logger.info { "rev 242 network listening on :$port (js5: $js5Summary)" }
+    }
+
+    override fun buildInfos() {
+        service?.infoProtocols?.update()
+    }
+
+    override fun shutdown() {
+        service?.shutdown()
+    }
+
+    private inner class Factory(private val gate: LoginGate) : AbstractNetworkServiceFactory<RspSession>() {
+        var service: NetworkService<RspSession>? = null
+        override val ports: List<Int> = listOf(port)
+        override val supportedClientTypes: List<OldSchoolClientType> = listOf(OldSchoolClientType.DESKTOP)
+
+        override fun getRsaKeyPair(): RsaKeyPair = rsa
+
+        override fun getHuffmanCodecProvider(): HuffmanCodecProvider = huffman
+
+        override fun getJs5GroupProvider(): Js5GroupProvider = js5
+
+        override fun getGameMessageConsumerRepositoryProvider(): GameMessageConsumerRepositoryProvider<RspSession> =
+            consumers()
+
+        override fun getGameConnectionHandler(): GameConnectionHandler<RspSession> =
+            object : GameConnectionHandler<RspSession> {
+                override fun onLogin(responseHandler: GameLoginResponseHandler<RspSession>, block: LoginBlock<AuthenticationType>) {
+                    val net = service ?: return responseHandler.writeFailedResponse(LoginResponse.LoginServerOffline)
+                    gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs)))
+                }
+
+                // Reconnection lands in Phase 5 (session handover); refuse cleanly for now.
+                override fun onReconnect(
+                    responseHandler: GameLoginResponseHandler<RspSession>,
+                    block: LoginBlock<net.rsprot.crypto.xtea.XteaKey>,
+                ) {
+                    responseHandler.writeFailedResponse(LoginResponse.ConnectFail)
+                }
+            }
+    }
+
+    /** Decoded packets -> [ClientCommand]s, delivered to the session currently being polled. */
+    private fun consumers(): GameMessageConsumerRepositoryProvider<RspSession> {
+        val b = GameMessageConsumerRepositoryBuilder<RspSession>()
+        b.addListener(
+            MoveGameClick::class.java,
+        ) { s, m -> s.deliver(ClientCommand.MoveClick(m.x, m.z, m.keyCombination == CTRL_HELD, false)) }
+        b.addListener(MoveMinimapClick::class.java) { s, m ->
+            s.deliver(ClientCommand.MoveClick(m.x, m.z, m.keyCombination == CTRL_HELD, true))
+        }
+        b.addListener(ClientCheat::class.java) { s, m -> s.deliver(ClientCommand.Cheat(m.command)) }
+        b.addListener(MapBuildComplete::class.java) { s, _ -> s.deliver(ClientCommand.MapBuildComplete) }
+        return DefaultGameMessageConsumerRepositoryProvider(b.build())
+    }
+
+    private class RspLoginRequest(
+        private val service: NetworkService<RspSession>,
+        private val handler: GameLoginResponseHandler<RspSession>,
+        private val block: LoginBlock<AuthenticationType>,
+        override val crcValid: Boolean,
+    ) : LoginRequest {
+        override val username: String = block.username
+
+        override fun accept(slot: Int, details: LoginDetails): ClientSession {
+            val response =
+                LoginResponse.Ok(
+                    authenticatorResponse = AuthenticatorResponse.NoAuthenticator,
+                    staffModLevel = details.staffModLevel,
+                    playerMod = false,
+                    index = slot,
+                    member = details.member,
+                    accountHash = slot.toLong(),
+                    userId = slot.toLong(),
+                    userHash = slot.toLong(),
+                )
+            val session = handler.writeSuccessfulResponse(response, block)
+            val infos = service.infoProtocols.alloc(slot, OldSchoolClientType.DESKTOP)
+            val rsp = RspSession(session, infos, username) { closed -> service.infoProtocols.dealloc(closed.release()) }
+            session.setDisconnectionHook { rsp.markDisconnected() }
+            return rsp
+        }
+
+        override fun reject(reason: LoginRejection) {
+            handler.writeFailedResponse(
+                when (reason) {
+                    LoginRejection.INVALID_CREDENTIALS -> LoginResponse.InvalidUsernameOrPassword
+                    LoginRejection.ALREADY_ONLINE -> LoginResponse.Duplicate
+                    LoginRejection.WORLD_FULL -> LoginResponse.ServerFull
+                    LoginRejection.OUT_OF_DATE -> LoginResponse.ClientOutOfDate
+                    LoginRejection.LOGIN_LIMIT_EXCEEDED -> LoginResponse.IPLimit
+                    LoginRejection.UPDATE_IN_PROGRESS -> LoginResponse.UpdateInProgress
+                    LoginRejection.SERVER_ERROR -> LoginResponse.LoginServerLoadError
+                },
+            )
+        }
+    }
+
+    companion object {
+        /** MOVE_GAMECLICK keyCombination value when ctrl is held (RSProt `MoveGameClick` docs: 1 = ctrl). */
+        private const val CTRL_HELD = 1
+        private const val BYTES_PER_MIB = 1L shl 20
+        private const val BINARY_ARCHIVE = 10
+
+        /** Huffman table: binary archive group named "huffman", file 0 (RS Mod `HuffmanProvider`). */
+        private fun loadHuffman(cache: Js5Cache): HuffmanCodecProvider {
+            val index = cache.index(BINARY_ARCHIVE)
+            val group = index.groupIdByName("huffman")
+            if (group < 0) throw IOException("No huffman group in archive $BINARY_ARCHIVE")
+            val files = cache.readFiles(BINARY_ARCHIVE, group) ?: throw IOException("Huffman group $group missing")
+            return DefaultHuffmanCodecProvider(HuffmanCodec.create(Unpooled.wrappedBuffer(files.data[0])))
+        }
+    }
+}
+
+/**
+ * Placeholder look until accounts own appearance (Phase 5): RS Mod's default male (`Appearance.assignDefaultIdentKit`,
+ * `assignDefaultColours`) with the human base animations.
+ */
+internal object DefaultAppearance {
+    private val IDENT_KITS = intArrayOf(9, 14, 109, 26, 33, 36, 42)
+    private val COLOURS = intArrayOf(0, 3, 2, 0, 0)
+
+    /** Combat level shown before stats exist (a fresh account is level 3). */
+    private const val FRESH_COMBAT_LEVEL = 3
+
+    fun apply(ext: PlayerAvatarExtendedInfo, name: String) {
+        ext.setName(name)
+        ext.setCombatLevel(FRESH_COMBAT_LEVEL)
+        IDENT_KITS.forEachIndexed { slot, kit -> ext.setIdentKit(slot, kit) }
+        COLOURS.forEachIndexed { slot, colour -> ext.setColour(slot, colour) }
+        ext.setBaseAnimationSet(
+            readyAnim = Seqs.HUMAN_READY,
+            turnAnim = Seqs.HUMAN_TURNONSPOT,
+            walkAnim = Seqs.HUMAN_WALK_F,
+            walkAnimBack = Seqs.HUMAN_WALK_B,
+            walkAnimLeft = Seqs.HUMAN_WALK_L,
+            walkAnimRight = Seqs.HUMAN_WALK_R,
+            runAnim = Seqs.HUMAN_RUNNING,
+        )
+    }
+}

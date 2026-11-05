@@ -4,8 +4,9 @@ plugins {
 
 dependencies {
     api(project(":util"))
+    api(project(":protocol-api"))
+    api(project(":routefinder"))
     implementation(project(":cache"))
-    implementation(project(":protocol-api"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlin.logging)
 }

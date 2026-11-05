@@ -163,3 +163,38 @@ The brief asks for each test to take < 1 s. Test 1 decodes ~200k configs, 992 in
 builds full collision and generates ~210k symbols. That takes **3.9 s** on this 4-core sandbox. We accept the
 overrun rather than shrink the test's scope, which the brief also fixes. Revisit with JDK 25 + AOT cache numbers
 from CI.
+
+## D-005 (executed) — RSProt 242 vendored; RSProx ground-truth diff (2026-11-05)
+
+- Vendored `osrs-242-{api,common,desktop,internal,model,shared}` `src/main` at `67d2136` into
+  `protocol/osrs-242/rsprot/` (MIT, NOTICE.md, no modifications). Shared modules come from Maven at
+  `1.0.0-ALPHA-20261014`, verified unchanged by the 242 commit. Compiles under Kotlin 2.4 with
+  `jvmDefault = NO_COMPATIBILITY`, matching upstream's `-Xjvm-default=all`.
+- `protocol/osrs-242` (our adapter) implements `protocol-api`. Only it and `tools/botswarm` import `net.rsprot`.
+- **Ground-truth diff** (scout, RSProt 242 vs RSProx 242): every game opcode and size matches in both directions,
+  and the sampled packets match field for field (move clicks, op*, IF buttons, inventory, varps, MESSAGE_GAME,
+  RUNCLIENTSCRIPT, rebuild incl. player-info init). OPEN:
+  - **OPEN-A CLIENT_CHEAT:** RSProt reads a trailing `g1` unconditionally; RSProx only if bytes remain. If a real
+    client omits it, `::commands` will fail to decode. Fix (local patch, NOTICE) only on evidence.
+  - **OPEN-B login `jxSessionId`:** RSProt reads a flag (+ string) between the RSA and XTEA blocks for version ≥ 242.
+    RSProx doesn't parse it. Confirm with the first real-client login.
+  - Everything else differs only in RSProx parsing less deeply (login header, RSA contents and CRCs kept raw).
+
+## D-017 — jav_config.ws from Jagex's live template (2026-11-05)
+
+`./gradlew setup` downloads `oldschool.runescape.com/jav_config.ws` into `.data/client/` (Jagex content, never
+committed) and warns if its `param=25` revision isn't ours. `ClientConfigServer` serves it with `codebase`, world list
+(17), initial world (12), members (3) and world properties (5) rewritten, as RSProx does. `worldlist.ws` uses the
+client binary format (RSProx `WorldList.encode`).
+
+## D-018 — No accounts until Phase 5 (dev login policy) (2026-11-05)
+
+Any non-blank username logs in, the password is ignored, and duplicate names are refused. Appearance is a fixed
+default (RS Mod's default male). **This is dev-only**: the Phase 5 hub adds accounts (Argon2id), throttling and
+moderation (brief §12). Reconnects are refused (ConnectFail) until Phase 5 session handover.
+
+## D-019 — Test 2 runtime (2026-11-05)
+
+Test 2 boots a real world (cache decode, collision, JS5 pre-encode), solves proof of work at difficulty 18 and walks a
+player. It takes ~9 s here, over the brief's 1 s per-test budget, for the same reason as D-016. JS5 pre-encoding was
+parallelised (13 s → 1.3 s), which also brought dev boot under 10 s (~3 s to listening).

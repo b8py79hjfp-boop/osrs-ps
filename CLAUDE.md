@@ -13,7 +13,10 @@ Non-obvious choices go in `docs/DECISIONS.md`; phase plans in `docs/plans/phase-
 | Format | `./gradlew spotlessApply` |
 | Download + verify cache 2757 into `.data/cache/242/` | `./gradlew setup` |
 | Login RSA keypair into `.data/rsa/` (prints modulus) | `./gradlew generateRsa` (`-Pforce` to regenerate) |
-| Boot the world node | `./gradlew :server:run` |
+| Boot the world node (game+JS5 :43594, HTTP :8080) | `./gradlew :server:run` |
+| Bots | `./gradlew :tools:botswarm:run --args="20"` |
+| Test 2 (protocol round trip) | `./gradlew :tools:botswarm:test` |
+| Real client | docs/CLIENT.md (RuneLite via RSProx) |
 | Boot check (CI) | `./gradlew :server:run --args=--boot-check` |
 | Test 1 (cache smoke) | `./gradlew :tools:symbol-gen:test` |
 | Inspect cache data | `./gradlew :tools:cache-dump:run --args="summary"` (also `config obj 4151`, `map 50 50`, `collision 3222 3218 0`) |
@@ -30,7 +33,7 @@ cache/              JS5 disk store, containers, XTEA, indexes, config decoders, 
 routefinder/        vendored RS Mod routefinder (ISC, unmodified; see its NOTICE.md) — collision flags, BFS, LoS
 symbols/            generated at build time from cache archive 24 (Java constant chains, D-014; never committed)
 protocol-api/       our message types + codec interfaces
-protocol/osrs-242/  revision implementation (vendored RSProt osrs-242, MIT)
+protocol/osrs-242/  adapter (our code) + rsprot/{api,common,desktop,internal,model,shared} (vendored RSProt 242, MIT)
 net/                Netty bootstrap, sessions, JS5, login, HTTP (jav_config / worldlist)
 engine/             world, tick pipeline, entities, zones, collision, routing, queues/timers/delays, info pass
 plugin-api/         stable content API + Kotlin DSL (explicit API mode)

@@ -2,7 +2,14 @@ plugins {
     id("tp.kotlin-library")
 }
 
-// Phase 2: vendored RSProt osrs-242 (MIT) behind our protocol-api. See docs/DECISIONS.md D-005.
+// Adapter: implements :protocol-api on the vendored RSProt 242 (D-005). Only this module and :net import net.rsprot.
 dependencies {
     api(project(":protocol-api"))
+    implementation(project(":cache"))
+    implementation(project(":symbols"))
+    api(project(":protocol:osrs-242:rsprot:api"))
+    implementation(libs.rsprot.buffer)
+    implementation(platform(libs.netty.bom))
+    implementation(libs.netty.buffer)
+    implementation(libs.kotlin.logging)
 }

@@ -4,7 +4,7 @@
 
 - [x] **Phase 0 — Scaffold** — done 2026-11-05; CI green on Temurin 25.0.5
 - [x] **Phase 1 — Cache and world data** — done 2026-11-05 (pending CI confirmation on JDK 25)
-- [ ] Phase 2 — Networking and client
+- [ ] **Phase 2 — Networking and client** — built; waiting on the real-client check (see Blocking)
 - [ ] Phase 3 — Engine core
 - [ ] Phase 4 — Combat and PvP
 - [ ] Phase 5 — Scale and operations
@@ -44,9 +44,21 @@
 | **Total boot data** | **~3.5 s** | under the §6 10 s dev-boot target without a snapshot |
 | Heap | 384 MiB after GC (locs + map + collision); ~460 MiB live at end of boot | CollisionFlagMap's zone array alone is 16.7 M refs (~64 MiB) |
 
+- Phase 2 (2026-11-05):
+  - RSProt 242 vendored (D-005) + ground-truth diff vs RSProx (all opcodes/sizes match; 2 OPEN).
+  - `protocol-api` contracts; `protocol/osrs-242` adapter. JS5 pre-encoded (120,398 groups, 204 MiB, 1.3 s parallel).
+    Login with PoW/RSA/ISAAC/CRC via RSProt; bounded admissions per tick.
+  - `net`: `/jav_config.ws` (Jagex template rewritten, D-017) + `/worldlist.ws`.
+  - Engine slice: anchored 600 ms tick, PID-ordered phases, server-side routing, walk/run, build-area rebuilds, info pass.
+  - `tools/botswarm`: headless rev-242 client + `Swarm` runner. **Test 2 passes** (JS5, login, rebuild, player info,
+    walk, second observer).
+  - docs/CLIENT.md, docs/mechanics/movement.md.
+
 ## Blocking
 
-- None. Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
+- **Phase 2 DoD needs a human with a GUI:** run RuneLite via RSProx (docs/CLIENT.md) on Windows or Linux. Confirm
+  cache download, login, walking/running and seeing bots. This sandbox has no display. Report D-005 OPEN-A/B outcomes.
+- Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
   builds on JDK 21 locally (D-004); CI is the JDK 25 gate.
 
 ### Phase 0 acceptance (2026-11-05)
@@ -57,8 +69,9 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 2 plan (`docs/plans/phase-2.md`): JS5 server, login, HTTP jav_config/worldlist, vendor RSProt osrs-242
-   (D-005), RuneLite via RSProx walking with server-side routing, test 2.
+1. Real-client check (above), then Phase 3 plan: full tick pipeline, scripts/queues/timers/delays/interactions,
+   plugin-api, varps/inventories/interfaces, tick inspector, replay, packet validation, item transactions.
+   Also: RSProx-compatible `.bin` recording behind a dev flag (brief §4.3).
 2. Ask for osrs-docs.com and oldschool.runescape.wiki to be reachable: brief §2's primary mechanics sources.
 
 ## Open questions
