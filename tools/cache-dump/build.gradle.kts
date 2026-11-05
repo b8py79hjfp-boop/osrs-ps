@@ -1,5 +1,9 @@
 plugins {
-    id("tp.kotlin-library")
+    id("tp.kotlin-app")
+}
+
+application {
+    mainClass = "tp.tools.cachedump.CacheDumpKt"
 }
 
 dependencies {

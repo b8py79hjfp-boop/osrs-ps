@@ -3,7 +3,7 @@
 ## Phase checklist
 
 - [x] **Phase 0 — Scaffold** — done 2026-11-05; CI green on Temurin 25.0.5
-- [ ] Phase 1 — Cache and world data
+- [x] **Phase 1 — Cache and world data** — done 2026-11-05 (pending CI confirmation on JDK 25)
 - [ ] Phase 2 — Networking and client
 - [ ] Phase 3 — Engine core
 - [ ] Phase 4 — Combat and PvP
@@ -24,6 +24,26 @@
   - CI workflow; docs; `.claude/` settings and agents.
   - §13.2 checks recorded (D-002).
 
+- Phase 1 (2026-11-05):
+  - 22 strict config decoders + IF1/IF3 interfaces; undecoded groups listed (D-012).
+  - All 2,949 map squares / 5,021,872 locs (unnamed rev-242 layout, D-013); full-map collision with the client
+    bridge rule (D-011, docs/mechanics/collision.md, verifier pass applied).
+  - Vendored RS Mod routefinder (D-006 final); symbols generated as Java constant chains (D-014).
+  - Test 1 (`./gradlew :tools:symbol-gen:test`) passes in 3.9 s (> 1 s budget, D-016).
+  - tools/cache-dump: summary / config / interface / map / collision.
+
+### Phase 1 measurements (4-core sandbox, JDK 21, cold JVM)
+
+| Step | Time | Notes |
+|---|---|---|
+| Open cache + master index | ~0.1 s | |
+| All configs (22 types) | 0.8–1.5 s | |
+| Interfaces | ~0.1 s | |
+| All map squares | 0.7–1.6 s | 4 decode threads |
+| Full collision | 0.3–1.6 s | single-threaded |
+| **Total boot data** | **~3.5 s** | under the §6 10 s dev-boot target without a snapshot |
+| Heap | 384 MiB after GC (locs + map + collision); ~460 MiB live at end of boot | CollisionFlagMap's zone array alone is 16.7 M refs (~64 MiB) |
+
 ## Blocking
 
 - None. Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
@@ -37,10 +57,15 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 1 plan (`docs/plans/phase-1.md`): config decoders (obj first in the main session, the rest to `implementer`),
-   map/loc decoding, collision, gameval symbol generation from archive 24, cache-dump tool, test 1.
-2. Decide D-006 (routing library) during Phase 1.
+1. Phase 2 plan (`docs/plans/phase-2.md`): JS5 server, login, HTTP jav_config/worldlist, vendor RSProt osrs-242
+   (D-005), RuneLite via RSProx walking with server-side routing, test 2.
+2. Ask for osrs-docs.com and oldschool.runescape.wiki to be reachable: brief §2's primary mechanics sources.
 
 ## Open questions
+
+- collision.md OPEN-1..4 (terrain extension on square 64,73; group 25287 and square files 2–4; osrs-docs check;
+  wall route blockers).
+- D-012 undecoded config groups; gameval groups 16–19 unnamed.
+- Interface IF3 model-size bytes (ComponentTypeDecoder KDoc).
 
 - D-007: confirm the RuneLite 1.13.6 bootstrap against a live RSProx session in Phase 2.
