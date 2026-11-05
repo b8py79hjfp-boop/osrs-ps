@@ -45,6 +45,12 @@ class Player internal constructor(
     /** South-west tile of the current 104x104 build area (client map region). */
     internal var buildArea: CoordGrid = BuildArea.originFor(spawn)
 
+    /** Client window mode (1 fixed, 2 resizable); content picks the toplevel from it. */
+    var windowMode: Int = 1
+
+    internal var invalidInputs = 0
+    internal var invalidWindowEnd = 0L
+
     internal val isRunningNow: Boolean get() = runMode != routeCtrl
 
     /** Closing the modal removes weak scripts (Q3, Q7) and abandons any input wait. */

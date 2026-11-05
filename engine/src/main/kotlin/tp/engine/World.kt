@@ -9,6 +9,7 @@ import tp.engine.entity.Player
 import tp.engine.interact.Interaction
 import tp.engine.interact.InteractionProcessor
 import tp.engine.interact.InteractionTarget
+import tp.engine.map.StaticLocs
 import tp.engine.move.Movement
 import tp.engine.npc.NpcAi
 import tp.engine.script.ScriptRunner
@@ -57,6 +58,8 @@ class World(
     collision: CollisionFlagMap,
     private val network: GameNetwork,
     val content: ContentHandlers = ContentHandlers.NONE,
+    /** Static map locs for validating loc clicks. */
+    val locs: StaticLocs = StaticLocs.EMPTY,
 ) : LoginGate {
     /** The world's only RNG; content must use it (brief §5.2). */
     val rng: SplittableRandom = SplittableRandom(config.seed)
@@ -178,6 +181,7 @@ class World(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "ReturnCount") // one branch per command; early-out on invalid input
     private fun handleCommand(player: Player, command: ClientCommand) {
         tracer?.onCommand(player, command)
         when (command) {
@@ -196,6 +200,83 @@ class World(
             ClientCommand.MapBuildComplete -> {
                 Unit
             }
+
+            is ClientCommand.OpLoc -> {
+                if (command.option !in OP_RANGE || !inBuildArea(player, command.x, command.z)) return invalid(player, command)
+                val loc = locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, loc, command.option)
+            }
+
+            is ClientCommand.OpNpc -> {
+                val npc = npcs.getOrNull(command.index)
+                if (command.option !in OP_RANGE || npc == null || !inView(player, npc)) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, InteractionTarget.OfNpc(npc), command.option)
+            }
+
+            is ClientCommand.OpPlayer -> {
+                val other = players.getOrNull(command.index)
+                if (command.option !in PLAYER_OP_RANGE || !isOtherVisible(player, other)) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, InteractionTarget.OfPlayer(other ?: return), command.option)
+            }
+
+            is ClientCommand.OpObj -> {
+                // Ground items arrive with zone updates (phase-3 plan #4); until then no obj can exist.
+                invalid(player, command)
+            }
+
+            is ClientCommand.Button -> {
+                if (command.option !in BUTTON_OP_RANGE || !interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) {
+                    return invalid(player, command)
+                }
+                content.onButton(player, command.component, command.option, command.sub, command.obj)
+            }
+
+            is ClientCommand.PublicChat -> {
+                if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
+                player.session.publicChat(command.text, command.colour, command.effect)
+            }
+
+            is ClientCommand.ResumePause -> {
+                if (!interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) return invalid(player, command)
+                player.resumeInput(Unit)
+            }
+
+            ClientCommand.CloseModal -> {
+                player.closeModal()
+            }
+
+            is ClientCommand.WindowStatus -> {
+                player.windowMode = command.mode
+            }
+        }
+    }
+
+    /** Ops are only possible on things the client can see: the 104x104 build area. */
+    private fun inBuildArea(player: Player, x: Int, z: Int): Boolean =
+        x - player.buildArea.x in 0 until BuildArea.SIZE && z - player.buildArea.z in 0 until BuildArea.SIZE
+
+    private fun isOtherVisible(player: Player, other: Player?): Boolean = other != null && other !== player && inView(player, other)
+
+    private fun inView(player: Player, other: Entity): Boolean =
+        other.coord.level == player.coord.level &&
+            maxOf(kotlin.math.abs(other.coord.x - player.coord.x), kotlin.math.abs(other.coord.z - player.coord.z)) <= VIEW_DISTANCE
+
+    /**
+     * Hostile/stale input (brief §12): dropped and counted. Stale clicks happen legitimately (an NPC walked away), so only
+     * a sustained rate disconnects: more than [INVALID_INPUT_LIMIT] in one [INVALID_INPUT_WINDOW]-tick window.
+     */
+    private fun invalid(player: Player, command: ClientCommand) {
+        tracer?.onInvalid(player, command)
+        if (tick >= player.invalidWindowEnd) {
+            player.invalidWindowEnd = tick + INVALID_INPUT_WINDOW
+            player.invalidInputs = 0
+        }
+        if (++player.invalidInputs > INVALID_INPUT_LIMIT) {
+            logger.warn { "disconnecting $player: ${player.invalidInputs} invalid commands, last $command" }
+            player.session.close()
         }
     }
 
@@ -391,6 +472,26 @@ class World(
         private const val WALK_STEPS = 1
         private const val RUN_STEPS = 2
         private val WHITESPACE = Regex("\\s+")
+
+        /** Loc/NPC/obj ops 1..5 (op6 = examine, handled separately). */
+        private val OP_RANGE = 1..5
+
+        /** Player ops 1..8 (SET_PLAYER_OP slots). */
+        private val PLAYER_OP_RANGE = 1..8
+
+        /** IF3 button ops 1..10. */
+        private val BUTTON_OP_RANGE = 1..10
+        private const val COMPONENT_SHIFT = 16
+
+        /** Public chat line limit: the client's chatbox input is capped at 80 characters. */
+        private const val MAX_CHAT_LENGTH = 80
+
+        /** Player/NPC view distance in tiles (RSProt player/NPC info default view distance 15). */
+        private const val VIEW_DISTANCE = 15
+
+        /** Invalid-input budget (ours, DECISIONS D-022): 50 per 100 ticks before disconnect. */
+        private const val INVALID_INPUT_LIMIT = 50
+        private const val INVALID_INPUT_WINDOW = 100L
     }
 }
 
@@ -403,4 +504,6 @@ interface TickTracer {
     fun onCommand(player: Player, command: ClientCommand) {}
 
     fun onPhase(entity: Entity, phase: String) {}
+
+    fun onInvalid(player: Player, command: ClientCommand) {}
 }

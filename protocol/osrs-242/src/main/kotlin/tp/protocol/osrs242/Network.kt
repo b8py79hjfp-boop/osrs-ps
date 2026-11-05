@@ -16,10 +16,20 @@ import net.rsprot.protocol.api.js5.Js5GroupProvider
 import net.rsprot.protocol.api.login.GameLoginResponseHandler
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
+import net.rsprot.protocol.game.incoming.buttons.If3Button
+import net.rsprot.protocol.game.incoming.locs.OpLocV2
+import net.rsprot.protocol.game.incoming.locs.OpLocV3
+import net.rsprot.protocol.game.incoming.messaging.MessagePublic
 import net.rsprot.protocol.game.incoming.misc.client.MapBuildComplete
+import net.rsprot.protocol.game.incoming.misc.client.WindowStatus
 import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
+import net.rsprot.protocol.game.incoming.misc.user.CloseModal
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.misc.user.MoveMinimapClick
+import net.rsprot.protocol.game.incoming.npcs.OpNpcV2
+import net.rsprot.protocol.game.incoming.objs.OpObjV2
+import net.rsprot.protocol.game.incoming.players.OpPlayer
+import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
 import net.rsprot.protocol.game.outgoing.info.npcinfo.NpcAvatar
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
 import net.rsprot.protocol.loginprot.incoming.util.AuthenticationType
@@ -171,6 +181,20 @@ class Osrs242Network(
         }
         b.addListener(ClientCheat::class.java) { s, m -> s.deliver(ClientCommand.Cheat(m.command)) }
         b.addListener(MapBuildComplete::class.java) { s, _ -> s.deliver(ClientCommand.MapBuildComplete) }
+        b.addListener(OpLocV2::class.java) { s, m -> s.deliver(ClientCommand.OpLoc(m.op, m.id, m.x, m.z, m.controlKey)) }
+        b.addListener(OpLocV3::class.java) { s, m -> s.deliver(ClientCommand.OpLoc(m.op, m.id, m.x, m.z, m.controlKey)) }
+        b.addListener(OpNpcV2::class.java) { s, m -> s.deliver(ClientCommand.OpNpc(m.op, m.index, m.controlKey)) }
+        b.addListener(OpPlayer::class.java) { s, m -> s.deliver(ClientCommand.OpPlayer(m.op, m.index, m.controlKey)) }
+        b.addListener(OpObjV2::class.java) { s, m -> s.deliver(ClientCommand.OpObj(m.op, m.id, m.x, m.z, m.controlKey)) }
+        b.addListener(If3Button::class.java) { s, m -> s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj)) }
+        b.addListener(MessagePublic::class.java) { s, m ->
+            s.deliver(ClientCommand.PublicChat(m.message, m.colour, m.effect, m.type))
+        }
+        b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
+        b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }
+        b.addListener(WindowStatus::class.java) { s, m ->
+            s.deliver(ClientCommand.WindowStatus(m.windowMode, m.frameWidth, m.frameHeight))
+        }
         return DefaultGameMessageConsumerRepositoryProvider(b.build())
     }
 

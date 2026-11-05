@@ -226,3 +226,10 @@ recorded in tick.md.
 OSRS Wiki "Player identification number": PID "will randomise every 100 to 150 game ticks ... for each player" (40–60
 on BH/PvP/tournament worlds). Each player gets their own window; on expiry they swap to a random position in the
 processing order (seeded world RNG). The scenario runner can force an order (`World.forcePidOrder`).
+
+## D-022 — Invalid client input: drop, count, disconnect on sustained rate
+
+Every client command is validated before it reaches content (brief §12): op ranges, loc existence at the clicked tile
+(`StaticLocs`), NPC/player existence and view distance (15 tiles, RSProt's info default), button on an open interface,
+chat length. Invalid commands are dropped and counted. Stale clicks are legitimate (an NPC walked away), so the
+threshold is a rate: more than 50 invalid commands in a 100-tick window closes the session. The numbers are ours.

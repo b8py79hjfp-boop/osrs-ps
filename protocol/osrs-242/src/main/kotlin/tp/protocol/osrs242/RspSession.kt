@@ -1,6 +1,7 @@
 package tp.protocol.osrs242
 
 import net.rsprot.protocol.api.Session
+import net.rsprot.protocol.common.game.outgoing.inv.InventoryObject
 import net.rsprot.protocol.game.outgoing.info.Infos
 import net.rsprot.protocol.game.outgoing.info.util.isEmpty
 import net.rsprot.protocol.game.outgoing.info.util.onFailure
@@ -9,20 +10,30 @@ import net.rsprot.protocol.game.outgoing.info.util.safeReleaseOrThrow
 import net.rsprot.protocol.game.outgoing.interfaces.IfCloseSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenTop
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetEventsV2
+import net.rsprot.protocol.game.outgoing.inv.UpdateInvFull
+import net.rsprot.protocol.game.outgoing.inv.UpdateInvPartial
 import net.rsprot.protocol.game.outgoing.logout.Logout
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
+import net.rsprot.protocol.game.outgoing.misc.player.ChatFilterSettings
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
+import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
+import net.rsprot.protocol.game.outgoing.misc.player.SetPlayerOp
+import net.rsprot.protocol.game.outgoing.misc.player.UpdateRunEnergy
+import net.rsprot.protocol.game.outgoing.misc.player.UpdateStatV2
 import net.rsprot.protocol.game.outgoing.varp.VarpLarge
+import net.rsprot.protocol.game.outgoing.varp.VarpReset
 import net.rsprot.protocol.game.outgoing.varp.VarpSmall
+import net.rsprot.protocol.message.OutgoingGameMessage
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.ClientSession
 import tp.protocol.api.ServerMessage
 
 /**
- * One logged-in player's RSProt session + info objects. World thread only. RSProt consumers append decoded commands
- * to [pending] while [pollCommands] drains the session; nothing else touches it.
+ * One logged-in player's RSProt session + info objects. World thread only. RSProt consumers call [deliver] while
+ * [pollCommands] drains the session; nothing else touches the sink.
  */
 internal class RspSession(
     private val session: Session<RspSession>,
@@ -65,44 +76,8 @@ internal class RspSession(
     }
 
     override fun send(message: ServerMessage) {
-        when (message) {
-            is ServerMessage.GameMessage -> {
-                session.queue(MessageGame(GAME_MESSAGE_TYPE, message.text))
-            }
-
-            is ServerMessage.OpenTop -> {
-                session.queue(IfOpenTop(message.interfaceId))
-            }
-
-            is ServerMessage.OpenSub -> {
-                session.queue(IfOpenSub(message.destination, message.interfaceId, if (message.overlay) SUB_OVERLAY else SUB_MODAL))
-            }
-
-            is ServerMessage.Varp -> {
-                session.queue(
-                    if (message.value in
-                        Byte.MIN_VALUE..Byte.MAX_VALUE
-                    ) {
-                        VarpSmall(message.id, message.value)
-                    } else {
-                        VarpLarge(message.id, message.value)
-                    },
-                )
-            }
-
-            is ServerMessage.Rebuild -> {
-                infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
-                session.queue(RebuildNormalV2(message.x shr ZONE_SHIFT, message.z shr ZONE_SHIFT, ROOT_WORLD))
-            }
-
-            is ServerMessage.CloseSub -> {
-                session.queue(IfCloseSub(message.destination))
-            }
-
-            ServerMessage.Logout -> {
-                session.queue(Logout)
-            }
-        }
+        if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
+        session.queue(toRsprot(message))
     }
 
     override fun syncAvatar(coord: AvatarState) {
@@ -110,8 +85,10 @@ internal class RspSession(
         if (!appearanceSent) {
             DefaultAppearance.apply(ext, username)
             appearanceSent = true
+            ext.setMoveSpeed(if (coord.running) MOVE_RUN else MOVE_WALK)
+            lastRunning = coord.running
         }
-        if (coord.running != lastRunning || !appearanceSent) {
+        if (coord.running != lastRunning) {
             ext.setMoveSpeed(if (coord.running) MOVE_RUN else MOVE_WALK)
             lastRunning = coord.running
         }
@@ -122,6 +99,11 @@ internal class RspSession(
             coord.running && coord.moveSteps == 1 -> ext.setTempMoveSpeed(MOVE_WALK)
         }
         infos.updateRootCoord(coord.level, coord.x, coord.z)
+    }
+
+    override fun publicChat(text: String, colour: Int, effects: Int) {
+        infos.playerInfo.avatar.extendedInfo
+            .setChat(colour, effects, 0, false, text, null)
     }
 
     /** Info packets in the order of RSProt's README example; npc info is omitted (and released) when empty. */
@@ -157,10 +139,107 @@ internal class RspSession(
         private const val GAME_MESSAGE_TYPE = 0
         private const val SUB_MODAL = 0
         private const val SUB_OVERLAY = 1
+        private const val COMPONENT_SHIFT = 16
+        private const val COMPONENT_MASK = 0xFFFF
+        private const val EVENTS_LOW_MASK = 0xFFFFFFFFL
+        private const val INT_BITS = 32
 
         /** Player-info move speeds (RSProt `PlayerAvatarExtendedInfo.setMoveSpeed` docs): 1 walk, 2 run, 127 teleport. */
         private const val MOVE_WALK = 1
         private const val MOVE_RUN = 2
         private const val MOVE_TELEPORT = 127
+
+        @Suppress("CyclomaticComplexMethod")
+        fun toRsprot(message: ServerMessage): OutgoingGameMessage =
+            when (message) {
+                is ServerMessage.GameMessage -> {
+                    MessageGame(GAME_MESSAGE_TYPE, message.text)
+                }
+
+                is ServerMessage.OpenTop -> {
+                    IfOpenTop(message.interfaceId)
+                }
+
+                is ServerMessage.OpenSub -> {
+                    IfOpenSub(message.destination, message.interfaceId, if (message.overlay) SUB_OVERLAY else SUB_MODAL)
+                }
+
+                is ServerMessage.CloseSub -> {
+                    IfCloseSub(message.destination)
+                }
+
+                is ServerMessage.InterfaceEvents -> {
+                    IfSetEventsV2(
+                        message.component ushr COMPONENT_SHIFT,
+                        message.component and COMPONENT_MASK,
+                        message.start,
+                        message.end,
+                        (message.events and EVENTS_LOW_MASK).toInt(),
+                        (message.events ushr INT_BITS).toInt(),
+                    )
+                }
+
+                is ServerMessage.Varp -> {
+                    if (message.value in
+                        Byte.MIN_VALUE..Byte.MAX_VALUE
+                    ) {
+                        VarpSmall(message.id, message.value)
+                    } else {
+                        VarpLarge(message.id, message.value)
+                    }
+                }
+
+                ServerMessage.VarpReset -> {
+                    VarpReset
+                }
+
+                is ServerMessage.Inventory -> {
+                    inventory(message)
+                }
+
+                is ServerMessage.Stat -> {
+                    UpdateStatV2(message.stat, message.level, message.baseLevel, message.xp)
+                }
+
+                is ServerMessage.RunEnergy -> {
+                    UpdateRunEnergy(message.energy)
+                }
+
+                is ServerMessage.ClientScript -> {
+                    RunClientScript(message.id, message.args.map { if (it is String) 's' else 'i' }.toCharArray(), message.args)
+                }
+
+                is ServerMessage.PlayerOption -> {
+                    SetPlayerOp(message.slot, message.top, message.text)
+                }
+
+                is ServerMessage.ChatFilters -> {
+                    ChatFilterSettings(message.publicFilter, message.tradeFilter)
+                }
+
+                is ServerMessage.Rebuild -> {
+                    RebuildNormalV2(message.x shr ZONE_SHIFT, message.z shr ZONE_SHIFT, ROOT_WORLD)
+                }
+
+                ServerMessage.Logout -> {
+                    Logout
+                }
+            }
+
+        private fun inventory(m: ServerMessage.Inventory): OutgoingGameMessage {
+            val iface = if (m.component == -1) -1 else m.component ushr COMPONENT_SHIFT
+            val comp = if (m.component == -1) -1 else m.component and COMPONENT_MASK
+
+            fun packed(slot: Int): Long = if (m.objs[slot] < 0) InventoryObject.NULL else InventoryObject(m.objs[slot], m.counts[slot])
+            val slots = m.slots ?: return UpdateInvFull(iface, comp, m.invId, m.objs.size) { packed(it) }
+            return UpdateInvPartial(
+                iface,
+                comp,
+                m.invId,
+                object : UpdateInvPartial.IndexedObjectProvider(slots.iterator()) {
+                    override fun provide(slot: Int): Long = InventoryObject(slot, m.objs[slot].coerceAtLeast(-1), m.counts[slot])
+                },
+            )
+        }
     }
 }

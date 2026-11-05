@@ -12,6 +12,7 @@ import tp.cache.map.GameMap
 import tp.cache.map.MapKeysLoader
 import tp.engine.World
 import tp.engine.WorldConfig
+import tp.engine.map.StaticLocs
 import tp.protocol.osrs242.Osrs242Network
 import tp.util.CoordGrid
 import tp.util.Revision
@@ -21,7 +22,7 @@ import java.util.Locale
 private val logger = KotlinLogging.logger {}
 
 /** Immutable data shared by every world in this JVM (brief §7 topology). */
-class BootData(val cache: Js5Cache, val configs: Configs, val collision: CollisionFlagMap)
+class BootData(val cache: Js5Cache, val configs: Configs, val collision: CollisionFlagMap, val locs: StaticLocs)
 
 /** Composition root pieces for a world-node; used by `main` and by test 2. */
 object WorldNode {
@@ -65,13 +66,13 @@ object WorldNode {
                 "skipped groups ${map.skippedGroups}, terrain extensions ${map.extendedSquares} (collision.md OPEN-1/2)"
         }
         logger.info { "boot data ready in ${millisSince(opened)} ms, heap used ${usedHeapMib()} MiB" }
-        return BootData(cache, configs, collision)
+        return BootData(cache, configs, collision, StaticLocs.build(map, configs.locs))
     }
 
     /** Creates and starts one world with its rev-242 network on [gamePort]. */
     fun startWorld(data: BootData, rsa: RsaKeyPair, gamePort: Int, worldId: Int, seed: Long): World {
         val network = Osrs242Network(data.cache, rsa, gamePort)
-        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.collision, network, DevContent)
+        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.collision, network, DevContent, data.locs)
         world.start()
         return world
     }

@@ -79,6 +79,9 @@ interface ClientSession {
      */
     fun syncAvatar(coord: AvatarState)
 
+    /** Public chat from this player's avatar this tick (player info extended info). */
+    fun publicChat(text: String, colour: Int, effects: Int) {}
+
     /** Info pass, step 2: queue this player's info packets (after [GameNetwork.buildInfos]) and flush the session. */
     fun flushInfos()
 
