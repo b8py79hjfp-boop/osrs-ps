@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - uses: gradle/actions/setup-gradle@v6
+        # setup-gradle also validates the wrapper jar checksum.
+
+      # Jagex data never enters git (brief §0.6): fetch it from OpenRS2 and cache it between runs.
+      - uses: actions/cache@v6
+        with:
+          path: .data/cache
+          key: js5-${{ hashFiles('gradle.properties', 'gradle/cache-checksums/**') }}
+
+      - name: Download and verify cache
+        run: ./gradlew setup
+
+      - name: Build, lint and test
+        run: ./gradlew build
+
+      - name: Boot check (logs "rev 242: 25 archives, 120,374 groups" and verifies spot-checks)
+        run: ./gradlew :server:run --args=--boot-check

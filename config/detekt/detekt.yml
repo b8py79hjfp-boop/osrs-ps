@@ -1,0 +1,31 @@
+# Lean overrides on top of detekt's default config (buildUponDefaultConfig = true). Brief §11.
+style:
+  MagicNumber:
+    # Named constants with a KDoc source link are required for gameplay/protocol values.
+    # Bit-twiddling widths (byte shifts/masks) are self-describing and exempt.
+    excludes: ['**/test/**', '**/*.gradle.kts']
+    ignoreNumbers: ['-1', '0', '1', '2', '3', '4', '8', '16', '24', '0xFF', '0xFFFF']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  ThrowsCount:
+    # Decoders validate untrusted input at every step; one throw per check is clearer than funnelling.
+    active: false
+  ForbiddenComment:
+    active: false
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+complexity:
+  LongMethod:
+    allowedLines: 80
+  TooManyFunctions:
+    active: false
+  CyclomaticComplexMethod:
+    allowedComplexity: 20

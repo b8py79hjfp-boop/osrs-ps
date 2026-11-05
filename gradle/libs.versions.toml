@@ -1,0 +1,45 @@
+# Every version here was checked against Maven Central / Gradle Plugin Portal on 2026-11-05.
+# See docs/DECISIONS.md D-003 for the toolchain record.
+[versions]
+java = "25"
+kotlin = "2.4.21"
+ksp = "2.3.13"
+coroutines = "1.11.0"
+serialization = "1.12.0"
+netty = "4.2.20.Final"
+rsmod-pathfinder = "5.0.0"
+asm = "9.11.1"
+commons-compress = "1.28.0"
+bouncycastle = "1.86"
+ktoml = "0.7.1"
+kotlin-logging = "8.0.4"
+logback = "1.5.38"
+junit = "6.1.3"
+spotless = "8.9.0"
+ktlint = "1.8.0"
+detekt = "2.0.0-alpha.6"
+foojay = "1.0.0"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
+rsmod-pathfinder = { module = "org.rsmod:rsmod-pathfinder", version.ref = "rsmod-pathfinder" }
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons-compress" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+ktoml-core = { module = "com.akuleshov7:ktoml-core", version.ref = "ktoml" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+# build-logic classpath
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+detekt-gradle-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+
+[plugins]
+foojay-resolver = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "foojay" }
