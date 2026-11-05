@@ -22,9 +22,14 @@ import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
 import net.rsprot.protocol.game.outgoing.misc.player.SetPlayerOp
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateRunEnergy
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateStatV2
+import net.rsprot.protocol.game.outgoing.util.OpFlags
 import net.rsprot.protocol.game.outgoing.varp.VarpLarge
 import net.rsprot.protocol.game.outgoing.varp.VarpReset
 import net.rsprot.protocol.game.outgoing.varp.VarpSmall
+import net.rsprot.protocol.game.outgoing.zone.header.UpdateZoneFullFollows
+import net.rsprot.protocol.game.outgoing.zone.header.UpdateZonePartialFollows
+import net.rsprot.protocol.game.outgoing.zone.payload.ObjAdd
+import net.rsprot.protocol.game.outgoing.zone.payload.ObjDel
 import net.rsprot.protocol.message.OutgoingGameMessage
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientCommand
@@ -145,6 +150,9 @@ internal class RspSession(
         private const val INT_BITS = 32
         private const val INV_COMBINED_BASE = 1234
 
+        /** Every ground op enabled (RSProt `OpFlags.ALL_SHOWN`). */
+        private val OBJ_OPS_ALL: Byte = OpFlags.ALL_SHOWN
+
         /** Player-info move speeds (RSProt `PlayerAvatarExtendedInfo.setMoveSpeed` docs): 1 walk, 2 run, 127 teleport. */
         private const val MOVE_WALK = 1
         private const val MOVE_RUN = 2
@@ -220,6 +228,22 @@ internal class RspSession(
 
                 is ServerMessage.Rebuild -> {
                     RebuildNormalV2(message.x shr ZONE_SHIFT, message.z shr ZONE_SHIFT, ROOT_WORLD)
+                }
+
+                is ServerMessage.ZoneReset -> {
+                    UpdateZoneFullFollows(message.dx, message.dz, message.level)
+                }
+
+                is ServerMessage.ZoneUpdate -> {
+                    UpdateZonePartialFollows(message.dx, message.dz, message.level)
+                }
+
+                is ServerMessage.ObjAdd -> {
+                    ObjAdd(message.id, message.count, message.x, message.z, OBJ_OPS_ALL)
+                }
+
+                is ServerMessage.ObjDel -> {
+                    ObjDel(message.id, message.count, message.x, message.z)
                 }
 
                 ServerMessage.Logout -> {

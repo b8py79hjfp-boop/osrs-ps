@@ -2,16 +2,27 @@ package tp.engine.inv
 
 import tp.cache.config.TypeList
 import tp.cache.config.obj.ObjType
+import tp.engine.zone.GroundObj
+import tp.engine.zone.GroundObjs
+import tp.util.CoordGrid
 
 /**
  * The single item-movement API (brief §12): every add, remove, move or swap of any inventory happens inside one
  * transaction. It is atomic (any failed step rolls back every step) and journaled (a committed transaction is
  * reported to the [ItemJournal] with its reason and each slot change). No other code writes inventory slots.
  */
-class ItemTransaction internal constructor(private val objTypes: TypeList<ObjType>) {
+class ItemTransaction internal constructor(
+    private val objTypes: TypeList<ObjType>,
+    private val ground: GroundObjs,
+    private val tick: Long,
+    private val timing: GroundTiming,
+) {
     private class Change(val inv: Inventory, val slot: Int, val oldObj: Int, val oldCount: Int)
 
+    private class GroundChange(val obj: GroundObj, val added: Boolean)
+
     private val changes = ArrayList<Change>()
+    private val groundChanges = ArrayList<GroundChange>()
 
     /** Set when a step fails; the transaction will roll back. */
     var failed: Boolean = false
@@ -88,7 +99,37 @@ class ItemTransaction internal constructor(private val objTypes: TypeList<ObjTyp
     fun move(from: Inventory, fromSlot: Int, obj: Int, count: Int, to: Inventory): Boolean =
         removeAt(from, fromSlot, obj, count) && add(to, obj, count)
 
+    /**
+     * Drops [count] of [obj] from [slot] onto [at], private to [owner] (ground-items.md G1-G3): public after the private
+     * window if tradeable, despawning after the tradeable/untradeable lifetime.
+     */
+    fun dropToGround(inv: Inventory, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean {
+        if (!removeAt(inv, slot, obj, count)) return false
+        val tradeable = objTypes[obj]?.tradeable == true
+        val lifetime = if (tradeable) timing.tradeableDespawn else timing.untradeableDespawn
+        val publicAt = if (tradeable) tick + timing.privateTicks else -1L
+        val g = GroundObj(obj, count, at, owner, publicAt, tick + lifetime)
+        ground.add(g)
+        groundChanges += GroundChange(g, added = true)
+        return true
+    }
+
+    /** Takes [obj] off the ground into [inv] (stacking rules of [inv]). */
+    fun takeFromGround(obj: GroundObj, inv: Inventory): Boolean {
+        if (failed) return false
+        if (obj.removed) return fail()
+        if (!add(inv, obj.id, obj.count)) return false
+        ground.remove(obj)
+        groundChanges += GroundChange(obj, added = false)
+        return true
+    }
+
     internal fun rollback() {
+        for (i in groundChanges.indices.reversed()) {
+            val g = groundChanges[i]
+            if (g.added) ground.remove(g.obj) else ground.restore(g.obj)
+        }
+        groundChanges.clear()
         for (i in changes.indices.reversed()) {
             val c = changes[i]
             c.inv.write(c.slot, c.oldObj, c.oldCount)
@@ -97,9 +138,26 @@ class ItemTransaction internal constructor(private val objTypes: TypeList<ObjTyp
     }
 
     internal fun entries(): List<ItemJournal.SlotChange> =
-        changes.map { ItemJournal.SlotChange(it.inv.invId, it.slot, it.oldObj, it.oldCount, it.inv.objs[it.slot], it.inv.counts[it.slot]) }
+        changes.map {
+            ItemJournal.SlotChange(
+                it.inv.invId,
+                it.slot,
+                it.oldObj,
+                it.oldCount,
+                it.inv.objs[it.slot],
+                it.inv.counts[it.slot],
+            )
+        } +
+            groundChanges.map {
+                val o = it.obj
+                if (it.added) {
+                    ItemJournal.SlotChange(ItemJournal.GROUND, o.coord.packed, -1, 0, o.id, o.count)
+                } else {
+                    ItemJournal.SlotChange(ItemJournal.GROUND, o.coord.packed, o.id, o.count, -1, 0)
+                }
+            }
 
-    internal val isEmpty: Boolean get() = changes.isEmpty()
+    internal val isEmpty: Boolean get() = changes.isEmpty() && groundChanges.isEmpty()
 }
 
 /** Where committed item transactions are recorded (audit trail; persistence in Phase 5). Must not block. */
@@ -109,6 +167,19 @@ fun interface ItemJournal {
     fun record(tick: Long, owner: String, reason: String, changes: List<SlotChange>)
 
     companion object {
+        /** [SlotChange.invId] of ground changes; their slot is the packed coordinate. */
+        const val GROUND = -1
+
         val NONE: ItemJournal = ItemJournal { _, _, _, _ -> }
     }
 }
+
+/** Ground obj lifetimes in ticks (docs/mechanics/ground-items.md). */
+data class GroundTiming(
+    /** Invisible to others for the first 100 ticks (G1). */
+    val privateTicks: Int = 100,
+    /** Tradeable drops: gone 200 ticks after the drop (G2; OPEN-G1: whether counted from the drop or from going public). */
+    val tradeableDespawn: Int = 200,
+    /** Untradeable drops: never public, gone after 300 ticks (G3). */
+    val untradeableDespawn: Int = 300,
+)

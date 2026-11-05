@@ -8,6 +8,7 @@ import tp.engine.script.PlayerTimers
 import tp.engine.script.ProtectedAccess
 import tp.engine.stat.PlayerStats
 import tp.engine.vars.PlayerVars
+import tp.engine.zone.ZoneSync
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientSession
 import tp.protocol.api.ServerMessage
@@ -30,6 +31,8 @@ class Player internal constructor(
 
     /** Inventories by inv id; created through [World.inventory], mutated only by [World.transaction]. */
     internal val invs = HashMap<Int, Inventory>()
+
+    internal val zoneSync = ZoneSync()
 
     /** Run energy 0..10000 (client shows /100). */
     var runEnergy: Int = MAX_RUN_ENERGY

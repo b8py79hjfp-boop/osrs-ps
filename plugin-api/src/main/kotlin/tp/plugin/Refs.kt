@@ -1,10 +1,12 @@
 package tp.plugin
 
+import tp.engine.World
 import tp.engine.entity.Npc
 import tp.engine.entity.Player
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
 import tp.engine.inv.ItemTransaction
+import tp.engine.zone.GroundObj
 import tp.protocol.api.ServerMessage
 import tp.util.CoordGrid
 
@@ -32,6 +34,11 @@ public class PlayerRef internal constructor(internal val p: Player) {
 
     public fun message(text: String) {
         p.session.send(ServerMessage.GameMessage(text))
+    }
+
+    /** Hard interruption: cancels the interaction and route, closes the modal, clears weak scripts (interactions.md I7). */
+    public fun interrupt() {
+        p.world.interrupt(p)
     }
 
     public fun teleport(to: CoordGrid) {
@@ -153,6 +160,30 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     public fun swap(invId: Int, from: Int, to: Int): Boolean = tx.swap(of(invId), from, to)
 
     public fun move(fromInv: Int, slot: Int, obj: Int, count: Int, toInv: Int): Boolean = tx.move(of(fromInv), slot, obj, count, of(toInv))
+
+    /** Drops [count] of [obj] from [slot] of [invId] under the player, private to them at first. */
+    public fun drop(invId: Int, slot: Int, obj: Int, count: Int): Boolean =
+        tx.dropToGround(of(invId), slot, obj, count, player.coord, player.username)
+
+    /** Picks [obj] up into [invId]. */
+    public fun take(obj: ObjRef, invId: Int): Boolean = tx.takeFromGround(obj.g, of(invId))
+}
+
+/** A ground obj the player can see. */
+public class ObjRef internal constructor(internal val g: GroundObj) {
+    public val id: Int get() = g.id
+    public val count: Int get() = g.count
+    public val coord: CoordGrid get() = g.coord
+}
+
+/** World-level operations for content (spawns). */
+public class WorldRef internal constructor(internal val w: World) {
+    public val tick: Long get() = w.tick
+
+    /** Spawns NPC [type] at [at], wandering up to [wanderRange] tiles from it (random-walk.md). */
+    public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
+        w.spawnNpc(type, at, wanderRange)
+    }
 }
 
 public class NpcRef internal constructor(internal val n: Npc) {

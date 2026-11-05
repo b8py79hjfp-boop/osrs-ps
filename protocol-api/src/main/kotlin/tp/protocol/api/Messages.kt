@@ -91,5 +91,17 @@ sealed interface ServerMessage {
     /** Map rebuild centred on the player's current position (sent when the build area changes). */
     data class Rebuild(val x: Int, val z: Int) : ServerMessage
 
+    /** Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops refill it. */
+    data class ZoneReset(val dx: Int, val dz: Int, val level: Int) : ServerMessage
+
+    /** Zone header (partial): the following zone ops apply to the zone at ([dx], [dz]) from the build-area origin. */
+    data class ZoneUpdate(val dx: Int, val dz: Int, val level: Int) : ServerMessage
+
+    /** Ground obj appears at ([x], [z]) inside the current zone (0..7). */
+    data class ObjAdd(val x: Int, val z: Int, val id: Int, val count: Int) : ServerMessage
+
+    /** Ground obj removed at ([x], [z]) inside the current zone. */
+    data class ObjDel(val x: Int, val z: Int, val id: Int, val count: Int) : ServerMessage
+
     data object Logout : ServerMessage
 }

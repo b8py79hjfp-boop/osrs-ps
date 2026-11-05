@@ -8,6 +8,7 @@ import tp.engine.entity.Player
 import tp.engine.interact.Interaction
 import tp.engine.interact.InteractionProcessor
 import tp.engine.interact.InteractionTarget
+import tp.engine.inv.GroundTiming
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
 import tp.engine.inv.ItemJournal
@@ -17,6 +18,7 @@ import tp.engine.npc.NpcAi
 import tp.engine.script.ScriptRunner
 import tp.engine.ui.Interfaces
 import tp.engine.vars.PlayerVars
+import tp.engine.zone.GroundObjs
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.GameNetwork
 import tp.protocol.api.LoginDetails
@@ -50,6 +52,8 @@ data class WorldConfig(
      * (OSRS Wiki "Player identification number"; tick.md PID).
      */
     val pidShuffle: IntRange = PID_WINDOW_NORMAL,
+    /** Ground obj lifetimes (ground-items.md; OPEN-G1 is this flag). */
+    val groundTiming: GroundTiming = GroundTiming(),
 )
 
 /**
@@ -73,6 +77,7 @@ class World(
     val movement = Movement(data.collision)
     internal val interactions = InteractionProcessor(data.collision, movement)
     val interfaces = Interfaces()
+    val ground = GroundObjs()
     private val npcAi = NpcAi(this)
 
     private val players = arrayOfNulls<Player>(MAX_PLAYERS)
@@ -124,6 +129,7 @@ class World(
         thread =
             Thread.ofPlatform().name("world-${config.id}").start {
                 try {
+                    content.onWorldStart(this)
                     network.start(this)
                     started.complete(Unit)
                 } catch (e: Exception) {
@@ -226,8 +232,11 @@ class World(
             }
 
             is ClientCommand.OpObj -> {
-                // Ground items arrive with zone updates (phase-3 plan #4); until then no obj can exist.
-                invalid(player, command)
+                val at = CoordGrid(command.x, command.z, player.coord.level)
+                val obj = ground.find(at, command.id, player)
+                if (command.option !in OP_RANGE || obj == null) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, InteractionTarget.Obj(at, obj.id), command.option)
             }
 
             is ClientCommand.Button -> {
@@ -324,6 +333,7 @@ class World(
             admitted++
         }
         if (pidShuffleEnabled) shufflePids()
+        ground.process(tick)
     }
 
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
@@ -333,11 +343,14 @@ class World(
             if (BuildArea.needsRebuild(player.coord, player.buildArea)) {
                 player.buildArea = BuildArea.originFor(player.coord)
                 player.session.send(ServerMessage.Rebuild(player.coord.x, player.coord.z))
+                player.zoneSync.reset()
             }
             player.session.syncAvatar(player.avatarState())
             player.teleportedThisTick = false
             player.flushState()
+            player.zoneSync.process(player, ground)
         }
+        ground.clearEvents()
         for (npc in npcs) if (npc != null) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
         network.buildInfos()
         for (slot in pidOrder) {
@@ -374,7 +387,7 @@ class World(
      * every change is rolled back and false is returned; otherwise the changes are journaled with [reason].
      */
     fun transaction(player: Player, reason: String, block: ItemTransaction.() -> Boolean): Boolean {
-        val tx = ItemTransaction(data.configs.objs)
+        val tx = ItemTransaction(data.configs.objs, ground, tick, config.groundTiming)
         val ok = tx.block() && !tx.failed
         if (!ok) {
             tx.rollback()
@@ -412,6 +425,17 @@ class World(
         entity.teleportedThisTick = true
         if (entity is Player) entity.interaction = null
     }
+
+    /** Adds an NPC of config [type] (size from its config). */
+    fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int): Npc =
+        spawnNpc(
+            type,
+            data.configs.npcs
+                .getValue(type)
+                .size,
+            at,
+            wanderRange,
+        )
 
     /** Adds an NPC; index = first free slot (index order = processing order). */
     fun spawnNpc(type: Int, size: Int, at: CoordGrid, wanderRange: Int): Npc {
@@ -517,8 +541,8 @@ class World(
         /** Player ops 1..8 (SET_PLAYER_OP slots). */
         private val PLAYER_OP_RANGE = 1..8
 
-        /** IF3 button ops 1..10. */
-        private val BUTTON_OP_RANGE = 1..10
+        /** IF3 button ops 1..32 (IF_SETEVENTS op bits). */
+        private val BUTTON_OP_RANGE = 1..32
         private const val COMPONENT_SHIFT = 16
 
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */

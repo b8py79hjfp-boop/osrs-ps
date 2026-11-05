@@ -1,6 +1,7 @@
 package tp.plugin
 
 import tp.engine.ContentHandlers
+import tp.engine.World
 import tp.engine.entity.Player
 import tp.engine.interact.InteractionTarget
 import tp.engine.script.Script
@@ -16,6 +17,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     private val refs = HashMap<Player, PlayerRef>()
 
     private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { PlayerRef(player) }
+
+    override fun onWorldStart(world: World) {
+        val ref = WorldRef(world)
+        for (handler in h.worldStart) ref.handler()
+    }
 
     override fun onLogin(player: Player) {
         val ref = ref(player)
@@ -48,6 +54,9 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun apPlayer(option: Int): Script<Player>? = h.apPlayer[option]?.let(::playerScript)
 
+    override fun opObj(objId: Int, option: Int): Script<Player>? =
+        (h.opObj[key(objId, option)] ?: h.opObj[key(ContentScope.DEFAULT_ID, option)])?.let(::objScript)
+
     override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {
         val handler = h.buttons[component] ?: return
         ref(player).handler(ButtonClick(component, option, slot, obj))
@@ -65,6 +74,13 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         {
             val t = self.interactionTarget as? InteractionTarget.OfNpc
             if (t != null) run(PlayerScript(this), NpcRef(t.npc), s)
+        }
+
+    private fun objScript(s: suspend PlayerScript.(ObjRef) -> Unit): Script<Player> =
+        {
+            val t = self.interactionTarget as? InteractionTarget.Obj
+            val obj = t?.let { self.world.ground.find(it.coord, it.id, self) }
+            if (obj != null) run(PlayerScript(this), ObjRef(obj), s)
         }
 
     private fun playerScript(s: suspend PlayerScript.(PlayerRef) -> Unit): Script<Player> =

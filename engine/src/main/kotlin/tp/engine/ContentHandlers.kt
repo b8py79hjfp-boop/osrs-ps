@@ -8,6 +8,9 @@ import tp.engine.script.Script
  * by content modules. The engine itself knows no content (brief §1).
  */
 interface ContentHandlers {
+    /** Once, on the world thread, before the first tick (spawns). */
+    fun onWorldStart(world: World) {}
+
     fun onLogin(player: Player) {}
 
     fun onLogout(player: Player) {}
