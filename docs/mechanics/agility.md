@@ -69,10 +69,11 @@ gives 10, 20, 26.5, 36.5, 43, 53 and 110.5 xp (53 + 7.5 + 50) and the Draynor la
 
 ## OPEN
 
-- **OPEN-AG1:** movement is a jump. Plugin-api has no forced-movement (exact move) message and protocol-api has no ExactMove visual (RSProt has the
-  encoder, the adapter does not use it), so the player stays on the starting tile for the obstacle's ticks and then appears on the far tile. The
-  animation ids are gameval names (see above), not checked on a client; the tick counts are the walking distance or a short estimate, not the real
-  durations (the Wiki only has whole laps: Gnome 34 s, Draynor 72 ticks, Al Kharid 107 ticks).
+- **OPEN-AG1:** same-level obstacles use forced movement (`exactmove`, plugin-api `PlayerRef.exactMove`, RS Mod semantics: the
+  player is on the far tile at once, the client glides there over the obstacle's ticks). Level changes (climbing) stay a jump
+  after the obstacle's ticks. The animation ids are gameval names, not checked on a client; the tick counts are the walking
+  distance or a short estimate, not the real durations (the Wiki only has whole laps: Gnome 34 s, Draynor 72 ticks, Al Kharid
+  107 ticks).
 - **OPEN-AG2:** failing. Al Kharid tightrope 1 and zip line (1-5 damage) and Varrock clothes line and wall (3-8 and 2-5 damage) can be failed (Wiki
   "Chance to fail"), but no page gives the chance or where a failed player lands, so obstacles never fail. When they do, the hit should be a
   `DamageRequest` (plugin-api). Lap tracking (AG3) is modelled, not sourced.

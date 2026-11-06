@@ -41,6 +41,14 @@ sealed interface Visual {
 
     /** Overhead text. */
     data class Say(val text: String) : Visual
+
+    /**
+     * Forced movement (`exactmove`): the client shows the entity at its current tile + ([dx1], [dz1]) after [delay1]
+     * client cycles (20 ms) and at its current tile + ([dx2], [dz2]) after [delay2], facing [angle] (0 south, 512 west,
+     * 1024 north, 1536 east). The server moves the entity to the end tile in the same tick (RS Mod `exactMove`).
+     */
+    data class ExactMove(val dx1: Int, val dz1: Int, val delay1: Int, val dx2: Int, val dz2: Int, val delay2: Int, val angle: Int) :
+        Visual
 }
 
 /** What other players see of a player's look: worn objs by wear position (-1 = empty), icons, combat level. */

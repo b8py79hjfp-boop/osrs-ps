@@ -37,10 +37,17 @@ public class Agility : ContentPlugin {
         }
         p.stopInteraction() // one crossing per click (the delay would otherwise leave the interaction running)
         p.anim(obstacle.anim)
-        delay(obstacle.ticks)
         val dest = obstacle.dest
         val at = p.coord
-        p.teleport(if (dest.relative) at.translate(dest.x, dest.z, dest.level) else CoordGrid(dest.x, dest.z, dest.level))
+        val end = if (dest.relative) at.translate(dest.x, dest.z, dest.level) else CoordGrid(dest.x, dest.z, dest.level)
+        if (end.level == at.level) {
+            // AG1: forced movement across the obstacle, arriving as the obstacle's ticks end (RS Mod `exactMove`).
+            p.exactMove(at, end, 0, obstacle.ticks * CLIENT_CYCLES_PER_TICK, angleOf(end.x - at.x, end.z - at.z))
+            delay(obstacle.ticks)
+        } else {
+            delay(obstacle.ticks)
+            p.teleport(end)
+        }
         p.anim(-1)
         p.addXp(Stats.AGILITY, obstacle.xp)
         if (progress(p, course, order)) lapDone(p, course)
@@ -104,4 +111,16 @@ public class Agility : ContentPlugin {
         /** The 80% reduction: a fifth of the chance, so the denominator is five times larger. */
         const val MARK_PENALTY_FACTOR = 5
     }
+}
+
+/** Client cycles (20 ms) per game tick (600 ms). */
+private const val CLIENT_CYCLES_PER_TICK = 30
+
+/** Client angle units in a full turn (`exactmove` angle: 0 south, 512 west, 1024 north, 1536 east). */
+private const val FULL_TURN = 2048
+
+/** The client angle facing along (dx, dz). */
+private fun angleOf(dx: Int, dz: Int): Int {
+    val turns = kotlin.math.atan2(-dx.toDouble(), -dz.toDouble()) / (2 * Math.PI)
+    return Math.floorMod(Math.round(turns * FULL_TURN).toInt(), FULL_TURN)
 }

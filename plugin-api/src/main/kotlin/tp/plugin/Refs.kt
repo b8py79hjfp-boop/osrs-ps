@@ -13,6 +13,7 @@ import tp.engine.script.QueueType
 import tp.engine.tick.TickInspector
 import tp.engine.zone.GroundObj
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.Visual
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Varps
@@ -217,6 +218,16 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun teleport(to: CoordGrid) {
         p.world.teleport(p, to)
+    }
+
+    /**
+     * Forced movement from [start] to [end] (agility obstacles, knockbacks): the player is moved to [end] now and the
+     * client animates the way, reaching [start] after [delay1] and [end] after [delay2] client cycles (20 ms each, so
+     * 30 per tick), facing [angle] (0 south, 512 west, 1024 north, 1536 east). RS Mod `PathingEntityCommon.exactMove`.
+     */
+    public fun exactMove(start: CoordGrid, end: CoordGrid, delay1: Int, delay2: Int, angle: Int) {
+        p.world.teleport(p, end)
+        p.visual(Visual.ExactMove(start.x - end.x, start.z - end.z, delay1, 0, 0, delay2, angle))
     }
 
     /**

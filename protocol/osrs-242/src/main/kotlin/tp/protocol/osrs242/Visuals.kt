@@ -30,6 +30,7 @@ internal object Visuals {
             is Visual.Face -> ext.setFacePathingEntity(pathingIndex(v.target))
             is Visual.Say -> ext.setSay(v.text)
             is Visual.Transform -> ext.setTransmogrification(v.id)
+            is Visual.ExactMove -> ext.setExactMove(v.dx1, v.dz1, v.delay1, v.dx2, v.dz2, v.delay2, v.angle)
         }
     }
 
@@ -43,6 +44,7 @@ internal object Visuals {
             is Visual.Face -> ext.setFacePathingEntity(pathingIndex(v.target))
             is Visual.Say -> ext.setSay(v.text)
             is Visual.Transform -> ext.setTransmogrification(v.id)
+            is Visual.ExactMove -> ext.setExactMove(v.dx1, v.dz1, v.delay1, v.dx2, v.dz2, v.delay2, v.angle)
         }
     }
 }
