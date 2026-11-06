@@ -378,12 +378,30 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
                     val tradePrice = other.price // the older offer's price
                     offer = fill(offer, amount, tradePrice)
                     store.putOffer(fill(other, amount, tradePrice))
+                    recordTrade(obj, tradePrice, amount)
                 }
                 store.putOffer(offer)
             }
         }
 
     /** Buyer collects items (+ refund of the price difference); seller collects coins. */
+    override suspend fun guidePrices(): Map<Int, Int> = io { store.guidePrices().mapValues { it.value.first } }
+
+    /**
+     * Guide price: volume-weighted moving average of trade prices, with the history's weight capped at [GUIDE_WEIGHT] so
+     * recent trades keep moving it (a stand-in for Jagex's daily guide price; docs/mechanics/grand-exchange.md GE2).
+     */
+    private fun recordTrade(obj: Int, price: Int, amount: Int) {
+        val (old, weight) = store.guidePrices()[obj] ?: (price to 0)
+        val w = minOf(weight, GUIDE_WEIGHT).toLong()
+        val next = ((old * w + price.toLong() * amount) / (w + amount)).toInt()
+        store.setGuidePrice(obj, next, minOf(weight + amount, GUIDE_WEIGHT))
+    }
+
+    private companion object {
+        const val GUIDE_WEIGHT = 1_000
+    }
+
     private fun fill(o: GeOffer, amount: Int, tradePrice: Int): GeOffer =
         GeOffer(
             o.id,

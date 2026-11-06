@@ -196,6 +196,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.Inventory(invId, objs, counts, null))
     }
 
+    /**
+     * Runs the handler of another button as if the player clicked it (e.g. the equipment-stats panel reuses the
+     * backpack's Wield and the worn tab's Remove). Server-side only: no client packet, no open-interface check.
+     */
+    public fun dispatchButton(component: Int, op: Int, slot: Int = -1, obj: Int = -1) {
+        p.world.content.onButton(p, component, op, slot, obj)
+    }
+
     /** Sets the text of packed [component] (`tp.symbols.Components`). */
     public fun ifText(component: Int, text: String) {
         p.session.send(ServerMessage.IfText(component, text))
@@ -316,8 +324,8 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 
-    /** Value used for items kept on death (cache `cost`). */
-    public fun objValue(obj: Int): Int = p.world.objType(obj)?.cost ?: 0
+    /** Item value (kept on death, price checker): the GE guide price if the obj has traded, else cache `cost`. */
+    public fun objValue(obj: Int): Int = p.world.guidePrices[obj] ?: p.world.objType(obj)?.cost ?: 0
 
     // ---- inventories
 

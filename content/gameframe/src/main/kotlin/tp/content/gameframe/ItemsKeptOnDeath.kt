@@ -1,5 +1,6 @@
 package tp.content.gameframe
 
+import tp.plugin.AttrKey
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.IfEvents
@@ -31,14 +32,35 @@ public class ItemsKeptOnDeath : ContentPlugin {
                     .firstOrNull { objParamString(it, PARAM_NAME) == "Protect Item" }
                     ?.let { objParamInt(it, PARAM_BIT) } ?: -1
         }
-        onButton(Components.Wornitems.DEATHKEEP) { open() }
+        onButton(Components.Wornitems.DEATHKEEP) {
+            val skulled = this[SharedAttrs.SKULL_ICON] != null
+            val protectItem = protectItemBit >= 0 && (varbit(Varbits.PRAYER_ALLACTIVE) ushr protectItemBit) and 1 == 1
+            open(Preview(protectItem, skulled, playerKill = false, wildernessLevel = 0))
+        }
+        // Q3a: the four pause buttons toggle a "what if" preview (RS Mod ItemsKeptOnDeathScript): 0 Protect Item,
+        // 1 skull, 2 killed by a player, 3 Wilderness level 0 <-> 21. They change only the view.
+        onButton(Components.Deathkeep.RIGHT) { click ->
+            val p = this[PREVIEW] ?: return@onButton
+            val next =
+                when (click.slot) {
+                    0 -> p.copy(protectItem = !p.protectItem)
+                    1 -> p.copy(skulled = !p.skulled)
+                    2 -> p.copy(playerKill = !p.playerKill)
+                    3 -> p.copy(wildernessLevel = if (p.wildernessLevel == 0) DEEP_WILDERNESS else 0)
+                    else -> return@onButton
+                }
+            open(next)
+        }
     }
 
     private class Carried(val obj: Int, val count: Int, val value: Int)
 
-    private fun PlayerRef.open() {
-        val skulled = this[SharedAttrs.SKULL_ICON] != null
-        val protectItem = protectItemBit >= 0 && (varbit(Varbits.PRAYER_ALLACTIVE) ushr protectItemBit) and 1 == 1
+    private data class Preview(val protectItem: Boolean, val skulled: Boolean, val playerKill: Boolean, val wildernessLevel: Int)
+
+    private fun PlayerRef.open(preview: Preview) {
+        this[PREVIEW] = preview
+        val skulled = preview.skulled
+        val protectItem = preview.protectItem
         val keepCount = (if (skulled) 0 else KEPT_BASE) + if (protectItem) 1 else 0
 
         // Backpack first, then worn, most valuable first (stable, like the death drop).
@@ -69,8 +91,8 @@ public class ItemsKeptOnDeath : ContentPlugin {
             CS_DEATHKEEP_INIT,
             if (skulled) 1 else 0,
             if (protectItem) 1 else 0,
-            WILDERNESS_LEVEL,
-            0,
+            preview.wildernessLevel,
+            if (preview.playerKill) 1 else 0,
             "",
             kept.size,
             kept.getOrNull(0)?.obj ?: -1,
@@ -78,8 +100,6 @@ public class ItemsKeptOnDeath : ContentPlugin {
             kept.getOrNull(2)?.obj ?: -1,
             kept.getOrNull(3)?.obj ?: -1,
         )
-        // OPEN-Q3a: the four toggle buttons (Protect Item, skull, PK, Wilderness level) are pause buttons, whose
-        // RESUME_PAUSEBUTTON the engine does not hand to content, so the view shows the current state only.
         ifEvents(Components.Deathkeep.RIGHT, 0..3, IfEvents.PAUSE_BUTTON)
         val risk = lost.sumOf { it.value.toLong() * it.count }
         ifText(Components.Deathkeep.VALUE, "Guide risk value:<br><col=ffffff>${String.format(Locale.US, "%,d", risk)}</col>")
@@ -113,8 +133,10 @@ public class ItemsKeptOnDeath : ContentPlugin {
         /** Client script `deathkeep_init` (RS Mod `deathKeepInit`): skull, protect item, wilderness level, pk, header, kept. */
         const val CS_DEATHKEEP_INIT = 972
 
-        /** OPEN-Q3a: the panel is always opened outside the Wilderness and not as a PK death. */
-        const val WILDERNESS_LEVEL = 0
+        /** The preview's "deep Wilderness" level (RS Mod toggles 0 <-> 21: above level 20). */
+        const val DEEP_WILDERNESS = 21
+
+        val PREVIEW: AttrKey<Preview> = AttrKey("deathkeep_preview")
 
         /** Fee tiers of the stand-in count (RS Mod `calculateFee`). */
         const val FEE_TIER_1 = 100_000

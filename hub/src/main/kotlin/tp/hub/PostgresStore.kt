@@ -189,6 +189,22 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             exec("DELETE FROM channel_ranks WHERE owner_id = ? AND name = ?", id, name.lowercase())
         }
 
+    override fun guidePrices(): Map<Int, Pair<Int, Int>> =
+        sql { c ->
+            c.prepareStatement("SELECT obj, price, weight FROM ge_prices").use { ps ->
+                ps.executeQuery().use { rs -> buildMap { while (rs.next()) put(rs.getInt(1), rs.getInt(2) to rs.getInt(3)) } }
+            }
+        }
+
+    override fun setGuidePrice(obj: Int, price: Int, weight: Int) =
+        exec(
+            "INSERT INTO ge_prices (obj, price, weight) VALUES (?, ?, ?) " +
+                "ON CONFLICT (obj) DO UPDATE SET price = EXCLUDED.price, weight = EXCLUDED.weight",
+            obj,
+            price,
+            weight,
+        )
+
     override fun offers(id: Long): List<GeOffer> = offers("SELECT * FROM ge_offers WHERE account_id = ? ORDER BY slot", id)
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =
@@ -271,6 +287,7 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 "CREATE TABLE IF NOT EXISTS friends (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ignores (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ip_bans (ip text PRIMARY KEY)",
+                "CREATE TABLE IF NOT EXISTS ge_prices (obj int PRIMARY KEY, price int NOT NULL, weight int NOT NULL)",
                 """CREATE TABLE IF NOT EXISTS channel_settings (
                     owner_id bigint PRIMARY KEY REFERENCES accounts(id), name text, enter_rank int NOT NULL,
                     talk_rank int NOT NULL, kick_rank int NOT NULL)""",

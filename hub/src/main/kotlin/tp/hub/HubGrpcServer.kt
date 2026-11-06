@@ -329,6 +329,19 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
     }
 
     private inner class Exchange : ExchangeGrpcKt.ExchangeCoroutineImplBase() {
+        override suspend fun guidePrices(request: PbEmpty): tp.services.grpc.GuidePriceList =
+            tp.services.grpc.GuidePriceList
+                .newBuilder()
+                .addAllPrices(
+                    hub.exchange.guidePrices().map { (obj, price) ->
+                        tp.services.grpc.GuidePrice
+                            .newBuilder()
+                            .setObj(obj)
+                            .setPrice(price)
+                            .build()
+                    },
+                ).build()
+
         override suspend fun place(request: PlaceOfferRequest): PbOffer =
             hub.exchange.place(request.accountId, request.slot, request.buy, request.obj, request.quantity, request.price).toPb()
 

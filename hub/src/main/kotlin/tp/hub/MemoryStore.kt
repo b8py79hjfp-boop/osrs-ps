@@ -106,6 +106,14 @@ class MemoryStore : HubStore {
         if (rank >= 0) map[name.lowercase()] = rank else map.remove(name.lowercase())
     }
 
+    private val prices = ConcurrentHashMap<Int, Pair<Int, Int>>()
+
+    override fun guidePrices(): Map<Int, Pair<Int, Int>> = prices.toMap()
+
+    override fun setGuidePrice(obj: Int, price: Int, weight: Int) {
+        prices[obj] = price to weight
+    }
+
     override fun offers(id: Long): List<GeOffer> = geOffers.values.filter { it.accountId == id }.sortedBy { it.slot }
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =

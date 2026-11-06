@@ -40,6 +40,9 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
         }, 1, HEARTBEAT_SECONDS, TimeUnit.SECONDS)
         subscriptions +=
             hub.moderation.subscribeKicks(id) { account -> world.execute { world.playerByAccount(account)?.let(world::requestLogout) } }
+        scheduler.scheduleAtFixedRate({
+            runCatching { runBlocking { world.guidePrices = hub.exchange.guidePrices() } }
+        }, 1, GUIDE_PRICE_SECONDS, TimeUnit.SECONDS)
         subscriptions += hub.social.subscribe(id) { e -> world.execute { onSocial(e) } }
         subscriptions +=
             hub.broadcasts.subscribe { b ->
@@ -105,5 +108,8 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
     private companion object {
         const val MEMBERS = 1
         const val HEARTBEAT_SECONDS = 5L
+
+        /** Guide prices change slowly; a minute is plenty for price checker / kept-on-death values. */
+        const val GUIDE_PRICE_SECONDS = 60L
     }
 }

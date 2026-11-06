@@ -356,6 +356,9 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
             override suspend fun offers(accountId: Long): List<GeOffer> =
                 exchangeStub.offers(AccountRef.newBuilder().setAccountId(accountId).build()).offersList.map { it.toModel() }
 
+            override suspend fun guidePrices(): Map<Int, Int> =
+                exchangeStub.guidePrices(PbEmpty.getDefaultInstance()).pricesList.associate { it.obj to it.price }
+
             override suspend fun collect(accountId: Long, slot: Int): GeOffer? =
                 exchangeStub
                     .collect(

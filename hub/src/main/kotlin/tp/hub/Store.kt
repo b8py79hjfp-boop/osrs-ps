@@ -65,6 +65,11 @@ interface HubStore : AutoCloseable {
     /** Sets (rank >= 0) or removes (rank < 0) a friends chat rank. */
     fun setChannelRank(id: Long, name: String, rank: Int)
 
+    /** Guide prices (obj -> price) and their trade weight, for the moving average. */
+    fun guidePrices(): Map<Int, Pair<Int, Int>>
+
+    fun setGuidePrice(obj: Int, price: Int, weight: Int)
+
     fun offers(id: Long): List<GeOffer>
 
     fun openOffers(obj: Int, buy: Boolean): List<GeOffer>

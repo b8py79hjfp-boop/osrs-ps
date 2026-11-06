@@ -334,7 +334,8 @@ class World(
 
             is ClientCommand.ResumePause -> {
                 if (!interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) return invalid(player, command)
-                player.resumeInput(Unit)
+                // A waiting dialogue script takes it; otherwise it is a pause-button click on an open panel (op 1).
+                if (!player.resumeInput(Unit)) content.onButton(player, command.component, PAUSE_BUTTON_OP, command.sub, -1)
             }
 
             is ClientCommand.ResumeString -> {
@@ -617,6 +618,9 @@ class World(
         forEachPlayer { requestLogout(it) }
     }
 
+    /** Grand Exchange guide prices (obj -> coins), refreshed from the hub by the world node; empty without a hub. */
+    @Volatile var guidePrices: Map<Int, Int> = emptyMap()
+
     /** Worlds a player can hop to (id -> address), refreshed from the hub's directory by the world node. */
     @Volatile var worldDirectory: Map<Int, WorldAddress> = emptyMap()
 
@@ -881,6 +885,9 @@ class World(
 
         /** Display names are at most 12 characters (OSRS Wiki "Display name"). */
         private const val MAX_NAME_LENGTH = 12
+
+        /** Pause-button clicks reach content as button op 1 (they carry no op). */
+        private const val PAUSE_BUTTON_OP = 1
 
         /** Public chat type for friends-chat lines (RSProt `MessagePublic` chat types). */
         private const val CHAT_TYPE_FRIENDS_CHANNEL = 2

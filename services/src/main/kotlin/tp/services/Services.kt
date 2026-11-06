@@ -190,6 +190,9 @@ interface ExchangeService {
     suspend fun collect(accountId: Long, slot: Int): GeOffer?
 
     suspend fun abort(accountId: Long, slot: Int): GeOffer?
+
+    /** Guide prices (obj -> coins) from completed trades; objs never traded are absent (callers fall back to cost). */
+    suspend fun guidePrices(): Map<Int, Int>
 }
 
 // ---------------------------------------------------------------- hiscores, moderation, broadcasts

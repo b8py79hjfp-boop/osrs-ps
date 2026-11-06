@@ -256,6 +256,16 @@ service Exchange {
   rpc Offers(AccountRef) returns (GeOffers);
   rpc Collect(SlotRequest) returns (MaybeOffer);
   rpc Abort(SlotRequest) returns (MaybeOffer);
+  rpc GuidePrices(Empty) returns (GuidePriceList);
+}
+
+message GuidePrice {
+  int32 obj = 1;
+  int32 price = 2;
+}
+
+message GuidePriceList {
+  repeated GuidePrice prices = 1;
 }
 
 // ---- hiscores, moderation, broadcasts
