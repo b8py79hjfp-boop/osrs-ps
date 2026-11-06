@@ -291,6 +291,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         }
     }
 
+    /**
+     * Queues [script] as a weak script of this player, [delay] ticks from now (scripts.md Q1, Q13). A weak script is
+     * removed by any interruption (a click that walks or interacts, a modal opening or closing: Q3, Q7) before it runs,
+     * and is held while a modal is open or the player is delayed (Q4). Use it for repeating production actions that a
+     * click must be able to end: each run does one step and queues the next.
+     */
+    public fun weakQueue(delay: Int, script: suspend PlayerScript.() -> Unit) {
+        p.queue.add(QueueType.WEAK, delay) {
+            val body: suspend PlayerScript.() -> Unit = script
+            val scope = PlayerScript(this)
+            suspendCoroutineUninterceptedOrReturn { c -> body.startCoroutineUninterceptedOrReturn(scope, c) }
+        }
+    }
+
     /** Sends one Grand Exchange slot to the client ([status] 0 clears it). */
     public fun stockMarketSlot(slot: Int, status: Int, obj: Int, price: Int, count: Int, completed: Int, gold: Int) {
         p.session.send(ServerMessage.StockMarketSlot(slot, status, obj, price, count, completed, gold))
