@@ -36,7 +36,11 @@ fun main(args: Array<String>) {
     val master = BotClient(host, port, modulus, IntArray(0)).use { it.js5Fetch(listOf(MASTER to MASTER)).single() }
     val crcs = masterCrcs(master)
     val pool = Executors.newVirtualThreadPerTaskExecutor()
+    // Bots start [RAMP_MS] apart (-Dbotswarm.rampMs, default 0): thousands of simultaneous logins only measure the
+    // login storm, not the steady state.
+    val rampMs = java.lang.Long.getLong("botswarm.rampMs", 0L)
     repeat(count) { i ->
+        if (rampMs > 0) Thread.sleep(rampMs)
         pool.execute {
             BotClient(host, port, modulus, crcs).use { bot ->
                 val response = bot.login("$prefix${i + 1}", "bot")

@@ -58,6 +58,22 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
 
     /** Session locks: account → world holding it. */
     private val online = ConcurrentHashMap<Long, Int>()
+
+    /**
+     * Argon2id needs 19 MiB and ~50 ms of CPU per hash. A login storm (world restart, botswarm) would otherwise run
+     * thousands at once and exhaust memory, so at most one hash per core runs; the rest wait on their virtual thread.
+     */
+    private val hashPermits = java.util.concurrent.Semaphore(Runtime.getRuntime().availableProcessors())
+
+    private fun <T> hashing(block: () -> T): T {
+        hashPermits.acquire()
+        try {
+            return block()
+        } finally {
+            hashPermits.release()
+        }
+    }
+
     private val onlineNames = ConcurrentHashMap<String, Long>()
 
     /** Logout saves in flight: account → completes when durable. */
@@ -84,7 +100,11 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 }
                 if (db { store.ipBanned(ip) }) return LoginGrant(LoginResult.BANNED)
                 var row = db { store.account(name) }
-                if (row == null && config.autoRegister) row = db { store.createAccount(name, Passwords.hash(password), Rights.PLAYER) }
+                if (row == null &&
+                    config.autoRegister
+                ) {
+                    row = db { store.createAccount(name, hashing { Passwords.hash(password) }, Rights.PLAYER) }
+                }
                 val found = row
                 if (found != null && found.rights != Rights.ADMIN && config.admins.any { it.equals(name, ignoreCase = true) }) {
                     row =
@@ -94,7 +114,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                             store.account(found.id)
                         }
                 }
-                if (row == null || !db { Passwords.verify(password, row.passwordHash) }) {
+                if (row == null || !db { hashing { Passwords.verify(password, row.passwordHash) } }) {
                     failures.add("ip:$ip")
                     failures.add("acct:${name.lowercase()}")
                     return LoginGrant(LoginResult.INVALID_CREDENTIALS)
@@ -139,7 +159,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 if (!NAME.matches(username)) return "Names are 1-12 letters, numbers, spaces, - or _."
                 if (password.length !in MIN_PASSWORD..MAX_PASSWORD) return "Passwords are $MIN_PASSWORD-$MAX_PASSWORD characters."
                 if (db { store.ipBanned(ip) }) return "Registration is not available."
-                val row = db { store.createAccount(username, Passwords.hash(password), Rights.PLAYER) } ?: return "That name is taken."
+                val row =
+                    db { store.createAccount(username, hashing { Passwords.hash(password) }, Rights.PLAYER) }
+                        ?: return "That name is taken."
                 db { store.audit(username, "register", row.id.toString(), ip) }
                 return null
             }
