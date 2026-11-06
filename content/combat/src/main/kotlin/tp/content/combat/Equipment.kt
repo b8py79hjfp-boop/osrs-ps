@@ -85,6 +85,7 @@ public class Equipment : ContentPlugin {
         interrupt()
         val pos = objWearPos(obj)
         val twoHanded = pos == Wear.WEAPON && objWearPos2(obj) == Wear.SHIELD
+        if (!meetsRequirements(obj)) return
         DuelChecks.wieldDenial(this, pos, twoHanded)?.let {
             message(it)
             return
@@ -109,12 +110,66 @@ public class Equipment : ContentPlugin {
         afterChange(pos)
     }
 
+    /**
+     * EQ1 (RS Mod `HeldEquipOp`): obj params `statreq1_skill`/`statreq1_level` (434/436) and `statreq2_*` (435/437)
+     * against base levels (boosts don't count); "You are not a high enough level to use this item." then which levels.
+     */
+    private fun PlayerRef.meetsRequirements(obj: Int): Boolean {
+        val missing =
+            REQUIREMENTS.mapNotNull { (skillParam, levelParam) ->
+                val skill = objParam(obj, skillParam, -1).takeIf { it >= 0 } ?: return@mapNotNull null
+                val level = objParam(obj, levelParam, 0)
+                (skill to level).takeIf { skill in STAT_NAMES.indices && baseLevel(skill) < level }
+            }
+        if (missing.isEmpty()) return true
+        message("You are not a high enough level to use this item.")
+        message(
+            "You need to have " + missing.joinToString(" and ") { (skill, level) -> "${article(STAT_NAMES[skill])} level of $level" } + ".",
+        )
+        return false
+    }
+
+    private fun article(name: String): String = (if (name.first().lowercaseChar() in "aeiou") "an " else "a ") + name
+
     private fun PlayerRef.remove(slot: Int) {
         if (worn(slot) < 0) return
         if (!unequip(this, slot)) message("You don't have enough free inventory space to do that.")
     }
 
     private companion object {
+        /** Obj param ids: (skill, level) of the two stat requirements (cache; RS Mod `statreq1_*`, `statreq2_*`). */
+        @Suppress("MagicNumber") // cache param ids
+        val REQUIREMENTS = listOf(434 to 436, 435 to 437)
+
+        /** Stat names in client stat order. */
+        val STAT_NAMES =
+            listOf(
+                "Attack",
+                "Defence",
+                "Strength",
+                "Hitpoints",
+                "Ranged",
+                "Prayer",
+                "Magic",
+                "Cooking",
+                "Woodcutting",
+                "Fletching",
+                "Fishing",
+                "Firemaking",
+                "Crafting",
+                "Smithing",
+                "Mining",
+                "Herblore",
+                "Agility",
+                "Thieving",
+                "Slayer",
+                "Farming",
+                "Runecraft",
+                "Hunter",
+                "Construction",
+                "Sailing",
+            )
+
         /**
          * Button ops of iop1..iop4: iop1..3 = ops 2..4, iop4 = op 6, iop5 = op 7 (RS Mod `InvOpenScript` events Op2, Op3,
          * Op4, Op6, Op7). Op 7 (Drop/Destroy) is handled by the backpack plugin.
