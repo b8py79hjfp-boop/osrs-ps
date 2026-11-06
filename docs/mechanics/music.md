@@ -38,10 +38,18 @@ areas 30..35. The cache therefore says which tracks belong to which area number,
 
 ## OPEN
 
-- **OPEN-MU1 (blocking real area music):** tile geometry of the 63 music areas. Not in the cache (above) and not in RS Mod
-  (it defines only the Lumbridge area, with no geometry in the repo). Supply a `content/gameframe/src/main/resources/tp/content/gameframe/music-areas.json`
-  in the `PolygonAreas` layout (`[{name:"<area number>", levels:[..], polygons:[{vertices:[{x,z}..]}]}]`); the shipped file is `[]`,
-  so no area is entered at login or while walking until it is filled.
+- **MU1 (resolved 2026-11-06): area geometry.** It is imported from the OSRS Wiki by `tools/wiki-import/music_areas.py`:
+  - **Sources:** each track's Infobox `map` field (inline `{{Map}}` shapes) and the shared `Map:<page>` maps
+    (`{{Music track map}}`). Named `{{Map polygon}}` shapes are expanded through the Wiki.
+  - **Joined to the cache by display name.** Tracks in a cache area group are named by the area number. Other tracks are
+    single-track areas named `track:<name>`, which MusicTab gives synthetic ids from 1000. Hidden and holiday-event
+    tracks are excluded.
+  - **Order:** smallest polygons come first, so specific places win over the region around them.
+  - **Coverage:** all 63 cache areas, 579 tracks in total. The 117 tracks without a map are instances, minigames and
+    boss rooms.
+  - **Spot checks:** Lumbridge 1, Varrock 4, Falador 5, Draynor 2, Catherby 41, Ardougne 46, Wilderness 10, Brimhaven
+    Dungeon 18, Edgeville "Forever", Grand Exchange "The Trade Parade".
+  - **To refresh:** run the commands in the script's docstring.
 - **OPEN-MU2:** whether the real game plays modern-area tracks as a seeded shuffled playlist (RS Mod's `MusicPlaylist`, itself
   marked TODO(emulation)) or at random; we pick a uniformly random other track from the world RNG. Whether entering a modern area
   unlocks all tracks at once is RS Mod's behaviour, unverified.

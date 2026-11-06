@@ -60,6 +60,9 @@ public class MusicTab : ContentPlugin {
     /** Music area polygons; a polygon's name is the area number. Empty until the geometry is supplied (OPEN-MU1). */
     private var geometry: PolygonAreas = PolygonAreas.fromJson("[]")
 
+    /** Single-track area name (display name) -> synthetic area id. */
+    private var singleAreas: Map<String, Int> = emptyMap()
+
     override fun ContentScope.register() {
         onWorldStart { load(this) }
         onLogin { enable() }
@@ -105,12 +108,31 @@ public class MusicTab : ContentPlugin {
         // OPEN-M1b: the client builds the list itself; the slot of a click is assumed to be the track's position
         // when sorted by the table's `sortname` column (case-insensitive), which is how the list reads in game.
         listed = all.filter { !it.hidden }.sortedBy { it.sortName.lowercase() }
+        // Tracks without a cache area group are single-track areas, named "track:<display name>" in the geometry;
+        // they get synthetic area ids above the cache's 1..63 so the same enter/unlock path handles them.
+        singleAreas = addSingleAreas(all, byArea, defaults)
         areaTracks = byArea.mapValues { it.value.toIntArray() }
         areaDefault = defaults
         geometry =
             PolygonAreas.fromJson(
                 MusicTab::class.java.getResource("music-areas.json")?.readText() ?: error("music-areas.json missing"),
             )
+    }
+
+    private fun addSingleAreas(
+        all: List<Track>,
+        byArea: MutableMap<Int, MutableList<Int>>,
+        defaults: MutableMap<Int, Int>,
+    ): Map<String, Int> {
+        val singles = HashMap<String, Int>()
+        for ((index, track) in all.withIndex()) {
+            if (track.area != 0 || track.hidden) continue
+            val id = SINGLE_AREA_BASE + index
+            singles[track.displayName] = id
+            byArea[id] = arrayListOf(index)
+            defaults[id] = index
+        }
+        return singles
     }
 
     private fun PlayerRef.enable() {
@@ -131,7 +153,7 @@ public class MusicTab : ContentPlugin {
         val key = (((c.level shl Z_BITS) or c.z) shl X_BITS) or c.x
         if (key == state.tileKey) return
         state.tileKey = key
-        val area = geometry.areaAt(c)?.toIntOrNull() ?: 0
+        val area = geometry.areaAt(c)?.let { it.toIntOrNull() ?: singleAreas[it.removePrefix(TRACK_PREFIX)] } ?: 0
         if (area == state.area) return
         state.area = area
         // Music unlocks and area changes run through the area queue (scripts.md Q11).
@@ -145,11 +167,13 @@ public class MusicTab : ContentPlugin {
             // Classic mode: only the area's default track; it does not unlock the modern tracks (RS Mod `enterArea`).
             val index = areaDefault[area] ?: return
             unlock(tracks[index])
-            if (varp(Varps.MUSICPLAY) == MODE_AREA) play(index)
+            if (varp(Varps.MUSICPLAY) == MODE_AREA && index != this[STATE]?.current) play(index)
         } else {
             val indexes = areaTracks[area] ?: return
             for (i in indexes) unlock(tracks[i])
-            if (varp(Varps.MUSICPLAY) == MODE_AREA) play(pickOther(indexes))
+            // Don't restart a track that is already playing (e.g. walking back into a single-track area).
+            val next = pickOther(indexes)
+            if (varp(Varps.MUSICPLAY) == MODE_AREA && next != this[STATE]?.current) play(next)
         }
     }
 
@@ -223,6 +247,12 @@ public class MusicTab : ContentPlugin {
 
         /** `musicplay` varp values (RS Mod `MusicPlayMode`): Manual = the Single button. */
         const val MODE_SINGLE = 0
+
+        /** Geometry name prefix of single-track areas (tools/wiki-import/music_areas.py). */
+        const val TRACK_PREFIX = "track:"
+
+        /** Synthetic area ids for single-track areas start above the cache's area numbers (1..63). */
+        const val SINGLE_AREA_BASE = 1_000
         const val MODE_AREA = 1
         const val MODE_SHUFFLE = 2
 
