@@ -10,8 +10,11 @@ import tp.util.CoordGrid
 
 /** Shared setup for the golden scenarios (brief §9 test 3). */
 internal object Golden {
-    /** Level-11 Wilderness (z 3600), open ground east of the Graveyard of Shadows (wilderness.md OPEN-W1 bounds). */
-    fun wild(dx: Int = 0, dz: Int = 0): CoordGrid = CoordGrid(3150 + dx, 3600 + dz)
+    /**
+     * Level-34 Wilderness (z 3789): open ground (cache collision checked with cache-dump), deep enough that the
+     * combat-level bracket allows maxed vs fresh characters (wilderness.md OPEN-W1 bounds).
+     */
+    fun wild(dx: Int = 0, dz: Int = 0): CoordGrid = CoordGrid(3295 + dx, 3789 + dz)
 
     const val ATTACK_OP = 2
     const val ITEM_OP1 = 2
