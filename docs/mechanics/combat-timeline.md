@@ -40,12 +40,20 @@ Distance: Chebyshev, edge to edge (HD:3). Barrage spells and thralls measure to 
 | # | Rule | Source |
 |---|---|---|
 | C1 | Attack when the attack clock ≤ now and the target is in range; then clock = now + weapon speed (rapid −1). The clock is global across weapons ("a 7 tick weapon ... then a 4 tick weapon ... wait 7 ticks"). | AS:8-10, brief §8 |
-| C2 | Protection prayers protect if active in the attacker's attack tick ("the tick your enemy attacks ... not necessarily the tick in which you take damage"). | PR:508 |
-| C3 | Prayers apply to attacks from the tick their activation is processed; prayer drain skips prayers on the tick they are activated, so a one-tick flick drains nothing. See prayers.md P1–P3. | PR:538, brief §8 |
-| C4 | Auto retaliate: the defender retaliates 1 tick after being hit; the player's attack clock is set to ⌈speed / 2⌉. | AR:6 |
-| C5 | NPC retaliation: ⌊speed / 2⌋ ticks (FL:5). AS:387's "halved, plus 1, rounded up ... 3 ticks after your hit" for a 4-tick NPC agrees once the +1 processing-order delay of hits on NPCs is counted (2 + 1). | FL:5, AS:387, HD:8 |
+| C2 | Protection prayers are checked in the attacker's attack tick ("the tick your enemy attacks ... not necessarily the tick in which you take damage"). **OPEN-C3:** PR:508 is flicking advice about NPCs; no source fixes the PvP check tick for ranged/magic. Implemented: checked on the roll tick for every style. | PR:508 |
+| C3 | Prayer state used by an attack: see prayers.md P1 (SOURCE-CONFLICT, decided by brief §9 3e). Prayer drain skips prayers on the tick they are activated, so a one-tick flick drains nothing. | PR:538, brief §9 3e |
+| C4 | Auto retaliate: the player retaliates "1 tick after" being attacked and the attack delay is set to ⌈speed / 2⌉. **OPEN-C4:** the two numbers aren't reconciled by the source; implemented: on the hit's application the attack clock becomes max(clock, now + ⌈speed / 2⌉) and the target is set, so the swing happens when that clock allows. | AR:6 |
+| C5 | NPC retaliation delay: ⌊speed / 2⌋ (FL:5) vs "halved, plus 1, rounded up" (AS:387). **SOURCE-CONFLICT / OPEN-C5:** equal for even speeds once the +1 processing-order delay of hits on NPCs is counted, different for odd speeds. Implemented: ⌊speed / 2⌋ from the hit's application. | FL:5, AS:387 |
+| C8 | Attack speeds: weapon param 14 (cache); combat spells 5; powered staves 4; blowpipe +1 in PvP. Rapid −1. | AS:6, AS:271, combat-data.md |
+| C9 | Eating: if the attack clock is in the future (weapon not ready), add the food's attack delay; if the weapon is ready (clock ≤ now), nothing ("If your weapon is ready to attack again then eating does not add any new delay"). | FF:11, brief §8 |
+| C10 | Special energy is deducted on the attack tick when the spec is performed; a weapon switch in the same tick's input applies first (input precedes the player's turn; tick.md). Inventory item actions interrupt the current interaction (interactions.md I7); the attack click that follows sets the new one. | SA:12, interactions.md I7, tick.md |
 | C6 | Granite maul special: no attack cooldown; the next attack can follow on the next tick. | GM:89 |
 | C7 | Damage cap 200 for players. | combat-formulas.md F20 |
+
+## Hit-delay exceptions not in the table
+
+Blowpipe special: 2 at distance 4–5 (HD:132). Dragon claws special hit timing: not sourced (**OPEN-C6**). Thralls and
+salamanders: HD:13, HD:197 (not implemented).
 
 ## OPEN
 

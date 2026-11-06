@@ -15,7 +15,7 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 | PP | https://oldschool.runescape.wiki/w/Protection_prayers |
 | SA | https://oldschool.runescape.wiki/w/Special_attacks |
 
-`⌊⌋` = floor. Levels are the current (boosted/drained) levels.
+`⌊⌋` = floor. Levels are the current (boosted/drained) levels, except F21 (base levels).
 
 ## Melee
 
@@ -42,11 +42,11 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 
 | # | Formula | Source |
 |---|---|---|
-| F12 | Spell base max hits: strikes 8, bolts 12, blasts 16, waves 20, surges 24 (standard elemental values depend on the spell tier only); Ice Rush 16, Ice Burst 22, Ice Blitz 26, Ice Barrage 30. | MA:48-165 |
+| F12 | Spell base max hits: Fire Strike 8, Fire Bolt 12, Fire Blast 16, Fire Wave 20, Fire Surge 24 (Wind/Water/Earth scale with Magic level, MA:30, MA:42); Ice Rush 16, Ice Burst 22, Ice Blitz 26, Ice Barrage 30. | MA:48-165 |
 | F13 | Damage = ⌊BaseMax × (1 + MagicDamage% + Void 5% + Prayer)⌋ (+ the other gear terms in MA:19-25). Prayer: Mystic Lore +1%, Mystic Might +2%, Mystic Vigour +3%, Augury +4%. | MA:19, MA:187-197 |
 | F14 | Effective magic = ⌊Mag × Prayer⌋ × (1.45 void) + Style + 8 (accurate powered staff +3, longrange +1). Prayers: Mystic Will 1.05, Mystic Lore 1.10, Mystic Might 1.15, Mystic Vigour 1.18, Augury 1.25. Attack roll = ⌊EffMag × (MagicAtk + 64)⌋. | DA:20-64 |
 | F15 | NPC magic defence roll = (9 + MagicLevel) × (MagicDef + 64). | DA:68 |
-| F16 | Player magic defence uses "70% of the opponent's Magic level, and 30% of the opponent's Defence level". **OPEN-F1:** exact rounding; implemented as ⌊0.7 × ⌊Mag × MagPrayer⌋⌋ + ⌊0.3 × ⌊Def × DefPrayer⌋⌋ + Style + 8, × (MagicDef + 64). | AT:37 |
+| F16 | Player magic defence uses "70% of the opponent's Magic level, and 30% of the opponent's Defence level". **OPEN-F1:** everything else (rounding, prayers, style, +8, × (MagicDef + 64)) is ours; implemented as ⌊0.7 × ⌊Mag × MagPrayer⌋⌋ + ⌊0.3 × ⌊Def × DefPrayer⌋⌋ + Style + 8, × (MagicDef + 64). | AT:37 |
 
 ## Shared
 
@@ -54,7 +54,7 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 |---|---|---|
 | F17 | Hit chance: if A > D, 1 − (D + 2) / (2 (A + 1)); else A / (2 (D + 1)). Server form: roll a = uniform[0, A], d = uniform[0, D]; hit if a > d. | DM:146-160 |
 | F18 | Damage on a hit: uniform [0, Max]. Magic: a 0 becomes 1 (MA:221). Melee: "a 0 on a successful attack will be changed to a 1" (DM:155). **OPEN-F2:** the same for ranged; implemented the same. | MA:221, DM:155 |
-| F19 | Protection prayers reduce player damage by 40%, NPC damage by 100%; typeless attacks ignore them. **OPEN-F3:** rounding; implemented ⌊damage × 0.6⌋. | PP:27-29, DM:64 |
+| F19 | Protection prayers reduce player damage by 40%, NPC damage by 100%; typeless attacks ignore them. DM:64 applies ×6/10 to the max hit (step two). **OPEN-F3:** whether per roll or on the max hit, and rounding; implemented as DM:64 — the max hit is ⌊max × 6/10⌋ and the roll is uniform under it. | PP:27-29, DM:64 |
 | F20 | Player damage cap 200. | MM:4 |
 | F21 | Combat level = ⌊¼ (Def + HP + ⌊Prayer / 2⌋) + max(13/40 (Att + Str), 13/40 ⌊1.5 Rng⌋, 13/40 ⌊1.5 Mag⌋)⌋. | CL:37-57 |
 | F22 | Special attacks roll against a fixed defence type (e.g. dragon dagger: slash). Attack-roll modifier +100% doubles the roll. | AT:5, SA:37, SA:177 |
@@ -70,8 +70,9 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 | Granite maul | — | — (extra instant attack, 60% / ornate 50%) | SA:2241-2251 |
 | Dark bow | — | ×1.3 (dragon arrows ×1.5) | SA:2119-2127 |
 
-## SOURCE-CONFLICT
+## Notes
 
-- Elite ranged void: 1.125 (MR:23) vs 1.1 (DR:17). We use 1.125 (the max-hit page is specific to the value).
-- Slayer/salve 7/6 inside step two (DM:62) vs after the floor (MM:162). We follow DM (the DPS page states the
-  order explicitly).
+- Elite ranged void: 1.125 for strength (MR:23), 1.1 for the attack roll (DR:17, DR:38). Not a conflict.
+- Slayer/salve: DM floors before the target bonus (DM:61-62); MM floors then multiplies — equivalent.
+- Dragon claws: first-roll −1 flat damage and the all-miss 0-or-2 rule (SA:2158, SA:2165). Dark bow special minimum
+  5 (8 with dragon arrows) (SA:2127).
