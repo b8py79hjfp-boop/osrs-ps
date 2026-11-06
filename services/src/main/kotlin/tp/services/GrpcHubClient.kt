@@ -332,13 +332,37 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
     private fun PbMember.toModel(): ChannelMember = ChannelMember(name, worldId, rank)
 
-    private fun PbOffer.toModel(): GeOffer = GeOffer(id, accountId, slot, buy, obj, quantity, price, completed, collectCoins, collectItems)
+    private fun PbOffer.toModel(): GeOffer =
+        GeOffer(
+            id,
+            accountId,
+            slot,
+            buy,
+            obj,
+            quantity,
+            price,
+            completed,
+            collectCoins,
+            collectItems,
+            gold,
+            aborted,
+            taxRate,
+            tax,
+        )
 
     private fun MaybeOffer.toModel(): GeOffer? = if (present) offer.toModel() else null
 
     override val exchange: ExchangeService =
         object : ExchangeService {
-            override suspend fun place(accountId: Long, slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int): GeOffer =
+            override suspend fun place(
+                accountId: Long,
+                slot: Int,
+                buy: Boolean,
+                obj: Int,
+                quantity: Int,
+                price: Int,
+                taxRate: Int,
+            ): GeOffer =
                 exchangeStub
                     .place(
                         PlaceOfferRequest
@@ -350,6 +374,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                             .setObj(obj)
                             .setQuantity(quantity)
                             .setPrice(price)
+                            .setTaxRate(taxRate)
                             .build(),
                     ).toModel()
 
@@ -359,15 +384,19 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
             override suspend fun guidePrices(): Map<Int, Int> =
                 exchangeStub.guidePrices(PbEmpty.getDefaultInstance()).pricesList.associate { it.obj to it.price }
 
-            override suspend fun collect(accountId: Long, slot: Int): GeOffer? =
+            override suspend fun collect(accountId: Long, slot: Int, part: CollectPart): GeOffer? =
                 exchangeStub
                     .collect(
                         SlotRequest
                             .newBuilder()
                             .setAccountId(accountId)
                             .setSlot(slot)
+                            .setPart(part.ordinal)
                             .build(),
                     ).toModel()
+
+            override suspend fun history(accountId: Long): List<GeOffer> =
+                exchangeStub.history(AccountRef.newBuilder().setAccountId(accountId).build()).offersList.map { it.toModel() }
 
             override suspend fun abort(accountId: Long, slot: Int): GeOffer? =
                 exchangeStub

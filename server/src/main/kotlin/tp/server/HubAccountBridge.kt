@@ -16,6 +16,7 @@ import tp.protocol.api.LoginRequest
 import tp.protocol.api.ServerMessage
 import tp.protocol.api.SocialAction
 import tp.services.ChannelSettings
+import tp.services.CollectPart
 import tp.services.GeOffer
 import tp.services.HubServices
 import tp.services.LoginResult
@@ -271,15 +272,35 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                         }
 
                         is ExchangeRequest.Place -> {
-                            listOf(hub.exchange.place(account, request.slot, request.buy, request.obj, request.quantity, request.price))
+                            listOf(
+                                hub.exchange.place(
+                                    account,
+                                    request.slot,
+                                    request.buy,
+                                    request.obj,
+                                    request.quantity,
+                                    request.price,
+                                    request.taxRate,
+                                ),
+                            )
                         }
 
                         is ExchangeRequest.Collect -> {
-                            listOfNotNull(hub.exchange.collect(account, request.slot))
+                            val part =
+                                when {
+                                    request.items && request.coins -> CollectPart.ALL
+                                    request.items -> CollectPart.ITEMS
+                                    else -> CollectPart.COINS
+                                }
+                            listOfNotNull(hub.exchange.collect(account, request.slot, part))
                         }
 
                         is ExchangeRequest.Abort -> {
                             listOfNotNull(hub.exchange.abort(account, request.slot))
+                        }
+
+                        ExchangeRequest.History -> {
+                            hub.exchange.history(account)
                         }
                     }
                 }
@@ -294,6 +315,9 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                         it.completed,
                         it.collectCoins,
                         it.collectItems,
+                        it.gold,
+                        it.aborted,
+                        it.tax,
                     )
                 }
             world.execute { world.playerByAccount(account)?.let { reply(it, offers) } }

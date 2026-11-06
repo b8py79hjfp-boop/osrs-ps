@@ -6,6 +6,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import tp.services.Broadcast
+import tp.services.CollectPart
 import tp.services.HubServices
 import tp.services.LoginResult
 import tp.services.Sanction
@@ -74,6 +75,10 @@ internal fun tp.services.GeOffer.toPb(): PbOffer =
         .setCompleted(completed)
         .setCollectCoins(collectCoins)
         .setCollectItems(collectItems)
+        .setGold(gold)
+        .setAborted(aborted)
+        .setTaxRate(taxRate)
+        .setTax(tax)
         .build()
 
 private fun maybe(o: tp.services.GeOffer?): MaybeOffer =
@@ -343,7 +348,9 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 ).build()
 
         override suspend fun place(request: PlaceOfferRequest): PbOffer =
-            hub.exchange.place(request.accountId, request.slot, request.buy, request.obj, request.quantity, request.price).toPb()
+            hub.exchange
+                .place(request.accountId, request.slot, request.buy, request.obj, request.quantity, request.price, request.taxRate)
+                .toPb()
 
         override suspend fun offers(request: AccountRef): GeOffers =
             GeOffers
@@ -357,9 +364,15 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                         },
                 ).build()
 
-        override suspend fun collect(request: SlotRequest): MaybeOffer = maybe(hub.exchange.collect(request.accountId, request.slot))
+        override suspend fun collect(request: SlotRequest): MaybeOffer =
+            maybe(
+                hub.exchange.collect(request.accountId, request.slot, CollectPart.entries.getOrElse(request.part) { CollectPart.ALL }),
+            )
 
         override suspend fun abort(request: SlotRequest): MaybeOffer = maybe(hub.exchange.abort(request.accountId, request.slot))
+
+        override suspend fun history(request: AccountRef): GeOffers =
+            GeOffers.newBuilder().addAllOffers(hub.exchange.history(request.accountId).map { it.toPb() }).build()
     }
 
     private inner class Hiscores : HiscoresGrpcKt.HiscoresCoroutineImplBase() {

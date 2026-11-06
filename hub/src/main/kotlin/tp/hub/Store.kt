@@ -78,6 +78,12 @@ interface HubStore : AutoCloseable {
 
     fun deleteOffer(offerId: Long)
 
+    /** Appends a trade record (GE12) and keeps the newest [GE_HISTORY_SIZE]. */
+    fun addHistory(offer: GeOffer)
+
+    /** Newest first. */
+    fun history(id: Long): List<GeOffer>
+
     fun submitHiscores(id: Long, name: String, xpTenths: IntArray)
 
     fun topHiscores(stat: Int, count: Int): List<HiscoreEntry>
@@ -85,3 +91,6 @@ interface HubStore : AutoCloseable {
     /** Append-only audit log (staff actions, logins): who, what, when. */
     fun audit(actor: String, action: String, target: String, detail: String)
 }
+
+/** GE history length: "now extends to 40 previous listings" (OSRS Wiki "Grand Exchange" changes). */
+const val GE_HISTORY_SIZE: Int = 40

@@ -13,6 +13,10 @@
 | GE8 | Buy item: client script 750 (chatbox item search) answered by RESUME_P_OBJDIALOG; the choice goes in `tradingpost_search` and `ge_last_searched`. | client scripts 750, 754 |
 | GE9 | Sell item: "Offer" on a side-inventory item (467 child = backpack slot). | client script 783 |
 | GE10 | Quantity and price buttons are applied by the client itself; the server repeats the same arithmetic: ±1, +1/+10/+100 (delta − 1 when moving off 1), +1K buying / All selling, max affordable = coins ÷ price; price ±1, ±5% (step price ÷ 20, at least 1), guide price, enter price. `ge_newoffer_price` (5753) is a 64-bit varp. | client scripts 777, 778, 5156 |
+| GE12 | History: "now extends to 40 previous listings". Each finished offer, or aborted offer that traded something, is a row (obj, bought/sold, amount, coins); panel 383 is filled by client scripts 1644/1645/1646. Coins are the actual trade prices (`gold`), which also drives the slot's spent/received figure. | OSRS Wiki "Grand Exchange" changes; client scripts 1644–1646 |
+| GE13 | Abort: the offer stops trading, its unfilled part (coins for a buy, items for a sell) moves to the collect box, and the slot shows as finished (status 5, completed < total) until everything is collected. | client `na`, RuneLite `GrandExchangeOfferState.CANCELLED_*` |
+| GE14 | Tax: "Most transactions ... are subject to a 2% tax ... capped at a maximum of 5 million coins per item", rounded down, paid by the seller; exempt items (bonds, low-level food, ammo, tools, teleports: Wiki list) pay none. The client shows the fee from varbit `ge_transmit_taxrate` in tenths of a percent (client script 5731: 20 = "2%"; script 779: fee = min(5,000,000, price × rate / 1000)). | OSRS Wiki "Grand Exchange#Convenience fee and item sink"; client scripts 779, 5731 |
+| GE15 | Collecting (offer details, collect-all, collection box 402): item with a noted form, count 1: op 1 item, op 2 note; count > 1: op 1 notes, op 2 items; no noted form: op 2; op 3 "Bank". "Repeat Offer" re-creates the last offer; a history row's "Buy-offer" starts a buy offer for that item. | client scripts 141, 788, 792, 796, 816, 818, 1645, 9909 |
 | GE11 | Confirm is disabled by the client for a missing item, quantity or price ≤ 0, or a total over 2,149,631,130,647; the server re-checks everything. | client scripts 779, 780 |
 
 ## Implementation
@@ -27,11 +31,13 @@ An item that has never traded uses its cache `cost`. Worlds refresh the prices o
 
 - **OPEN-GE1, guide price method.** Jagex updates the guide price daily from its own trade data, which is not public.
   The moving average is a stand-in.
-- **OPEN-GE2, collection.** Our hub hands over everything in a slot at once (collect and abort), into the inventory
-  (items over 1 come back noted); "collect to bank" and the note/item choice are not distinguished. An aborted offer is
-  removed at once instead of showing status 5 until collected.
-- **OPEN-GE3, Modify offer** is not implemented.
+- **OPEN-GE2, collection.** What doesn't fit the backpack is dropped under the player (private to them) rather than
+  refused, so a collect never loses items (our choice; Jagex refuses with a message).
+- **OPEN-GE3, Modify offer** (no source for its server behaviour): opens the setup screen filled from the offer
+  (remaining quantity, price); Confirm aborts the old offer (everything comes back) and places the new one in the same
+  slot.
 - **OPEN-GE4:** "Offer" on a backpack item from the index page opens a sell offer in the first free slot (normal OSRS
   behaviour, not proven from the scripts).
-- **OPEN-GE5:** the custom ±N% buttons, the history panel, the sell fee display and prices above 2,147,483,647 (the hub
-  stores Int prices) aren't implemented.
+- **OPEN-GE5:** custom ±N%: "Customise" asks for N (stored in varbit `ge_price_custom`, limited to 1..100 here); a click
+  applies price × N / 100 (at least 1), like the ±5% buttons. Prices per item are limited to 2,147,483,647 (a coin stack's
+  maximum; the hub stores Int prices).

@@ -26,6 +26,11 @@ class ExchangeOffer(
     val completed: Int,
     val collectCoins: Long,
     val collectItems: Int,
+    /** Coins exchanged so far (spent or received). */
+    val gold: Long = 0,
+    val aborted: Boolean = false,
+    /** Sell tax paid so far. */
+    val tax: Long = 0,
 )
 
 /** Grand Exchange requests (hub skeleton). Items and coins move only through the world's item transactions. */
@@ -33,13 +38,16 @@ sealed interface ExchangeRequest {
     data object Offers : ExchangeRequest
 
     /** The world has already removed the coins (buy) or items (sell). */
-    class Place(val slot: Int, val buy: Boolean, val obj: Int, val quantity: Int, val price: Int) : ExchangeRequest
+    class Place(val slot: Int, val buy: Boolean, val obj: Int, val quantity: Int, val price: Int, val taxRate: Int = 0) : ExchangeRequest
 
     /** Takes what waits in [slot]; the world then adds it. */
-    class Collect(val slot: Int) : ExchangeRequest
+    class Collect(val slot: Int, val items: Boolean = true, val coins: Boolean = true) : ExchangeRequest
 
-    /** Removes the offer in [slot]; everything still in it (filled or not) comes back for the world to add. */
+    /** Aborts the offer in [slot]: its unfilled part moves to the collect box. */
     class Abort(val slot: Int) : ExchangeRequest
+
+    /** The account's trade history, newest first (completed = amount traded, gold = coins exchanged). */
+    data object History : ExchangeRequest
 }
 
 /** A friends chat channel's settings as content sees them (services `ChannelSettings`; null [name] = disabled). */

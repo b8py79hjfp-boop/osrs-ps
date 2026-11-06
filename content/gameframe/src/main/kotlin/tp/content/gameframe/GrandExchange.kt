@@ -20,22 +20,43 @@ import tp.symbols.Varps
  * Commands remain for testing: `::ge`, `::gebuy`, `::gesell`, `::gecollect`, `::geabort`, `::geui`.
  */
 public class GrandExchange : ContentPlugin {
+    /** Tax-exempt obj ids, resolved from cache names at world start (immutable afterwards). */
+    private var exempt: Set<Int> = emptySet()
+
     override fun ContentScope.register() {
+        onWorldStart { exempt = TAX_EXEMPT.flatMap { objIdsNamed(it) }.toSet() }
         onOpNpcOption("Exchange") { player.open() }
+        onOpNpcOption("History") { player.history() }
+        onOpNpcOption("Collect") { player.openCollectionBox() }
         onCommand("geui") { open() }
         onCommand("ge") { exchange(GeRequest.Offers) { offers -> list(offers) } }
         onCommand("gebuy") { args -> placeFromCommand(args, buy = true) }
         onCommand("gesell") { args -> placeFromCommand(args, buy = false) }
-        onCommand("gecollect") { args -> slotArg(args)?.let { slot -> collect(slot) } }
+        onCommand("gecollect") { args -> slotArg(args)?.let { slot -> collect(slot, ItemForm.DEFAULT, coins = true) } }
         onCommand("geabort") { args -> slotArg(args)?.let { slot -> abort(slot) } }
 
         for ((n, component) in SLOT_COMPONENTS.withIndex()) onButton(component) { click -> slotButton(n, click) }
         onButton(Components.Ge_Offers.BACK) { showIndex() }
         onButton(Components.Ge_Offers.SETUP) { click -> setupButton(click) }
         onButton(Components.Ge_Offers.SETUP_CONFIRM) { confirm() }
-        onButton(Components.Ge_Offers.DETAILS_STATUS) { click -> if (click.slot == 0) selectedSlot()?.let { abort(it) } }
-        onButton(Components.Ge_Offers.DETAILS_COLLECT) { selectedSlot()?.let { collect(it) } }
-        onButton(Components.Ge_Offers.COLLECTALL) { click -> if (click.slot == 0) collectAll() }
+        onButton(Components.Ge_Offers.DETAILS_STATUS) { click ->
+            val slot = selectedSlot() ?: return@onButton
+            if (click.slot == 0) abort(slot) else modify(slot)
+        }
+        onButton(Components.Ge_Offers.HISTORY) { history() }
+        onButton(Components.Ge_History.EXCHANGE) { open() }
+        onButton(Components.Ge_Offers.DETAILS_COLLECT) { click -> selectedSlot()?.let { collectClick(it, click.slot - 2, click.op) } }
+        onButton(Components.Ge_Offers.COLLECTALL) { click ->
+            if (click.slot == 0) collectAll(toBank = click.op == 2) else repeatOffer()
+        }
+        onButton(Components.Ge_History.LIST) { click -> if (click.op == 1) buyFromHistory(click.slot / HISTORY_ROW_CHILDREN) }
+        for ((n, component) in COLLECT_BOX_COMPONENTS.withIndex()) {
+            onButton(
+                component,
+            ) { click -> collectClick(n, click.slot - 3, click.op) }
+        }
+        onButton(Components.Ge_Collect.COLLECT_INV) { collectAll(toBank = false) }
+        onButton(Components.Ge_Collect.COLLECT_BANK) { collectAll(toBank = true) }
         onButton(Components.Ge_Offers_Side.ITEMS) { click -> if (click.op == 1) offerFromInventory(click.slot) }
     }
 
@@ -80,9 +101,10 @@ public class GrandExchange : ContentPlugin {
             showInv(COLLECT_INVS[slot], intArrayOf(-1, -1), intArrayOf(0, 0))
             return
         }
-        val state = if (o.completed < o.quantity) STATE_ACTIVE else STATE_FINISHED
+        // GE13: an aborted offer shows as finished (completed < total) until its collect box is empty.
+        val state = if (o.completed < o.quantity && !o.aborted) STATE_ACTIVE else STATE_FINISHED
         val status = state or if (o.buy) 0 else STATUS_SELL
-        val gold = minOf(Int.MAX_VALUE.toLong(), o.completed.toLong() * o.price).toInt()
+        val gold = minOf(Int.MAX_VALUE.toLong(), o.gold).toInt()
         stockMarketSlot(slot, status, o.obj, o.price, o.quantity, o.completed, gold)
         val coins = minOf(Int.MAX_VALUE.toLong(), o.collectCoins).toInt()
         showInv(
@@ -108,7 +130,7 @@ public class GrandExchange : ContentPlugin {
                 when (click.op) {
                     1 -> setVarbit(Varbits.GE_SELECTEDSLOT, slot + 1)
                     2 -> abort(slot)
-                    else -> message("Offers can't be modified yet.") // OPEN-GE3
+                    else -> modify(slot)
                 }
             }
 
@@ -122,13 +144,15 @@ public class GrandExchange : ContentPlugin {
         }
     }
 
-    private fun PlayerRef.startSetup(slot: Int, buy: Boolean) {
+    private fun PlayerRef.startSetup(slot: Int, buy: Boolean, choose: Boolean = true) {
+        this[MODIFYING] = null
         setVarbit(Varbits.GE_SELECTEDSLOT, slot + 1)
         setVarbit(Varbits.GE_NEWOFFER_TYPE, if (buy) TYPE_BUY else TYPE_SELL)
         setVarp(Varps.TRADINGPOST_SEARCH, NONE)
         setVarbit(Varbits.GE_NEWOFFER_QUANTITY, 0)
         setPrice(0)
-        if (buy) chooseItem()
+        setVarbit(Varbits.GE_TRANSMIT_TAXRATE, 0)
+        if (buy && choose) chooseItem()
     }
 
     private fun PlayerRef.buying(): Boolean = varbit(Varbits.GE_NEWOFFER_TYPE) == TYPE_BUY
@@ -149,6 +173,7 @@ public class GrandExchange : ContentPlugin {
         val item = unnoted(obj)
         if (!isGeTradeable(item)) return message("You can't trade that item on the Grand Exchange.")
         setVarp(Varps.TRADINGPOST_SEARCH, item)
+        setVarbit(Varbits.GE_TRANSMIT_TAXRATE, taxRate(item, buying()))
         if (buying()) setVarp(Varps.GE_LAST_SEARCHED, item)
         setVarbit(Varbits.GE_NEWOFFER_QUANTITY, 1)
         setPrice(objValue(item).toLong())
@@ -183,7 +208,7 @@ public class GrandExchange : ContentPlugin {
         when (click.slot) {
             in QUANTITY_CHILDREN -> quantityButton(click)
             in PRICE_CHILDREN -> priceButton(click.slot)
-            else -> message("Custom percentage buttons aren't available yet.") // OPEN-GE5
+            CHILD_CUSTOM_DOWN, CHILD_CUSTOM_UP -> customPercent(click)
         }
     }
 
@@ -283,7 +308,62 @@ public class GrandExchange : ContentPlugin {
         val quantity = quantity()
         val price = price()
         if (obj == NONE || quantity <= 0 || price <= 0) return
+        if (this[MODIFYING] == slot) {
+            // OPEN-GE3: Modify replaces the offer: abort it (everything comes back), then place the new one in its slot.
+            this[MODIFYING] = null
+            val buy = buying()
+            return exchange(GeRequest.Abort(slot)) {
+                takeBack(
+                    GeRequest.Collect(slot),
+                    ItemForm.DEFAULT,
+                    "modify",
+                ) { place(slot, buy, obj, quantity, price.toInt()) { showIndex() } }
+            }
+        }
         place(slot, buying(), obj, quantity, price.toInt()) { showIndex() }
+    }
+
+    /** OPEN-GE3: opens the setup screen filled from the offer in [slot]; Confirm replaces the offer. */
+    private fun PlayerRef.modify(slot: Int) {
+        exchange(GeRequest.Offers) { offers ->
+            val o = offers?.firstOrNull { it.slot == slot && it.completed < it.quantity } ?: return@exchange
+            setVarbit(Varbits.GE_SELECTEDSLOT, slot + 1)
+            setVarbit(Varbits.GE_NEWOFFER_TYPE, if (o.buy) TYPE_BUY else TYPE_SELL)
+            setVarp(Varps.TRADINGPOST_SEARCH, o.obj)
+            setVarbit(Varbits.GE_NEWOFFER_QUANTITY, o.quantity - o.completed)
+            setPrice(o.price.toLong())
+            ifText(Components.Ge_Offers.SETUP_MARKETPRICE, "%,d coins".format(objValue(o.obj)))
+            this[MODIFYING] = slot
+        }
+    }
+
+    /** History panel 383 (client scripts 1644 init, 1645 row, 1646 finish): newest trades first. */
+    private fun PlayerRef.history() {
+        exchange(GeRequest.History) { rows ->
+            if (rows == null) return@exchange message("The Grand Exchange is unavailable.")
+            SideInventory.openMain(this, Interfaces.GE_HISTORY)
+            this[HISTORY_OBJS] = rows.map { it.obj }
+            ifEvents(Components.Ge_History.LIST, 0 until rows.size * HISTORY_ROW_CHILDREN, ops(1, EXAMINE_OP))
+            clientScript(CS_HISTORY_INIT)
+            rows.forEachIndexed { i, o ->
+                // Row: index, obj, 0 bought / 1 sold, amount traded, coins (long), fee (long).
+                clientScript(CS_HISTORY_ROW, i, o.obj, if (o.buy) 0 else 1, o.completed, o.gold, o.tax)
+            }
+            clientScript(CS_HISTORY_DONE)
+        }
+    }
+
+    /** Setup children 14/15: op 2 "Customise" asks for N; op 1 applies −N% / +N% (step price × N / 100, at least 1). */
+    private fun PlayerRef.customPercent(click: ButtonClick) {
+        val percent = varbit(Varbits.GE_PRICE_CUSTOM)
+        if (click.op == 2 || percent == 0) {
+            countDialog("Set a percentage to adjust the price by:") { n ->
+                setVarbit(Varbits.GE_PRICE_CUSTOM, n.coerceIn(1, MAX_CUSTOM_PERCENT))
+            }
+            return
+        }
+        val step = maxOf(1L, price() * percent / PERCENT)
+        setPrice(clampPrice(if (click.slot == CHILD_CUSTOM_DOWN) price() - step else price() + step))
     }
 
     private fun PlayerRef.place(slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int, after: PlayerRef.() -> Unit = {}) {
@@ -294,7 +374,7 @@ public class GrandExchange : ContentPlugin {
             if (offers.any { it.slot == slot }) return@exchange message("That offer slot is in use.")
             val taken = if (buy) takeCoins(cost.toInt()) else takeItems(obj, quantity)
             if (taken == null) return@exchange message(if (buy) "You don't have enough coins." else "You don't have enough of that item.")
-            exchange(GeRequest.Place(slot, buy, obj, quantity, price)) { placed ->
+            exchange(GeRequest.Place(slot, buy, obj, quantity, price, taxRate(obj, buy))) { placed ->
                 if (placed == null) {
                     transaction("ge place refund") { taken.all { (o, n) -> add(Invs.INV, o, n) } }
                     return@exchange message("The Grand Exchange is unavailable.")
@@ -323,30 +403,115 @@ public class GrandExchange : ContentPlugin {
         return taken.takeIf { transaction("ge place") { it.all { (o, n) -> remove(Invs.INV, o, n) } } }
     }
 
-    private fun PlayerRef.collect(slot: Int) = takeBack(slot, GeRequest.Collect(slot), "collect")
+    /** GE14: 2% (20 tenths of a percent) on sells, 0 on buys and tax-exempt items; the client shows the fee from it. */
+    private fun taxRate(obj: Int, buy: Boolean): Int = if (buy || obj in exempt) 0 else TAX_RATE
 
-    private fun PlayerRef.abort(slot: Int) = takeBack(slot, GeRequest.Abort(slot), "abort")
-
-    private fun PlayerRef.collectAll() {
-        exchange(GeRequest.Offers) { offers ->
-            offers?.filter { it.collectCoins > 0 || it.collectItems > 0 }?.forEach { collect(it.slot) }
+    /** GE13: aborting moves the unfilled part to the collect box; the player collects it like anything else. */
+    private fun PlayerRef.abort(slot: Int) {
+        exchange(GeRequest.Abort(slot)) { offers ->
+            if (offers.isNullOrEmpty()) return@exchange message("Nothing to abort.")
+            if (isOpen(Interfaces.GE_OFFERS)) refresh() else message("Offer aborted; collect it at the Grand Exchange.")
         }
     }
 
-    /** Needs room for coins and items first, since the hub hands them over once. Items over 1 come back noted. */
-    private fun PlayerRef.takeBack(slot: Int, request: GeRequest, what: String) {
-        if (inv(Invs.INV).freeSlots < 2) return message("You need two free inventory slots.")
+    /**
+     * A click on a collect slot (child 0 = item part, 1 = coins), from the offer details or the collection box (client
+     * scripts 816/818/9909): item with a noted form, count 1: op 1 item, op 2 note; count > 1: op 1 notes, op 2 items;
+     * no noted form: op 2. Op 3 sends it to the bank.
+     */
+    private fun PlayerRef.collectClick(slot: Int, part: Int, op: Int) {
+        if (part == 1) return collect(slot, if (op == BANK_OP) ItemForm.BANK else ItemForm.DEFAULT, coins = true, items = false)
+        exchange(GeRequest.Offers) { offers ->
+            val o = offers?.firstOrNull { it.slot == slot } ?: return@exchange
+            val form =
+                when {
+                    op == BANK_OP -> ItemForm.BANK
+                    noted(o.obj) < 0 -> ItemForm.UNNOTED
+                    o.collectItems == 1 -> if (op == 1) ItemForm.UNNOTED else ItemForm.NOTED
+                    else -> if (op == 1) ItemForm.NOTED else ItemForm.UNNOTED
+                }
+            collect(slot, form, coins = false)
+        }
+    }
+
+    private fun PlayerRef.collect(slot: Int, form: ItemForm, coins: Boolean, items: Boolean = true) =
+        takeBack(GeRequest.Collect(slot, items, coins), form, "collect")
+
+    private fun PlayerRef.collectAll(toBank: Boolean) {
+        exchange(GeRequest.Offers) { offers ->
+            offers
+                ?.filter { it.collectCoins > 0 || it.collectItems > 0 }
+                ?.forEach { collect(it.slot, if (toBank) ItemForm.BANK else ItemForm.DEFAULT, coins = true) }
+        }
+    }
+
+    /** "Repeat Offer" (client script 796): the last offer's type, item, quantity and price in the first free slot. */
+    private fun PlayerRef.repeatOffer() {
+        val obj = varp(Varps.GE_LAST_OFFER_ITEM)
+        if (obj <= 0) return
+        exchange(GeRequest.Offers) { offers ->
+            val free =
+                (0 until SLOTS).firstOrNull { s -> offers?.none { it.slot == s } == true }
+                    ?: return@exchange message("All your offer slots are in use.")
+            val buy = varp(Varps.GE_LAST_OFFER_TYPE) == TYPE_BUY
+            startSetup(free, buy, choose = false)
+            select(obj)
+            setVarbit(Varbits.GE_NEWOFFER_QUANTITY, varp(Varps.GE_LAST_OFFER_QUANTITY).coerceAtLeast(1))
+            setPrice(varp(Varps.GE_LAST_OFFER_PRICE).toLong().coerceAtLeast(1L))
+        }
+    }
+
+    /** History row "Buy-offer" (client script 1645): a buy offer for that item in the first free slot. */
+    private fun PlayerRef.buyFromHistory(row: Int) {
+        val obj = this[HISTORY_OBJS]?.getOrNull(row) ?: return
+        open()
+        exchange(GeRequest.Offers) { offers ->
+            val free =
+                (0 until SLOTS).firstOrNull { s -> offers?.none { it.slot == s } == true }
+                    ?: return@exchange message("All your offer slots are in use.")
+            startSetup(free, buy = true, choose = false)
+            select(obj)
+        }
+    }
+
+    /** The collection box (402 `ge_collect`, client script 788): every slot's collect inv, without the offer screen. */
+    private fun PlayerRef.openCollectionBox() {
+        SideInventory.openMain(this, Interfaces.GE_COLLECT)
+        for (c in COLLECT_BOX_COMPONENTS) ifEvents(c, 3..4, ops(1, 2, 3, EXAMINE_OP))
+        refresh()
+    }
+
+    /** How a collected item part arrives. */
+    private enum class ItemForm { DEFAULT, NOTED, UNNOTED, BANK }
+
+    /**
+     * Hands over what the hub released. Backpack first; what doesn't fit goes to the ground under the player (private
+     * to them), so nothing is lost. [ItemForm.BANK] puts items (unnoted) and coins in the bank when there's room.
+     */
+    private fun PlayerRef.takeBack(request: GeRequest, form: ItemForm, what: String, after: (PlayerRef.() -> Unit)? = null) {
         exchange(request) { offers ->
             val o = offers?.firstOrNull() ?: return@exchange message("Nothing to $what.")
             val coins = minOf(o.collectCoins, Int.MAX_VALUE.toLong()).toInt()
-            val itemObj = if (o.collectItems > 1 && noted(o.obj) >= 0) noted(o.obj) else o.obj
-            val ok =
-                transaction("ge $what") {
-                    (coins == 0 || add(Invs.INV, COINS, coins)) && (o.collectItems == 0 || add(Invs.INV, itemObj, o.collectItems))
+            val noted = noted(o.obj)
+            val itemObj =
+                when (form) {
+                    ItemForm.NOTED -> if (noted >= 0) noted else o.obj
+                    ItemForm.UNNOTED, ItemForm.BANK -> o.obj
+                    ItemForm.DEFAULT -> if (o.collectItems > 1 && noted >= 0) noted else o.obj
                 }
-            if (!ok) message("Your inventory is too full.")
-            if (isOpen(Interfaces.GE_OFFERS)) {
-                if (selectedSlot() == slot && what == "abort") showIndex()
+            val before = inv(Invs.INV).freeSlots
+            transaction("ge $what") {
+                val bank = form == ItemForm.BANK
+                val coinsOk = coins == 0 || (bank && add(Invs.BANK, COINS, coins)) || addOrDrop(Invs.INV, COINS, coins)
+                coinsOk &&
+                    (
+                        o.collectItems == 0 || (bank && add(Invs.BANK, itemObj, o.collectItems)) ||
+                            addOrDrop(Invs.INV, itemObj, o.collectItems)
+                    )
+            }
+            if (inv(Invs.INV).freeSlots == 0 && before < 2) message("Some items were placed on the ground as your inventory is full.")
+            if (after != null) return@exchange after()
+            if (isOpen(Interfaces.GE_OFFERS) || isOpen(Interfaces.GE_COLLECT)) {
                 refresh()
             } else {
                 message("You collect $coins coins and ${o.collectItems} x ${objName(o.obj)}.")
@@ -399,6 +564,94 @@ public class GrandExchange : ContentPlugin {
 
     private companion object {
         val PRICE = tp.plugin.AttrKey<Long>("ge_newoffer_price")
+        val MODIFYING = tp.plugin.AttrKey<Int>("ge_modifying_slot")
+        val HISTORY_OBJS = tp.plugin.AttrKey<List<Int>>("ge_history_objs")
+
+        /** History rows are 6 created components each; the first carries the ops (client script 1645). */
+        const val HISTORY_ROW_CHILDREN = 6
+
+        /** GE14: "Most transactions ... are subject to a 2% tax" (OSRS Wiki "Grand Exchange"), in tenths of a percent. */
+        const val TAX_RATE = 20
+
+        /** GE14: OSRS Wiki "Grand Exchange#Exempt from tax", by cache name. */
+        val TAX_EXEMPT =
+            listOf(
+                "Old school bond",
+                "Energy potion(4)",
+                "Energy potion(3)",
+                "Energy potion(2)",
+                "Energy potion(1)",
+                "Bronze arrow",
+                "Bronze dart",
+                "Iron arrow",
+                "Iron dart",
+                "Mind rune",
+                "Steel arrow",
+                "Steel dart",
+                "Bass",
+                "Bread",
+                "Cake",
+                "Cooked chicken",
+                "Cooked meat",
+                "Herring",
+                "Lobster",
+                "Mackerel",
+                "Meat pie",
+                "Pike",
+                "Salmon",
+                "Shrimps",
+                "Tuna",
+                "Ardougne teleport",
+                "Camelot teleport",
+                "Civitas illa fortis teleport",
+                "Falador teleport",
+                "Games necklace(8)",
+                "Kourend castle teleport",
+                "Lumbridge teleport",
+                "Ring of dueling(8)",
+                "Teleport to house",
+                "Varrock teleport",
+                "Chisel",
+                "Gardening trowel",
+                "Glassblowing pipe",
+                "Hammer",
+                "Needle",
+                "Pestle and mortar",
+                "Rake",
+                "Saw",
+                "Secateurs",
+                "Seed dibber",
+                "Shears",
+                "Spade",
+                "Watering can(8)",
+            )
+
+        /** Collect op 3 "Bank". */
+        const val BANK_OP = 3
+
+        /** Collection box slots COLLECT_0..7 (enum 1011). */
+        val COLLECT_BOX_COMPONENTS =
+            listOf(
+                Components.Ge_Collect.COLLECT_0,
+                Components.Ge_Collect.COLLECT_1,
+                Components.Ge_Collect.COLLECT_2,
+                Components.Ge_Collect.COLLECT_3,
+                Components.Ge_Collect.COLLECT_4,
+                Components.Ge_Collect.COLLECT_5,
+                Components.Ge_Collect.COLLECT_6,
+                Components.Ge_Collect.COLLECT_7,
+            )
+
+        /** Client scripts of the history panel 383 (cache 2757). */
+        const val CS_HISTORY_INIT = 1644
+        const val CS_HISTORY_ROW = 1645
+        const val CS_HISTORY_DONE = 1646
+
+        /** Setup children 14 (−N%) and 15 (+N%); N in varbit ge_price_custom (7 bits, OPEN-GE5 limit 1..100). */
+        const val CHILD_CUSTOM_DOWN = 14
+        const val CHILD_CUSTOM_UP = 15
+        const val MAX_CUSTOM_PERCENT = 100
+        const val PERCENT = 100L
 
         /** Coins and platinum tokens (cache objs 995, 13204; platinum = 1,000 coins). */
         const val COINS = 995

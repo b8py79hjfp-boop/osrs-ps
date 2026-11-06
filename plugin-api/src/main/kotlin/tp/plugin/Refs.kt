@@ -31,14 +31,50 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         val bridge = p.world.accounts ?: return reply(null)
         val engineRequest =
             when (request) {
-                GeRequest.Offers -> ExchangeRequest.Offers
-                is GeRequest.Place -> ExchangeRequest.Place(request.slot, request.buy, request.obj, request.quantity, request.price)
-                is GeRequest.Collect -> ExchangeRequest.Collect(request.slot)
-                is GeRequest.Abort -> ExchangeRequest.Abort(request.slot)
+                GeRequest.Offers -> {
+                    ExchangeRequest.Offers
+                }
+
+                is GeRequest.Place -> {
+                    ExchangeRequest.Place(
+                        request.slot,
+                        request.buy,
+                        request.obj,
+                        request.quantity,
+                        request.price,
+                        request.taxRate,
+                    )
+                }
+
+                is GeRequest.Collect -> {
+                    ExchangeRequest.Collect(request.slot, request.items, request.coins)
+                }
+
+                is GeRequest.Abort -> {
+                    ExchangeRequest.Abort(request.slot)
+                }
+
+                GeRequest.History -> {
+                    ExchangeRequest.History
+                }
             }
         bridge.exchange(p, engineRequest) { player, offers ->
             PlayerRef(player).reply(
-                offers?.map { GeOffer(it.slot, it.buy, it.obj, it.quantity, it.price, it.completed, it.collectCoins, it.collectItems) },
+                offers?.map {
+                    GeOffer(
+                        it.slot,
+                        it.buy,
+                        it.obj,
+                        it.quantity,
+                        it.price,
+                        it.completed,
+                        it.collectCoins,
+                        it.collectItems,
+                        it.gold,
+                        it.aborted,
+                        it.tax,
+                    )
+                },
             )
         }
     }
@@ -245,7 +281,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     /** Runs client script [id] with Int/String [args]. */
     public fun clientScript(id: Int, vararg args: Any) {
-        require(args.all { it is Int || it is String }) { "client script args must be Int or String" }
+        require(args.all { it is Int || it is String || it is Long }) { "client script args must be Int, Long or String" }
         p.session.send(ServerMessage.ClientScript(id, args.toList()))
     }
 
@@ -439,6 +475,10 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     public fun dropAt(invId: Int, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean =
         tx.dropToGround(of(invId), slot, obj, count, at, owner)
 
+    /** Adds to [invId], or drops at the player's feet (private to them) if it doesn't fit. */
+    public fun addOrDrop(invId: Int, obj: Int, count: Int): Boolean =
+        tx.addOrDrop(of(invId), obj, count, player.p.coord, player.p.username)
+
     /** Picks [obj] up into [invId]. */
     public fun take(obj: ObjRef, invId: Int): Boolean = tx.takeFromGround(obj.g, of(invId))
 }
@@ -523,12 +563,18 @@ public sealed interface GeRequest {
         public val obj: Int,
         public val quantity: Int,
         public val price: Int,
+        /** Sell tax in tenths of a percent (0 = exempt). */
+        public val taxRate: Int = 0,
     ) :
         GeRequest
 
-    public class Collect(public val slot: Int) : GeRequest
+    /** Collects the item part, the coin part, or both. */
+    public class Collect(public val slot: Int, public val items: Boolean = true, public val coins: Boolean = true) : GeRequest
 
     public class Abort(public val slot: Int) : GeRequest
+
+    /** Trade history, newest first: each row's [GeOffer.completed] is the amount traded, [GeOffer.gold] the coins. */
+    public data object History : GeRequest
 }
 
 /** A Grand Exchange offer ([collectCoins]/[collectItems]: waiting to be collected, or returned by an abort). */
@@ -541,6 +587,11 @@ public class GeOffer(
     public val completed: Int,
     public val collectCoins: Long,
     public val collectItems: Int,
+    /** Coins exchanged so far (spent buying, received selling). */
+    public val gold: Long = 0,
+    public val aborted: Boolean = false,
+    /** Sell tax paid so far (history: the row's fee). */
+    public val tax: Long = 0,
 )
 
 /** Client scripts that open chatbox input dialogs (cache clientscript names; RS Mod `ClientScripts.mesLayerMode7/9`). */

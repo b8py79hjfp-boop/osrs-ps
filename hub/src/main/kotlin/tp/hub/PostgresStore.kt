@@ -136,6 +136,10 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             getInt("completed"),
             getLong("collect_coins"),
             getInt("collect_items"),
+            getLong("gold"),
+            getBoolean("aborted"),
+            getInt("tax_rate"),
+            getLong("tax"),
         )
 
     private fun offers(query: String, vararg args: Any): List<GeOffer> =
@@ -208,13 +212,13 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
     override fun offers(id: Long): List<GeOffer> = offers("SELECT * FROM ge_offers WHERE account_id = ? ORDER BY slot", id)
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =
-        offers("SELECT * FROM ge_offers WHERE obj = ? AND buy = ? AND completed < quantity ORDER BY id", obj, buy)
+        offers("SELECT * FROM ge_offers WHERE obj = ? AND buy = ? AND NOT aborted AND completed < quantity ORDER BY id", obj, buy)
 
     override fun putOffer(offer: GeOffer): GeOffer {
         if (offer.id == 0L) {
             return offers(
-                "INSERT INTO ge_offers (account_id, slot, buy, obj, quantity, price, completed, collect_coins, collect_items) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
+                "INSERT INTO ge_offers (account_id, slot, buy, obj, quantity, price, completed, collect_coins, collect_items, gold, " +
+                    "aborted, tax_rate, tax) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
                 offer.accountId,
                 offer.slot,
                 offer.buy,
@@ -224,19 +228,75 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 offer.completed,
                 offer.collectCoins,
                 offer.collectItems,
+                offer.gold,
+                offer.aborted,
+                offer.taxRate,
+                offer.tax,
             ).single()
         }
         exec(
-            "UPDATE ge_offers SET completed = ?, collect_coins = ?, collect_items = ? WHERE id = ?",
+            "UPDATE ge_offers SET completed = ?, collect_coins = ?, collect_items = ?, gold = ?, aborted = ?, tax = ? WHERE id = ?",
             offer.completed,
             offer.collectCoins,
             offer.collectItems,
+            offer.gold,
+            offer.aborted,
+            offer.tax,
             offer.id,
         )
         return offer
     }
 
     override fun deleteOffer(offerId: Long) = exec("DELETE FROM ge_offers WHERE id = ?", offerId)
+
+    override fun addHistory(offer: GeOffer) {
+        exec(
+            "INSERT INTO ge_history (account_id, buy, obj, quantity, price, completed, gold, tax) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            offer.accountId,
+            offer.buy,
+            offer.obj,
+            offer.quantity,
+            offer.price,
+            offer.completed,
+            offer.gold,
+            offer.tax,
+        )
+        exec(
+            "DELETE FROM ge_history WHERE account_id = ? AND id NOT IN " +
+                "(SELECT id FROM ge_history WHERE account_id = ? ORDER BY id DESC LIMIT $GE_HISTORY_SIZE)",
+            offer.accountId,
+            offer.accountId,
+        )
+    }
+
+    override fun history(id: Long): List<GeOffer> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM ge_history WHERE account_id = ? ORDER BY id DESC").use { ps ->
+                ps.setLong(1, id)
+                ps.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            add(
+                                GeOffer(
+                                    rs.getLong("id"),
+                                    id,
+                                    -1,
+                                    rs.getBoolean("buy"),
+                                    rs.getInt("obj"),
+                                    rs.getInt("quantity"),
+                                    rs.getInt("price"),
+                                    rs.getInt("completed"),
+                                    0,
+                                    0,
+                                    rs.getLong("gold"),
+                                    tax = rs.getLong("tax"),
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
     override fun submitHiscores(id: Long, name: String, xpTenths: IntArray) =
         exec(
@@ -297,6 +357,14 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                     id bigserial PRIMARY KEY, account_id bigint REFERENCES accounts(id), slot int NOT NULL, buy boolean NOT NULL,
                     obj int NOT NULL, quantity int NOT NULL, price int NOT NULL, completed int NOT NULL,
                     collect_coins bigint NOT NULL, collect_items int NOT NULL)""",
+                "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS gold bigint NOT NULL DEFAULT 0",
+                "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS aborted boolean NOT NULL DEFAULT false",
+                "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS tax_rate int NOT NULL DEFAULT 0",
+                "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS tax bigint NOT NULL DEFAULT 0",
+                """CREATE TABLE IF NOT EXISTS ge_history (
+                    id bigserial PRIMARY KEY, account_id bigint REFERENCES accounts(id), buy boolean NOT NULL, obj int NOT NULL,
+                    quantity int NOT NULL, price int NOT NULL, completed int NOT NULL, gold bigint NOT NULL)""",
+                "ALTER TABLE ge_history ADD COLUMN IF NOT EXISTS tax bigint NOT NULL DEFAULT 0",
                 """CREATE TABLE IF NOT EXISTS hiscores (
                     account_id bigint PRIMARY KEY REFERENCES accounts(id), name text NOT NULL, xp int[] NOT NULL)""",
                 """CREATE TABLE IF NOT EXISTS audit_log (

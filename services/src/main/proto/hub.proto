@@ -226,6 +226,10 @@ message GeOffer {
   int32 completed = 8;
   int64 collect_coins = 9;
   int32 collect_items = 10;
+  int64 gold = 11;
+  bool aborted = 12;
+  int32 tax_rate = 13;
+  int64 tax = 14;
 }
 
 message PlaceOfferRequest {
@@ -235,11 +239,14 @@ message PlaceOfferRequest {
   int32 obj = 4;
   int32 quantity = 5;
   int32 price = 6;
+  int32 tax_rate = 7;
 }
 
 message SlotRequest {
   int64 account_id = 1;
   int32 slot = 2;
+  // 0 all, 1 items, 2 coins (CollectPart ordinal)
+  int32 part = 3;
 }
 
 message GeOffers {
@@ -256,6 +263,7 @@ service Exchange {
   rpc Offers(AccountRef) returns (GeOffers);
   rpc Collect(SlotRequest) returns (MaybeOffer);
   rpc Abort(SlotRequest) returns (MaybeOffer);
+  rpc History(AccountRef) returns (GeOffers);
   rpc GuidePrices(Empty) returns (GuidePriceList);
 }
 

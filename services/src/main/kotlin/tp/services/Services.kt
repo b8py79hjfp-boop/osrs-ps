@@ -178,18 +178,36 @@ class GeOffer(
     /** Coins / items waiting to be collected. */
     val collectCoins: Long,
     val collectItems: Int,
+    /** Coins actually exchanged so far, at trade prices (spent buying, or the gross received selling). */
+    val gold: Long = 0,
+    /** Aborted: no longer matched; shown as finished until collected (grand-exchange.md GE13). */
+    val aborted: Boolean = false,
+    /** Sell tax in tenths of a percent for this offer (GE14; 0 = exempt or a buy offer). */
+    val taxRate: Int = 0,
+    /** Tax paid so far (sell offers). */
+    val tax: Long = 0,
 )
+
+/** What a collect takes from a slot. */
+enum class CollectPart { ALL, ITEMS, COINS }
 
 interface ExchangeService {
     /** Places an offer; the world has already removed coins/items through an item transaction. */
-    suspend fun place(accountId: Long, slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int): GeOffer
+    suspend fun place(accountId: Long, slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int, taxRate: Int = 0): GeOffer
 
     suspend fun offers(accountId: Long): List<GeOffer>
 
     /** Takes what is waiting in [slot]; the world adds it through an item transaction. */
-    suspend fun collect(accountId: Long, slot: Int): GeOffer?
+    suspend fun collect(accountId: Long, slot: Int, part: CollectPart = CollectPart.ALL): GeOffer?
 
+    /** Marks the offer aborted and moves the unfilled part (coins or items) into its collect box (GE13). */
     suspend fun abort(accountId: Long, slot: Int): GeOffer?
+
+    /**
+     * The account's last trades, newest first (grand-exchange.md GE12): each finished or aborted-with-trades offer as a
+     * [GeOffer] whose [GeOffer.completed] is the amount traded and [GeOffer.gold] the coins exchanged.
+     */
+    suspend fun history(accountId: Long): List<GeOffer>
 
     /** Guide prices (obj -> coins) from completed trades; objs never traded are absent (callers fall back to cost). */
     suspend fun guidePrices(): Map<Int, Int>

@@ -330,7 +330,7 @@ internal class RspSession(
                 }
 
                 is ServerMessage.ClientScript -> {
-                    RunClientScript(message.id, message.args.map { if (it is String) 's' else 'i' }.toCharArray(), message.args)
+                    RunClientScript(message.id, message.args.map(::scriptArgType).toCharArray(), message.args)
                 }
 
                 is ServerMessage.PlayerOption -> {
@@ -529,4 +529,12 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
         else -> {
             error("not a ui message: $message")
         }
+    }
+
+/** RUNCLIENTSCRIPT argument type chars (RSProt `RunClientScriptEncoder`): 's' string, 'Ï' long, else int. */
+private fun scriptArgType(arg: Any): Char =
+    when (arg) {
+        is String -> 's'
+        is Long -> '\u00CF'
+        else -> 'i'
     }

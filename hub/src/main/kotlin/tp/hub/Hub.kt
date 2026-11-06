@@ -10,6 +10,7 @@ import tp.services.AccountService
 import tp.services.Broadcast
 import tp.services.BroadcastService
 import tp.services.ChannelSettings
+import tp.services.CollectPart
 import tp.services.ExchangeService
 import tp.services.FriendEntry
 import tp.services.GeOffer
@@ -388,10 +389,11 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
     @Suppress("UNCHECKED_CAST")
     private suspend fun <T> io(block: () -> T): T = db(block) as T
 
-    override suspend fun place(accountId: Long, slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int): GeOffer =
+    override suspend fun place(accountId: Long, slot: Int, buy: Boolean, obj: Int, quantity: Int, price: Int, taxRate: Int): GeOffer =
         io {
             synchronized(this) {
-                var offer = store.putOffer(GeOffer(0, accountId, slot, buy, obj, quantity, price, 0, 0, 0))
+                val rate = if (buy) 0 else taxRate.coerceIn(0, MAX_TAX_RATE)
+                var offer = store.putOffer(GeOffer(0, accountId, slot, buy, obj, quantity, price, 0, 0, 0, taxRate = rate))
                 for (other in store.openOffers(obj, !buy)) {
                     if (offer.completed >= offer.quantity) break
                     val priceOk = if (buy) other.price <= price else other.price >= price
@@ -399,9 +401,11 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
                     val amount = minOf(offer.quantity - offer.completed, other.quantity - other.completed)
                     val tradePrice = other.price // the older offer's price
                     offer = fill(offer, amount, tradePrice)
-                    store.putOffer(fill(other, amount, tradePrice))
+                    val filled = store.putOffer(fill(other, amount, tradePrice))
+                    if (filled.completed >= filled.quantity) store.addHistory(filled)
                     recordTrade(obj, tradePrice, amount)
                 }
+                if (offer.completed >= offer.quantity) store.addHistory(offer)
                 store.putOffer(offer)
             }
         }
@@ -422,10 +426,20 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
 
     private companion object {
         const val GUIDE_WEIGHT = 1_000
+
+        /** GE14: tax rate in tenths of a percent (client script 5731), at most 100%; capped at 5,000,000 per item. */
+        const val TAX_SCALE = 1_000L
+        const val MAX_TAX_RATE = 1_000
+        const val TAX_CAP = 5_000_000L
     }
 
-    private fun fill(o: GeOffer, amount: Int, tradePrice: Int): GeOffer =
-        GeOffer(
+    /**
+     * One trade of [amount] at [tradePrice]. Buyer: items, plus a refund of the price difference. Seller: coins less the
+     * tax, ⌊tradePrice × rate / 1000⌋ per item capped at 5,000,000 (GE14).
+     */
+    private fun fill(o: GeOffer, amount: Int, tradePrice: Int): GeOffer {
+        val taxEach = if (o.buy) 0L else minOf(TAX_CAP, tradePrice.toLong() * o.taxRate / TAX_SCALE)
+        return GeOffer(
             o.id,
             o.accountId,
             o.slot,
@@ -434,32 +448,50 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
             o.quantity,
             o.price,
             o.completed + amount,
-            o.collectCoins + if (o.buy) (o.price - tradePrice).toLong() * amount else tradePrice.toLong() * amount,
+            o.collectCoins + if (o.buy) (o.price - tradePrice).toLong() * amount else (tradePrice - taxEach) * amount,
             o.collectItems + if (o.buy) amount else 0,
+            o.gold + tradePrice.toLong() * amount,
+            o.aborted,
+            o.taxRate,
+            o.tax + taxEach * amount,
         )
+    }
 
     override suspend fun offers(accountId: Long): List<GeOffer> = io { store.offers(accountId) }
 
-    override suspend fun collect(accountId: Long, slot: Int): GeOffer? =
+    /**
+     * Takes [part] of what waits in [slot] and returns the offer as it was (what to hand over). A finished or aborted offer
+     * whose collect box is then empty is removed.
+     */
+    override suspend fun collect(accountId: Long, slot: Int, part: CollectPart): GeOffer? =
         io {
             synchronized(this) {
                 val o = store.offers(accountId).firstOrNull { it.slot == slot } ?: return@synchronized null
-                if (o.completed >= o.quantity) {
+                val coins = if (part == CollectPart.ITEMS) o.collectCoins else 0L
+                val items = if (part == CollectPart.COINS) o.collectItems else 0
+                val done = (o.aborted || o.completed >= o.quantity) && coins == 0L && items == 0
+                if (done) {
                     store.deleteOffer(o.id)
                 } else {
-                    store.putOffer(GeOffer(o.id, o.accountId, o.slot, o.buy, o.obj, o.quantity, o.price, o.completed, 0, 0))
+                    store.putOffer(
+                        GeOffer(
+                            o.id,
+                            o.accountId,
+                            o.slot,
+                            o.buy,
+                            o.obj,
+                            o.quantity,
+                            o.price,
+                            o.completed,
+                            coins,
+                            items,
+                            o.gold,
+                            o.aborted,
+                            o.taxRate,
+                            o.tax,
+                        ),
+                    )
                 }
-                o
-            }
-        }
-
-    override suspend fun abort(accountId: Long, slot: Int): GeOffer? =
-        io {
-            synchronized(this) {
-                val o = store.offers(accountId).firstOrNull { it.slot == slot } ?: return@synchronized null
-                store.deleteOffer(o.id)
-                // Aborting returns the unfilled part: coins for buys, items for sells.
-                val left = o.quantity - o.completed
                 GeOffer(
                     o.id,
                     o.accountId,
@@ -469,9 +501,44 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
                     o.quantity,
                     o.price,
                     o.completed,
-                    o.collectCoins + if (o.buy) o.price.toLong() * left else 0,
-                    o.collectItems + if (o.buy) 0 else left,
+                    o.collectCoins - coins,
+                    o.collectItems - items,
+                    o.gold,
+                    o.aborted,
+                    o.taxRate,
+                    o.tax,
                 )
             }
         }
+
+    /** GE13: the offer stops matching; its unfilled part (coins for buys, items for sells) moves to the collect box. */
+    override suspend fun abort(accountId: Long, slot: Int): GeOffer? =
+        io {
+            synchronized(this) {
+                val o = store.offers(accountId).firstOrNull { it.slot == slot } ?: return@synchronized null
+                if (o.aborted || o.completed >= o.quantity) return@synchronized o
+                if (o.completed > 0) store.addHistory(o) // a partly traded offer still traded
+                val left = o.quantity - o.completed
+                store.putOffer(
+                    GeOffer(
+                        o.id,
+                        o.accountId,
+                        o.slot,
+                        o.buy,
+                        o.obj,
+                        o.quantity,
+                        o.price,
+                        o.completed,
+                        o.collectCoins + if (o.buy) o.price.toLong() * left else 0,
+                        o.collectItems + if (o.buy) 0 else left,
+                        o.gold,
+                        aborted = true,
+                        taxRate = o.taxRate,
+                        tax = o.tax,
+                    ),
+                )
+            }
+        }
+
+    override suspend fun history(accountId: Long): List<GeOffer> = io { store.history(accountId) }
 }

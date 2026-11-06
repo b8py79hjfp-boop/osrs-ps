@@ -545,7 +545,7 @@ class World(
     }
 
     /** [player]'s inventory [invId] (created empty on first use, sized from the `inv` config). */
-    fun inventory(player: Player, invId: Int, stack: InvStack = InvStack.NORMAL): Inventory =
+    fun inventory(player: Player, invId: Int, stack: InvStack = defaultStack(invId)): Inventory =
         player.invs.getOrPut(invId) {
             Inventory(
                 invId,
@@ -555,6 +555,9 @@ class World(
                 stack,
             )
         }
+
+    /** The bank stacks everything (RS Mod `InvStackType.Always` for `inv.bank`); other invs follow the obj. */
+    private fun defaultStack(invId: Int): InvStack = if (invId == BANK_INV) InvStack.ALWAYS else InvStack.NORMAL
 
     /** Starts sending [inv] to its owner; the next send is a full update. */
     fun transmitInventory(inv: Inventory) {
@@ -918,6 +921,9 @@ class World(
 
         /** Player/NPC view distance in tiles (RSProt player/NPC info default view distance 15). */
         private const val VIEW_DISTANCE = 15
+
+        /** Cache inv `bank` (95). */
+        private const val BANK_INV = 95
 
         /** Invalid-input budget (ours, DECISIONS D-022): 50 per 100 ticks before disconnect. */
         private const val INVALID_INPUT_LIMIT = 50

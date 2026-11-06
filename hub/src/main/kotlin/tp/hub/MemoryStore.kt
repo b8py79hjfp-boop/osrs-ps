@@ -117,7 +117,7 @@ class MemoryStore : HubStore {
     override fun offers(id: Long): List<GeOffer> = geOffers.values.filter { it.accountId == id }.sortedBy { it.slot }
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =
-        geOffers.values.filter { it.obj == obj && it.buy == buy && it.completed < it.quantity }.sortedBy { it.id }
+        geOffers.values.filter { it.obj == obj && it.buy == buy && !it.aborted && it.completed < it.quantity }.sortedBy { it.id }
 
     override fun putOffer(offer: GeOffer): GeOffer {
         val stored =
@@ -133,6 +133,10 @@ class MemoryStore : HubStore {
                     offer.completed,
                     offer.collectCoins,
                     offer.collectItems,
+                    offer.gold,
+                    offer.aborted,
+                    offer.taxRate,
+                    offer.tax,
                 )
             } else {
                 offer
@@ -144,6 +148,18 @@ class MemoryStore : HubStore {
     override fun deleteOffer(offerId: Long) {
         geOffers.remove(offerId)
     }
+
+    private val geHistory = java.util.concurrent.ConcurrentHashMap<Long, ArrayDeque<GeOffer>>()
+
+    override fun addHistory(offer: GeOffer) {
+        val rows = geHistory.computeIfAbsent(offer.accountId) { ArrayDeque() }
+        synchronized(rows) {
+            rows.addFirst(offer)
+            while (rows.size > GE_HISTORY_SIZE) rows.removeLast()
+        }
+    }
+
+    override fun history(id: Long): List<GeOffer> = geHistory[id]?.let { synchronized(it) { it.toList() } }.orEmpty()
 
     override fun submitHiscores(id: Long, name: String, xpTenths: IntArray) {
         hiscores[id] = name to xpTenths.copyOf()

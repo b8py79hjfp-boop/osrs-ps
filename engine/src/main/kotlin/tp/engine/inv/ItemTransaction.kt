@@ -41,6 +41,12 @@ class ItemTransaction internal constructor(
     private fun stacks(inv: Inventory, obj: Int): Boolean =
         inv.stack == InvStack.ALWAYS || objTypes[obj]?.isStackable == true
 
+    private fun fits(inv: Inventory, obj: Int, count: Int): Boolean {
+        if (!stacks(inv, obj)) return inv.freeSlots >= count
+        val slot = inv.slotOf(obj)
+        return if (slot >= 0) inv.counts[slot].toLong() + count <= Int.MAX_VALUE else inv.firstFree() >= 0
+    }
+
     /** Adds [count] of [obj]: onto its stack if it stacks here, else one per free slot. */
     @Suppress("ReturnCount") // each failure is an early abort
     fun add(inv: Inventory, obj: Int, count: Int): Boolean {
@@ -123,6 +129,23 @@ class ItemTransaction internal constructor(
      */
     fun dropToGround(inv: Inventory, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean {
         if (!removeAt(inv, slot, obj, count)) return false
+        val tradeable = objTypes[obj]?.tradeable == true
+        val lifetime = if (tradeable) timing.tradeableDespawn else timing.untradeableDespawn
+        val publicAt = if (tradeable) tick + timing.privateTicks else -1L
+        val g = GroundObj(obj, count, at, owner, publicAt, tick + lifetime)
+        ground.add(g)
+        groundChanges += GroundChange(g, added = true)
+        return true
+    }
+
+    /**
+     * Adds [count] of [obj] to [inv], or, if it doesn't fit, creates it on the ground at [at] private to [owner] (same
+     * ground rules as [dropToGround]). For items handed over by an outside service (GE collection) that must not be lost.
+     */
+    fun addOrDrop(inv: Inventory, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean {
+        if (failed) return false
+        if (count <= 0 || objTypes[obj] == null) return fail()
+        if (fits(inv, obj, count)) return add(inv, obj, count)
         val tradeable = objTypes[obj]?.tradeable == true
         val lifetime = if (tradeable) timing.tradeableDespawn else timing.untradeableDespawn
         val publicAt = if (tradeable) tick + timing.privateTicks else -1L
