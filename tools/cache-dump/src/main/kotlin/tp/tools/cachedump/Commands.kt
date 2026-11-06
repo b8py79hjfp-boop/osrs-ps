@@ -112,3 +112,16 @@ internal fun printCollision(cache: Js5Cache, cacheDir: Path, x: Int, z: Int, lev
     }
     println("centre flags = 0x${Integer.toHexString(flags[x, z, level])}")
 }
+
+internal fun printDbRows(cache: Js5Cache, tableId: Int) {
+    val configs = Configs.load(cache)
+    for (row in configs.dbRows) {
+        if (row.tableId != tableId) continue
+        println(
+            "${row.id}: " +
+                row.columns.entries
+                    .sortedBy { it.key }
+                    .joinToString(" ") { (col, v) -> "$col=${formatValue(v)}" },
+        )
+    }
+}

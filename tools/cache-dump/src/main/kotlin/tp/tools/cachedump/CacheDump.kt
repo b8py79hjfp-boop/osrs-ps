@@ -14,6 +14,7 @@ private val USAGE =
       summary                              archives, config counts, interfaces, map squares
       config <type> <id>                   one decoded config as `field = value` lines
       config <type> --all                  one line per id with the key fields
+      dbrows <table>                       every row of a db table, one line per row (`id: col=values ...`)
       interface <id>                       every component of an interface
       map <squareX> <squareZ>              square summary, level-0 tile settings, loc list
       collision <x> <z> <level> [radius]   ASCII collision render around a tile (default radius 16)
@@ -62,6 +63,10 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
 
         "config" -> {
             printConfig(cache, args)
+        }
+
+        "dbrows" -> {
+            printDbRows(cache, intArg(args, 0, "table id"))
         }
 
         "interface" -> {
