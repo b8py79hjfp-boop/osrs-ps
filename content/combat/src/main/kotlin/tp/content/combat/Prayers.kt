@@ -5,6 +5,7 @@ import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.plugin.TimerId
 import tp.plugin.WorldRef
+import tp.symbols.Components
 import tp.symbols.Varbits
 
 /**
@@ -117,6 +118,7 @@ internal fun PlayerRef.headIcon(): Int = activePrayers().firstOrNull { it.effect
 
 internal fun PlayerRef.deactivateAllPrayers() {
     setVarbit(Varbits.PRAYER_ALLACTIVE, 0)
+    setVarbit(Varbits.QUICKPRAYER_ACTIVE, 0)
     stopTimer(PRAYER_DRAIN)
     Appearance.refresh(this)
 }
@@ -130,6 +132,22 @@ public class Prayers : ContentPlugin {
                 registerButton(prayer)
             }
         }
+        onButton(Components.Orbs.PRAYERBUTTON, QUICK_PRAYER_OP) { toggleQuickPrayers() }
+    }
+
+    /**
+     * Quick-prayer orb op 1 (prayers.md P6): off -> turn on every selected prayer (level-checked, conflicts resolved in
+     * book order like individual clicks); on -> turn every prayer off. The orb shows varbit quickprayer_active.
+     */
+    private fun PlayerRef.toggleQuickPrayers() {
+        if (varbit(Varbits.QUICKPRAYER_ACTIVE) == 1) return deactivateAllPrayers()
+        val selected = varbit(Varbits.QUICKPRAYER_SELECTED)
+        if (selected == 0) return message("You haven't selected any quick-prayers.")
+        if (level(Stat.PRAYER) <= 0) return message("You have run out of prayer points, you can recharge at an altar.")
+        for (prayer in PrayerTable.prayers) {
+            if (selected and (1 shl prayer.bit) != 0 && varbit(Varbits.PRAYER_ALLACTIVE) and (1 shl prayer.bit) == 0) toggle(prayer)
+        }
+        if (varbit(Varbits.PRAYER_ALLACTIVE) != 0) setVarbit(Varbits.QUICKPRAYER_ACTIVE, 1)
     }
 
     private fun ContentScope.registerButton(prayer: PrayerDef) {
@@ -141,7 +159,10 @@ public class Prayers : ContentPlugin {
         val mask = 1 shl prayer.bit
         if (bits and mask != 0) {
             setVarbit(Varbits.PRAYER_ALLACTIVE, bits and mask.inv())
-            if (bits and mask.inv() == 0) stopTimer(PRAYER_DRAIN)
+            if (bits and mask.inv() == 0) {
+                stopTimer(PRAYER_DRAIN)
+                setVarbit(Varbits.QUICKPRAYER_ACTIVE, 0)
+            }
             Appearance.refresh(this)
             return
         }
@@ -192,6 +213,9 @@ public class Prayers : ContentPlugin {
     private companion object {
         /** P2: base prayer drain resistance 60 (+2 per prayer bonus). */
         const val BASE_RESISTANCE = 60
+
+        /** Prayer orb op 1 "Activate" (cache interface 160 actions; op 2 is Setup). */
+        const val QUICK_PRAYER_OP = 1
         const val MAX_PRAYERS = 32
     }
 }

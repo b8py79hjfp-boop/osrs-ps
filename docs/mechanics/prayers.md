@@ -19,3 +19,13 @@ Protect from Magic/Missiles/Melee, Smite, Redemption, Retribution, Protect Item 
 
 - Infobox "drain" values (PfM 20, Smite 30, …) differ from the drain-effect table; the table values reproduce the
   stated drain times (e.g. Protect from Melee 1 point / 3 s at bonus 0: 0.6 × 60 / 12 = 3 s). We use the table.
+
+## P6 — Quick prayers (orb)
+
+Clicking the prayer orb turns on every prayer selected in the quick-prayer setup (varbit `quickprayer_selected`).
+Each one goes through the same level check and conflict rule as a book click, and varbit `quickprayer_active` is set
+to 1. Clicking the orb again, running out of points, or turning off the last active prayer turns all prayers off and
+clears `quickprayer_active`. Source: OSRS Wiki "Prayer#Quick-prayers"; RS Mod `QuickPrayerScript`.
+
+- **OPEN-P6:** the exact message when nothing is selected. The current text is "You haven't selected any
+  quick-prayers."
