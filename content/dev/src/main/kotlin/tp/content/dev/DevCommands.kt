@@ -28,7 +28,7 @@ public class DevCommands : ContentPlugin {
         }
         onCommand("kit") {
             transaction("dev ::kit") { KIT.all { (obj, count) -> add(Invs.INV, obj, count) } }
-            message("Kit: whip, dds, AGS, claws, rune crossbow + bolts, sharks, karambwans, brews, barrage + veng runes.")
+            message("Kit added: weapons, food, potions and runes.")
         }
         onCommand("wild") { teleport(CoordGrid(WILD_X, WILD_Z)) }
         onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
