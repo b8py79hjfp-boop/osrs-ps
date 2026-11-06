@@ -325,6 +325,13 @@ through a transaction or the item journal. Display copies must never be real ite
   - **Keys:** the dev key pair is in `.data/manifest/`. Its public half is in `launcher.properties`; replace it
     before a public release.
 
+- **Launcher prompt removed (structural patch, `LoginNagPatch`):** "Existing User" sets the login state to 38 ("The
+  move is almost here", the Jagex Launcher prompt). No jav_config param removes it (3, 8, 16 tried; 30=false shows a
+  stricter screen). The field and its multiplier are found through RuneLite's `client.getLoginIndex()`, not by
+  obfuscated name. After each of its 9 writes (pinned as `loginNagSites` in patches.json), `tp.gamepatch.LoginNag.fix`
+  turns state 38 into 2 (the login form). The game's methods gain no branches; the helper is a new class in the jar.
+  Verified in the client: Existing User opens the login form, and login succeeds.
+
 ### D-028 addendum — RuneLite fork: decision per check (brief §4.2 items 3 and 4)
 
 Fork source: `client/runelite/patches`; what the client calls: `client/runelite/ENDPOINTS.md`. The tag, the data

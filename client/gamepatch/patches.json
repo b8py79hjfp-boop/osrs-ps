@@ -1,5 +1,6 @@
 {
   "comment": "Game-client URL rewrites (brief §4.2 change set 2). Found by exact value; 'count' is how many constant sites must match (LDC operands + field values). {site} = our website/hub base URL, {host} = its host name. Note: rewriting '.runescape.com' to '' also makes the client's codebase host check (the class holding 'invalidhost') accept any host, which our own domains need (DECISIONS D-028).",
+  "loginNagSites": 9,
   "urls": [
     { "name": "support-home", "from": "https://support.runescape.com/hc/en-gb", "to": "{site}/support", "count": 5 },
     { "name": "support-article-ja", "from": "https://support.runescape.com/hc/articles/34153372787857", "to": "{site}/support", "count": 1 },

@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream
 /**
  * Puts the patched game client into the fork's shaded jar: every class that exists in [patched] replaces the entry
  * of the same name in [forkJar] (the shaded jar bundles RuneLite's unpatched injected client). Fails if any patched
- * class is missing from the fork jar, which means the fork was built against a different game client.
+ * class other than the ones gamepatch adds (`tp/gamepatch/`) is missing from the fork jar, which means the fork was built against a different game client.
  */
 @UntrackedTask(because = "Rewrites a jar in place; cheap and always run.")
 public abstract class MergeClientTask : DefaultTask() {
@@ -41,6 +41,14 @@ public abstract class MergeClientTask : DefaultTask() {
                     out.write(bytes)
                     out.closeEntry()
                 }
+                // Classes the patcher adds (tp/gamepatch/...) are new, not replacements.
+                for ((name, bytes) in replacements) {
+                    if (name in replaced || !name.startsWith(ADDED_PREFIX)) continue
+                    replaced += name
+                    out.putNextEntry(ZipEntry(name))
+                    out.write(bytes)
+                    out.closeEntry()
+                }
             }
         }
         val missing = replacements.keys - replaced
@@ -50,5 +58,10 @@ public abstract class MergeClientTask : DefaultTask() {
         }
         if (!fork.delete() || !tmp.renameTo(fork)) throw GradleException("could not replace $fork")
         logger.lifecycle("release client ready: $fork (${replaced.size} game-client classes patched)")
+    }
+
+    private companion object {
+        /** Package of the helper classes gamepatch adds to the game client (LoginNagPatch.HELPER). */
+        const val ADDED_PREFIX = "tp/gamepatch/"
     }
 }

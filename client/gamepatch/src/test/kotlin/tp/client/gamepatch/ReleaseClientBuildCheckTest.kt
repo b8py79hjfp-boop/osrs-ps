@@ -10,7 +10,8 @@ import java.util.zip.ZipInputStream
 
 /**
  * Brief §9 test 5 (release-client build check), game-client half: every patch rule matches exactly its declared
- * number of sites, and the patched client contains our modulus and site, with none of the values it replaced.
+ * number of sites (including the login-nag field writes), and the patched client contains our modulus and site,
+ * with none of the values it replaced.
  * (The fork half, RuneLite building against the pinned tag, is `./gradlew :client:checkFork`.)
  * Needs `./gradlew setupClient` (and the RSA key from `generateRsa`); skipped without them.
  */
@@ -30,8 +31,9 @@ class ReleaseClientBuildCheckTest {
         val rules = rules(root.resolve("client/gamepatch/patches.json"), ours, site)
         val out = Files.createTempFile("patched-client", ".jar")
         try {
-            val report = GamePatcher.patch(injected, out, rules)
-            assertEquals(emptyList<String>(), report.failures(rules))
+            val nag = nagRule(root.resolve("client/gamepatch/patches.json"), injected)
+            val report = GamePatcher.patch(injected, out, rules, nag)
+            assertEquals(emptyList<String>(), report.failures(rules, nag))
 
             val text = allClassBytes(out).toString(Charsets.ISO_8859_1)
             assertTrue(ours in text) { "our modulus is in the patched client" }
