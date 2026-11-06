@@ -52,6 +52,8 @@ object CommandCodec {
             is ClientCommand.OpNpc -> "opnpc ${c.option} ${c.index} ${c.ctrl}"
             is ClientCommand.OpPlayer -> "opplayer ${c.option} ${c.index} ${c.ctrl}"
             is ClientCommand.OpObj -> "opobj ${c.option} ${c.id} ${c.x} ${c.z} ${c.ctrl}"
+            is ClientCommand.OpPlayerT -> "opplayert ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
+            is ClientCommand.OpNpcT -> "opnpct ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
@@ -72,6 +74,8 @@ object CommandCodec {
             "opnpc" -> ClientCommand.OpNpc(i(1), i(2), b(3))
             "opplayer" -> ClientCommand.OpPlayer(i(1), i(2), b(3))
             "opobj" -> ClientCommand.OpObj(i(1), i(2), i(3), i(4), b(5))
+            "opplayert" -> ClientCommand.OpPlayerT(i(1), i(2), i(3), i(4), b(5))
+            "opnpct" -> ClientCommand.OpNpcT(i(1), i(2), i(3), i(4), b(5))
             "button" -> ClientCommand.Button(i(1), i(2), i(3), i(4))
             "chat" -> ClientCommand.PublicChat(unstr(parts[1]), i(2), i(3), i(4))
             "resume" -> ClientCommand.ResumePause(i(1), i(2))

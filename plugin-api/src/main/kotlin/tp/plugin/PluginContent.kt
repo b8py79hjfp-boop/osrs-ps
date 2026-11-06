@@ -70,11 +70,20 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun apPlayer(option: Int): Script<Player>? = h.apPlayer[option]?.let(::playerScript)
 
+    override fun opPlayerT(component: Int): Script<Player>? = h.opPlayerT[component]?.let(::playerScript)
+
+    override fun apPlayerT(component: Int): Script<Player>? = h.apPlayerT[component]?.let(::playerScript)
+
+    override fun opNpcT(component: Int): Script<Player>? = h.opNpcT[component]?.let(::npcScript)
+
+    override fun apNpcT(component: Int): Script<Player>? = h.apNpcT[component]?.let(::npcScript)
+
     override fun opObj(objId: Int, option: Int): Script<Player>? =
         (h.opObj[key(objId, option)] ?: h.opObj[key(ContentScope.DEFAULT_ID, option)])?.let(::objScript)
 
     override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {
-        val handler = h.buttons[component] ?: return
+        val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
+        val handler = h.buttons[base or option.toLong()] ?: h.buttons[base] ?: return
         ref(player).handler(ButtonClick(component, option, slot, obj))
     }
 

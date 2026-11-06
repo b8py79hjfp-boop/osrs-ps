@@ -11,8 +11,7 @@ import tp.symbols.Invs
  */
 public class Backpack : ContentPlugin {
     override fun ContentScope.register() {
-        onButton(Components.Inventory.ITEMS) { click ->
-            if (click.op != OP_DROP) return@onButton
+        onButton(Components.Inventory.ITEMS, OP_DROP) { click ->
             interrupt()
             val inv = inv(Invs.INV)
             if (click.slot !in 0 until inv.size || inv.obj(click.slot) != click.obj) return@onButton

@@ -33,6 +33,15 @@ interface ContentHandlers {
 
     fun opObj(objId: Int, option: Int): Script<Player>? = null
 
+    /** Interface component (spell) used on a player / NPC: scripts keyed by the packed component. */
+    fun opPlayerT(component: Int): Script<Player>? = null
+
+    fun apPlayerT(component: Int): Script<Player>? = null
+
+    fun opNpcT(component: Int): Script<Player>? = null
+
+    fun apNpcT(component: Int): Script<Player>? = null
+
     fun apObj(objId: Int, option: Int): Script<Player>? = null
 
     /** IF button on an open, validated component. */

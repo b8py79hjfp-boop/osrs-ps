@@ -20,6 +20,12 @@ sealed interface ClientCommand {
     /** Player op by player index (option 1..8). */
     data class OpPlayer(val option: Int, val index: Int, val ctrl: Boolean) : ClientCommand
 
+    /** Interface component (e.g. a spell) used on a player: [component] packed, [sub]/[obj] of the selection. */
+    data class OpPlayerT(val index: Int, val component: Int, val sub: Int, val obj: Int, val ctrl: Boolean) : ClientCommand
+
+    /** Interface component (e.g. a spell) used on an NPC. */
+    data class OpNpcT(val index: Int, val component: Int, val sub: Int, val obj: Int, val ctrl: Boolean) : ClientCommand
+
     /** Ground item op. */
     data class OpObj(val option: Int, val id: Int, val x: Int, val z: Int, val ctrl: Boolean) : ClientCommand
 

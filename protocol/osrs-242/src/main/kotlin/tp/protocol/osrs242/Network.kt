@@ -27,9 +27,11 @@ import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
 import net.rsprot.protocol.game.incoming.misc.user.CloseModal
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.misc.user.MoveMinimapClick
+import net.rsprot.protocol.game.incoming.npcs.OpNpcT
 import net.rsprot.protocol.game.incoming.npcs.OpNpcV2
 import net.rsprot.protocol.game.incoming.objs.OpObjV2
 import net.rsprot.protocol.game.incoming.players.OpPlayer
+import net.rsprot.protocol.game.incoming.players.OpPlayerT
 import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
 import net.rsprot.protocol.game.outgoing.info.npcinfo.NpcAvatar
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
@@ -198,6 +200,12 @@ class Osrs242Network(
         b.addListener(OpLocV3::class.java) { s, m -> s.deliver(ClientCommand.OpLoc(m.op, m.id, m.x, m.z, m.controlKey)) }
         b.addListener(OpNpcV2::class.java) { s, m -> s.deliver(ClientCommand.OpNpc(m.op, m.index, m.controlKey)) }
         b.addListener(OpPlayer::class.java) { s, m -> s.deliver(ClientCommand.OpPlayer(m.op, m.index, m.controlKey)) }
+        b.addListener(OpPlayerT::class.java) { s, m ->
+            s.deliver(ClientCommand.OpPlayerT(m.index, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
+        }
+        b.addListener(OpNpcT::class.java) { s, m ->
+            s.deliver(ClientCommand.OpNpcT(m.index, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
+        }
         b.addListener(OpObjV2::class.java) { s, m -> s.deliver(ClientCommand.OpObj(m.op, m.id, m.x, m.z, m.controlKey)) }
         b.addListener(If3Button::class.java) { s, m -> s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj)) }
         b.addListener(MessagePublic::class.java) { s, m ->

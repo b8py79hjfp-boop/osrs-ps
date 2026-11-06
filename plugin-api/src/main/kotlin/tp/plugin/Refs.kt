@@ -42,6 +42,40 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.interrupt(p)
     }
 
+    /**
+     * Starts an interaction with [target] using op [op] (e.g. auto-retaliate's attack), exactly as if the player had
+     * clicked it (interrupts the current one).
+     */
+    public fun interact(target: EntityRef, op: Int) {
+        val t =
+            when (target) {
+                is PlayerRef -> {
+                    tp.engine.interact.InteractionTarget
+                        .OfPlayer(target.p)
+                }
+
+                is NpcRef -> {
+                    tp.engine.interact.InteractionTarget
+                        .OfNpc(target.n)
+                }
+            }
+        p.world.interact(p, t, op)
+    }
+
+    /** Whether the player has an interaction in progress. */
+    public val isInteracting: Boolean get() = p.interactionTarget != null
+
+    /** Starts (or replaces) timer [id] every [interval] ticks; soft timers run even while delayed (scripts.md T3/T4). */
+    public fun timer(id: TimerId, interval: Int, soft: Boolean, action: PlayerRef.() -> Unit) {
+        p.timers.add(id.key, interval, soft) { action() }
+    }
+
+    public fun stopTimer(id: TimerId) {
+        p.timers.remove(id.key)
+    }
+
+    public fun hasTimer(id: TimerId): Boolean = p.timers.has(id.key)
+
     /** Toggles streaming this player's tick trace to their chatbox (`::trace`); false if no inspector is installed. */
     public fun toggleTrace(): Boolean = (p.world.tracer as? TickInspector)?.toggle(p) ?: false
 
@@ -215,9 +249,19 @@ public class ObjRef internal constructor(internal val g: GroundObj) {
     public val coord: CoordGrid get() = g.coord
 }
 
-/** World-level operations for content (spawns). */
+/** World-level operations for content (spawns, cache data). */
 public class WorldRef internal constructor(internal val w: World) {
     public val tick: Long get() = w.tick
+
+    /** Int values of cache enum [id] (key → value); empty if absent. */
+    public fun enumInts(id: Int): Map<Int, Int> =
+        w.data.configs.enums[id]
+            ?.intValues
+            .orEmpty()
+
+    public fun objParamInt(obj: Int, param: Int): Int? = w.objType(obj)?.params?.int(param)
+
+    public fun objParamString(obj: Int, param: Int): String? = w.objType(obj)?.params?.string(param)
 
     /** Spawns NPC [type] at [at], wandering up to [wanderRange] tiles from it (random-walk.md). */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
@@ -227,3 +271,8 @@ public class WorldRef internal constructor(internal val w: World) {
 
 /** A map loc an interaction targets. */
 public class LocRef internal constructor(public val id: Int, public val coord: CoordGrid, public val shape: Int, public val angle: Int)
+
+/** Identifies a player timer. Define as a top-level `val`. */
+public class TimerId(name: String) {
+    internal val key: tp.engine.script.TimerKey = tp.engine.script.TimerKey(name)
+}

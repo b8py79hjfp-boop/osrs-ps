@@ -65,6 +65,23 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.apPlayer, op, script, "applayer $op")
     }
 
+    /** Interface component [component] (e.g. a spell, packed) used on a player: op (reach) / ap (approach) scripts. */
+    public fun onOpPlayerT(component: Int, script: suspend PlayerScript.(PlayerRef) -> Unit) {
+        handlers.put(handlers.opPlayerT, component, script, "opplayert $component")
+    }
+
+    public fun onApPlayerT(component: Int, script: suspend PlayerScript.(PlayerRef) -> Unit) {
+        handlers.put(handlers.apPlayerT, component, script, "applayert $component")
+    }
+
+    public fun onOpNpcT(component: Int, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.opNpcT, component, script, "opnpct $component")
+    }
+
+    public fun onApNpcT(component: Int, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.apNpcT, component, script, "apnpct $component")
+    }
+
     /** Ground obj op [op] (1..5) on [obj]. */
     public fun onOpObj(obj: Int, op: Int, script: suspend PlayerScript.(ObjRef) -> Unit) {
         handlers.put(handlers.opObj, key(obj, op), script, "opobj $obj/$op")
@@ -75,9 +92,12 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opObj, key(DEFAULT_ID, op), script, "opobj default/$op")
     }
 
-    /** IF3 button on [component] (packed, `tp.symbols.Components`); runs only while its interface is open. */
-    public fun onButton(component: Int, handler: PlayerRef.(ButtonClick) -> Unit) {
-        handlers.put(handlers.buttons, component, handler, "button $component")
+    /**
+     * IF3 button on [component] (packed, `tp.symbols.Components`); runs only while its interface is open. [op] 0 = any
+     * op without its own handler.
+     */
+    public fun onButton(component: Int, op: Int = 0, handler: PlayerRef.(ButtonClick) -> Unit) {
+        handlers.put(handlers.buttons, (component.toLong() shl BUTTON_OP_BITS) or op.toLong(), handler, "button $component/$op")
     }
 
     private fun key(id: Int, op: Int): Int = (id shl OP_BITS) or op
@@ -87,6 +107,7 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
 
         /** Key id of default handlers (no real config id is negative). */
         const val DEFAULT_ID = -1
+        const val BUTTON_OP_BITS = 8
     }
 }
 
@@ -104,8 +125,12 @@ internal class Handlers {
     val apNpc = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
     val opPlayer = HashMap<Int, suspend PlayerScript.(PlayerRef) -> Unit>()
     val apPlayer = HashMap<Int, suspend PlayerScript.(PlayerRef) -> Unit>()
+    val opPlayerT = HashMap<Int, suspend PlayerScript.(PlayerRef) -> Unit>()
+    val apPlayerT = HashMap<Int, suspend PlayerScript.(PlayerRef) -> Unit>()
+    val opNpcT = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
+    val apNpcT = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
     val opObj = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
-    val buttons = HashMap<Int, PlayerRef.(ButtonClick) -> Unit>()
+    val buttons = HashMap<Long, PlayerRef.(ButtonClick) -> Unit>()
 
     fun <K, V> put(map: MutableMap<K, V>, key: K, value: V, what: String) {
         check(map.put(key, value) == null) { "duplicate handler: $what" }

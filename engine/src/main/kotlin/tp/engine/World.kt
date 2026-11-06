@@ -15,6 +15,7 @@ import tp.engine.inv.ItemJournal
 import tp.engine.inv.ItemTransaction
 import tp.engine.move.Movement
 import tp.engine.npc.NpcAi
+import tp.engine.script.Script
 import tp.engine.script.ScriptRunner
 import tp.engine.ui.Interfaces
 import tp.engine.vars.PlayerVars
@@ -241,6 +242,22 @@ class World(
                 interact(player, InteractionTarget.OfPlayer(other ?: return), command.option)
             }
 
+            is ClientCommand.OpPlayerT -> {
+                val other = players.getOrNull(command.index)
+                val open = interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)
+                if (!open || !isOtherVisible(player, other)) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, InteractionTarget.OfPlayer(other ?: return), command.component, targeted = true)
+            }
+
+            is ClientCommand.OpNpcT -> {
+                val npc = npcs.getOrNull(command.index)
+                val open = interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)
+                if (!open || npc == null || !inView(player, npc)) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, InteractionTarget.OfNpc(npc), command.component, targeted = true)
+            }
+
             is ClientCommand.OpObj -> {
                 val at = CoordGrid(command.x, command.z, player.coord.level)
                 val obj = ground.find(at, command.id, player)
@@ -396,19 +413,29 @@ class World(
         player.closeModal()
     }
 
-    /** Starts an interaction (a new one interrupts the old: I7). */
-    fun interact(player: Player, target: InteractionTarget, option: Int) {
+    /**
+     * Starts an interaction (a new one interrupts the old: I7). [targeted]: [option] is a packed interface component
+     * used on the target (spells: OPPLAYERT/OPNPCT).
+     */
+    fun interact(player: Player, target: InteractionTarget, option: Int, targeted: Boolean = false) {
         if (player.isDelayed) return
         interrupt(player)
         val (op, ap) =
-            when (target) {
-                is InteractionTarget.Loc -> content.opLoc(target.id, option) to content.apLoc(target.id, option)
-                is InteractionTarget.Obj -> content.opObj(target.id, option) to content.apObj(target.id, option)
-                is InteractionTarget.OfNpc -> content.opNpc(target.npc.type, option) to content.apNpc(target.npc.type, option)
-                is InteractionTarget.OfPlayer -> content.opPlayer(option) to content.apPlayer(option)
+            when {
+                targeted && target is InteractionTarget.OfPlayer -> content.opPlayerT(option) to content.apPlayerT(option)
+                targeted && target is InteractionTarget.OfNpc -> content.opNpcT(option) to content.apNpcT(option)
+                else -> scriptsFor(target, option)
             }
         player.interaction = Interaction(target, option, op, ap)
     }
+
+    private fun scriptsFor(target: InteractionTarget, option: Int): Pair<Script<Player>?, Script<Player>?> =
+        when (target) {
+            is InteractionTarget.Loc -> content.opLoc(target.id, option) to content.apLoc(target.id, option)
+            is InteractionTarget.Obj -> content.opObj(target.id, option) to content.apObj(target.id, option)
+            is InteractionTarget.OfNpc -> content.opNpc(target.npc.type, option) to content.apNpc(target.npc.type, option)
+            is InteractionTarget.OfPlayer -> content.opPlayer(option) to content.apPlayer(option)
+        }
 
     /**
      * Runs [block] as one atomic item transaction for [player] (brief §12). If [block] returns false or any step fails,
