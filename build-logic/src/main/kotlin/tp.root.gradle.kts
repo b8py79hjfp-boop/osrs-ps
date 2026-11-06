@@ -36,3 +36,42 @@ tasks.register<SetupClientTask>("setupClient") {
     bootstrapCommit = providers.gradleProperty("osrs.runeliteBootstrap")
     outputDir = layout.projectDirectory.dir(".data/client")
 }
+
+// ---- Release client (Phase 6, docs/CLIENT.md). Cross-platform; client/runelite/build.sh does the same in bash.
+
+val forkClient =
+    tasks.register<tp.build.ForkClientTask>("forkClient") {
+        group = "tickperfect"
+        description = "Builds the RuneLite fork (clone pinned tag, apply client/runelite/patches, overlay, build) into .data/client/fork/."
+        repoDir = layout.projectDirectory
+        val root = layout.projectDirectory
+        val defaultWork = root.dir(System.getProperty("java.io.tmpdir") + "/tp-runelite-fork")
+        workDir = providers.gradleProperty("forkWorkDir").map { root.dir(it) }.orElse(defaultWork)
+        runeliteGit = providers.gradleProperty("runeliteGit").orElse("https://github.com/runelite/runelite.git")
+        tag = providers.gradleProperty("osrs.runeliteTag")
+        gradleArgs = providers.gradleProperty("forkGradleArgs")
+    }
+
+tasks.register<tp.build.MergeClientTask>("releaseClient") {
+    group = "tickperfect"
+    description = "Builds the release client: fork + patched game client merged into .data/client/fork/client-*-shaded.jar."
+    dependsOn(forkClient, ":client:gamepatch:patchGameClient")
+    forkJar = layout.projectDirectory.file(".data/client/fork/client-1.13.6-shaded.jar")
+    patched = layout.projectDirectory.file(".data/client/patched/injected-client-1.13.6.jar")
+}
+
+tasks.register<Sync>("assembleReleaseArtifacts") {
+    group = "tickperfect"
+    description = "Collects the jars the signed update manifest lists into .data/client/release-artifacts/."
+    dependsOn("releaseClient")
+    into(layout.projectDirectory.dir(".data/client/release-artifacts"))
+    from(layout.projectDirectory.dir(".data/client/artifacts")) {
+        include("*.jar")
+        exclude("client-*.jar", "injected-client-*.jar")
+    }
+    from(layout.projectDirectory.dir(".data/client/patched")) { include("injected-client-*.jar") }
+    from(layout.projectDirectory.dir(".data/client/fork")) {
+        include("client-*-shaded.jar")
+        rename("client-(.*)-shaded\\.jar", "client-$1.jar")
+    }
+}

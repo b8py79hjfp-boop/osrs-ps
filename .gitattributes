@@ -1,0 +1,2 @@
+# RuneLite fork patches are applied with git am: keep them byte-exact (LF) on every platform.
+client/runelite/patches/*.patch -text

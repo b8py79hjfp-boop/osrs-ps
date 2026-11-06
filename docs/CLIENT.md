@@ -88,10 +88,11 @@ Phase 6 extends this document with the release client's build, signing and updat
 
 Everything defaults to `127.0.0.1`, so the release client can be tested on one machine before any branding,
 certificates, URLs or keys exist. Requirements:
-- a JDK 21 with `bin/` on `PATH` (the build uses `java` and `jar`);
+- a JDK 21+ on `PATH`;
 - git;
-- internet access;
-- on Windows, run the `bash` lines in **Git Bash**.
+- internet access.
+
+Every step is a Gradle task, so it works the same in PowerShell, cmd or a Unix shell (no bash needed).
 
 **A. The client on its own (no launcher):**
 
@@ -104,11 +105,11 @@ git pull
 ```
 
 ```bash
-bash client/runelite/build.sh
+./gradlew releaseClient
 ```
 
-This last step takes a few minutes. It clones RuneLite 1.13.6, applies our patches and patches the game client with
-**your** `.data/rsa` key, writing the result to `.data/client/fork/`.
+This last step takes a few minutes. It clones RuneLite 1.13.6 into your temp directory, applies our patches, builds
+it, and patches the game client with **your** `.data/rsa` key, writing the result to `.data/client/fork/`.
 
 Start the server, using a second terminal:
 
@@ -141,7 +142,7 @@ Create your own manifest key pair (once; it stays in `.data/`):
 Assemble the client jars:
 
 ```bash
-bash client/dist/assemble-artifacts.sh .data/client/release-artifacts
+./gradlew assembleReleaseArtifacts
 ```
 
 Sign them into the hub's update directory:
