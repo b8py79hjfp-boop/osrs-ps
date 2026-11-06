@@ -32,18 +32,23 @@ public class Equipment : ContentPlugin {
             Appearance.refresh(this)
             setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
         }
-        onButton(Components.Inventory.ITEMS, OP_ITEM1) { click -> itemOp1(click) }
+        // iop1..iop3 = button ops 2..4; what an op does depends on the obj's op text (cache iops): wieldables have
+        // "Wield"/"Wear" as iop2, food/potions "Eat"/"Drink" as iop1.
+        for (op in FIRST_ITEM_OP..LAST_ITEM_OP) {
+            onButton(Components.Inventory.ITEMS, op) { click -> itemOp(click) }
+        }
         for ((slot, component) in WORN_COMPONENTS) {
             onButton(component, OP_REMOVE) { remove(slot) }
         }
     }
 
-    /** Backpack op 1 is wield/wear for equipment and eat/drink for consumables. */
-    private fun PlayerRef.itemOp1(click: ButtonClick) {
+    private fun PlayerRef.itemOp(click: ButtonClick) {
         val inv = inv(Invs.INV)
         if (click.slot !in 0 until inv.size || inv.obj(click.slot) != click.obj) return
-        if (Consumables.consume(this, click.slot, click.obj)) return
-        if (objWearPos(click.obj) >= 0) wield(click.slot, click.obj)
+        when (objIop(click.obj, click.op - FIRST_ITEM_OP)?.lowercase()) {
+            "eat", "drink" -> Consumables.consume(this, click.slot, click.obj)
+            "wield", "wear", "equip" -> if (objWearPos(click.obj) >= 0) wield(click.slot, click.obj)
+        }
     }
 
     private fun PlayerRef.wield(slot: Int, obj: Int) {
@@ -93,8 +98,9 @@ public class Equipment : ContentPlugin {
     }
 
     private companion object {
-        /** IF button op of iop1 (Wield/Wear/Eat/Drink): RS Mod `InvOpenScript` op mapping. */
-        const val OP_ITEM1 = 2
+        /** Button ops of iop1..iop3 (iop n = button op n + 1: RS Mod `InvOpenScript` op mapping). */
+        const val FIRST_ITEM_OP = 2
+        const val LAST_ITEM_OP = 4
 
         /** Worn tab slot click (Remove). */
         const val OP_REMOVE = 1

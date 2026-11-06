@@ -30,10 +30,16 @@ internal object Golden {
 
     fun ScenarioPlayer.attack(other: ScenarioPlayer) = input(ClientCommand.OpPlayer(ATTACK_OP, other.player.slot, false))
 
-    /** Backpack op 1 on [slot] (wield/eat/drink). */
+    /** The backpack op the client sends for the obj's Wield/Wear/Eat/Drink option on [slot] (cache iops; op = index + 2). */
     fun ScenarioPlayer.itemOp1(slot: Int) {
         val inv = player.world.inventory(player, tp.symbols.Invs.INV)
-        input(ClientCommand.Button(Components.Inventory.ITEMS, ITEM_OP1, slot, inv.obj(slot)))
+        val obj = inv.obj(slot)
+        val iops =
+            Scenario.data.configs.objs
+                .getValue(obj)
+                .iops
+        val index = iops.indexOfFirst { it?.lowercase() in setOf("wield", "wear", "eat", "drink") }
+        input(ClientCommand.Button(Components.Inventory.ITEMS, index + ITEM_OP1, slot, obj))
     }
 
     fun ScenarioPlayer.button(component: Int, op: Int = 1) = input(ClientCommand.Button(component, op, -1, -1))

@@ -204,6 +204,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Obj category (cache `category`), -1 if none. */
     public fun objCategory(obj: Int): Int = p.world.objType(obj)?.category ?: -1
 
+    /** Inventory op text of [obj] for iop [index] (0-based: button op = index + 2), or null. */
+    public fun objIop(obj: Int, index: Int): String? =
+        p.world
+            .objType(obj)
+            ?.iops
+            ?.getOrNull(index)
+
     public fun objName(obj: Int): String = p.world.objType(obj)?.name ?: "null"
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
