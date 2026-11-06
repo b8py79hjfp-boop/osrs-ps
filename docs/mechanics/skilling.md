@@ -55,7 +55,8 @@ fletching and herblore reuse the same two helpers.
 - **PR2: interruption.** Each action is a weak queue script (`PlayerRef.weakQueue`, scripts.md Q4, Q7): a click that walks or
   interacts, any interface opening or closing (the level-up popup included, Q3) removes it before it runs, and it is held while
   a modal is open. The batch carries no other cancel state.
-- **PR3: ending.** A batch also ends when an action cannot be made (missing level, tool or material: the message says which),
+- **PR3: ending.** A batch also ends when an action cannot be made (missing level or tool: the message says which; running
+  out of materials part-way ends it without a message, since "All" means as many as the materials allow — OPEN-PR4),
   when the quantity is done, and on a level-up (Wiki "Smithing": the player keeps smithing until "the player levels up").
 
 ### API (content/skills, `internal`)
@@ -78,6 +79,7 @@ returns false on a level-up; `Production.shortfall(p, recipe)` returns the messa
 - **OPEN-PR1:** the first-action offset of anvil smithing, leather, gems, pottery, glass and jewellery (assumed one interval)
   is unsourced; only smelting and spinning have sourced offsets (smithing.md SM2, crafting.md CR4).
 - **OPEN-PR2:** "the player is attacked" also ends smithing (Wiki "Smithing" note); only the interruptions of PR2 are modelled.
+- **OPEN-PR4:** no source states that running out mid-batch is silent; it follows how "All" behaves in play.
 - **OPEN-PR3:** the suggested quantity is always 28 ("All"); OSRS remembers the previous choice (`skillmulti_previousselection`,
   varp 2673, is not written).
 - **OPEN-PR4:** success messages of production actions are mostly unsourced; only those named in smithing.md / crafting.md come

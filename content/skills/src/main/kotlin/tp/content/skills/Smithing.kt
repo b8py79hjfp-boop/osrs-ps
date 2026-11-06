@@ -67,7 +67,8 @@ public class Smithing : ContentPlugin {
     /** One smelt: the ores go, the bar comes (iron fails half the time without a ring of forging, SM3). */
     private fun smeltOne(p: PlayerRef, r: Recipe): Boolean {
         Production.shortfall(p, r)?.let {
-            p.message(it)
+            // PR3: running out of materials ends an "All" batch silently; anything else says why.
+            if (Production.hasMaterials(p, r)) p.message(it)
             return false
         }
         val forging = r.output == Objs.IRON_BAR && p.inv(Invs.WORN).obj(SmithingData.RING_SLOT) == Objs.RING_OF_FORGING

@@ -151,7 +151,8 @@ public class Crafting : ContentPlugin {
     /** One action: the materials go, the product comes, thread wears (CR2), xp (a level-up ends the batch). */
     private fun craftOne(p: PlayerRef, kind: Kind, r: Recipe): Boolean {
         blocker(p, r)?.let {
-            p.message(it)
+            // PR3: running out of materials ends an "All" batch silently; anything else says why.
+            if (Production.hasMaterials(p, r)) p.message(it)
             return false
         }
         val done =
@@ -184,7 +185,8 @@ public class Crafting : ContentPlugin {
     /** One cut; opal, jade and red topaz crush with the level-dependent chance (CR3). */
     private fun cutOne(p: PlayerRef, r: Recipe, uncut: Int, gem: Gem): Boolean {
         Production.shortfall(p, r)?.let {
-            p.message(it)
+            // PR3: running out of materials ends an "All" batch silently; anything else says why.
+            if (Production.hasMaterials(p, r)) p.message(it)
             return false
         }
         val crush = gem.crush
