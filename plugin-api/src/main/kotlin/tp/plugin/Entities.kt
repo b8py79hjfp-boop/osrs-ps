@@ -158,6 +158,16 @@ public sealed class EntityRef {
     /** Spawns NPC [type] at [at] (wandering [wanderRange]) and returns it; it respawns like any NPC unless removed. */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int = 0): NpcRef = NpcRef(e.world.spawnNpc(type, at, wanderRange))
 
+    /** Allocates an empty instanced area of [widthSquares] × [lengthSquares] map squares (64 tiles each) in this world. */
+    public fun createInstance(widthSquares: Int = 1, lengthSquares: Int = 1): InstanceRef =
+        InstanceRef(e.world.instances.create(widthSquares, lengthSquares), e.world.instances)
+
+    /** The live instance holding [coord], or null. */
+    public fun instanceAt(coord: CoordGrid): InstanceRef? =
+        e.world.instances
+            .at(coord)
+            ?.let { InstanceRef(it, e.world.instances) }
+
     /** Puts loc [id] on the tile (replacing its layer); reverts after [duration] ticks if positive. */
     public fun addLoc(id: Int, at: CoordGrid, shape: Int, angle: Int, duration: Int = -1) {
         e.world.locs.add(id, at, shape, angle, e.world.tick, duration)

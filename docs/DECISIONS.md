@@ -626,3 +626,11 @@ Rules and OPEN items: docs/mechanics/construction.md.
   ticks since (multiples of the cycle in epoch minutes), so crops grow offline. Disease rolls use the world RNG when the patch is looked at, not at the tick.
 - **Rev-242 behaviour.** The Wiki's 3 June 2026 change (planting xp at the end, spade on growing plants) is not applied (OPEN-FM1).
 - **plugin-api.** No change. `content/skills` only; the sapling / plant-pot stage, compost bins, tool store and farmer protection are OPEN-FM4/FM12.
+
+## D-045: Instances as copied zones in instance space
+
+Instanced areas are real coordinates in empty map squares (x ≥ 100), not a coordinate translation layer: every system
+already keyed on coordinates (collision, zone sync, ground items, NPCs, the info packets) works unchanged, and only the
+build-area rebuild differs (REBUILD_REGION with the template zone table). Collision is rebuilt from the template's tile
+settings and rotated locs rather than by rotating flag bits, and copied locs are a silent base layer under the dynamic
+loc changes. See docs/mechanics/instances.md.

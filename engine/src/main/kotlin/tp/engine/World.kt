@@ -87,6 +87,9 @@ class World(
     /** Loc changes on top of the cache map (doors, traps, webs). */
     val locs = tp.engine.map.DynamicLocs(data.configs.locs, data.locs, collision)
 
+    /** Instanced areas built from template zones (docs/mechanics/instances.md). */
+    val instances = tp.engine.map.Instances(data.locs, data.configs.locs, locs, collision)
+
     val movement = Movement(collision.flags)
     internal val interactions = InteractionProcessor(collision.flags, movement)
 
@@ -551,16 +554,37 @@ class World(
         checkSystemUpdate()
     }
 
+    /**
+     * Sends a new build area when the player nears its edge, or a region rebuild when the player's instance changed
+     * (instances.md IN4: copied or cleared zones show at once). A player in instance space with no instance there (a
+     * torn-down instance, a stale login) is moved to the world spawn (IN5).
+     */
+    private fun rebuildIfNeeded(player: Player) {
+        val inSpace = instances.isInstanceSpace(player.coord)
+        val instance = if (inSpace) instances.at(player.coord) else null
+        if (inSpace && instance == null) teleport(player, config.spawn)
+        val stamp = instance?.let { (it.id.toLong() shl Int.SIZE_BITS) or it.version.toLong() } ?: NO_REGION
+        if (!BuildArea.needsRebuild(player.coord, player.buildArea) && stamp == player.regionStamp) return
+        val reload = stamp != player.regionStamp
+        player.regionStamp = stamp
+        player.buildArea = BuildArea.originFor(player.coord)
+        val message =
+            if (instance == null) {
+                ServerMessage.Rebuild(player.coord.x, player.coord.z)
+            } else {
+                val zones = instances.buildArea(instance, player.coord.x shr ZONE_BITS, player.coord.z shr ZONE_BITS)
+                ServerMessage.RebuildRegion(player.coord.x, player.coord.z, reload, zones)
+            }
+        player.session.send(message)
+        player.zoneSync.reset()
+    }
+
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
     private fun infoPass() {
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
             isolated(player, "info pass") {
-                if (BuildArea.needsRebuild(player.coord, player.buildArea)) {
-                    player.buildArea = BuildArea.originFor(player.coord)
-                    player.session.send(ServerMessage.Rebuild(player.coord.x, player.coord.z))
-                    player.zoneSync.reset()
-                }
+                rebuildIfNeeded(player)
                 player.session.syncAvatar(player.avatarState())
                 player.teleportedThisTick = false
                 player.flushState()
@@ -1006,6 +1030,12 @@ class World(
     fun pidOf(slot: Int): Int = pidOrder.indexOf(slot)
 
     companion object {
+        /** [Player.regionStamp] of a normal (non-instanced) build area. */
+        private const val NO_REGION = -1L
+
+        /** Tile to zone coordinate shift. */
+        private const val ZONE_BITS = 3
+
         /** Player indices 1..2047 (brief §5.2, §7). */
         const val MAX_PLAYERS = 2048
 

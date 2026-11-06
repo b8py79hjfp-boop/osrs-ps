@@ -26,6 +26,9 @@ import net.rsprot.protocol.game.outgoing.logout.Logout
 import net.rsprot.protocol.game.outgoing.logout.LogoutTransfer
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
+import net.rsprot.protocol.game.outgoing.map.RebuildRegionV2
+import net.rsprot.protocol.game.outgoing.map.util.RebuildRegionZone
+import net.rsprot.protocol.game.outgoing.map.util.ReferenceZone
 import net.rsprot.protocol.game.outgoing.misc.client.ServerTickEnd
 import net.rsprot.protocol.game.outgoing.misc.client.UpdateRebootTimerV2
 import net.rsprot.protocol.game.outgoing.misc.player.ChatFilterSettings
@@ -115,6 +118,7 @@ internal class RspSession(
             return
         }
         if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
+        if (message is ServerMessage.RebuildRegion) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         val held = beforeFirstInfo
         if (held != null && message.isChat()) {
             held += toRsprot(message)
@@ -212,6 +216,23 @@ internal class RspSession(
 
     companion object {
         private const val ZONE_SHIFT = 3
+
+        /** REBUILD_REGION covers 13 zones per axis, the centre zone ± 6 (RSProt `RebuildRegionV2`). */
+        private const val REGION_AXIS = 13
+        private const val REGION_RADIUS = 6
+
+        /** REBUILD_REGION_V2 from the engine's zone table (docs/mechanics/instances.md IN4; no XTEA keys in rev 242). */
+        private fun rebuildRegion(message: ServerMessage.RebuildRegion): RebuildRegionV2 {
+            val centreX = message.x shr ZONE_SHIFT
+            val centreZ = message.z shr ZONE_SHIFT
+            return RebuildRegionV2(centreX, centreZ, message.reload) { zoneX, zoneZ, level ->
+                val index = (level * REGION_AXIS + (zoneX - centreX + REGION_RADIUS)) * REGION_AXIS + (zoneZ - centreZ + REGION_RADIUS)
+                message.zones
+                    .getOrElse(index) { -1 }
+                    .takeIf { it >= 0 }
+                    ?.let { RebuildRegionZone(ReferenceZone(it)) }
+            }
+        }
 
         /** Appearance wear positions 0..11 (RSProt `setWornObj`). */
         private const val WORN_SLOTS = 12
@@ -366,6 +387,10 @@ internal class RspSession(
 
                 is ServerMessage.Rebuild -> {
                     RebuildNormalV2(message.x shr ZONE_SHIFT, message.z shr ZONE_SHIFT, ROOT_WORLD)
+                }
+
+                is ServerMessage.RebuildRegion -> {
+                    rebuildRegion(message)
                 }
 
                 is ServerMessage.ZoneReset -> {

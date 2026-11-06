@@ -227,6 +227,14 @@ sealed interface ServerMessage {
     /** Map rebuild centred on the player's current position (sent when the build area changes). */
     data class Rebuild(val x: Int, val z: Int) : ServerMessage
 
+    /**
+     * REBUILD_REGION: an instanced build area centred on the tile ([x], [z]) (docs/mechanics/instances.md IN4). [zones]
+     * holds 4 levels × 13 × 13 reference zones (level, then zone x, then zone z, from the centre zone − 6): each is
+     * `rotation shl 1 | zoneZ shl 3 | zoneX shl 14 | level shl 24` of the template zone to draw there, or -1 for none.
+     * [reload] forces the client to rebuild even if the centre did not change.
+     */
+    class RebuildRegion(val x: Int, val z: Int, val reload: Boolean, val zones: IntArray) : ServerMessage
+
     /** Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops refill it. */
     data class ZoneReset(val dx: Int, val dz: Int, val level: Int) : ServerMessage
 
