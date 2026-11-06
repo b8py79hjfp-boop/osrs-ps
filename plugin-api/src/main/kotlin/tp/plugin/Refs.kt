@@ -1,7 +1,7 @@
 package tp.plugin
 
 import tp.engine.World
-import tp.engine.entity.Npc
+import tp.engine.entity.Entity
 import tp.engine.entity.Player
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
@@ -12,10 +12,10 @@ import tp.protocol.api.ServerMessage
 import tp.util.CoordGrid
 
 /** Content's view of a player. Every change goes through the engine (interfaces, vars, item transactions). */
-public class PlayerRef internal constructor(internal val p: Player) {
+public class PlayerRef internal constructor(internal val p: Player) : EntityRef() {
+    override val e: Entity get() = p
     public val username: String get() = p.username
-    public val coord: CoordGrid get() = p.coord
-    public val tick: Long get() = p.world.tick
+    public val slot: Int get() = p.slot
     public val worldId: Int get() = p.world.config.id
 
     /** Current processing position (0 = acts first). */
@@ -105,12 +105,47 @@ public class PlayerRef internal constructor(internal val p: Player) {
 
     // ---- stats
 
+    /** Sets the current (boosted/drained) level of [stat]. */
+    public fun setLevel(stat: Int, level: Int) {
+        p.stats.setLevel(stat, level)
+    }
+
     public fun level(stat: Int): Int = p.stats.level(stat)
 
     public fun baseLevel(stat: Int): Int = p.stats.baseLevel(stat)
 
     /** Adds [xp] (fractional xp allowed, stored in tenths); returns levels gained. */
     public fun addXp(stat: Int, xp: Double): Int = p.stats.addXp(stat, (xp * XP_TENTHS).toInt())
+
+    // ---- appearance and objs
+
+    /** Sends this player's look: worn obj per wear position 0..11 (-1 empty). */
+    public fun appearance(worn: IntArray, combatLevel: Int, skullIcon: Int = -1, prayerIcon: Int = -1) {
+        p.world.refreshAppearance(p, worn, combatLevel, skullIcon, prayerIcon)
+    }
+
+    /** Obj config param [param] of [obj] (int), or [default]. */
+    public fun objParam(obj: Int, param: Int, default: Int): Int =
+        p.world
+            .objType(obj)
+            ?.params
+            ?.int(param) ?: default
+
+    /** Primary wear position of [obj] (-1 = not wearable). */
+    public fun objWearPos(obj: Int): Int = p.world.objType(obj)?.wearPos1 ?: -1
+
+    /** Secondary wear position of [obj] (two-handed weapons occupy the shield position: 5). */
+    public fun objWearPos2(obj: Int): Int = p.world.objType(obj)?.wearPos2 ?: -1
+
+    /** Obj category (cache `category`), -1 if none. */
+    public fun objCategory(obj: Int): Int = p.world.objType(obj)?.category ?: -1
+
+    public fun objName(obj: Int): String = p.world.objType(obj)?.name ?: "null"
+
+    public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
+
+    /** Value used for items kept on death (cache `cost`). */
+    public fun objValue(obj: Int): Int = p.world.objType(obj)?.cost ?: 0
 
     // ---- inventories
 
@@ -188,12 +223,6 @@ public class WorldRef internal constructor(internal val w: World) {
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
         w.spawnNpc(type, at, wanderRange)
     }
-}
-
-public class NpcRef internal constructor(internal val n: Npc) {
-    public val type: Int get() = n.type
-    public val index: Int get() = n.index
-    public val coord: CoordGrid get() = n.coord
 }
 
 /** A map loc an interaction targets. */

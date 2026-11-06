@@ -2,6 +2,7 @@ package tp.plugin
 
 import tp.engine.entity.Player
 import tp.engine.interact.apRange
+import tp.engine.interact.keepInteraction
 import tp.engine.script.ScriptScope
 import kotlin.coroutines.RestrictsSuspension
 
@@ -25,6 +26,20 @@ public class PlayerScript internal constructor(private val scope: ScriptScope<Pl
 
     /** Waits for a pause-button / dialogue answer. */
     public suspend fun awaitInput(): Any = scope.awaitInput()
+
+    /** The entity this script's interaction targets (player or NPC), or null. */
+    public val target: EntityRef?
+        get() =
+            when (val t = scope.self.interactionTarget) {
+                is tp.engine.interact.InteractionTarget.OfPlayer -> PlayerRef(t.player)
+                is tp.engine.interact.InteractionTarget.OfNpc -> NpcRef(t.npc)
+                else -> null
+            }
+
+    /** Keeps the interaction after this script (combat: re-run every tick while in range). */
+    public fun keepInteraction() {
+        scope.self.keepInteraction()
+    }
 
     /** Changes the approach range of the current ap interaction (interactions.md I2); -1 turns it into an op. */
     public fun apRange(range: Int) {

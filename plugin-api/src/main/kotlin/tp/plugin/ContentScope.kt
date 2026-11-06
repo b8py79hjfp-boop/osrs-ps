@@ -39,6 +39,19 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opNpc, key(npc, op), script, "opnpc $npc/$op")
     }
 
+    /**
+     * NPC op by its text (e.g. "Attack") for every NPC type without an id-specific handler for that op; [script] also
+     * receives the op number.
+     */
+    public fun onOpNpcOption(text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.opNpcByText, text.lowercase(), script, "opnpc text '$text'")
+    }
+
+    /** Approach variant of [onOpNpcOption] (ranged/magic attacks call `apRange`). */
+    public fun onApNpcOption(text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.apNpcByText, text.lowercase(), script, "apnpc text '$text'")
+    }
+
     public fun onApNpc(npc: Int, op: Int, script: suspend PlayerScript.(NpcRef) -> Unit) {
         handlers.put(handlers.apNpc, key(npc, op), script, "apnpc $npc/$op")
     }
@@ -85,6 +98,8 @@ internal class Handlers {
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
+    val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
+    val apNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val opNpc = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
     val apNpc = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
     val opPlayer = HashMap<Int, suspend PlayerScript.(PlayerRef) -> Unit>()

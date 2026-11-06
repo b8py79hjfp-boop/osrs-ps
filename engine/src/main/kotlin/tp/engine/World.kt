@@ -110,6 +110,8 @@ class World(
 
     fun player(slot: Int): Player? = players.getOrNull(slot)
 
+    fun npc(index: Int): Npc? = npcs.getOrNull(index)
+
     fun forEachNpc(action: (Npc) -> Unit) {
         for (npc in npcs) npc?.let(action)
     }
@@ -441,6 +443,23 @@ class World(
         inv.refreshAll()
     }
 
+    /**
+     * Sends [player]'s look: [worn] = obj per wear position 0..11 (-1 empty); each obj's `wearpos2/3` (cache) hide
+     * other positions (e.g. a full helm hides hair).
+     */
+    fun refreshAppearance(player: Player, worn: IntArray, combatLevel: Int, skullIcon: Int, prayerIcon: Int) {
+        val hidden = IntArray(APPEARANCE_SLOTS * 2) { -1 }
+        for (pos in 0 until APPEARANCE_SLOTS) {
+            val type = worn.getOrNull(pos)?.takeIf { it >= 0 }?.let { data.configs.objs[it] } ?: continue
+            hidden[pos * 2] = type.wearPos2
+            hidden[pos * 2 + 1] = type.wearPos3
+        }
+        player.session.appearance(tp.protocol.api.Appearance(worn.copyOf(APPEARANCE_SLOTS), hidden, combatLevel, skullIcon, prayerIcon))
+    }
+
+    /** Obj config (wear positions, params) for content facades. */
+    fun objType(id: Int): tp.cache.config.obj.ObjType? = data.configs.objs[id]
+
     fun setRunMode(player: Player, enabled: Boolean) {
         player.runMode = enabled
     }
@@ -604,6 +623,9 @@ class World(
         private const val MISSED_LOG_SAMPLE = 100L
         private const val WALK_STEPS = 1
         private const val RUN_STEPS = 2
+
+        /** Appearance wear positions 0..11. */
+        private const val APPEARANCE_SLOTS = 12
 
         /** FNV-1a 64-bit prime, for [stateHash]. */
         private const val HASH_PRIME = 0x100000001b3L

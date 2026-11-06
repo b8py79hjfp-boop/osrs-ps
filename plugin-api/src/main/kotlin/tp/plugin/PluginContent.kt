@@ -19,6 +19,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { PlayerRef(player) }
 
     override fun onWorldStart(world: World) {
+        this.world = world
         val ref = WorldRef(world)
         for (handler in h.worldStart) ref.handler()
     }
@@ -46,9 +47,24 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun apLoc(locId: Int, option: Int): Script<Player>? = h.apLoc[key(locId, option)]?.let(::locScript)
 
-    override fun opNpc(npcType: Int, option: Int): Script<Player>? = h.opNpc[key(npcType, option)]?.let(::npcScript)
+    override fun opNpc(npcType: Int, option: Int): Script<Player>? =
+        (h.opNpc[key(npcType, option)] ?: opText(npcType, option)?.let(h.opNpcByText::get))?.let(::npcScript)
 
-    override fun apNpc(npcType: Int, option: Int): Script<Player>? = h.apNpc[key(npcType, option)]?.let(::npcScript)
+    override fun apNpc(npcType: Int, option: Int): Script<Player>? =
+        (h.apNpc[key(npcType, option)] ?: opText(npcType, option)?.let(h.apNpcByText::get))?.let(::npcScript)
+
+    private var world: World? = null
+
+    private fun opText(npcType: Int, option: Int): String? =
+        world
+            ?.data
+            ?.configs
+            ?.npcs
+            ?.get(npcType)
+            ?.ops
+            ?.ops
+            ?.getOrNull(option - 1)
+            ?.lowercase()
 
     override fun opPlayer(option: Int): Script<Player>? = h.opPlayer[option]?.let(::playerScript)
 

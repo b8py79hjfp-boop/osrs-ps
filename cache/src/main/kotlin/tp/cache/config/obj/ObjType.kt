@@ -143,7 +143,8 @@ object ObjTypeDecoder : ConfigDecoder<ObjType> {
 
     override fun decode(id: Int, buf: ReadBuf): ObjType {
         val t = ObjType(id)
-        val iops: Array<String?> = arrayOf(null, null, "Take", null, "Drop")
+        // Client default inventory ops: only op5 "Drop" (RuneLite `ItemLoader`: interfaceOptions = {null, null, null, null, "Drop"}).
+        val iops: Array<String?> = arrayOf(null, null, null, null, "Drop")
         var iopSubOps: MutableMap<Int, MutableMap<Int, String>>? = null
         while (true) {
             val opcode = buf.g1()
