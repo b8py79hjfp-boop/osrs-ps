@@ -401,3 +401,22 @@ files; each KDoc names the RS Mod function it follows.
 - **Not ported** (bank.md "Not implemented"): wear/eat extra ops (content/combat's wield interrupts and would close the
   modal), fillers, potion store, tags, PIN, confirmation popups, sold slots, worn-bonus texts. Drag operations are written but
   unreachable until IF_BUTTOND is delivered to content (OPEN-B7).
+
+## D-030 — Teleports in their own module; backpack item ops by text; chatbox option menu
+
+`content/magic` (registered in `settings.gradle.kts` and `server/build.gradle.kts` like the other content modules) holds the
+standard, ancient and lunar teleport spells, the three home teleports, magic tablets and the six charged jewellery families
+(docs/mechanics/teleports.md). It is a module of its own so the 700-line gameframe plugins stay about interface panels.
+
+- **Delay.** A teleport is a stalled action: the click handler checks and pays (level, Tele Block, Wilderness, runes or charge, all in
+  one `transaction`), then `PlayerRef.startScript` (a strong queue entry, delay 0) runs `delay(n)` and `teleport`. A button handler is
+  not a script, and `queueHit` would not stall the player (no `isDelayed`), so `startScript` was added to plugin-api.
+- **Backpack ops.** `Equipment` already owns `onButton(Components.Inventory.ITEMS, op)` for ops 2/3/4/6, and one owner per handler
+  is enforced at boot, so "Break" and "Rub" could not be registered as buttons. `ContentScope.onItemOp(text)` hands a backpack op to
+  its owner by cache iop text before the generic buttons; the owner decides if the obj is its own.
+- **Choice menu.** `PlayerRef.choiceDialog` (chatmenu 219 + client script 58, answered by the pause-button path of `ResumePause`)
+  is the first multi-option chatbox dialogue; the pending menu lives in `PluginContent` beside `pendingDialogs`.
+- **Wilderness.** content/magic cannot see content/pvp, so `Wilderness.updateArea` publishes `SharedAttrs.WILDERNESS_LEVEL`
+  (written only when it changes).
+- **Not done here (main-session areas):** IF_SUBOP delivery (right-click "Rub" sub-options) is a protocol change, and persisting the
+  home teleport cooldown is a persistence change (teleports.md OPEN-TP9, OPEN-TP12).

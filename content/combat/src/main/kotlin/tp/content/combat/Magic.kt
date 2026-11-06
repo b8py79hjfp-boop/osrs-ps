@@ -66,7 +66,7 @@ public class Magic : ContentPlugin {
         val delay = Formulas.magicDelay(distance)
         player.anim(Seqs.ZAROS_VERTICAL_CASTING)
         CombatSystem.announceAttack(player, target, CombatStyle.MAGIC)
-        val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
+        val hit = Formulas.hits(attackRoll, defenceRoll, player::random) || (spell.freeze > 0 && Bosses.freezeLands(player, target))
         val damage = if (hit) Formulas.damage(max, player::random) else 0
         // Visual lands on the application tick: 30 client cycles per tick (OPEN-C1).
         target.spotAnim(

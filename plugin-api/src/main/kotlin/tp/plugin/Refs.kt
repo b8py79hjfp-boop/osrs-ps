@@ -9,11 +9,16 @@ import tp.engine.interact.clearInteraction
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
 import tp.engine.inv.ItemTransaction
+import tp.engine.script.QueueType
 import tp.engine.tick.TickInspector
 import tp.engine.zone.GroundObj
 import tp.protocol.api.ServerMessage
+import tp.symbols.Components
+import tp.symbols.Interfaces
 import tp.symbols.Varps
 import tp.util.CoordGrid
+import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 /** Content's view of a player. Every change goes through the engine (interfaces, vars, item transactions). */
 public class PlayerRef internal constructor(internal val p: Player) : EntityRef() {
@@ -175,6 +180,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Whether the player has an interaction in progress. */
     public val isInteracting: Boolean get() = p.interactionTarget != null
 
+    /** Persisted content value [key] (saved with the account), or null. */
+    public fun saved(key: String): Long? = p.saved[key]
+
+    /** Sets (or with null, clears) persisted content value [key]. */
+    public fun setSaved(key: String, value: Long?) {
+        if (value == null) p.saved.remove(key) else p.saved[key] = value
+    }
+
     /** Starts (or replaces) timer [id] every [interval] ticks; soft timers run even while delayed (scripts.md T3/T4). */
     public fun timer(id: TimerId, interval: Int, soft: Boolean, action: PlayerRef.() -> Unit) {
         p.timers.add(id.key, interval, soft) { action() }
@@ -232,6 +245,31 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public fun objDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
         dialogs()[p] = { (it as? tp.engine.ObjDialogAnswer)?.let { a -> answer(a.obj) } }
         p.session.send(ServerMessage.ClientScript(OBJ_SEARCH, listOf(title, 1, -1, 0)))
+    }
+
+    /**
+     * Opens the chatbox option menu (`chatmenu`, client script 58 `chatbox_multi_init`; RS Mod `ifChoice`/`choiceN`):
+     * [title] above [choices] (2..6). [answer] runs with the 1-based pick after the menu closed; closing the menu or
+     * opening another interface drops the pick. Only the latest menu per player can be answered.
+     */
+    public fun choiceDialog(title: String, choices: List<String>, answer: PlayerRef.(Int) -> Unit) {
+        require(choices.size in MIN_CHOICES..MAX_CHOICES) { "choice menus have $MIN_CHOICES..$MAX_CHOICES options" }
+        p.world.interfaces.openModal(p, Components.Chatbox.CHATMODAL, Interfaces.CHATMENU)
+        p.session.send(ServerMessage.ClientScript(CHATBOX_MULTI_INIT, listOf(title, choices.joinToString(CHOICE_SEPARATOR))))
+        ifEvents(Components.Chatmenu.OPTIONS, 1..choices.size, IfEvents.PAUSE_BUTTON)
+        (p.world.content as PluginContent).pendingChoices[p] = PendingChoice(choices.size, answer)
+    }
+
+    /**
+     * Runs [script] as a strong queue script of this player, starting this tick when called from input handling (queue
+     * delay 0, scripts.md Q13). The script may [PlayerScript.delay]; use it for actions that stall the player.
+     */
+    public fun startScript(script: suspend PlayerScript.() -> Unit) {
+        p.queue.add(QueueType.STRONG, 0) {
+            val body: suspend PlayerScript.() -> Unit = script
+            val scope = PlayerScript(this)
+            suspendCoroutineUninterceptedOrReturn { c -> body.startCoroutineUninterceptedOrReturn(scope, c) }
+        }
     }
 
     /** Sends one Grand Exchange slot to the client ([status] 0 clears it). */
@@ -498,6 +536,9 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     public fun dropAt(invId: Int, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean =
         tx.dropToGround(of(invId), slot, obj, count, at, owner)
 
+    /** Creates [count] of [obj] on the ground at [at], private to [owner] first. */
+    public fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String): Boolean = tx.createOnGround(obj, count, at, owner)
+
     /** Adds to [invId], or drops at the player's feet (private to them) if it doesn't fit. */
     public fun addOrDrop(invId: Int, obj: Int, count: Int): Boolean =
         tx.addOrDrop(of(invId), obj, count, player.p.coord, player.p.username)
@@ -621,6 +662,14 @@ public class GeOffer(
 private const val MESLAYER_COUNT = 108
 private const val MESLAYER_STRING = 110
 private const val OBJ_SEARCH = 750
+
+/** Client script 58 `chatbox_multi_init` (title, choices joined by `|`; RS Mod `ClientScripts.chatboxMultiInit`). */
+private const val CHATBOX_MULTI_INIT = 58
+private const val CHOICE_SEPARATOR = "|"
+private const val MIN_CHOICES = 2
+
+/** RS Mod offers menus of up to 5 (`choice5`); the Skills necklace has 6 destinations (Wiki), so 6 are allowed (OPEN: layout). */
+private const val MAX_CHOICES = 6
 
 /**
  * Friends chat settings. A null [name] means the channel is disabled. Ranks are minimums: -1 anyone, 0 any friends,

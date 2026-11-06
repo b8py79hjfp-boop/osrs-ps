@@ -6,7 +6,6 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.DeathEvent
 import tp.plugin.EntityRef
-import tp.plugin.EventBus
 import tp.plugin.HitEvent
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
@@ -26,7 +25,6 @@ import tp.util.CoordGrid
  */
 public class Combat : ContentPlugin {
     override fun ContentScope.register() {
-        CombatSystem.bus = events
         // Parse the Wiki NPC table at boot, not on the first NPC hit (no tick-time allocation spike).
         onWorldStart { check(NpcCombatTable.size > 0) { "npc-combat.tsv is empty" } }
         onLogin {
@@ -65,9 +63,6 @@ public class Combat : ContentPlugin {
 
 /** The combat rules shared by every attack type. */
 internal object CombatSystem {
-    /** The content event bus (set at registration; content modules talk through it). */
-    lateinit var bus: EventBus
-
     // ---- hitmark / head bar config ids (cache hitmark/headbar types; RS Mod `hitmark_groups`, `headbars`)
     private const val HITMARK_DAMAGE_LIT = 16
     private const val HITMARK_DAMAGE_TINT = 17
@@ -126,7 +121,7 @@ internal object CombatSystem {
         if (target.isDying || attacker.isDying) return false
         if (target is NpcRef && !target.isInWorld) return false
         val check = AttackCheck(attacker, target)
-        bus.publish(check)
+        attacker.events.publish(check)
         val denial = check.denial
         if (denial != null || !check.allowed) {
             if (attacker is PlayerRef) attacker.message(denial ?: "You can't attack that.")
@@ -156,7 +151,9 @@ internal object CombatSystem {
         mark: Hitmark = REGULAR,
     ) {
         if (target.isDying || (target is NpcRef && !target.isInWorld)) return // OPEN-C2
-        val dealt = minOf(damage, target.hitpoints)
+        val boss = (target as? NpcRef)?.let { Bosses.of(it.type) }
+        val adjusted = if (boss != null && target is NpcRef) boss.incoming(target, source, damage, style) else damage
+        val dealt = minOf(adjusted, target.hitpoints)
         target.hitpoints -= dealt
         if (dealt > 0) {
             target.hitsplat(source, dealt, mark.lit, mark.lit, mark.tint)
@@ -169,7 +166,12 @@ internal object CombatSystem {
             target[Attr.LAST_HIT_TICK] = target.tick
         }
         onLand?.invoke()
-        bus.publish(HitEvent(target, source, dealt, style))
+        target.events.publish(HitEvent(target, source, dealt, style))
+        if (target is NpcRef && boss != null) {
+            Bosses.recordDamage(target, source, dealt)
+            if (target.hitpoints <= 0 && boss.onLethal(target)) return
+            if (target.hitpoints > 0) boss.afterHit(target, source)
+        }
         if (target.hitpoints <= 0) {
             die(target, source)
         } else if (source != null) {
@@ -227,9 +229,15 @@ internal object CombatSystem {
             is NpcRef -> {
                 target.stopInteraction()
                 Poison.clear(target)
+                Bosses.of(target.type)?.died(target, killer)
                 target.queueHit(NPC_DEATH_DELAY) {
-                    bus.publish(DeathEvent(target, killer))
-                    target.respawnAfter(NpcCombatTable.of(target.type)?.respawn?.takeIf { it > 0 } ?: NPC_RESPAWN_DELAY)
+                    target.events.publish(DeathEvent(target, killer))
+                    // Summoned minions and one-off spawns (maledictus) don't come back (bosses.md B5).
+                    if (target[Bosses.MINION] == true) {
+                        target.despawn()
+                    } else {
+                        target.respawnAfter(NpcCombatTable.of(target.type)?.respawn?.takeIf { it > 0 } ?: NPC_RESPAWN_DELAY)
+                    }
                 }
             }
         }
@@ -237,7 +245,7 @@ internal object CombatSystem {
 
     private fun respawn(player: PlayerRef, killer: EntityRef?) {
         DeathRules.dropItems(player, killer)
-        bus.publish(DeathEvent(player, killer))
+        player.events.publish(DeathEvent(player, killer))
         player.message("Oh dear, you are dead!")
         player.teleport(RESPAWN)
         for (stat in 0 until STAT_COUNT) player.setLevel(stat, player.baseLevel(stat))
@@ -267,7 +275,7 @@ internal object CombatSystem {
         attacker.trace("attack ${style.name.lowercase()}")
         // AG2: both sides are "in combat" for hunting purposes.
         for (e in listOf(attacker, target)) if (e is PlayerRef) e[tp.plugin.SharedAttrs.LAST_COMBAT_TICK] = e.tick
-        bus.publish(AttackEvent(attacker, target, hitStyle(style)))
+        attacker.events.publish(AttackEvent(attacker, target, hitStyle(style)))
     }
 
     /** Removes one piece of ammo from the quiver; false if there's none. */
@@ -331,6 +339,7 @@ internal object NpcCombat {
         if (npc.attackClock() > now) return
         npc.setAttackClock(now + CombatSystem.npcSpeed(npc))
         val def = NpcCombatTable.of(npc.type)
+        if (bossAttack(npc, def, victim, distance)) return
         val type = chooseType(npc, def, distance)
         val style = type.style
         val attackRoll =
@@ -357,6 +366,14 @@ internal object NpcCombat {
         CombatSystem.announceAttack(npc, victim, style)
         CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(style), delay)
         if (def != null) Toxic.onNpcAttack(npc, def, victim)
+    }
+
+    /** Hand-written fights (bosses.md B1): the script picks the attack; poisonous hits still poison (N7). */
+    private fun bossAttack(npc: NpcRef, def: NpcCombatDef?, victim: EntityRef, distance: Boolean): Boolean {
+        val boss = Bosses.of(npc.type) ?: return false
+        boss.attack(npc, victim, distance)
+        if (def != null) Toxic.onNpcAttack(npc, def, victim)
+        return true
     }
 
     /**

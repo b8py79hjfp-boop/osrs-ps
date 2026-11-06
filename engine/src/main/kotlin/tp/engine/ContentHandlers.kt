@@ -53,7 +53,7 @@ interface ContentHandlers {
     /** IF_BUTTOND: slot [fromSub] of [fromComponent] dropped on slot [toSub] of [toComponent] (both interfaces open). */
     fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {}
 
-    /** An NPC was added to the world (content may set its hunt range). */
+    /** An NPC was added to the world or respawned (content may set its hunt range, boss state). */
     fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
 
     /** A hunting NPC's turn (aggression.md): it has a hunt range, no interaction and isn't delayed. */

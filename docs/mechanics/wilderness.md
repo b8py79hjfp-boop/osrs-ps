@@ -34,6 +34,7 @@ Logout button (LO), Tele Block (TB), Vengeance (VG), Ring of recoil (RR), Multic
   its walled yard from the collision map (x 2988..3008, z 3931..3966); the Artio, Calvar'ion and Spindel lairs have no
   published coordinates and are not included. The "player takes priority" rule doesn't yet make the NPC stop attacking.
 - **OPEN-D1:** stackables are never "kept"; untradeable death handling isn't modelled.
-- **OPEN-TB1:** teleports don't exist yet to block (accuracy is resolved, W8).
+- **OPEN-TB1 (resolved):** teleports exist now (teleports.md T4): `TELEBLOCK_UNTIL` blocks all of them, and
+  `Wilderness.updateArea` keeps `SharedAttrs.WILDERNESS_LEVEL` current for the level-20 / level-30 limits.
 - Area changes are detected by a 1-tick soft timer, then queued on the area queue; Jagex triggers area scripts from
   zone/area configs (OPEN-A1).

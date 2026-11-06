@@ -170,6 +170,8 @@ class Osrs242Network(
 
     override fun npcVisual(index: Int, visual: tp.protocol.api.Visual) {
         val avatar = npcAvatars[index] ?: return
+        // A transform also changes the avatar's id, so new observers see the new type (RSProt `setTransmogrification`).
+        if (visual is tp.protocol.api.Visual.Transform) avatar.setId(visual.id)
         Visuals.apply(avatar.extendedInfo, visual)
     }
 

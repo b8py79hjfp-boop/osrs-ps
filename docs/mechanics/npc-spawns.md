@@ -14,3 +14,6 @@ Code: `content/world/.../Spawns.kt`; data `npc-spawns.tsv` from `tools/wiki-impo
 - **OPEN-SP2:** 240 LocLines name NPCs that no cache id matches by name and level (renamed or removed NPCs); they're
   skipped. Instanced copies (raids, minigames) are spawned where the Wiki pins them.
 - The golden scenarios keep the small dev spawn set (`content/dev` DevSpawns, enabled by `-Dtp.devSpawns=true`).
+
+- **Disambiguated pages.** Names and titles like "Scorpia's offspring (monster)" drop the parenthesised part before the
+  cache-name match. Unmatched LocLines fell from 239 to 74, and the table grew to 21,062 spawns.

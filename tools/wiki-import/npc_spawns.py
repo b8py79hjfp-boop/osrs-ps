@@ -197,6 +197,10 @@ def levels_of(v):
     return nums
 
 
+# Callisto, Venenatis, Vet'ion (both forms), Artio, Calvar'ion (both forms), Spindel: content/pvp Lairs spawns them.
+CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998}
+
+
 def main():
     cache = load_cache_npcs(sys.argv[1])
     dest = sys.argv[2]
@@ -227,7 +231,9 @@ def main():
             mtype = clean(params.get("mtype", "pin")).lower()
             if mtype not in ("pin", "") or not coords:
                 continue
-            name = clean(params.get("name", title)).lower()
+            # Disambiguated names and titles ("Scorpia's offspring (monster)") drop the parenthesised part to match the
+            # cache name.
+            name = re.sub(r"\s*\([^)]*\)$", "", clean(params.get("name", title))).lower()
             plane = int(re.sub(r"[^0-9]", "", params.get("plane", "0")) or 0)
             levels = levels_of(params.get("levels"))
 
@@ -245,6 +251,8 @@ def main():
                 continue
             for n, (x, z) in enumerate(coords):
                 rows.add((choices[n % len(choices)], x, z, plane, -1))
+    # NPCs content spawns itself (Wilderness lair bosses: their LocLines are the surface entrance pins).
+    rows = {r for r in rows if r[0] not in CONTENT_SPAWNED}
     # Plane 0..3 and coordinates inside the 16384-tile world; anything else is a typo on the Wiki.
     rows = {r for r in rows if 0 <= r[3] <= 3 and 0 <= r[1] < 16384 and 0 <= r[2] < 16384}
     with open(dest, "w") as f:

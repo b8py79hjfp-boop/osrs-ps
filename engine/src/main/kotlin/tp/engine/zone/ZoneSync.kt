@@ -23,10 +23,10 @@ internal class ZoneSync {
         lastZone = -1
     }
 
-    fun process(player: Player, objs: GroundObjs) {
+    fun process(player: Player, objs: GroundObjs, locs: tp.engine.map.DynamicLocs) {
         val zone = ZoneKey.of(player.coord)
         if (zone.packed == lastZone) {
-            for (i in 0 until observedCount) sendEvents(player, ZoneKey(observed[i]), objs)
+            for (i in 0 until observedCount) sendEvents(player, ZoneKey(observed[i]), objs, locs)
             return
         }
         val now = scratch
@@ -40,7 +40,7 @@ internal class ZoneSync {
         for (i in 0 until nowCount) {
             val key = ZoneKey(now[i])
             // A zone seen for the first time gets its full state, not this tick's events (they're already in it).
-            if (wasObserved(now[i])) sendEvents(player, key, objs) else sendFull(player, key, objs)
+            if (wasObserved(now[i])) sendEvents(player, key, objs, locs) else sendFull(player, key, objs, locs)
         }
         scratch = observed
         observed = now
@@ -59,17 +59,19 @@ internal class ZoneSync {
         return dx in 0 until BuildArea.SIZE && dz in 0 until BuildArea.SIZE
     }
 
-    private fun sendFull(player: Player, key: ZoneKey, objs: GroundObjs) {
+    private fun sendFull(player: Player, key: ZoneKey, objs: GroundObjs, locs: tp.engine.map.DynamicLocs) {
         val dx = key.baseX - player.buildArea.x
         val dz = key.baseZ - player.buildArea.z
         player.session.send(ServerMessage.ZoneReset(dx, dz, key.level))
-        val ops = objs.inZone(key).filter { it.visibleTo(player.username) }.map(::add)
+        val ops = locs.zoneState(key) + objs.inZone(key).filter { it.visibleTo(player.username) }.map(::add)
         if (ops.isNotEmpty()) player.session.send(ServerMessage.ZoneOps(dx, dz, key.level, ops))
     }
 
-    private fun sendEvents(player: Player, key: ZoneKey, objs: GroundObjs) {
-        val events = objs.events[key.packed] ?: return
-        val ops = events.mapNotNull { messageFor(player.username, it) }
+    private fun sendEvents(player: Player, key: ZoneKey, objs: GroundObjs, locs: tp.engine.map.DynamicLocs) {
+        val locOps = locs.events[key.packed].orEmpty()
+        val events = objs.events[key.packed]
+        if (events == null && locOps.isEmpty()) return
+        val ops = locOps + events.orEmpty().mapNotNull { messageFor(player.username, it) }
         if (ops.isEmpty()) return
         player.session.send(ServerMessage.ZoneOps(key.baseX - player.buildArea.x, key.baseZ - player.buildArea.z, key.level, ops))
     }

@@ -98,6 +98,15 @@ sealed interface ZoneOp {
 
     data class ObjDel(val x: Int, val z: Int, val id: Int, val count: Int) : ZoneOp
 
+    /** Adds loc [id] or replaces the loc on its layer (LOC_ADD_CHANGE). */
+    data class LocAddChange(val x: Int, val z: Int, val id: Int, val shape: Int, val angle: Int) : ZoneOp
+
+    /** A spot anim [id] on a tile (MAP_ANIM), [height] above the ground, starting after [delay] client cycles. */
+    data class MapAnim(val x: Int, val z: Int, val id: Int, val height: Int, val delay: Int) : ZoneOp
+
+    /** Removes the loc of [shape]'s layer (LOC_DEL). */
+    data class LocDel(val x: Int, val z: Int, val shape: Int, val angle: Int) : ZoneOp
+
     /**
      * A projectile (spot anim [id]) from ([x], [z]) in this zone to the absolute tile ([endX], [endZ], [endLevel]),
      * locked to [source]/[target] if given. Times are client cycles (20 ms) from receipt.

@@ -53,6 +53,12 @@ public object SharedAttrs {
     /** Whether the player stands in the Wilderness (PvP content keeps it current; aggression reads it). */
     public val IN_WILDERNESS: AttrKey<Boolean> = AttrKey("in_wilderness_shared")
 
+    /**
+     * The player's Wilderness level (0 outside; includes the PvP-world +15, wilderness.md W3). PvP content keeps it
+     * current once per tick (Wilderness.updateArea); teleport rules read it (teleports.md T4).
+     */
+    public val WILDERNESS_LEVEL: AttrKey<Int> = AttrKey("wilderness_level_shared")
+
     /** Whether the player stands in a multi-combat area (PvP content keeps it current). */
     public val IN_MULTI: AttrKey<Boolean> = AttrKey("in_multi_shared")
 
@@ -61,6 +67,12 @@ public object SharedAttrs {
 
     /** Tick of the player's last combat (attacked, hit or attacking); aggression skips players in combat (AG2). */
     public val LAST_COMBAT_TICK: AttrKey<Long> = AttrKey("last_combat_tick")
+
+    /** Set on NPCs immune to Ring of recoil and similar reflection (Vengeance): the Wilderness bosses. */
+    public val REFLECT_IMMUNE: AttrKey<Boolean> = AttrKey("reflect_immune")
+
+    /** Tick until which the player can't teleport for a short while (boss lairs: 3 ticks after entering or leaving). */
+    public val TELEPORT_DELAY_UNTIL: AttrKey<Long> = AttrKey("teleport_delay_until")
 
     /** Tick until which teleports are blocked (Tele Block). */
     public val TELEBLOCK_UNTIL: AttrKey<Long> = AttrKey("teleblock_until")

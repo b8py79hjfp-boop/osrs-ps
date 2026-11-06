@@ -9,6 +9,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.put
 import tp.engine.entity.Player
 import tp.engine.inv.InvStack
@@ -53,6 +54,12 @@ object PlayerSave {
                     "varps",
                     buildJsonObject {
                         player.vars.forEachNonZero { id, value -> put(id.toString(), value) }
+                    },
+                )
+                put(
+                    "attrs",
+                    buildJsonObject {
+                        for ((key, value) in player.saved) put(key, value)
                     },
                 )
                 put(
@@ -114,6 +121,7 @@ object PlayerSave {
             if (s < PlayerStats.COUNT) player.stats.restore(s, pair[0].jsonPrimitive.int, pair[1].jsonPrimitive.int)
         }
         doc["varps"]?.jsonObject?.forEach { (id, v) -> player.vars.restore(id.toInt(), v.jsonPrimitive.int) }
+        doc["attrs"]?.jsonObject?.forEach { (key, v) -> v.jsonPrimitive.longOrNull?.let { player.saved[key] = it } }
         doc["invs"]?.jsonObject?.forEach { (id, o) ->
             val obj = o.jsonObject
             val stack = InvStack.valueOf(obj.getValue("stack").jsonPrimitive.content)

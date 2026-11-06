@@ -253,6 +253,21 @@ internal class RspSession(
                     ObjDel(op.id, op.count, op.x, op.z)
                 }
 
+                is ZoneOp.LocAddChange -> {
+                    net.rsprot.protocol.game.outgoing.zone.payload
+                        .LocAddChangeV2(op.id, op.x, op.z, op.shape, op.angle, OBJ_OPS_ALL)
+                }
+
+                is ZoneOp.MapAnim -> {
+                    net.rsprot.protocol.game.outgoing.zone.payload
+                        .MapAnim(op.id, op.delay, op.height, op.x, op.z)
+                }
+
+                is ZoneOp.LocDel -> {
+                    net.rsprot.protocol.game.outgoing.zone.payload
+                        .LocDel(op.x, op.z, op.shape, op.angle)
+                }
+
                 is ZoneOp.Projectile -> {
                     MapProjAnimV2(
                         op.id,

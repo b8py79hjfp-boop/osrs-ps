@@ -12,6 +12,27 @@ import tp.symbols.Objs
 import tp.symbols.Varbits
 import tp.symbols.Varps
 
+/** Moves the item in worn [slot] to the backpack (one transaction); false if there's no room or nothing there. */
+internal fun unequip(player: PlayerRef, slot: Int): Boolean {
+    val obj = player.worn(slot)
+    if (obj < 0) return false
+    val ok = player.transaction("unequip") { move(Invs.WORN, slot, obj, player.inv(Invs.WORN).count(slot), Invs.INV) }
+    if (ok) player.afterChange(slot)
+    return ok
+}
+
+/** Weapon-dependent state and the appearance after worn slot [pos] changed. */
+internal fun PlayerRef.afterChange(pos: Int) {
+    if (pos == Wear.WEAPON || pos == Wear.SHIELD) {
+        setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
+        // Switching weapons turns the special attack bar off (RS Mod `resetSpecialAttack` on weapon change).
+        setVarp(Varps.SA_ATTACK, 0)
+        val slots = weaponCategory().slots
+        if (slots.getOrNull(varp(Varps.COM_MODE)) == null) setVarp(Varps.COM_MODE, slots.indexOfFirst { it != null })
+    }
+    Appearance.refresh(this)
+}
+
 /** Appearance = worn objs + combat level + icons; sent whenever any of them change. */
 internal object Appearance {
     fun refresh(player: PlayerRef) {
@@ -85,25 +106,8 @@ public class Equipment : ContentPlugin {
     }
 
     private fun PlayerRef.remove(slot: Int) {
-        val obj = worn(slot)
-        if (obj < 0) return
-        val ok = transaction("unequip") { move(Invs.WORN, slot, obj, inv(Invs.WORN).count(slot), Invs.INV) }
-        if (!ok) {
-            message("You don't have enough free inventory space to do that.")
-            return
-        }
-        afterChange(slot)
-    }
-
-    private fun PlayerRef.afterChange(pos: Int) {
-        if (pos == Wear.WEAPON || pos == Wear.SHIELD) {
-            setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
-            // Switching weapons turns the special attack bar off (RS Mod `resetSpecialAttack` on weapon change).
-            setVarp(Varps.SA_ATTACK, 0)
-            val slots = weaponCategory().slots
-            if (slots.getOrNull(varp(Varps.COM_MODE)) == null) setVarp(Varps.COM_MODE, slots.indexOfFirst { it != null })
-        }
-        Appearance.refresh(this)
+        if (worn(slot) < 0) return
+        if (!unequip(this, slot)) message("You don't have enough free inventory space to do that.")
     }
 
     private companion object {

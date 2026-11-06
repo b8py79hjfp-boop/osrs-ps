@@ -46,6 +46,23 @@ class StaticLocs private constructor(
         return null
     }
 
+    /** The cache loc whose origin is the tile and whose shape is on [layer] (DynamicLocs layers), or null. */
+    fun atLayer(level: Int, x: Int, z: Int, layer: Int): InteractionTarget.Loc? {
+        val square = squares[squareId(x, z)] ?: return null
+        val lx = x and LOCAL_MASK
+        val lz = z and LOCAL_MASK
+        val bridge = level + 1 < MapSquare.LEVELS && (square.settings(1, lx, lz) and TileSettings.LINK_BELOW) != 0
+        for (i in 0 until square.locCount) {
+            val info = square.locInfo[i]
+            if (MapSquare.locX(info) != lx || MapSquare.locZ(info) != lz) continue
+            val stored = MapSquare.locLevel(info)
+            if (stored != level && !(bridge && stored == level + 1)) continue
+            if (DynamicLocs.layerOf(MapSquare.locShape(info)) != layer) continue
+            return find(level, x, z, square.locIds[i])
+        }
+        return null
+    }
+
     companion object {
         private const val SQUARE_SHIFT = 6
         private const val SQUARE_AXIS_BITS = 8

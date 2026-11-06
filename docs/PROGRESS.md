@@ -123,7 +123,7 @@
     history (GE1–GE15). Verified in the client.
   - NPC aggression and tolerance (aggression.md): hunt, 21×21 tolerance regions, max range, retreat, single-way rule.
   - Bank (bank.md, D-029): tabs, drag (IF_BUTTOND end to end), placeholders, deposit-all, always-stacking bank inv.
-  - World spawns: 19.6k NPC spawns from the Wiki in `content/world` (npc-spawns.md); dev spawns only under
+  - World spawns: 21k NPC spawns from the Wiki in `content/world` (npc-spawns.md); dev spawns only under
     `-Dtp.devSpawns=true`.
   - Login nag skip in the release client.
   - Uncommitted, in progress:

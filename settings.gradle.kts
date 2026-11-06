@@ -40,6 +40,7 @@ include(
     ":content:combat",
     ":content:pvp",
     ":content:world",
+    ":content:magic",
     ":services",
     ":server",
     ":hub",

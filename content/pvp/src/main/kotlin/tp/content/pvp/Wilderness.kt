@@ -44,13 +44,15 @@ public class Wilderness : ContentPlugin {
 
     /** Border crossings run through the area queue (brief §8: "single/multi-way (area queue on borders)"). */
     private fun PlayerRef.updateArea() {
-        val inWild = level(coord, isPvpWorld) > 0
+        val wildLevel = level(coord, isPvpWorld)
+        val inWild = wildLevel > 0
+        if ((this[tp.plugin.SharedAttrs.WILDERNESS_LEVEL] ?: 0) != wildLevel) this[tp.plugin.SharedAttrs.WILDERNESS_LEVEL] = wildLevel
         if (this[IN_WILD] != inWild) {
             this[IN_WILD] = inWild
             this[tp.plugin.SharedAttrs.IN_WILDERNESS] = inWild
             areaQueue { playerOp(ATTACK_OP, if (inWild) "Attack" else null, top = true) }
         }
-        val inMulti = coord in MULTI
+        val inMulti = isMulti(coord)
         if (this[IN_MULTI] != inMulti) {
             this[IN_MULTI] = inMulti
             this[tp.plugin.SharedAttrs.IN_MULTI] = inMulti
@@ -105,7 +107,8 @@ public class Wilderness : ContentPlugin {
          * published coordinates.
          */
         public fun isSinglesPlus(c: CoordGrid): Boolean =
-            (c.x in REV_MIN_X..REV_MAX_X && c.z in REV_MIN_Z..REV_MAX_Z) ||
+            Lairs.singlesPlusAt(c) ||
+                (c.x in REV_MIN_X..REV_MAX_X && c.z in REV_MIN_Z..REV_MAX_Z) ||
                 (c.level == 0 && c.x in AGIL_MIN_X..AGIL_MAX_X && c.z in AGIL_MIN_Z..AGIL_MAX_Z)
 
         private const val REV_MIN_X = 3136
@@ -141,10 +144,26 @@ public class Wilderness : ContentPlugin {
 
         /** Wilderness level at [c] (+15 on PvP worlds), 0 outside or in the safe rows. */
         public fun level(c: CoordGrid, pvpWorld: Boolean = false): Int {
-            val inBounds = c.level == 0 && c.x in MIN_X..MAX_X && c.z in MIN_Z + SAFE_ROWS..MAX_Z
-            val wild = if (inBounds) (c.z - MIN_Z) / ROWS_PER_LEVEL + 1 else 0
+            val wild = Lairs.levelAt(c) ?: surfaceLevel(if (isUnderground(c)) CoordGrid(c.x, c.z - UNDERGROUND_OFFSET, 0) else c)
             if (!pvpWorld) return wild
             return if (wild == 0 && isSafeZone(c)) 0 else wild + PVP_WORLD_LEVEL
         }
+
+        private fun surfaceLevel(c: CoordGrid): Int {
+            val inBounds = c.level == 0 && c.x in MIN_X..MAX_X && c.z in MIN_Z + SAFE_ROWS..MAX_Z
+            return if (inBounds) (c.z - MIN_Z) / ROWS_PER_LEVEL + 1 else 0
+        }
+
+        /**
+         * W14: the underground Wilderness (dungeons below it, e.g. the Revenant Caves) has the level of the surface 6,400
+         * tiles north: the Revenant Caves (z 10048..10239) come out at levels 17–40, as the Wiki states for them.
+         */
+        private fun isUnderground(c: CoordGrid): Boolean =
+            c.x in MIN_X..MAX_X && c.z in MIN_Z + UNDERGROUND_OFFSET..MAX_Z + UNDERGROUND_OFFSET
+
+        private const val UNDERGROUND_OFFSET = 6400
+
+        /** Multi-combat: the RS Mod polygons, the multi boss lairs and the Escape Caves. */
+        public fun isMulti(c: CoordGrid): Boolean = c in MULTI || Lairs.multiAt(c)
     }
 }

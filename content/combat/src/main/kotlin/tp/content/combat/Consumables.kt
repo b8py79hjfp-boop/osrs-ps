@@ -67,6 +67,12 @@ internal object Consumables {
                 },
             // "temporarily raises the player's Magic level by 4".
             "Magic potion" to Potion { p -> boost(p, Stat.MAGIC, 0, 4) },
+            // Antifire family (Dragonfire.kt): antifire 6 min, extended 12 min (30-tick varbit units); super antifire 3 min,
+            // extended super 6 min (20-tick units) — Wiki potion pages; units per RuneLite `TimersAndBuffsPlugin`.
+            "Antifire potion" to Potion { p -> Dragonfire.drink(p, superAntifire = false, units = 20) },
+            "Extended antifire" to Potion { p -> Dragonfire.drink(p, superAntifire = false, units = 40) },
+            "Super antifire potion" to Potion { p -> Dragonfire.drink(p, superAntifire = true, units = 15) },
+            "Extended super antifire" to Potion { p -> Dragonfire.drink(p, superAntifire = true, units = 30) },
             // 20% run energy per dose (the drain reduction isn't modelled: run drain isn't either).
             "Stamina potion" to Potion { p -> p.runEnergy += 2000 },
         )

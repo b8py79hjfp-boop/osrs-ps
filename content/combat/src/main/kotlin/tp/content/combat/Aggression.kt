@@ -44,7 +44,9 @@ public class Aggression : ContentPlugin {
         val lastCombat = player[SharedAttrs.LAST_COMBAT_TICK] ?: Long.MIN_VALUE / 2
         if (player[SharedAttrs.IN_MULTI] != true && player.tick - lastCombat < ACTIVE_COMBAT_TICKS) return false
         if (player[SharedAttrs.IN_MULTI] != true && engagedByOther(npc, player)) return false
-        if (tolerant(player)) return false
+        val boss = Bosses.of(npc.type)
+        if (boss != null && !boss.hunts(npc, player)) return false
+        if ((boss == null || !boss.ignoresTolerance) && tolerant(player)) return false
         return npc.hasLineOfSight(player)
     }
 

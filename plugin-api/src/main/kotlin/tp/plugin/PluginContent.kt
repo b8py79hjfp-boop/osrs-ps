@@ -6,6 +6,7 @@ import tp.engine.World
 import tp.engine.entity.Player
 import tp.engine.interact.InteractionTarget
 import tp.engine.script.Script
+import tp.symbols.Components
 import java.util.ServiceLoader
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
@@ -20,14 +21,36 @@ private const val COMPONENT_MASK = 0xFFFF
 private const val LOC_OPS = 5
 
 /**
+ * Backpack button ops of iop1..iop5: iop1..iop3 = ops 2..4, iop4 = op 6, iop5 = op 7 (RS Mod `InvOpenScript` events Op2,
+ * Op3, Op4, Op6, Op7; same mapping as content/combat `Equipment`). Returns the 0-based iop index, -1 for any other op.
+ */
+@Suppress("MagicNumber") // button op numbers are the client's
+private fun backpackIopIndex(op: Int): Int =
+    when (op) {
+        in 2..4 -> op - 2
+        6 -> 3
+        7 -> 4
+        else -> -1
+    }
+
+/** A chatbox option menu waiting for an answer: [count] choices, [answer] runs with the 1-based pick. */
+internal class PendingChoice(val count: Int, val answer: PlayerRef.(Int) -> Unit)
+
+/**
  * Compiles every registered plugin into the engine's [ContentHandlers]. Built once at boot; lookups are hash maps,
  * no reflection after boot (brief §6).
  */
 public class PluginContent private constructor(private val h: Handlers) : ContentHandlers {
+    /** This world's content event bus. */
+    internal val events: EventBus get() = h.events
+
     private val refs = HashMap<Player, PlayerRef>()
 
     /** Dialog callbacks opened from button handlers (world thread only). */
     internal val pendingDialogs = HashMap<Player, PlayerRef.(Any) -> Unit>()
+
+    /** Chatbox option menus waiting for an answer (world thread only), see [PlayerRef.choiceDialog]. */
+    internal val pendingChoices = HashMap<Player, PendingChoice>()
 
     private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { PlayerRef(player) }
 
@@ -85,6 +108,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         for (handler in h.logout) ref.handler()
         refs.remove(player)
         pendingDialogs.remove(player)
+        pendingChoices.remove(player)
     }
 
     override fun onCommand(player: Player, command: String, args: List<String>): Boolean {
@@ -134,6 +158,8 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         (h.opObj[key(objId, option)] ?: h.opObj[key(ContentScope.DEFAULT_ID, option)])?.let(::objScript)
 
     override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {
+        if (component == Components.Chatmenu.OPTIONS) return answerChoice(player, slot)
+        if (component == Components.Inventory.ITEMS && h.itemOps.isNotEmpty() && itemOp(player, option, slot, obj)) return
         val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
         val handler = h.buttons[base or option.toLong()] ?: h.buttons[base]
         if (handler == null) {
@@ -144,6 +170,26 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             return
         }
         ref(player).handler(ButtonClick(component, option, slot, obj))
+    }
+
+    /** Runs the [ContentScope.onItemOp] handler of the iop text behind backpack button op [option]; false if none. */
+    private fun itemOp(player: Player, option: Int, slot: Int, obj: Int): Boolean {
+        val ref = ref(player)
+        val index = backpackIopIndex(option)
+        val text = (if (index >= 0) ref.objIop(obj, index) else null) ?: return false
+        val handler = h.itemOps[text.lowercase()] ?: return false
+        ref.handler(ButtonClick(Components.Inventory.ITEMS, option, slot, obj))
+        return true
+    }
+
+    /** Answers the open chatbox option menu with 1-based choice [choice] (hostile input: out-of-range is ignored). */
+    private fun answerChoice(player: Player, choice: Int) {
+        val pending = pendingChoices[player] ?: return
+        if (choice !in 1..pending.count) return
+        pendingChoices.remove(player)
+        val ref = ref(player)
+        ref.closeModal()
+        pending.answer(ref, choice)
     }
 
     override fun onNpcSpawn(npc: tp.engine.entity.Npc) {

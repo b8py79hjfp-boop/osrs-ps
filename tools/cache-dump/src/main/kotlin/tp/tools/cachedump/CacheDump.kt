@@ -18,6 +18,7 @@ private val USAGE =
       interface <id>                       every component of an interface
       map <squareX> <squareZ>              square summary, level-0 tile settings, loc list
       collision <x> <z> <level> [radius]   ASCII collision render around a tile (default radius 16)
+      find-locs <name>                     every placement of locs with this exact name (x z level id)
     default cache dir: ${defaultCacheDir()}
     """.trimIndent()
 
@@ -55,11 +56,20 @@ private fun extractCacheDir(args: List<String>): Pair<Path, List<String>> {
     return Path.of(value) to (args.take(index) + args.drop(index + 2))
 }
 
-@Suppress("LongMethod") // one branch per command; each delegates in a line or two
+@Suppress("LongMethod", "CyclomaticComplexMethod") // one branch per command; each delegates in a line or two
 private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cacheDir: Path) {
     when (command) {
         "runelite-static" -> {
             runeliteStatic(cache, args)
+        }
+
+        "flood" -> {
+            val radius = if (args.size > FLOOD_RADIUS_ARG) intArg(args, FLOOD_RADIUS_ARG, "radius") else FLOOD_RADIUS
+            flood(cache, cacheDir, intArg(args, 0, "x"), intArg(args, 1, "z"), intArg(args, 2, "level"), radius)
+        }
+
+        "find-locs" -> {
+            findLocs(cache, cacheDir, args.joinToString(" ").ifBlank { throw UsageException("missing loc name") })
         }
 
         "pvp-safe-zones" -> {
@@ -171,6 +181,12 @@ private const val VERB_PREVIEW = 30
 
 /** Entries printed per enum by `enums-with-keys`. */
 private const val ENUM_PREVIEW = 40
+
+/** Flood-fill cap in tiles when none is given. */
+private const val FLOOD_RADIUS = 48
+
+/** Argument index of the optional flood radius (after x, z, level). */
+private const val FLOOD_RADIUS_ARG = 3
 
 /** Collision render radius in tiles when none is given. */
 private const val DEFAULT_RADIUS = 16

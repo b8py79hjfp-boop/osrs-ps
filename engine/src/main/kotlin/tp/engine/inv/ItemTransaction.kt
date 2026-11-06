@@ -155,6 +155,19 @@ class ItemTransaction internal constructor(
         return true
     }
 
+    /** Creates [count] of [obj] on the ground at [at], private to [owner] first (loot: e.g. a lost lair fee). */
+    fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String): Boolean {
+        if (failed) return false
+        if (count <= 0 || objTypes[obj] == null) return fail()
+        val tradeable = objTypes[obj]?.tradeable == true
+        val lifetime = if (tradeable) timing.tradeableDespawn else timing.untradeableDespawn
+        val publicAt = if (tradeable) tick + timing.privateTicks else -1L
+        val g = GroundObj(obj, count, at, owner, publicAt, tick + lifetime)
+        ground.add(g)
+        groundChanges += GroundChange(g, added = true)
+        return true
+    }
+
     /** Takes [obj] off the ground into [inv] (stacking rules of [inv]). */
     fun takeFromGround(obj: GroundObj, inv: Inventory): Boolean {
         if (failed) return false

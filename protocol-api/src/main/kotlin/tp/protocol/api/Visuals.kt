@@ -36,6 +36,9 @@ sealed interface Visual {
     /** Turn towards [target] (null = stop facing). */
     data class Face(val target: AvatarRef?) : Visual
 
+    /** NPC transmogrification into config [id] (boss phases). */
+    data class Transform(val id: Int) : Visual
+
     /** Overhead text. */
     data class Say(val text: String) : Visual
 }

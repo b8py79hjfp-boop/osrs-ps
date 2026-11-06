@@ -52,7 +52,7 @@ public class PvpCombat : ContentPlugin {
     private fun singleWay(check: AttackCheck) {
         val attacker = check.attacker as? PlayerRef ?: return
         val target = check.target as? PlayerRef ?: return
-        if (target.coord in Wilderness.MULTI) return // multi-combat: no PJ protection
+        if (Wilderness.isMulti(target.coord)) return // multi-combat: no PJ protection
         val now = attacker.tick
         if ((target[NPC_FIGHT_UNTIL] ?: 0L) > now && !Wilderness.isSinglesPlus(target.coord)) {
             check.deny("Someone else is fighting that player.")
@@ -137,6 +137,8 @@ public class PvpCombat : ContentPlugin {
         // An NPC's hit keeps a player in PvM combat for the PJ window (single-way protection, W13).
         if (source is tp.plugin.NpcRef && target is PlayerRef) target[NPC_FIGHT_UNTIL] = target.tick + pjTicks(target)
         if (e.damage <= 0 || e.style == HitStyle.TYPELESS || target !is PlayerRef) return
+        // Wilderness bosses: "immune to Ring of Recoil and similar effects" (bosses.md B3).
+        if (source[SharedAttrs.REFLECT_IMMUNE] == true) return
         // Vengeance: "Reflects 75% of the next damage, rounded down" (Vengeance page).
         if (target[VENGEANCE] == true) {
             target[VENGEANCE] = null

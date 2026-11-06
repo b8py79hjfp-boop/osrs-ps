@@ -18,6 +18,12 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 /** Typical projectile launch angle (RS Mod projanim defaults). */
 private const val DEFAULT_ANGLE = 15
 
+/** Collision flags that stop a tile being stood on (rsmod-pathfinder `CollisionFlag.LOC` | `BLOCK_WALK`). */
+private const val WALK_BLOCKERS: Int = org.rsmod.routefinder.flag.CollisionFlag.LOC or org.rsmod.routefinder.flag.CollisionFlag.BLOCK_WALK
+
+/** Bus for entities in a world without plugin content (engine tests): nothing subscribes. */
+private val NO_EVENTS = EventBus()
+
 /** A typed key for per-entity content state (clocks, flags, timers). Compared by identity. */
 public class AttrKey<T : Any>(public val name: String) {
     override fun toString(): String = "AttrKey($name)"
@@ -53,6 +59,17 @@ public sealed class EntityRef {
 
     public operator fun <T : Any> set(key: AttrKey<T>, value: T?) {
         if (value == null) e.attrs.remove(key) else e.attrs[key] = value
+    }
+
+    /** The content event bus of this entity's world (one per world; content modules talk through it). */
+    public val events: EventBus get() = (e.world.content as? PluginContent)?.events ?: NO_EVENTS
+
+    /** World-scoped content state for [key] in this entity's world (plugins are shared by every world in the JVM). */
+    @Suppress("UNCHECKED_CAST") // keys are typed
+    public fun <T : Any> worldAttr(key: AttrKey<T>): T? = e.world.attrs[key] as T?
+
+    public fun <T : Any> setWorldAttr(key: AttrKey<T>, value: T?) {
+        if (value == null) e.world.attrs.remove(key) else e.world.attrs[key] = value
     }
 
     public fun anim(seq: Int, delay: Int = 0) {
@@ -94,6 +111,13 @@ public sealed class EntityRef {
     /** Line of sight from this entity to [other] (footprints, projectile rules). */
     public fun hasLineOfSight(other: EntityRef): Boolean = e.world.hasLineOfSight(e, other.e)
 
+    /** Every player in this world. */
+    public fun playersInWorld(): List<PlayerRef> {
+        val out = ArrayList<PlayerRef>()
+        e.world.forEachPlayer { out += PlayerRef(it) }
+        return out
+    }
+
     /** Players within [radius] tiles (Chebyshev, same level), excluding this entity. */
     public fun playersWithin(radius: Int): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
@@ -125,6 +149,54 @@ public sealed class EntityRef {
     ) {
         e.world.projectile(e, target.e, id, startHeight, endHeight, startCycles, endCycles, angle)
     }
+
+    /** A spot anim on the tile [at] (MAP_ANIM), seen by everyone near it. */
+    public fun spotAnimAt(at: CoordGrid, id: Int, height: Int = 0, delay: Int = 0) {
+        e.world.mapAnim(at, id, height, delay)
+    }
+
+    /** Spawns NPC [type] at [at] (wandering [wanderRange]) and returns it; it respawns like any NPC unless removed. */
+    public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int = 0): NpcRef = NpcRef(e.world.spawnNpc(type, at, wanderRange))
+
+    /** Puts loc [id] on the tile (replacing its layer); reverts after [duration] ticks if positive. */
+    public fun addLoc(id: Int, at: CoordGrid, shape: Int, angle: Int, duration: Int = -1) {
+        e.world.locs.add(id, at, shape, angle, e.world.tick, duration)
+    }
+
+    /** Removes the loc of [shape]'s layer on the tile; reverts after [duration] ticks if positive. */
+    public fun deleteLoc(at: CoordGrid, shape: Int, duration: Int = -1) {
+        e.world.locs.delete(at, shape, e.world.tick, duration)
+    }
+
+    /** Restores the cache loc of [shape]'s layer on the tile. */
+    public fun revertLoc(at: CoordGrid, shape: Int) {
+        e.world.locs.revert(
+            at.level,
+            at.x,
+            at.z,
+            tp.engine.map.DynamicLocs
+                .layerOf(shape),
+        )
+    }
+
+    /** The loc on [shape]'s layer at the tile right now, or null. */
+    public fun locAt(at: CoordGrid, shape: Int): LocRef? =
+        e.world.locs
+            .at(
+                at.level,
+                at.x,
+                at.z,
+                tp.engine.map.DynamicLocs
+                    .layerOf(shape),
+            )?.let { LocRef(it.id, it.coord, it.shape, it.angle) }
+
+    /** Whether [tile] can be stood on: no blocking loc and walkable floor (collision flags). */
+    public fun isWalkable(tile: CoordGrid): Boolean =
+        e.world.collision.flags[tile.x, tile.z, tile.level] and WALK_BLOCKERS == 0
+
+    /** Whether a [size]-tile entity on [from] could step by ([dx], [dz]) (collision only: knockbacks, AoE checks). */
+    public fun canStep(from: CoordGrid, dx: Int, dz: Int, size: Int = 1): Boolean =
+        e.world.movement.canTravel(from.level, from.x, from.z, dx, dz, size)
 
     /** Records [label] for this entity in the tick inspector (no-op unless tracing). */
     public fun trace(label: String) {
@@ -198,6 +270,24 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
 
     /** Where the NPC (re)spawns. */
     public val spawn: CoordGrid get() = n.spawn
+
+    /** The type the NPC spawns as (before any [transform]). */
+    public val baseType: Int get() = n.baseType
+
+    /** Turns the NPC into [newType] (phase changes); with [restoreStats] its levels and hitpoints become the new type's. */
+    public fun transform(newType: Int, restoreStats: Boolean) {
+        n.transform(newType, restoreStats)
+    }
+
+    /** Walks toward [to] (naive NPC stepping), replacing any route; the interaction, if any, keeps steering. */
+    public fun walkTo(to: CoordGrid) {
+        n.walkTo(to.x, to.z)
+    }
+
+    /** Removes the NPC for good (minions); it won't respawn. */
+    public fun despawn() {
+        n.world.removeNpc(n)
+    }
 
     /** Removes the NPC now and respawns it at its spawn point after [delay] ticks. */
     public fun respawnAfter(delay: Int) {

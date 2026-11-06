@@ -31,6 +31,9 @@ class Player internal constructor(
 ) : Entity(world, spawn) {
     val stats = PlayerStats()
 
+    /** Persisted content state outside varps (fee paid flags, cooldown ticks): saved as the `attrs` object. */
+    val saved: HashMap<String, Long> = HashMap()
+
     /** Inventories by inv id; created through [World.inventory], mutated only by [World.transaction]. */
     internal val invs = HashMap<Int, Inventory>()
 

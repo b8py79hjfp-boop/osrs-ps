@@ -81,8 +81,14 @@ class World(
     var tick: Long = 0
         private set
 
-    val movement = Movement(data.collision)
-    internal val interactions = InteractionProcessor(data.collision, movement)
+    /** This world's collision (copy-on-write over the shared cache collision; dynamic locs edit it). */
+    val collision = tp.engine.map.WorldCollision(data.collision)
+
+    /** Loc changes on top of the cache map (doors, traps, webs). */
+    val locs = tp.engine.map.DynamicLocs(data.configs.locs, data.locs, collision)
+
+    val movement = Movement(collision.flags)
+    internal val interactions = InteractionProcessor(collision.flags, movement)
 
     /** Whether [npc] can take one step by ([dx], [dz]) from where it stands (collision only). */
     internal fun canNpcStep(npc: Npc, dx: Int, dz: Int): Boolean =
@@ -92,6 +98,9 @@ class World(
     fun hasLineOfSight(from: Entity, to: Entity): Boolean = interactions.hasLineOfSight(from, to)
 
     val interfaces = Interfaces()
+
+    /** World-scoped content state (plugin instances are shared by every world in the JVM; their state lives here). */
+    val attrs: HashMap<Any, Any> = HashMap()
     val ground = GroundObjs()
     private val npcAi = NpcAi(this)
 
@@ -132,7 +141,9 @@ class World(
     fun npc(index: Int): Npc? = npcs.getOrNull(index)
 
     fun forEachNpc(action: (Npc) -> Unit) {
-        for (npc in npcs) npc?.let(action)
+        // By index over the size at the start: content may spawn NPCs while this runs.
+        val count = npcs.size
+        for (i in 0 until count) npcs[i]?.let(action)
     }
 
     /** Called from network threads; admitted in post-tick on the world thread. */
@@ -280,7 +291,7 @@ class World(
 
             is ClientCommand.OpLoc -> {
                 if (command.option !in OP_RANGE || !inBuildArea(player, command.x, command.z)) return invalid(player, command)
-                val loc = data.locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
+                val loc = locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
                 player.routeCtrl = command.ctrl
                 interact(player, loc, command.option)
             }
@@ -415,7 +426,10 @@ class World(
 
     /** Phase 3: NPCs in index order (tick.md). */
     private fun npcPhase() {
-        for (npc in npcs) {
+        // By index: NPC scripts may spawn NPCs (boss minions) during the phase; ones added now act from the next tick.
+        val count = npcs.size
+        for (i in 0 until count) {
+            val npc = npcs[i]
             if (npc == null || npc.hidden) continue
             npc.turnTick = tick
             currentTurn = npc
@@ -467,6 +481,7 @@ class World(
         autosave()
         if (pidShuffleEnabled) shufflePids()
         ground.process(tick)
+        locs.process(tick)
         processRespawns()
         checkSystemUpdate()
     }
@@ -484,10 +499,11 @@ class World(
                 player.session.syncAvatar(player.avatarState())
                 player.teleportedThisTick = false
                 player.flushState()
-                player.zoneSync.process(player, ground)
+                player.zoneSync.process(player, ground, locs)
             }
         }
         ground.clearEvents()
+        locs.clearEvents()
         for (npc in npcs) if (npc != null && !npc.hidden) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
         network.buildInfos()
         for (slot in pidOrder) {
@@ -690,6 +706,26 @@ class World(
 
     private val respawns = ArrayList<Pair<Long, Npc>>()
 
+    /** Removes [npc] for good (minions, summons): no respawn. */
+    fun removeNpc(npc: Npc) {
+        if (npcs.getOrNull(npc.index) !== npc) return
+        if (!npc.hidden) network.npcRemoved(npc.index)
+        npc.hidden = true
+        npc.route.clear()
+        npc.npcInteraction = null
+        respawns.removeAll { it.second === npc }
+        npcs[npc.index] = null
+    }
+
+    /** A spot anim on a tile (MAP_ANIM) for everyone observing its zone. */
+    fun mapAnim(at: CoordGrid, id: Int, height: Int, delay: Int) {
+        ground.transient(
+            at,
+            tp.protocol.api.ZoneOp
+                .MapAnim(at.x and IN_ZONE_MASK, at.z and IN_ZONE_MASK, id, height, delay),
+        )
+    }
+
     /** Removes [npc] from view now and puts it back at its spawn, fully healed, after [delay] ticks. */
     fun respawnNpc(npc: Npc, delay: Int) {
         if (npc.hidden) return
@@ -706,6 +742,7 @@ class World(
         for ((_, npc) in due) {
             npc.resetForRespawn()
             network.npcAdded(npc.index, npc.type, npc.coord.level, npc.coord.x, npc.coord.z)
+            content.onNpcSpawn(npc)
         }
     }
 
@@ -937,6 +974,9 @@ class World(
 
         /** Player/NPC view distance in tiles (RSProt player/NPC info default view distance 15). */
         private const val VIEW_DISTANCE = 15
+
+        /** Tile coordinate within its 8×8 zone. */
+        private const val IN_ZONE_MASK = 7
 
         /** Cache inv `bank` (95). */
         private const val BANK_INV = 95

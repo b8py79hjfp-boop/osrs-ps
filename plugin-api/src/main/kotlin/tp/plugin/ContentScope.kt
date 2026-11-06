@@ -132,6 +132,17 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.buttons, (component.toLong() shl BUTTON_OP_BITS) or op.toLong(), handler, "button $component/$op")
     }
 
+    /**
+     * Backpack item action whose cache iop text is [text] (e.g. "Break", "Rub"; compared ignoring case), for every obj.
+     * One owner per text: [handler] decides whether the clicked obj is its own and ignores it otherwise. It runs instead
+     * of the generic backpack buttons registered with [onButton], so a text here must not be one of theirs ("Eat",
+     * "Drink", "Wield", "Wear", "Equip", "Empty", "Drop", "Destroy"). The click is not checked against the backpack:
+     * the handler verifies that [ButtonClick.slot] holds [ButtonClick.obj].
+     */
+    public fun onItemOp(text: String, handler: PlayerRef.(ButtonClick) -> Unit) {
+        handlers.put(handlers.itemOps, text.lowercase(), handler, "item op '$text'")
+    }
+
     private fun key(id: Int, op: Int): Int = (id shl OP_BITS) or op
 
     private fun namedKey(name: String, text: String): String = Handlers.namedKey(name, text)
@@ -170,6 +181,7 @@ internal class Handlers {
     val opObj = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttons = HashMap<Long, PlayerRef.(ButtonClick) -> Unit>()
     val drags = HashMap<Int, PlayerRef.(ButtonDrag) -> Unit>()
+    val itemOps = HashMap<String, PlayerRef.(ButtonClick) -> Unit>()
 
     companion object {
         /** Key of a name + op text handler. */

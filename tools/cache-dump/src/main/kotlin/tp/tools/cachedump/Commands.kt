@@ -125,3 +125,53 @@ internal fun printDbRows(cache: Js5Cache, tableId: Int) {
         )
     }
 }
+
+/** Every placement of a loc named [name] in the map: `x z level id`, sorted. */
+internal fun findLocs(cache: Js5Cache, cacheDir: Path, name: String) {
+    val configs = Configs.load(cache)
+    val map = loadMap(cache, cacheDir)
+    val rows = ArrayList<String>()
+    for (square in map.squares) {
+        for (i in 0 until square.locCount) {
+            val id = square.locIds[i]
+            if (configs.locs[id]?.name != name) continue
+            val info = square.locInfo[i]
+            rows += "${square.key.baseX + MapSquare.locX(info)} ${square.key.baseZ + MapSquare.locZ(info)} ${MapSquare.locLevel(info)} $id"
+        }
+    }
+    rows.sorted().forEach(::println)
+    println("${rows.size} placements")
+}
+
+/** Tile key packing for [flood]: x above 20 bits of z. */
+private const val PACK_SHIFT = 20
+
+/** Walkable area reachable from a tile (4-way steps, within [radius]): bounding box and tile count. */
+internal fun flood(cache: Js5Cache, cacheDir: Path, x: Int, z: Int, level: Int, radius: Int) {
+    val configs = Configs.load(cache)
+    val flags = CollisionBuilder.build(loadMap(cache, cacheDir), configs.locs)
+    val steps = org.rsmod.routefinder.StepValidator(flags)
+    val seen = HashSet<Long>()
+    val queue = ArrayDeque<Pair<Int, Int>>()
+    queue.add(x to z)
+    seen.add((x.toLong() shl PACK_SHIFT) or z.toLong())
+    var minX = x
+    var maxX = x
+    var minZ = z
+    var maxZ = z
+    while (queue.isNotEmpty()) {
+        val (cx, cz) = queue.removeFirst()
+        minX = minOf(minX, cx)
+        maxX = maxOf(maxX, cx)
+        minZ = minOf(minZ, cz)
+        maxZ = maxOf(maxZ, cz)
+        for ((dx, dz) in listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)) {
+            val nx = cx + dx
+            val nz = cz + dz
+            if (kotlin.math.abs(nx - x) > radius || kotlin.math.abs(nz - z) > radius) continue
+            if (!steps.canTravel(level, cx, cz, dx, dz)) continue
+            if (seen.add((nx.toLong() shl PACK_SHIFT) or nz.toLong())) queue.add(nx to nz)
+        }
+    }
+    println("area from ($x, $z, $level): x $minX..$maxX z $minZ..$maxZ, ${seen.size} tiles")
+}
