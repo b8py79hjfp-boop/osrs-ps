@@ -97,6 +97,7 @@ message NameRequest {
 message Friend {
   string name = 1;
   int32 world_id = 2;
+  sint32 rank = 3;
 }
 
 message FriendList {
@@ -160,6 +161,18 @@ message ChannelMessage {
   string text = 5;
 }
 
+message ChannelSettings {
+  string name = 1; // empty = disabled
+  sint32 enter_rank = 2;
+  sint32 talk_rank = 3;
+  sint32 kick_rank = 4;
+}
+
+message ChannelSettingsRequest {
+  int64 account_id = 1;
+  ChannelSettings settings = 2;
+}
+
 message RankRequest {
   int64 account_id = 1;
   string name = 2;
@@ -195,6 +208,8 @@ service Social {
   rpc ChannelMessage(NameRequest) returns (ErrorReply); // name = message text
   rpc ChannelKick(NameRequest) returns (ErrorReply);
   rpc SetChannelRank(RankRequest) returns (ErrorReply);
+  rpc GetChannelSettings(AccountRef) returns (ChannelSettings);
+  rpc SetChannelSettings(ChannelSettingsRequest) returns (Empty);
   rpc Subscribe(WorldRef) returns (stream SocialEvent);
 }
 

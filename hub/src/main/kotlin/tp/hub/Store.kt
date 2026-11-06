@@ -1,5 +1,6 @@
 package tp.hub
 
+import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
@@ -52,6 +53,11 @@ interface HubStore : AutoCloseable {
     fun ignores(id: Long): List<String>
 
     fun setIgnore(id: Long, name: String, present: Boolean)
+
+    /** Friends chat settings of [id]'s channel (null = never configured). */
+    fun channelSettings(id: Long): ChannelSettings?
+
+    fun setChannelSettings(id: Long, settings: ChannelSettings)
 
     /** Friends chat ranks the owner [id] gave (lower-cased name -> rank 0..6). */
     fun channelRanks(id: Long): Map<String, Int>

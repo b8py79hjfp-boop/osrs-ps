@@ -41,6 +41,12 @@ sealed interface ClientCommand {
     /** "Click here to continue" / pause button. */
     data class ResumePause(val component: Int, val sub: Int) : ClientCommand
 
+    /** Answer to a string input dialog (RESUME_P_STRINGDIALOG). */
+    data class ResumeString(val text: String) : ClientCommand
+
+    /** Answer to a number input dialog (RESUME_P_COUNTDIALOG). */
+    data class ResumeCount(val count: Int) : ClientCommand
+
     /** Client closed its modal (Escape / close button). */
     data object CloseModal : ClientCommand
 
@@ -71,7 +77,7 @@ enum class SocialAction {
 data class ChannelRow(val name: String, val worldId: Int, val rank: Int)
 
 /** A friends-list row: [worldId] 0 = offline. */
-data class FriendRow(val name: String, val worldId: Int, val added: Boolean)
+data class FriendRow(val name: String, val worldId: Int, val added: Boolean, val rank: Int = 0)
 
 /** One operation inside a zone; coordinates are 0..7 within the zone. */
 sealed interface ZoneOp {

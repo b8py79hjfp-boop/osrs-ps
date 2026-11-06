@@ -1,6 +1,7 @@
 package tp.hub
 
 import tp.services.ChannelMember
+import tp.services.ChannelSettings
 import tp.services.Rights
 import tp.services.SocialEvent
 
@@ -16,7 +17,7 @@ internal class FriendChats(
     private val deliver: (worldId: Int, event: SocialEvent) -> Unit,
     private val now: () -> Long = System::currentTimeMillis,
 ) {
-    private class Channel(val ownerId: Long, val ownerName: String) {
+    private class Channel(val ownerId: Long, val ownerName: String, var settings: ChannelSettings) {
         val members = LinkedHashMap<Long, ChannelMember>()
 
         /** Kicked account id -> epoch ms until which it may not rejoin (FC1). */
@@ -31,10 +32,14 @@ internal class FriendChats(
         val me = store.account(accountId) ?: return "Unable to join the channel."
         val world = online[accountId] ?: return "Unable to join the channel."
         val rank = rankOf(owner.id, me)
+        val settings = store.channelSettings(owner.id) ?: ChannelSettings.DEFAULT
+        // FC6: a channel exists only once its owner has named it; FC7: enter rank.
+        if (settings.name == null) return "The channel you tried to join does not exist."
+        if (rank < settings.enterRank) return "You do not have a high enough rank to join this channel."
         leave(accountId)
         val joined: Channel
         synchronized(this) {
-            val channel = channels.getOrPut(owner.id) { Channel(owner.id, owner.displayName) }
+            val channel = channels.getOrPut(owner.id) { Channel(owner.id, owner.displayName, settings) }
             if ((channel.kicked[accountId] ?: 0L) > now()) return "You are temporarily blocked from joining this channel."
             if (channel.members.size >= MAX_MEMBERS) return "The channel you tried to join is full."
             val member = ChannelMember(me.displayName, world, rank)
@@ -44,7 +49,7 @@ internal class FriendChats(
             broadcast(channel, except = accountId) { SocialEvent.ChannelMemberUpdate(it, member, removed = false) }
         }
         val members = synchronized(this) { joined.members.values.toList() }
-        deliver(world, SocialEvent.ChannelJoined(accountId, joined.ownerName, joined.ownerName, KICK_RANK, members))
+        deliver(world, joinedEvent(accountId, joined, members))
         return null
     }
 
@@ -64,8 +69,10 @@ internal class FriendChats(
         if (me.mutedUntil < 0 || me.mutedUntil > now()) return "You are muted."
         synchronized(this) {
             val channel = memberOf[accountId]?.let(channels::get) ?: return "You are not in a channel."
-            val world = channel.members[accountId]?.worldId ?: return "You are not in a channel."
-            broadcast(channel) { SocialEvent.ChannelMessage(it, me.displayName, me.rights, channel.ownerName, world, text) }
+            val member = channel.members[accountId] ?: return "You are not in a channel."
+            if (member.rank < channel.settings.talkRank) return "You do not have a high enough rank to talk in this channel."
+            val name = channel.settings.name.orEmpty()
+            broadcast(channel) { SocialEvent.ChannelMessage(it, me.displayName, me.rights, name, member.worldId, text) }
         }
         return null
     }
@@ -74,7 +81,7 @@ internal class FriendChats(
         synchronized(this) {
             val channel = memberOf[accountId]?.let(channels::get) ?: return "You are not in a channel."
             val myRank = channel.members[accountId]?.rank ?: return "You are not in a channel."
-            if (myRank < KICK_RANK) return "You do not have a high enough rank to kick in this channel."
+            if (myRank < channel.settings.kickRank) return "You do not have a high enough rank to kick in this channel."
             val target = channel.members.entries.firstOrNull { it.value.name.equals(name, ignoreCase = true) }
             if (target == null) return "$name is not in this channel."
             if (target.value.rank >= myRank) return "You cannot kick someone of equal or higher rank."
@@ -101,6 +108,27 @@ internal class FriendChats(
         }
         return null
     }
+
+    fun settings(ownerId: Long): ChannelSettings = store.channelSettings(ownerId) ?: ChannelSettings.DEFAULT
+
+    /**
+     * Owner changes their channel (FC8): disabling it empties the channel; members below a raised enter rank are removed;
+     * everyone left gets the new name and kick rank.
+     */
+    fun setSettings(ownerId: Long, settings: ChannelSettings) {
+        store.setChannelSettings(ownerId, settings)
+        synchronized(this) {
+            val channel = channels[ownerId] ?: return
+            channel.settings = settings
+            val removed = channel.members.filter { settings.name == null || (it.key != ownerId && it.value.rank < settings.enterRank) }.keys
+            removed.toList().forEach { leave(it) }
+            val members = channel.members.values.toList()
+            for ((id, member) in channel.members) deliver(member.worldId, joinedEvent(id, channel, members))
+        }
+    }
+
+    private fun joinedEvent(to: Long, channel: Channel, members: List<ChannelMember>) =
+        SocialEvent.ChannelJoined(to, channel.ownerName, channel.settings.name.orEmpty(), channel.settings.kickRank, members)
 
     /** FC2: owner 7, administrators 127 (Jagex moderator crown), stored ranks, else friend 0, else unranked -1. */
     private fun rankOf(ownerId: Long, account: AccountRow): Int =
@@ -129,9 +157,6 @@ internal class FriendChats(
         const val GENERAL = 6
         const val OWNER = 7
         const val JMOD = 127
-
-        /** FC3 (OPEN): channel settings aren't editable yet; kicking defaults to "Only me" (owner rank). */
-        const val KICK_RANK = OWNER
 
         /** OSRS Wiki "Friends chat": channels hold up to 100 players. */
         const val MAX_MEMBERS = 100

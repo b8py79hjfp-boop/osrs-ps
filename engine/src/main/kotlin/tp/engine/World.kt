@@ -337,6 +337,15 @@ class World(
                 player.resumeInput(Unit)
             }
 
+            is ClientCommand.ResumeString -> {
+                if (command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
+                if (!player.resumeInput(command.text)) content.onDialogAnswer(player, command.text)
+            }
+
+            is ClientCommand.ResumeCount -> {
+                if (!player.resumeInput(command.count)) content.onDialogAnswer(player, command.count)
+            }
+
             ClientCommand.CloseModal -> {
                 player.closeModal()
             }

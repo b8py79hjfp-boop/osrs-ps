@@ -372,9 +372,9 @@ internal class RspSession(
 /** A friends-list row (rank 0, no notes, desktop platform 0, flags 0). */
 private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
     if (row.worldId > 0) {
-        UpdateFriendList.OnlineFriend(row.added, row.name, null, row.worldId, 0, 0, "", "World ${row.worldId}", 0, 0)
+        UpdateFriendList.OnlineFriend(row.added, row.name, null, row.worldId, row.rank, 0, "", "World ${row.worldId}", 0, 0)
     } else {
-        UpdateFriendList.OfflineFriend(row.added, row.name, null, 0, 0, "")
+        UpdateFriendList.OfflineFriend(row.added, row.name, null, row.rank, 0, "")
     }
 
 /** Friends/ignore lists, private messages, friends chat (and interface/music updates, via [uiProt]). */

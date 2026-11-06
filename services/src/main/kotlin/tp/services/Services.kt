@@ -68,7 +68,8 @@ interface WorldDirectory {
 
 // ---------------------------------------------------------------- social
 
-class FriendEntry(val name: String, val worldId: Int)
+/** A friends-list row; [rank] is the friends chat rank the owner gave (0 = plain friend). */
+class FriendEntry(val name: String, val worldId: Int, val rank: Int = 0)
 
 /** Something a world must deliver to one of its players (streamed from the hub). */
 sealed interface SocialEvent {
@@ -113,6 +114,17 @@ sealed interface SocialEvent {
  */
 class ChannelMember(val name: String, val worldId: Int, val rank: Int)
 
+/**
+ * A friends chat channel's settings. A null [name] means the channel is disabled and can't be joined. [enterRank],
+ * [talkRank] and [kickRank] are the minimum ranks: -1 anyone, 0 any friends, 1..6 recruit+..general+, 7 only the owner.
+ */
+class ChannelSettings(val name: String?, val enterRank: Int, val talkRank: Int, val kickRank: Int) {
+    companion object {
+        /** New channels: disabled until named; anyone may enter and talk, only the owner kicks (friends-chat.md OPEN-FC1). */
+        val DEFAULT = ChannelSettings(null, -1, -1, 7)
+    }
+}
+
 interface SocialService {
     suspend fun friends(accountId: Long): List<FriendEntry>
 
@@ -139,6 +151,11 @@ interface SocialService {
     suspend fun channelMessage(accountId: Long, text: String): String?
 
     suspend fun channelKick(accountId: Long, name: String): String?
+
+    suspend fun channelSettings(accountId: Long): ChannelSettings
+
+    /** Updates [accountId]'s own channel; members below the new enter rank are removed. */
+    suspend fun setChannelSettings(accountId: Long, settings: ChannelSettings)
 
     /** The channel owner ranks a friend ([rank] -1 removes the rank). */
     suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String?

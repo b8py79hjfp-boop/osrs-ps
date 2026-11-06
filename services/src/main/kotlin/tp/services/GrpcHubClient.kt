@@ -14,6 +14,7 @@ import tp.services.grpc.AccountsGrpcKt
 import tp.services.grpc.BroadcastEvent
 import tp.services.grpc.BroadcastRequest
 import tp.services.grpc.BroadcastsGrpcKt
+import tp.services.grpc.ChannelSettingsRequest
 import tp.services.grpc.ExchangeGrpcKt
 import tp.services.grpc.Heartbeat
 import tp.services.grpc.HiscoreQuery
@@ -36,6 +37,7 @@ import tp.services.grpc.WorldRef
 import tp.services.grpc.WorldsGrpcKt
 import java.util.concurrent.TimeUnit
 import tp.services.grpc.ChannelMember as PbMember
+import tp.services.grpc.ChannelSettings as PbSettings
 import tp.services.grpc.Empty as PbEmpty
 import tp.services.grpc.GeOffer as PbOffer
 import tp.services.grpc.LoginRequest as PbLogin
@@ -181,7 +183,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                     .friends(
                         AccountRef.newBuilder().setAccountId(accountId).build(),
                     ).friendsList
-                    .map { FriendEntry(it.name, it.worldId) }
+                    .map { FriendEntry(it.name, it.worldId, it.rank) }
 
             override suspend fun ignores(accountId: Long): List<String> =
                 socialStub
@@ -230,6 +232,19 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                 err(
                     socialStub.channelKick(name(accountId, name)).error,
                 )
+
+            override suspend fun channelSettings(accountId: Long): ChannelSettings =
+                socialStub.getChannelSettings(AccountRef.newBuilder().setAccountId(accountId).build()).toModel()
+
+            override suspend fun setChannelSettings(accountId: Long, settings: ChannelSettings) {
+                socialStub.setChannelSettings(
+                    ChannelSettingsRequest
+                        .newBuilder()
+                        .setAccountId(accountId)
+                        .setSettings(settings.toPb())
+                        .build(),
+                )
+            }
 
             override suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String? =
                 err(
@@ -303,6 +318,17 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                     }
                 }
         }
+
+    private fun PbSettings.toModel(): ChannelSettings = ChannelSettings(name.ifEmpty { null }, enterRank, talkRank, kickRank)
+
+    private fun ChannelSettings.toPb(): PbSettings =
+        PbSettings
+            .newBuilder()
+            .setName(name.orEmpty())
+            .setEnterRank(enterRank)
+            .setTalkRank(talkRank)
+            .setKickRank(kickRank)
+            .build()
 
     private fun PbMember.toModel(): ChannelMember = ChannelMember(name, worldId, rank)
 

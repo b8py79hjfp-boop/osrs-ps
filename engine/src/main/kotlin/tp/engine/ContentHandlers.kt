@@ -47,6 +47,9 @@ interface ContentHandlers {
     /** IF button on an open, validated component. */
     fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {}
 
+    /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
+    fun onDialogAnswer(player: Player, value: Any) {}
+
     /** Inventory item op (iop1..5) on a validated slot. */
     fun onInvOp(player: Player, inv: Int, slot: Int, obj: Int, option: Int) {}
 

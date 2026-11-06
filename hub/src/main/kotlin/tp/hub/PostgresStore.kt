@@ -2,6 +2,7 @@ package tp.hub
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
@@ -145,6 +146,28 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             }
         }
 
+    override fun channelSettings(id: Long): ChannelSettings? =
+        sql { c ->
+            c.prepareStatement("SELECT name, enter_rank, talk_rank, kick_rank FROM channel_settings WHERE owner_id = ?").use { ps ->
+                ps.setLong(1, id)
+                ps.executeQuery().use { rs ->
+                    if (rs.next()) ChannelSettings(rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getInt(4)) else null
+                }
+            }
+        }
+
+    override fun setChannelSettings(id: Long, settings: ChannelSettings) =
+        exec(
+            "INSERT INTO channel_settings (owner_id, name, enter_rank, talk_rank, kick_rank) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (owner_id) DO UPDATE SET name = EXCLUDED.name, enter_rank = EXCLUDED.enter_rank, " +
+                "talk_rank = EXCLUDED.talk_rank, kick_rank = EXCLUDED.kick_rank",
+            id,
+            settings.name,
+            settings.enterRank,
+            settings.talkRank,
+            settings.kickRank,
+        )
+
     override fun channelRanks(id: Long): Map<String, Int> =
         sql { c ->
             c.prepareStatement("SELECT name, rank FROM channel_ranks WHERE owner_id = ?").use { ps ->
@@ -248,6 +271,9 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 "CREATE TABLE IF NOT EXISTS friends (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ignores (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ip_bans (ip text PRIMARY KEY)",
+                """CREATE TABLE IF NOT EXISTS channel_settings (
+                    owner_id bigint PRIMARY KEY REFERENCES accounts(id), name text, enter_rank int NOT NULL,
+                    talk_rank int NOT NULL, kick_rank int NOT NULL)""",
                 """CREATE TABLE IF NOT EXISTS channel_ranks (
                     owner_id bigint REFERENCES accounts(id), name text, rank int NOT NULL, PRIMARY KEY (owner_id, name))""",
                 """CREATE TABLE IF NOT EXISTS ge_offers (

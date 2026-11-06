@@ -1,5 +1,6 @@
 package tp.hub
 
+import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
@@ -90,6 +91,13 @@ class MemoryStore : HubStore {
     }
 
     private val channelRanks = ConcurrentHashMap<Long, ConcurrentHashMap<String, Int>>()
+    private val channelSettings = ConcurrentHashMap<Long, ChannelSettings>()
+
+    override fun channelSettings(id: Long): ChannelSettings? = channelSettings[id]
+
+    override fun setChannelSettings(id: Long, settings: ChannelSettings) {
+        channelSettings[id] = settings
+    }
 
     override fun channelRanks(id: Long): Map<String, Int> = channelRanks[id]?.toMap().orEmpty()
 

@@ -42,6 +42,9 @@ sealed interface ExchangeRequest {
     class Abort(val slot: Int) : ExchangeRequest
 }
 
+/** A friends chat channel's settings as content sees them (services `ChannelSettings`; null [name] = disabled). */
+class ChannelConfig(val name: String?, val enterRank: Int, val talkRank: Int, val kickRank: Int)
+
 /** Where a world is reached (hub world directory), for world hops. */
 class WorldAddress(val host: String, val flags: Int)
 
@@ -72,6 +75,14 @@ interface AccountBridge {
      * `update <seconds>`). Content has already checked the staff level; the hub checks rights again and audits.
      */
     fun staff(player: Player, command: String, args: List<String>) {}
+
+    /**
+     * Reads [player]'s own friends chat settings, or stores [update] first if given; [reply] runs on the world thread
+     * with the current settings (null: hub unavailable).
+     */
+    fun channelConfig(player: Player, update: ChannelConfig?, reply: (Player, ChannelConfig?) -> Unit) {
+        reply(player, null)
+    }
 
     /**
      * Grand Exchange call; [reply] runs on the world thread with the affected offers (null: the hub failed), only if

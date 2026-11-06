@@ -9,6 +9,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import tp.services.AccountService
 import tp.services.Broadcast
 import tp.services.BroadcastService
+import tp.services.ChannelSettings
 import tp.services.ExchangeService
 import tp.services.FriendEntry
 import tp.services.GeOffer
@@ -196,11 +197,21 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
 
             override suspend fun channelKick(accountId: Long, name: String): String? = db { friendChats.kick(accountId, name) }
 
+            override suspend fun channelSettings(accountId: Long): ChannelSettings = db { friendChats.settings(accountId) }
+
+            override suspend fun setChannelSettings(accountId: Long, settings: ChannelSettings) =
+                db { friendChats.setSettings(accountId, settings) }
+
             override suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String? =
                 db { friendChats.setRank(accountId, name, rank) }
 
             override suspend fun friends(accountId: Long): List<FriendEntry> =
-                db { store.friends(accountId) }.map { name -> FriendEntry(name, onlineNames[name.lowercase()]?.let { online[it] } ?: 0) }
+                db {
+                    val ranks = store.channelRanks(accountId)
+                    store.friends(accountId).map { name ->
+                        FriendEntry(name, onlineNames[name.lowercase()]?.let { online[it] } ?: 0, ranks[name.lowercase()] ?: 0)
+                    }
+                }
 
             override suspend fun ignores(accountId: Long): List<String> = db { store.ignores(accountId) }
 

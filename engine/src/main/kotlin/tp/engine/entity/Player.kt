@@ -113,11 +113,12 @@ class Player internal constructor(
         queue.clearWeak()
     }
 
-    /** Resume a script waiting in [tp.engine.script.ScriptScope.awaitInput]. */
-    fun resumeInput(value: Any) {
-        val wait = inputWait ?: return
+    /** Resume a script waiting in [tp.engine.script.ScriptScope.awaitInput]; false if none was waiting. */
+    fun resumeInput(value: Any): Boolean {
+        val wait = inputWait ?: return false
         inputWait = null
         wait.resume(value)
+        return true
     }
 
     /** Runs [block] with protected access if the player may be mutated now (brief §5.4); returns whether it ran. */

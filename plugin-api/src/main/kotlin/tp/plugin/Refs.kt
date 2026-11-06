@@ -1,5 +1,6 @@
 package tp.plugin
 
+import tp.engine.ChannelConfig
 import tp.engine.ExchangeRequest
 import tp.engine.World
 import tp.engine.entity.Entity
@@ -39,6 +40,18 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
             PlayerRef(player).reply(
                 offers?.map { GeOffer(it.slot, it.buy, it.obj, it.quantity, it.price, it.completed, it.collectCoins, it.collectItems) },
             )
+        }
+    }
+
+    /**
+     * The player's own friends chat settings (hub). With [update], they are stored first. [reply] runs later on the
+     * world thread, or with null if the hub is unavailable.
+     */
+    public fun channelSettings(update: FriendsChatSettings? = null, reply: PlayerRef.(FriendsChatSettings?) -> Unit) {
+        val bridge = p.world.accounts ?: return reply(null)
+        val config = update?.let { ChannelConfig(it.name, it.enterRank, it.talkRank, it.kickRank) }
+        bridge.channelConfig(p, config) { player, c ->
+            PlayerRef(player).reply(c?.let { FriendsChatSettings(it.name, it.enterRank, it.talkRank, it.kickRank) })
         }
     }
 
@@ -161,6 +174,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun isOpen(interfaceId: Int): Boolean = p.world.interfaces.isOpen(p, interfaceId)
 
+    /** Asks for text (client script 110 `meslayer_mode9`); [answer] runs with what the player types. */
+    public fun stringDialog(title: String, answer: PlayerRef.(String) -> Unit) {
+        dialogs()[p] = { (it as? String)?.let { text -> answer(text) } }
+        p.session.send(ServerMessage.ClientScript(MESLAYER_STRING, listOf(title, 0)))
+    }
+
+    /** Asks for a number (client script 108 `meslayer_mode7`); [answer] runs with the (non-negative) count. */
+    public fun countDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
+        dialogs()[p] = { (it as? Int)?.let { n -> answer(kotlin.math.abs(n)) } }
+        p.session.send(ServerMessage.ClientScript(MESLAYER_COUNT, listOf(title)))
+    }
+
+    private fun dialogs() = (p.world.content as PluginContent).pendingDialogs
+
     /** Sets the text of packed [component] (`tp.symbols.Components`). */
     public fun ifText(component: Int, text: String) {
         p.session.send(ServerMessage.IfText(component, text))
@@ -213,6 +240,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun setVarbit(id: Int, value: Int) {
         p.vars.setBit(id, value)
+    }
+
+    /** Whether [value] fits the bit range of varbit [id]; check it before storing a value that came from a client packet. */
+    public fun varbitFits(id: Int, value: Int): Boolean {
+        val type = p.world.data.configs.varbits[id] ?: return false
+        val bits = type.endBit - type.startBit + 1
+        return value >= 0 && (bits >= Int.SIZE_BITS - 1 || value < (1 shl bits))
     }
 
     // ---- stats
@@ -387,9 +421,34 @@ public class WorldRef internal constructor(internal val w: World) {
 
     public fun objParamString(obj: Int, param: Int): String? = w.objType(obj)?.params?.string(param)
 
+    /** Rows of cache db table [table] (`dbrow` group, `DbTables.*.ID`), in row-id order; empty if absent. */
+    public fun dbRows(table: Int): List<DbRowRef> =
+        w.data.configs.dbRows
+            .filter { it.tableId == table }
+            .map { DbRowRef(it) }
+
     /** Spawns NPC [type] at [at], wandering up to [wanderRange] tiles from it (random-walk.md). */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
         w.spawnNpc(type, at, wanderRange)
+    }
+}
+
+/** One cache db row; [column] ids are `DbTables.<Table>.COL_*`. */
+public class DbRowRef internal constructor(private val row: tp.cache.config.dbrow.DbRowType) {
+    public val id: Int get() = row.id
+
+    /** Int cell of [column] (tuple [field], component [component]), or null if the row leaves the column unset. */
+    public fun int(column: Int, field: Int = 0, component: Int = 0): Int? {
+        val values = row.columns[column] ?: return null
+        if (field >= values.fieldCount) return null
+        return values.get(field, component) as? Int
+    }
+
+    /** String cell of [column], or null if unset. */
+    public fun string(column: Int, field: Int = 0, component: Int = 0): String? {
+        val values = row.columns[column] ?: return null
+        if (field >= values.fieldCount) return null
+        return values.get(field, component) as? String
     }
 }
 
@@ -431,3 +490,13 @@ public class GeOffer(
     public val collectCoins: Long,
     public val collectItems: Int,
 )
+
+/** Client scripts that open chatbox input dialogs (cache clientscript names; RS Mod `ClientScripts.mesLayerMode7/9`). */
+private const val MESLAYER_COUNT = 108
+private const val MESLAYER_STRING = 110
+
+/**
+ * Friends chat settings. A null [name] means the channel is disabled. Ranks are minimums: -1 anyone, 0 any friends,
+ * 1..6 recruit+..general+, 7 only the owner.
+ */
+public class FriendsChatSettings(public val name: String?, public val enterRank: Int, public val talkRank: Int, public val kickRank: Int)

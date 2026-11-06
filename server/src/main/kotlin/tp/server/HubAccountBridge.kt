@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.engine.AccountBridge
 import tp.engine.AccountProfile
+import tp.engine.ChannelConfig
 import tp.engine.ExchangeOffer
 import tp.engine.ExchangeRequest
 import tp.engine.World
@@ -14,6 +15,7 @@ import tp.protocol.api.LoginRejection
 import tp.protocol.api.LoginRequest
 import tp.protocol.api.ServerMessage
 import tp.protocol.api.SocialAction
+import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HubServices
 import tp.services.LoginResult
@@ -110,7 +112,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
             world.execute {
                 val p = world.playerByAccount(account) ?: return@execute
                 if (ignores.isNotEmpty()) p.session.send(ServerMessage.IgnoreList(ignores))
-                p.session.send(ServerMessage.FriendList(friends.map { FriendRow(it.name, it.worldId, added = false) }))
+                p.session.send(ServerMessage.FriendList(friends.map { FriendRow(it.name, it.worldId, added = false, rank = it.rank) }))
                 p.session.send(ServerMessage.FriendListLoaded)
             }
         }
@@ -140,7 +142,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                     SocialAction.FRIEND_ADD -> {
                         friend?.let {
                             p.session.send(
-                                ServerMessage.FriendList(listOf(FriendRow(it.name, it.worldId, true))),
+                                ServerMessage.FriendList(listOf(FriendRow(it.name, it.worldId, true, it.rank))),
                             )
                         }
                     }
@@ -185,6 +187,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                         else -> null
                     }
                 }
+            if (action == SocialAction.CHANNEL_RANK && reply == null) refreshFriend(account, name)
             val messages =
                 when {
                     reply != null -> {
@@ -214,6 +217,18 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
+    /** Re-sends one friends-list row (its rank changed). Runs on an io thread. */
+    private fun refreshFriend(account: Long, name: String) {
+        val friend = call("friends") { hub.social.friends(account) }?.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: return
+        world.execute {
+            world
+                .playerByAccount(
+                    account,
+                )?.session
+                ?.send(ServerMessage.FriendList(listOf(FriendRow(friend.name, friend.worldId, false, friend.rank))))
+        }
+    }
+
     override fun staff(player: Player, command: String, args: List<String>) {
         val account = player.accountId
         if (account == 0L) return
@@ -227,6 +242,20 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                     }
                 } ?: "The hub did not answer."
             world.execute { world.playerByAccount(account)?.session?.send(ServerMessage.GameMessage(reply)) }
+        }
+    }
+
+    override fun channelConfig(player: Player, update: ChannelConfig?, reply: (Player, ChannelConfig?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply(player, null)
+        io.execute {
+            val settings =
+                call("channel settings") {
+                    update?.let { hub.social.setChannelSettings(account, ChannelSettings(it.name, it.enterRank, it.talkRank, it.kickRank)) }
+                    hub.social.channelSettings(account)
+                }
+            val config = settings?.let { ChannelConfig(it.name, it.enterRank, it.talkRank, it.kickRank) }
+            world.execute { world.playerByAccount(account)?.let { reply(it, config) } }
         }
     }
 

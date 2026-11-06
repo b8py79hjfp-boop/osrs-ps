@@ -23,6 +23,9 @@ private const val COMPONENT_MASK = 0xFFFF
 public class PluginContent private constructor(private val h: Handlers) : ContentHandlers {
     private val refs = HashMap<Player, PlayerRef>()
 
+    /** Dialog callbacks opened from button handlers (world thread only). */
+    internal val pendingDialogs = HashMap<Player, PlayerRef.(Any) -> Unit>()
+
     private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { PlayerRef(player) }
 
     override fun onWorldStart(world: World) {
@@ -42,6 +45,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         h.events.publish(LogoutEvent(ref))
         for (handler in h.logout) ref.handler()
         refs.remove(player)
+        pendingDialogs.remove(player)
     }
 
     override fun onCommand(player: Player, command: String, args: List<String>): Boolean {
@@ -99,6 +103,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             return
         }
         ref(player).handler(ButtonClick(component, option, slot, obj))
+    }
+
+    override fun onDialogAnswer(player: Player, value: Any) {
+        val callback = pendingDialogs.remove(player) ?: return
+        ref(player).callback(value)
     }
 
     private fun key(id: Int, op: Int): Int = (id shl ContentScope.OP_BITS) or op

@@ -182,6 +182,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                             .newBuilder()
                             .setName(it.name)
                             .setWorldId(it.worldId)
+                            .setRank(it.rank)
                             .build()
                     },
                 ).build()
@@ -220,6 +221,26 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             )
 
         override suspend fun channelKick(request: NameRequest): ErrorReply = error(hub.social.channelKick(request.accountId, request.name))
+
+        override suspend fun getChannelSettings(request: AccountRef): tp.services.grpc.ChannelSettings {
+            val s = hub.social.channelSettings(request.accountId)
+            return tp.services.grpc.ChannelSettings
+                .newBuilder()
+                .setName(s.name.orEmpty())
+                .setEnterRank(s.enterRank)
+                .setTalkRank(s.talkRank)
+                .setKickRank(s.kickRank)
+                .build()
+        }
+
+        override suspend fun setChannelSettings(request: tp.services.grpc.ChannelSettingsRequest): PbEmpty {
+            val s = request.settings
+            hub.social.setChannelSettings(
+                request.accountId,
+                tp.services.ChannelSettings(s.name.ifEmpty { null }, s.enterRank, s.talkRank, s.kickRank),
+            )
+            return EMPTY
+        }
 
         override suspend fun setChannelRank(request: RankRequest): ErrorReply =
             error(hub.social.setChannelRank(request.accountId, request.name, request.rank))
