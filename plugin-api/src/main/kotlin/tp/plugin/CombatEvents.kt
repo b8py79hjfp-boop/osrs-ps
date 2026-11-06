@@ -33,6 +33,14 @@ public class HitEvent(
     public val style: HitStyle,
 ) : Event
 
+/**
+ * Asks the combat module to roll a spell's accuracy: [caster]'s magic attack roll against [target]'s magic defence roll
+ * (combat-formulas.md F14-F16). [hit] stays true if no combat module answers.
+ */
+public class SpellAccuracyRoll(public val caster: PlayerRef, public val target: EntityRef) : Event {
+    public var hit: Boolean = true
+}
+
 /** [entity] died; published when the death sequence completes, before respawn (items kept on death, Retribution). */
 public class DeathEvent(public val entity: EntityRef, public val killer: EntityRef?) : Event
 

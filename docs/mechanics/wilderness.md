@@ -12,7 +12,7 @@ Logout button (LO), Tele Block (TB), Vengeance (VG), Ring of recoil (RR), Multic
 | W5 | Multi-combat areas. **OPEN-M2:** "no PJ protection in multi" is our inference (MC doesn't mention PJ). Area polygons: RS Mod `multiway.json` (ISC, data/PROVENANCE.md); the multi icon varbit `multiway_indicator` is RS Mod's. The icon and the Attack option change through the area queue on border crossings (brief §8). | MC, RS Mod, brief |
 | W6 | Skull: attacking a player unprovoked skulls you for 30 minutes (3000 ticks); attacking again resets it; it doesn't expire during PvP combat. | SK:11-13, SK:138 |
 | W7 | Logout lock: no logout for 16 ticks after being attacked. | PJ:3, LO:9 |
-| W8 | Tele Block: 5 minutes, halved to 2:30 "if the target had Protect from Magic up before it was cast and landed" (implemented: checked at cast). Level 85, speed 5, runes law 1, chaos 1, death 1; PfM doesn't change the splash chance. | TB:14-25 |
+| W8 | Tele Block: applied only "if it successfully hits the target" (the normal magic accuracy roll, F14–F16); 5 minutes, halved to 2:30 "if the target had Protect from Magic up before it was cast and landed" (implemented: checked at cast). Level 85, speed 5, runes law 1, chaos 1, death 1; PfM doesn't change the splash chance. | TB:14-25 |
 | W9 | Vengeance: reflects 75% of the next hit, rounded down, minimum 1; not poison/venom/disease; stacks with recoil; 50-tick cooldown; Magic 94; runes astral 4, death 2, earth 10. | VG:14-31 |
 | W10 | Ring of recoil: reflects ⌊damage × 10%⌋ + 1 to the attacker; 40 damage, tracked per player (not per ring); queued as a normal script (brief §8). | RR:46-48, brief |
 | W12 | PvP worlds: "players may attack each other within all locations outside of safe zones, which include banks and respawn areas"; "Players may not initiate combat within safe areas". A safe zone has Wilderness level 0 on a PvP world. Geometry: OPEN-W2. | PvP world |
@@ -34,6 +34,6 @@ Logout button (LO), Tele Block (TB), Vengeance (VG), Ring of recoil (RR), Multic
   its walled yard from the collision map (x 2988..3008, z 3931..3966); the Artio, Calvar'ion and Spindel lairs have no
   published coordinates and are not included. The "player takes priority" rule doesn't yet make the NPC stop attacking.
 - **OPEN-D1:** stackables are never "kept"; untradeable death handling isn't modelled.
-- **OPEN-TB1:** Tele Block accuracy (it currently always lands); teleports don't exist yet to block.
+- **OPEN-TB1:** teleports don't exist yet to block (accuracy is resolved, W8).
 - Area changes are detected by a 1-tick soft timer, then queued on the area queue; Jagex triggers area scripts from
   zone/area configs (OPEN-A1).

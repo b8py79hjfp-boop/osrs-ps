@@ -34,6 +34,10 @@ public class Combat : ContentPlugin {
             Specials.startRegen(this)
             Poison.onLogin(this)
         }
+        events.on<tp.plugin.SpellAccuracyRoll> { roll ->
+            val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC)
+            roll.hit = Formulas.hits(attack, Attacks.defenceRoll(roll.target, AttackType.MAGIC), roll.caster::random)
+        }
         onOpNpcOption("Attack") { npc -> CombatSystem.attackFromOp(this, npc) }
         onApNpcOption("Attack") { npc -> CombatSystem.attackFromAp(this, npc) }
         onOpPlayer(ATTACK_OP) { other -> CombatSystem.attackFromOp(this, other) }

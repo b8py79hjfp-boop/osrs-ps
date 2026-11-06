@@ -38,7 +38,7 @@ public class PvpCombat : ContentPlugin {
             if (currentApRange != SPELL_RANGE) {
                 apRange(SPELL_RANGE)
             } else {
-                teleBlock(player, target)
+                teleBlock(bus, player, target)
             }
         }
     }
@@ -199,8 +199,11 @@ public class PvpCombat : ContentPlugin {
         this[VENG_COOLDOWN_UNTIL] = tick + VENG_COOLDOWN
     }
 
-    /** Tele Block: 5 minutes, halved if the target had Protect from Magic up (Tele Block page); OPEN-TB1 accuracy. */
-    private fun teleBlock(caster: PlayerRef, target: PlayerRef) {
+    /**
+     * Tele Block: applied "if it successfully hits the target" (normal magic accuracy; Protect from Magic "does not affect
+     * the chance that Tele Block will splash"), 5 minutes, halved if the target had Protect from Magic up (Tele Block page).
+     */
+    private fun teleBlock(bus: EventBus, caster: PlayerRef, target: PlayerRef) {
         val now = caster.tick
         if ((target[SharedAttrs.TELEBLOCK_UNTIL] ?: 0L) > now) {
             caster.message("That player is already affected by this spell.")
@@ -215,6 +218,9 @@ public class PvpCombat : ContentPlugin {
             caster.message("You do not have enough runes to cast this spell.")
             return
         }
+        val roll = tp.plugin.SpellAccuracyRoll(caster, target)
+        bus.publish(roll)
+        if (!roll.hit) return // splash: runes are used, no effect
         val protectedNow = target.varbit(tp.symbols.Varbits.PRAYER_PROTECTFROMMAGIC) == 1
         target[SharedAttrs.TELEBLOCK_UNTIL] = now + if (protectedNow) TELEBLOCK_TICKS / 2 else TELEBLOCK_TICKS
         target.message("A Tele Block spell has been cast on you by ${caster.username}.")
