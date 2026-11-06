@@ -9,9 +9,11 @@ import tp.engine.script.ProtectedAccess
 import tp.engine.stat.PlayerStats
 import tp.engine.vars.PlayerVars
 import tp.engine.zone.ZoneSync
+import tp.protocol.api.AvatarRef
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientSession
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.Visual
 import tp.util.CoordGrid
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -33,6 +35,20 @@ class Player internal constructor(
     internal val invs = HashMap<Int, Inventory>()
 
     internal val zoneSync = ZoneSync()
+
+    override var hitpoints: Int
+        get() = stats.level(PlayerStats.HITPOINTS)
+        set(value) {
+            stats.setLevel(PlayerStats.HITPOINTS, value.coerceAtLeast(0))
+        }
+
+    override val maxHitpoints: Int get() = stats.baseLevel(PlayerStats.HITPOINTS)
+
+    override fun visual(visual: Visual) {
+        session.visual(visual)
+    }
+
+    override val avatarRef: AvatarRef = AvatarRef.OfPlayer(slot)
 
     /** Run energy 0..10000 (client shows /100). */
     var runEnergy: Int = MAX_RUN_ENERGY

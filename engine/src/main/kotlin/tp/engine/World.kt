@@ -476,6 +476,10 @@ class World(
         return npc
     }
 
+    internal fun npcVisual(index: Int, visual: tp.protocol.api.Visual) {
+        network.npcVisual(index, visual)
+    }
+
     internal fun onScriptError(entity: Entity, error: Throwable) {
         logger.error(error) { "script error on $entity at tick $tick" }
     }

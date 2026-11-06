@@ -55,6 +55,48 @@ class Interaction(
     }
 }
 
+/**
+ * An NPC's interaction with a player or NPC (I9). [view] adapts it to the shared reach checks.
+ */
+class NpcInteraction(
+    val target: InteractionTarget,
+    internal val opScript: Script<Npc>?,
+    internal val apScript: Script<Npc>?,
+) {
+    internal var apRangeCalled: Boolean = false
+
+    /** Combat interactions persist until cancelled. */
+    var persistent: Boolean = true
+
+    internal val view = Interaction(target, 0, null, null)
+
+    var apRange: Int
+        get() = view.apRange
+        set(value) {
+            view.apRange = value
+            apRangeCalled = true
+        }
+
+    internal fun targetValid(): Boolean =
+        when (val t = target) {
+            is InteractionTarget.OfPlayer -> t.player.session.isOpen && t.player.world.player(t.player.slot) === t.player
+            is InteractionTarget.OfNpc -> t.npc.hitpoints > 0
+            else -> true
+        }
+}
+
+/** Sets or clears what [this] NPC is interacting with. */
+fun Npc.interactWith(interaction: NpcInteraction?) {
+    npcInteraction = interaction
+}
+
+val Npc.currentInteraction: NpcInteraction? get() = npcInteraction
+
+/** Called from a player's script: keep the current interaction after it runs (combat follow, OPEN-I3). */
+fun Player.keepInteraction() {
+    interaction?.persistent = true
+}
+
 /** Called from an ap script: change the approach range (I2); -1 converts the ap into an op. */
 fun Player.apRange(range: Int) {
     val i = interaction ?: return
@@ -149,11 +191,67 @@ class InteractionProcessor internal constructor(
         }
     }
 
-    /** NPC turn: same algorithm without modals, engine scripts or messages (I9). Phase 3 NPCs only move. */
+    /**
+     * NPC turn (I9): the same two blocks around movement, without modals, engine scripts or messages. NPCs follow with
+     * the naive ("dumb") step toward the target, never onto it (RS Mod naive pathing; osrs-docs Random Walk).
+     */
     fun processNpc(npc: Npc) {
+        val interaction = npc.npcInteraction
+        if (interaction != null && !interaction.targetValid()) npc.npcInteraction = null
+        val start = npc.npcInteraction
+        val interacted = start != null && !npc.isDelayed && npcAttempt(npc, start, block = 1)
         val before = npc.coord
         npc.stepsThisTick = movement.step(npc, 1)
+        val follow = start != null && npc.stepsThisTick == 0 && needsToFollow(npc, start)
+        if (follow && start != null && followStep(npc, start)) npc.stepsThisTick = 1
         if (npc.coord != before) npc.lastMovementClock = npc.world.tick + 1
+        if (start == null || start !== npc.npcInteraction || npc.isDelayed) return
+        val ran = if (!interacted || start.apRangeCalled) npcAttempt(npc, start, block = 2) else interacted
+        val keep = start.apRangeCalled || start.persistent
+        if (ran && !keep && npc.npcInteraction === start) npc.npcInteraction = null
+    }
+
+    private fun needsToFollow(npc: Npc, i: NpcInteraction): Boolean = !npc.isDelayed && !npc.isFrozen && !inOpRange(npc, i.view)
+
+    /** One attempt block for an NPC: op script in op range, else ap script in approach range. */
+    private fun npcAttempt(npc: Npc, i: NpcInteraction, block: Int): Boolean {
+        if (block == 1) i.apRangeCalled = false
+        val op = i.opScript
+        val ap = i.apScript
+        return when {
+            op != null && inOpRange(npc, i.view) -> {
+                ScriptRunner.start(npc, op, "npc op (block $block)")
+                true
+            }
+
+            ap != null && inApRange(npc, i.view) -> {
+                if (block == 2) i.apRangeCalled = false
+                ScriptRunner.start(npc, ap, "npc ap (block $block)")
+                true
+            }
+
+            else -> {
+                false
+            }
+        }
+    }
+
+    /** One naive step toward the target that doesn't enter the target's footprint. */
+    private fun followStep(npc: Npc, i: NpcInteraction): Boolean {
+        val r = rect(i.target)
+        val c = npc.coord
+        val dx = Integer.signum((r.x + r.width / 2) - c.x)
+        val dz = Integer.signum((r.z + r.length / 2) - c.z)
+        for ((ox, oz) in listOf(dx to dz, dx to 0, 0 to dz)) {
+            if (ox == 0 && oz == 0) continue
+            val nx = c.x + ox
+            val nz = c.z + oz
+            val overlaps = nx < r.x + r.width && nx + npc.size > r.x && nz < r.z + r.length && nz + npc.size > r.z
+            if (overlaps || !movement.canTravel(c.level, c.x, c.z, ox, oz, npc.size)) continue
+            npc.coord = CoordGrid(nx, nz, c.level)
+            return true
+        }
+        return false
     }
 
     private fun blocked(player: Player): Boolean = player.isDelayed || player.hasModal

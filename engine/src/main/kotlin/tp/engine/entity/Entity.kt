@@ -3,6 +3,8 @@ package tp.engine.entity
 import tp.engine.World
 import tp.engine.interact.Interaction
 import tp.engine.move.Route
+import tp.protocol.api.AvatarRef
+import tp.protocol.api.Visual
 import tp.util.CoordGrid
 import kotlin.coroutines.Continuation
 
@@ -40,6 +42,29 @@ abstract class Entity internal constructor(
     internal var teleportedThisTick = false
 
     val isDelayed: Boolean get() = world.tick < delayedUntil
+
+    /**
+     * Content-owned state (combat clocks, timers, flags), keyed by plugin-api attribute keys. World-scoped and
+     * deterministic; cleared when the entity leaves the world.
+     */
+    val attrs: HashMap<Any, Any> = HashMap()
+
+    /** Movement is blocked while `world.tick < frozenUntil` (freezes: docs/mechanics/freeze.md); routes are dropped. */
+    var frozenUntil: Long = 0
+
+    val isFrozen: Boolean get() = world.tick < frozenUntil
+
+    /** Current hitpoints (players: the Hitpoints stat's current level; NPCs: their own counter). */
+    abstract var hitpoints: Int
+
+    /** Base hitpoints. */
+    abstract val maxHitpoints: Int
+
+    /** A visual on this entity's avatar this tick (seen by every observer). */
+    abstract fun visual(visual: Visual)
+
+    /** This entity as a visual reference (hitsplat source, face target). */
+    abstract val avatarRef: AvatarRef
 
     internal fun delayUntil(tick: Long) {
         if (tick > delayedUntil) delayedUntil = tick

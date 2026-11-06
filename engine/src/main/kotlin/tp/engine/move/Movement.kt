@@ -88,6 +88,10 @@ class Movement internal constructor(collision: CollisionFlagMap) {
 
     /** Takes up to [maxSteps] steps along the entity's route; a blocked step ends the route (M3). Returns tiles moved. */
     fun step(entity: Entity, maxSteps: Int): Int {
+        if (entity.isFrozen) {
+            entity.route.clear()
+            return 0
+        }
         var moved = 0
         while (moved < maxSteps && !entity.route.isEmpty) {
             val c = entity.coord

@@ -94,7 +94,7 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
                 if (k.containsAll(keys)) {
                     println(
                         "enum ${e.id} in=${e.inputType.toChar()} out=${e.outputType.toChar()} size=${e.size}: " +
-                            (e.intValues.entries.take(40) + e.stringValues.entries.take(40)).joinToString(),
+                            (e.intValues.entries.take(ENUM_PREVIEW) + e.stringValues.entries.take(ENUM_PREVIEW)).joinToString(),
                     )
                 }
             }
@@ -110,6 +110,9 @@ private fun intArg(args: List<String>, index: Int, name: String): Int {
     val text = args.getOrNull(index) ?: throw UsageException("missing $name")
     return text.toIntOrNull() ?: throw UsageException("$name must be an integer, got '$text'")
 }
+
+/** Entries printed per enum by `enums-with-keys`. */
+private const val ENUM_PREVIEW = 40
 
 /** Collision render radius in tiles when none is given. */
 private const val DEFAULT_RADIUS = 16
