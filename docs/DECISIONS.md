@@ -462,3 +462,11 @@ repeating op scripts that keep their interaction, player-global action/animation
 (`PlayerRef.statRandom`). Woodcutting's tick timeline follows RS Mod `Woodcutting` and its tree, stump, axe and rate
 tables are adapted from RS Mod (ISC; licence header kept in `WoodcuttingData.kt`). Forestry tree timers are applied
 lazily on each swing instead of with a per-tick controller (same counts, no per-tick work).
+
+## D-035: Generic NPC dialogue from Wiki transcripts (default branch, no conditions)
+
+"Talk-to" on NPCs plays the OSRS Wiki `Transcript:` pages (tools/wiki-import/npc_dialogue.py, content/world `NpcTalk`). Conditions and
+actions are not modelled: the importer takes the default (negative-reading) branch and ends the conversation at any action it
+cannot run. No new plugin-api hook was needed: `onOpNpcOption` already only applies where no id-specific or named handler
+exists, which is the loc-fallback behaviour. The data is a node graph (not nested text) so the plugin walks it in a loop
+and never recurses in a suspending function. See docs/mechanics/npc-dialogue.md.
