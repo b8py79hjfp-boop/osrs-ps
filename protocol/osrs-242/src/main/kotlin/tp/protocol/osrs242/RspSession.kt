@@ -26,6 +26,7 @@ import net.rsprot.protocol.game.outgoing.logout.Logout
 import net.rsprot.protocol.game.outgoing.logout.LogoutTransfer
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
+import net.rsprot.protocol.game.outgoing.misc.client.ServerTickEnd
 import net.rsprot.protocol.game.outgoing.misc.client.UpdateRebootTimerV2
 import net.rsprot.protocol.game.outgoing.misc.player.ChatFilterSettings
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
@@ -192,6 +193,10 @@ internal class RspSession(
             held.forEach(session::queue)
             beforeFirstInfo = null
         }
+        // SERVER_TICK_END closes every tick's packets. The client calls its server-tick hook on it, which is what fires
+        // RuneLite's GameTick (quick-hop, timers, most tick-based plugins) and ticks ground-item timers (RSProt
+        // `ServerTickEnd`; RS Mod sends it in PlayerPostTickProcess).
+        session.queue(ServerTickEnd)
         session.flush()
     }
 
