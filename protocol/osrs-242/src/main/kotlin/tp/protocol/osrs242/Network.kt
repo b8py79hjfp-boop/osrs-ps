@@ -10,6 +10,7 @@ import net.rsprot.protocol.api.AbstractNetworkServiceFactory
 import net.rsprot.protocol.api.GameConnectionHandler
 import net.rsprot.protocol.api.InetAddressTracker
 import net.rsprot.protocol.api.NetworkService
+import net.rsprot.protocol.api.handlers.ExceptionHandlers
 import net.rsprot.protocol.api.handlers.INetAddressHandlers
 import net.rsprot.protocol.api.implementation.DefaultInetAddressTracker
 import net.rsprot.protocol.api.implementation.DefaultInetAddressValidator
@@ -182,6 +183,20 @@ class Osrs242Network(
         override val supportedClientTypes: List<OldSchoolClientType> = listOf(OldSchoolClientType.DESKTOP)
 
         override fun getRsaKeyPair(): RsaKeyPair = rsa
+
+        /**
+         * Channel exceptions: a client closing its socket (logout, hop, closed window) shows up as an IOException such as
+         * "Connection reset". That's normal, so it's logged at debug; anything else stays an error.
+         */
+        override fun getExceptionHandlers(): ExceptionHandlers<RspSession> =
+            ExceptionHandlers({ ctx, cause ->
+                if (ctx.channel().isActive) ctx.close()
+                if (cause is java.io.IOException) {
+                    logger.debug { "channel closed by peer ${ctx.channel()}: ${cause.message}" }
+                } else {
+                    logger.error(cause) { "Exception in channel ${ctx.channel()}" }
+                }
+            })
 
         override fun getHuffmanCodecProvider(): HuffmanCodecProvider = huffman
 
