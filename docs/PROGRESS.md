@@ -126,13 +126,24 @@
   - World spawns: 21k NPC spawns from the Wiki in `content/world` (npc-spawns.md); dev spawns only under
     `-Dtp.devSpawns=true`.
   - Login nag skip in the release client.
-  - Uncommitted, in progress:
-    - dynamic locs (add/delete/revert per world, copy-on-write collision, LOC_ADD_CHANGE/LOC_DEL/MAP_ANIM);
-    - NPC transform;
-    - Wilderness boss lairs (fee, discount, Escape Caves, singles-plus exits; boss-lairs.md);
-    - boss framework and scripts: Callisto/Artio, Vet'ion/Calvar'ion, Venenatis/Spindel are written, the rest are
-      being written;
-    - teleports (spells, tablets, jewellery, home teleport; teleports.md) merged from an agent.
+  - Wilderness bosses and revenants (bosses.md, boss-lairs.md, revenant-caves.md):
+    - a boss framework, plus Callisto/Artio, Vet'ion/Calvar'ion, Venenatis/Spindel, Chaos Elemental, Scorpia,
+      Chaos Fanatic, Crazy archaeologist and KBD;
+    - dragonfire protection and antifire potions; revenants, bracelet of ethereum and the maledictus;
+    - lair and Revenant Caves fees, Escape Caves.
+    - Checked headless: every boss fights; traps, hounds, the enraged form, webs, spiderlings and guardians work.
+  - Teleports: spells, tablets, jewellery, home teleport (teleports.md).
+  - Engine: dynamic locs per world, NPC transform, persisted player content state.
+  - Fixes:
+    - the content event bus is per world (it was shared by all worlds);
+    - spawning NPCs mid-tick no longer throws;
+    - the spawn import matches disambiguated Wiki pages (21,062 spawns).
+  - Classic Duel Arena with staking (duel-arena.md), chosen by the user over the Emir's Arena minigame:
+    - challenge, rules and disabled worn slots, presets, coin/platinum stakes, confirm;
+    - four arenas, countdown, forfeit, safe death, taxed winnings.
+    - Verified in the client with two accounts, and headless.
+  - In progress, uncommitted: generic doors, gates, ladders and stairs.
+    - `cache-dump loc-links` generates doors.tsv (387 door/gate pairs) and climbs.tsv (4,441 climb links).
 
 ## Blocking
 
@@ -163,10 +174,9 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
      - clean-machine install/update/login/hop test and a traffic capture.
 2. Record the 4,000-player run's numbers in docs/LOAD-TEST.md (tick percentiles, missed deadlines, GC p99.9).
 3. Phase 7 order (the user's list):
-   1. finish the Wilderness bosses and revenants (Chaos Elemental, Scorpia, Chaos Fanatic, Crazy archaeologist, KBD
-      with antifire, revenants and maledictus, Revenant Caves fee);
-   2. Emir's Arena;
-   3. doors, gates, ladders and stairs;
+   1. ~~Wilderness bosses and revenants~~ done;
+   2. ~~Duel Arena~~ done;
+   3. doors, gates, ladders and stairs (in progress);
    4. teleport leftovers (IF_SUBOP for Rub, persisted home cooldown, Tele Group);
    5. drop tables;
    6. trade;
