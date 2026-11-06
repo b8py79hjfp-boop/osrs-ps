@@ -40,6 +40,8 @@ class GoldenPvpTest {
                 val a = s.player("a", wild())
                 val b = s.player("b", wild(dx = d))
                 if (attackerFirst) s.start(a, b) else s.start(b, a)
+                a.cheat("xp 4 ${Golden.MAX_XP}") // a rune crossbow needs Ranged 61 (EQ1)
+                b.cheat("xp 4 ${Golden.MAX_XP}") // same combat level: keeps the Wilderness bracket
                 a.cheat("item 9185")
                 a.cheat("item 9144 50")
                 s.tick()

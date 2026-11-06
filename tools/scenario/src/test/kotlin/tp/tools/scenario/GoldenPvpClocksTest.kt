@@ -177,6 +177,7 @@ class GoldenPvpClocksTest {
     @Test
     fun `3f switch spec attack`() {
         val (s, a, b) = duel(seed = 30)
+        a.cheat("xp 0 ${Golden.MAX_XP}") // the whip, dragon dagger and AGS need Attack 70 / 60 / 75 (EQ1)
         a.cheat("item ${Objs.ABYSSAL_WHIP}")
         a.cheat("item ${Objs.DRAGON_DAGGER}")
         a.cheat("item ${Objs.AGS}")
