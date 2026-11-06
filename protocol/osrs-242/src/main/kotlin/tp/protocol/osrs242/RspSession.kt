@@ -1,6 +1,8 @@
 package tp.protocol.osrs242
 
 import net.rsprot.protocol.api.Session
+import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
+import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.game.outgoing.inv.InventoryObject
 import net.rsprot.protocol.game.outgoing.info.Infos
 import net.rsprot.protocol.game.outgoing.info.util.isEmpty
@@ -27,14 +29,16 @@ import net.rsprot.protocol.game.outgoing.varp.VarpLarge
 import net.rsprot.protocol.game.outgoing.varp.VarpReset
 import net.rsprot.protocol.game.outgoing.varp.VarpSmall
 import net.rsprot.protocol.game.outgoing.zone.header.UpdateZoneFullFollows
-import net.rsprot.protocol.game.outgoing.zone.header.UpdateZonePartialFollows
+import net.rsprot.protocol.game.outgoing.zone.header.UpdateZonePartialEnclosed
 import net.rsprot.protocol.game.outgoing.zone.payload.ObjAdd
 import net.rsprot.protocol.game.outgoing.zone.payload.ObjDel
 import net.rsprot.protocol.message.OutgoingGameMessage
+import net.rsprot.protocol.message.ZoneProt
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.ClientSession
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.ZoneOp
 
 /**
  * One logged-in player's RSProt session + info objects. World thread only. RSProt consumers call [deliver] while
@@ -44,6 +48,7 @@ internal class RspSession(
     private val session: Session<RspSession>,
     private val infos: Infos,
     private val username: String,
+    private val zoneBuffers: ZonePartialEnclosedCacheBuffer,
     private val onClose: (RspSession) -> Unit,
 ) : ClientSession {
     private var sink: ((ClientCommand) -> Unit)? = null
@@ -81,6 +86,13 @@ internal class RspSession(
     }
 
     override fun send(message: ServerMessage) {
+        if (message is ServerMessage.ZoneOps) {
+            // Obj ops are only accepted inside UPDATE_ZONE_PARTIAL_ENCLOSED (RSProt `Session.validateMessage`).
+            val ops = message.ops.map(::zoneProt)
+            val buf = zoneBuffers.computeZoneForClient(OldSchoolClientType.DESKTOP, ops)
+            session.queue(UpdateZonePartialEnclosed(message.dx, message.dz, message.level, buf))
+            return
+        }
         if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         session.queue(toRsprot(message))
     }
@@ -158,6 +170,12 @@ internal class RspSession(
         private const val MOVE_RUN = 2
         private const val MOVE_TELEPORT = 127
 
+        private fun zoneProt(op: ZoneOp): ZoneProt =
+            when (op) {
+                is ZoneOp.ObjAdd -> ObjAdd(op.id, op.count, op.x, op.z, OBJ_OPS_ALL)
+                is ZoneOp.ObjDel -> ObjDel(op.id, op.count, op.x, op.z)
+            }
+
         @Suppress("CyclomaticComplexMethod")
         fun toRsprot(message: ServerMessage): OutgoingGameMessage =
             when (message) {
@@ -234,16 +252,8 @@ internal class RspSession(
                     UpdateZoneFullFollows(message.dx, message.dz, message.level)
                 }
 
-                is ServerMessage.ZoneUpdate -> {
-                    UpdateZonePartialFollows(message.dx, message.dz, message.level)
-                }
-
-                is ServerMessage.ObjAdd -> {
-                    ObjAdd(message.id, message.count, message.x, message.z, OBJ_OPS_ALL)
-                }
-
-                is ServerMessage.ObjDel -> {
-                    ObjDel(message.id, message.count, message.x, message.z)
+                is ServerMessage.ZoneOps -> {
+                    error("zone ops need the network's enclosed-buffer cache; handled in send()")
                 }
 
                 ServerMessage.Logout -> {

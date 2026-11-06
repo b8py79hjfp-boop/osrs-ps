@@ -14,6 +14,7 @@ import net.rsprot.protocol.api.handlers.INetAddressHandlers
 import net.rsprot.protocol.api.implementation.DefaultInetAddressTracker
 import net.rsprot.protocol.api.js5.Js5GroupProvider
 import net.rsprot.protocol.api.login.GameLoginResponseHandler
+import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.buttons.If3Button
@@ -79,6 +80,13 @@ class Osrs242Network(
         service?.infoProtocols?.update()
     }
 
+    /** Shared per-tick zone-enclosed buffers (RSProt retains them a few ticks, then releases). World thread. */
+    private val zoneBuffers = ZonePartialEnclosedCacheBuffer(listOf(OldSchoolClientType.DESKTOP))
+
+    override fun afterFlush() {
+        zoneBuffers.releaseBuffers()
+    }
+
     private val npcAvatars = HashMap<Int, NpcAvatar>()
     private val npcLastCoord = HashMap<Int, IntArray>()
 
@@ -141,7 +149,7 @@ class Osrs242Network(
                             "jx section=${block.jxSessionId != null}; layouts so far: no-jx=${JxLayoutStats.noJx.get()}, " +
                             "jx=${JxLayoutStats.withJx.get()})"
                     }
-                    gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs)))
+                    gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs), zoneBuffers))
                 }
 
                 // Reconnection lands in Phase 5 (session handover); refuse cleanly for now.
@@ -203,6 +211,7 @@ class Osrs242Network(
         private val handler: GameLoginResponseHandler<RspSession>,
         private val block: LoginBlock<AuthenticationType>,
         override val crcValid: Boolean,
+        private val zoneBuffers: ZonePartialEnclosedCacheBuffer,
     ) : LoginRequest {
         override val username: String = block.username
 
@@ -220,7 +229,7 @@ class Osrs242Network(
                 )
             val session = handler.writeSuccessfulResponse(response, block)
             val infos = service.infoProtocols.alloc(slot, OldSchoolClientType.DESKTOP)
-            val rsp = RspSession(session, infos, username) { closed -> service.infoProtocols.dealloc(closed.release()) }
+            val rsp = RspSession(session, infos, username, zoneBuffers) { closed -> service.infoProtocols.dealloc(closed.release()) }
             session.setDisconnectionHook { rsp.markDisconnected() }
             return rsp
         }

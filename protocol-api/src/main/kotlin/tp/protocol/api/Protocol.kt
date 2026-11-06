@@ -25,6 +25,9 @@ interface GameNetwork {
     /** Info pass: the NPC's tile this tick. A one-tile change is a walk step; anything else a teleport. */
     fun npcSync(index: Int, level: Int, x: Int, z: Int) {}
 
+    /** End of the info pass, after every session flushed (release per-tick shared buffers). */
+    fun afterFlush() {}
+
     fun shutdown()
 }
 

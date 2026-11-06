@@ -3,6 +3,7 @@ package tp.engine.zone
 import tp.engine.entity.BuildArea
 import tp.engine.entity.Player
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.ZoneOp
 
 /**
  * Per-player zone synchronisation in the info pass (structure from RS Mod `PlayerZoneUpdateProcessor`): the player
@@ -48,27 +49,22 @@ internal class ZoneSync {
     }
 
     private fun sendFull(player: Player, key: ZoneKey, objs: GroundObjs) {
-        player.session.send(ServerMessage.ZoneReset(key.baseX - player.buildArea.x, key.baseZ - player.buildArea.z, key.level))
-        for (obj in objs.inZone(key)) {
-            if (obj.visibleTo(player.username)) player.session.send(add(obj))
-        }
+        val dx = key.baseX - player.buildArea.x
+        val dz = key.baseZ - player.buildArea.z
+        player.session.send(ServerMessage.ZoneReset(dx, dz, key.level))
+        val ops = objs.inZone(key).filter { it.visibleTo(player.username) }.map(::add)
+        if (ops.isNotEmpty()) player.session.send(ServerMessage.ZoneOps(dx, dz, key.level, ops))
     }
 
     private fun sendEvents(player: Player, key: ZoneKey, objs: GroundObjs) {
         val events = objs.events[key.packed] ?: return
-        var headerSent = false
-        for (e in events) {
-            val msg = messageFor(player.username, e) ?: continue
-            if (!headerSent) {
-                player.session.send(ServerMessage.ZoneUpdate(key.baseX - player.buildArea.x, key.baseZ - player.buildArea.z, key.level))
-                headerSent = true
-            }
-            player.session.send(msg)
-        }
+        val ops = events.mapNotNull { messageFor(player.username, it) }
+        if (ops.isEmpty()) return
+        player.session.send(ServerMessage.ZoneOps(key.baseX - player.buildArea.x, key.baseZ - player.buildArea.z, key.level, ops))
     }
 
     /** What [viewer] sees of [e]: adds/removes only for objs they could see; a reveal is an add for everyone else. */
-    private fun messageFor(viewer: String, e: ZoneEvent): ServerMessage? {
+    private fun messageFor(viewer: String, e: ZoneEvent): ZoneOp? {
         val couldSee = e.previousOwner == null || e.previousOwner == viewer
         return when (e.kind) {
             ZoneEvent.Kind.ADD -> if (couldSee) add(e.obj) else null
@@ -77,9 +73,9 @@ internal class ZoneSync {
         }
     }
 
-    private fun add(obj: GroundObj) = ServerMessage.ObjAdd(obj.coord.x and IN_ZONE, obj.coord.z and IN_ZONE, obj.id, obj.count)
+    private fun add(obj: GroundObj): ZoneOp = ZoneOp.ObjAdd(obj.coord.x and IN_ZONE, obj.coord.z and IN_ZONE, obj.id, obj.count)
 
-    private fun del(obj: GroundObj) = ServerMessage.ObjDel(obj.coord.x and IN_ZONE, obj.coord.z and IN_ZONE, obj.id, obj.count)
+    private fun del(obj: GroundObj): ZoneOp = ZoneOp.ObjDel(obj.coord.x and IN_ZONE, obj.coord.z and IN_ZONE, obj.id, obj.count)
 
     private companion object {
         /** Zones observed around the player's zone (RS Mod `ZONE_VIEW_RADIUS` = 3: a 7x7 zone square). */

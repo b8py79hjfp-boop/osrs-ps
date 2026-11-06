@@ -39,6 +39,13 @@ sealed interface ClientCommand {
     data class WindowStatus(val mode: Int, val width: Int, val height: Int) : ClientCommand
 }
 
+/** One operation inside a zone; coordinates are 0..7 within the zone. */
+sealed interface ZoneOp {
+    data class ObjAdd(val x: Int, val z: Int, val id: Int, val count: Int) : ZoneOp
+
+    data class ObjDel(val x: Int, val z: Int, val id: Int, val count: Int) : ZoneOp
+}
+
 /** Outgoing messages, revision-independent. Info packets and rebuilds are handled by the session itself. */
 sealed interface ServerMessage {
     /** Chatbox game message. */
@@ -94,14 +101,8 @@ sealed interface ServerMessage {
     /** Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops refill it. */
     data class ZoneReset(val dx: Int, val dz: Int, val level: Int) : ServerMessage
 
-    /** Zone header (partial): the following zone ops apply to the zone at ([dx], [dz]) from the build-area origin. */
-    data class ZoneUpdate(val dx: Int, val dz: Int, val level: Int) : ServerMessage
-
-    /** Ground obj appears at ([x], [z]) inside the current zone (0..7). */
-    data class ObjAdd(val x: Int, val z: Int, val id: Int, val count: Int) : ServerMessage
-
-    /** Ground obj removed at ([x], [z]) inside the current zone. */
-    data class ObjDel(val x: Int, val z: Int, val id: Int, val count: Int) : ServerMessage
+    /** A batch of [ops] for the zone at ([dx], [dz]) from the build-area origin (one enclosed zone packet). */
+    class ZoneOps(val dx: Int, val dz: Int, val level: Int, val ops: List<ZoneOp>) : ServerMessage
 
     data object Logout : ServerMessage
 }

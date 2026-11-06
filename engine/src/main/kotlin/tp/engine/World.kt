@@ -349,22 +349,39 @@ class World(
     private fun infoPass() {
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
-            if (BuildArea.needsRebuild(player.coord, player.buildArea)) {
-                player.buildArea = BuildArea.originFor(player.coord)
-                player.session.send(ServerMessage.Rebuild(player.coord.x, player.coord.z))
-                player.zoneSync.reset()
+            isolated(player, "info pass") {
+                if (BuildArea.needsRebuild(player.coord, player.buildArea)) {
+                    player.buildArea = BuildArea.originFor(player.coord)
+                    player.session.send(ServerMessage.Rebuild(player.coord.x, player.coord.z))
+                    player.zoneSync.reset()
+                }
+                player.session.syncAvatar(player.avatarState())
+                player.teleportedThisTick = false
+                player.flushState()
+                player.zoneSync.process(player, ground)
             }
-            player.session.syncAvatar(player.avatarState())
-            player.teleportedThisTick = false
-            player.flushState()
-            player.zoneSync.process(player, ground)
         }
         ground.clearEvents()
         for (npc in npcs) if (npc != null) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
         network.buildInfos()
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
-            if (player.session.isOpen) player.session.flushInfos()
+            if (player.session.isOpen) isolated(player, "flush") { player.session.flushInfos() }
+        }
+        network.afterFlush()
+    }
+
+    /**
+     * A failure while talking to one player's session (protocol encoding, a closed channel) disconnects that player
+     * instead of stopping the world thread. Logged at error level: it is always a bug or a broken connection.
+     */
+    @Suppress("TooGenericExceptionCaught") // any per-session failure must be contained
+    private inline fun isolated(player: Player, what: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (e: RuntimeException) {
+            logger.error(e) { "$what failed for $player; disconnecting" }
+            player.session.close()
         }
     }
 
