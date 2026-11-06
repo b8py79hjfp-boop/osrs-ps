@@ -35,6 +35,9 @@ abstract class Entity internal constructor(
     internal var turnTick: Long = -1
 
     /** First tick on which a script queued now can run: this tick if the entity's turn is still to come, else the next. */
+    /** Ticks from now until a script queued now with [delay] runs (Q13). */
+    fun ticksUntilQueued(delay: Int): Int = (firstQueueTick() - world.tick).toInt() + delay
+
     internal fun firstQueueTick(): Long = if (turnTick >= world.tick) world.tick + 1 else world.tick
 
     /** Whether there are route steps left. */

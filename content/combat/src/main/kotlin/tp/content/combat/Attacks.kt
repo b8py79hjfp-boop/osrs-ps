@@ -4,6 +4,7 @@ import tp.plugin.EntityRef
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.symbols.Seqs
+import tp.symbols.SpotAnims
 import tp.symbols.Varps
 
 /** Player melee/ranged attack resolution: rolls on the attack tick, hit queued with the hit delay (C1, F1–F19). */
@@ -27,6 +28,11 @@ internal object Attacks {
         val distance = player.distanceTo(target)
         val delay = hitDelay(type.style, category, distance)
         player.anim(spec?.anim ?: attackAnim(category, type))
+        if (type.style == CombatStyle.RANGED) {
+            val projectile = if (category === Weapons.CROSSBOW) SpotAnims.CROSSBOWBOLT_TRAVEL else SpotAnims.RUNE_ARROW_TRAVEL
+            val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
+            player.projectile(target, projectile, PROJ_START_HEIGHT, PROJ_END_HEIGHT, minOf(PROJ_START, arrive - 1), arrive)
+        }
         CombatSystem.announceAttack(player, target, type.style)
         repeat(spec?.hits ?: 1) {
             val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
@@ -167,6 +173,12 @@ internal object Attacks {
         }
         player.addXp(Stat.HITPOINTS, damage * 4.0 / 3)
     }
+
+    /** Client cycles (20 ms) per tick, and projectile shape (OPEN-C1: per-weapon values not in the cache). */
+    private const val CYCLES_PER_TICK = 30
+    private const val PROJ_START = 20
+    private const val PROJ_START_HEIGHT = 40
+    private const val PROJ_END_HEIGHT = 36
 
     private const val PERCENT = 100
     private const val PERMILLE = 1000

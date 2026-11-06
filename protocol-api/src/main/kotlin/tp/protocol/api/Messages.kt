@@ -50,6 +50,27 @@ sealed interface ZoneOp {
     data class ObjAdd(val x: Int, val z: Int, val id: Int, val count: Int) : ZoneOp
 
     data class ObjDel(val x: Int, val z: Int, val id: Int, val count: Int) : ZoneOp
+
+    /**
+     * A projectile (spot anim [id]) from ([x], [z]) in this zone to the absolute tile ([endX], [endZ], [endLevel]),
+     * locked to [source]/[target] if given. Times are client cycles (20 ms) from receipt.
+     */
+    data class Projectile(
+        val x: Int,
+        val z: Int,
+        val id: Int,
+        val startHeight: Int,
+        val endHeight: Int,
+        val startTime: Int,
+        val endTime: Int,
+        val angle: Int,
+        val progress: Int,
+        val source: AvatarRef?,
+        val target: AvatarRef?,
+        val endX: Int,
+        val endZ: Int,
+        val endLevel: Int,
+    ) : ZoneOp
 }
 
 /** Outgoing messages, revision-independent. Info packets and rebuilds are handled by the session itself. */

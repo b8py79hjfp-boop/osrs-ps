@@ -492,6 +492,32 @@ class World(
     /** Obj config (wear positions, params) for content facades. */
     fun objType(id: Int): tp.cache.config.obj.ObjType? = data.configs.objs[id]
 
+    /**
+     * A projectile from [from] to [to] (visual only), timed in client cycles from this tick's info pass: it starts
+     * after [startCycles] and arrives after [endCycles] (combat-timeline.md OPEN-C1).
+     */
+    fun projectile(from: Entity, to: Entity, id: Int, startHeight: Int, endHeight: Int, startCycles: Int, endCycles: Int, angle: Int) {
+        val c = from.coord
+        val op =
+            tp.protocol.api.ZoneOp.Projectile(
+                c.x and ZONE_MASK,
+                c.z and ZONE_MASK,
+                id,
+                startHeight,
+                endHeight,
+                startCycles,
+                endCycles,
+                angle,
+                0,
+                from.avatarRef,
+                to.avatarRef,
+                to.coord.x,
+                to.coord.z,
+                to.coord.level,
+            )
+        ground.transient(c, op)
+    }
+
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {
         player.session.send(ServerMessage.Logout)
@@ -682,6 +708,8 @@ class World(
         private const val MISSED_LOG_SAMPLE = 100L
         private const val WALK_STEPS = 1
         private const val RUN_STEPS = 2
+
+        private const val ZONE_MASK = 7
 
         /** Appearance wear positions 0..11. */
         private const val APPEARANCE_SLOTS = 12

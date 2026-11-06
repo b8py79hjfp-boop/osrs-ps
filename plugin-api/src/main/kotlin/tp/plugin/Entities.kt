@@ -15,6 +15,9 @@ import kotlin.coroutines.RestrictsSuspension
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
+/** Typical projectile launch angle (RS Mod projanim defaults). */
+private const val DEFAULT_ANGLE = 15
+
 /** A typed key for per-entity content state (clocks, flags, timers). Compared by identity. */
 public class AttrKey<T : Any>(public val name: String) {
     override fun toString(): String = "AttrKey($name)"
@@ -103,6 +106,22 @@ public sealed class EntityRef {
 
     /** Whether this world is a PvP world (WorldConfig). */
     public val isPvpWorld: Boolean get() = e.world.config.pvpWorld
+
+    /** Ticks until a hit queued on this entity now with [delay] lands (includes the processing-order +1). */
+    public fun ticksUntilHit(delay: Int): Int = e.ticksUntilQueued(delay)
+
+    /** A projectile (spot anim [id]) from this entity to [target], arriving after [endCycles] client cycles. */
+    public fun projectile(
+        target: EntityRef,
+        id: Int,
+        startHeight: Int,
+        endHeight: Int,
+        startCycles: Int,
+        endCycles: Int,
+        angle: Int = DEFAULT_ANGLE,
+    ) {
+        e.world.projectile(e, target.e, id, startHeight, endHeight, startCycles, endCycles, angle)
+    }
 
     /** Records [label] for this entity in the tick inspector (no-op unless tracing). */
     public fun trace(label: String) {

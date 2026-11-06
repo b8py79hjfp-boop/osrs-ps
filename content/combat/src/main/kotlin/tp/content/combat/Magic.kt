@@ -69,7 +69,7 @@ public class Magic : ContentPlugin {
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
         val damage = if (hit) Formulas.damage(max, player::random) else 0
         // Visual lands on the application tick: 30 client cycles per tick (OPEN-C1).
-        target.spotAnim(if (hit) spell.impact else SpotAnims.FAILEDSPELL_IMPACT, height = SPLASH_HEIGHT, delay = delay * CYCLES_PER_TICK)
+        target.spotAnim(if (hit) spell.impact else SpotAnims.FAILEDSPELL_IMPACT, height = SPLASH_HEIGHT, delay = target.ticksUntilHit(delay) * CYCLES_PER_TICK)
         if (!hit) return // a splash: no hit, no freeze (Z6 aside, freezes need a successful cast)
         CombatSystem.queueHit(target, player, damage, HitStyle.MAGIC, delay) {
             if (spell.freeze > 0) Freezes.freeze(target, player, spell.freeze)

@@ -47,9 +47,9 @@ class GroundObj internal constructor(
     fun visibleTo(username: String): Boolean = owner == null || owner == username
 }
 
-/** What happened to an obj this tick, for zone updates in the info pass. */
-internal class ZoneEvent(val kind: Kind, val obj: GroundObj, val previousOwner: String?) {
-    enum class Kind { ADD, DEL, REVEAL }
+/** What happened in a zone this tick, for zone updates in the info pass. [transient] ops are seen by everyone once. */
+internal class ZoneEvent(val kind: Kind, val obj: GroundObj?, val previousOwner: String?, val transient: tp.protocol.api.ZoneOp? = null) {
+    enum class Kind { ADD, DEL, REVEAL, TRANSIENT }
 }
 
 /**
@@ -111,6 +111,11 @@ class GroundObjs internal constructor() {
 
     private fun event(zone: Int, e: ZoneEvent) {
         events.getOrPut(zone) { ArrayList() } += e
+    }
+
+    /** A one-off zone op (projectile) in the zone of [at], sent to every observer this tick. */
+    internal fun transient(at: CoordGrid, op: tp.protocol.api.ZoneOp) {
+        event(ZoneKey.of(at).packed, ZoneEvent(ZoneEvent.Kind.TRANSIENT, null, null, op))
     }
 
     internal fun clearEvents() {

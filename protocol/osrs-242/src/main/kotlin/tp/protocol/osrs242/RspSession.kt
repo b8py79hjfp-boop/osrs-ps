@@ -30,6 +30,7 @@ import net.rsprot.protocol.game.outgoing.varp.VarpReset
 import net.rsprot.protocol.game.outgoing.varp.VarpSmall
 import net.rsprot.protocol.game.outgoing.zone.header.UpdateZoneFullFollows
 import net.rsprot.protocol.game.outgoing.zone.header.UpdateZonePartialEnclosed
+import net.rsprot.protocol.game.outgoing.zone.payload.MapProjAnimV2
 import net.rsprot.protocol.game.outgoing.zone.payload.ObjAdd
 import net.rsprot.protocol.game.outgoing.zone.payload.ObjDel
 import net.rsprot.protocol.message.OutgoingGameMessage
@@ -193,10 +194,42 @@ internal class RspSession(
         private const val MOVE_RUN = 2
         private const val MOVE_TELEPORT = 127
 
+        /** MapProjAnimV2 entity index: players -(index + 1), NPCs index + 1, 0 none (RSProt docs). */
+        private fun projIndex(ref: tp.protocol.api.AvatarRef?): Int =
+            when (ref) {
+                null -> 0
+                is tp.protocol.api.AvatarRef.OfPlayer -> -(ref.index + 1)
+                is tp.protocol.api.AvatarRef.OfNpc -> ref.index + 1
+            }
+
         private fun zoneProt(op: ZoneOp): ZoneProt =
             when (op) {
-                is ZoneOp.ObjAdd -> ObjAdd(op.id, op.count, op.x, op.z, OBJ_OPS_ALL)
-                is ZoneOp.ObjDel -> ObjDel(op.id, op.count, op.x, op.z)
+                is ZoneOp.ObjAdd -> {
+                    ObjAdd(op.id, op.count, op.x, op.z, OBJ_OPS_ALL)
+                }
+
+                is ZoneOp.ObjDel -> {
+                    ObjDel(op.id, op.count, op.x, op.z)
+                }
+
+                is ZoneOp.Projectile -> {
+                    MapProjAnimV2(
+                        op.id,
+                        op.startHeight,
+                        op.endHeight,
+                        op.startTime,
+                        op.endTime,
+                        op.angle,
+                        op.progress,
+                        projIndex(op.source),
+                        projIndex(op.target),
+                        op.x,
+                        op.z,
+                        op.endX,
+                        op.endZ,
+                        op.endLevel,
+                    )
+                }
             }
 
         @Suppress("CyclomaticComplexMethod")
