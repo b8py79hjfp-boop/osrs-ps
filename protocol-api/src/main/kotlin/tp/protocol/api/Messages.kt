@@ -144,6 +144,18 @@ sealed interface ServerMessage {
 
     data object Logout : ServerMessage
 
+    /** IF_SETTEXT on packed [component] (`iface << 16 | comp`). */
+    data class IfText(val component: Int, val text: String) : ServerMessage
+
+    /** IF_SETHIDE on packed [component]. */
+    data class IfHide(val component: Int, val hidden: Boolean) : ServerMessage
+
+    /** IF_SETOBJECT: shows [obj] x[count] in packed [component]. */
+    data class IfObject(val component: Int, val obj: Int, val count: Int) : ServerMessage
+
+    /** Plays music track [id] (MIDI_SONG; fades in client cycles, 0 = cut). */
+    data class MusicTrack(val id: Int, val fadeOut: Int = 0, val fadeIn: Int = 0) : ServerMessage
+
     /** Friends list rows (full list at login, single rows on changes). */
     data class FriendList(val friends: List<FriendRow>) : ServerMessage
 

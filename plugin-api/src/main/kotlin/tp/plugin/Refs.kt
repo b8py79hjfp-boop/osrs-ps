@@ -161,6 +161,26 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun isOpen(interfaceId: Int): Boolean = p.world.interfaces.isOpen(p, interfaceId)
 
+    /** Sets the text of packed [component] (`tp.symbols.Components`). */
+    public fun ifText(component: Int, text: String) {
+        p.session.send(ServerMessage.IfText(component, text))
+    }
+
+    /** Shows or hides packed [component]. */
+    public fun ifHide(component: Int, hidden: Boolean) {
+        p.session.send(ServerMessage.IfHide(component, hidden))
+    }
+
+    /** Shows [obj] x[count] in packed [component]. */
+    public fun ifObject(component: Int, obj: Int, count: Int = 1) {
+        p.session.send(ServerMessage.IfObject(component, obj, count))
+    }
+
+    /** Plays music track [id] (cache music/midi id). */
+    public fun playMusic(id: Int) {
+        p.session.send(ServerMessage.MusicTrack(id))
+    }
+
     /** Allowed ops/events on [component]'s slots [slots] (IF_SETEVENTS bit set). */
     public fun ifEvents(component: Int, slots: IntRange, events: Long) {
         p.session.send(ServerMessage.InterfaceEvents(component, slots.first, slots.last, events))

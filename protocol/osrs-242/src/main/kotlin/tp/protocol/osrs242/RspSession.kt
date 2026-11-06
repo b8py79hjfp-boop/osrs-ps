@@ -13,6 +13,9 @@ import net.rsprot.protocol.game.outgoing.interfaces.IfCloseSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenTop
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetEventsV2
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetHide
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetObject
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetText
 import net.rsprot.protocol.game.outgoing.inv.UpdateInvFull
 import net.rsprot.protocol.game.outgoing.inv.UpdateInvPartial
 import net.rsprot.protocol.game.outgoing.logout.Logout
@@ -31,6 +34,7 @@ import net.rsprot.protocol.game.outgoing.social.MessagePrivate
 import net.rsprot.protocol.game.outgoing.social.MessagePrivateEcho
 import net.rsprot.protocol.game.outgoing.social.UpdateFriendList
 import net.rsprot.protocol.game.outgoing.social.UpdateIgnoreList
+import net.rsprot.protocol.game.outgoing.sound.MidiSongV2
 import net.rsprot.protocol.game.outgoing.util.OpFlags
 import net.rsprot.protocol.game.outgoing.varp.VarpLarge
 import net.rsprot.protocol.game.outgoing.varp.VarpReset
@@ -328,6 +332,10 @@ internal class RspSession(
                     Logout
                 }
 
+                is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack -> {
+                    uiProt(message)
+                }
+
                 is ServerMessage.FriendList, is ServerMessage.IgnoreList, ServerMessage.FriendListLoaded,
                 is ServerMessage.PrivateMessage, is ServerMessage.PrivateMessageEcho,
                 -> {
@@ -400,5 +408,32 @@ private fun socialProt(message: ServerMessage): OutgoingGameMessage =
 
         else -> {
             error("not a social message: $message")
+        }
+    }
+
+private const val COMPONENT_BITS = 16
+private const val COMPONENT_MASK = 0xFFFF
+
+/** Interface text/visibility/object updates and music. */
+private fun uiProt(message: ServerMessage): OutgoingGameMessage =
+    when (message) {
+        is ServerMessage.IfText -> {
+            IfSetText(message.component ushr COMPONENT_BITS, message.component and COMPONENT_MASK, message.text)
+        }
+
+        is ServerMessage.IfHide -> {
+            IfSetHide(message.component ushr COMPONENT_BITS, message.component and COMPONENT_MASK, message.hidden)
+        }
+
+        is ServerMessage.IfObject -> {
+            IfSetObject(message.component ushr COMPONENT_BITS, message.component and COMPONENT_MASK, message.obj, message.count)
+        }
+
+        is ServerMessage.MusicTrack -> {
+            MidiSongV2(message.id, message.fadeOut, 0, message.fadeIn, 0)
+        }
+
+        else -> {
+            error("not a ui message: $message")
         }
     }
