@@ -17,6 +17,7 @@ dependencies {
     runtimeOnly(project(":content:magic"))
     runtimeOnly(project(":content:drops"))
     runtimeOnly(project(":content:shops"))
+    runtimeOnly(project(":content:skills"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
     implementation(project(":hub"))

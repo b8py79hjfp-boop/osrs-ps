@@ -43,6 +43,7 @@ include(
     ":content:shops",
     ":content:magic",
     ":content:drops",
+    ":content:skills",
     ":services",
     ":server",
     ":hub",

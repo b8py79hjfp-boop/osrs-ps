@@ -454,3 +454,11 @@ Dialogues are suspending `PlayerScript` extensions, so content scripts read top 
 - **plugin-api.** Added `PlayerRef.objCost` (the cache `cost`, unlike `objValue` which prefers Grand Exchange prices).
 - **Duplicated gameframe helpers.** `content/shops` cannot see `content/gameframe`, so it repeats the main-modal opening and the backpack
   restore (`SideInventory`) in a few lines.
+
+## D-034: Skilling base and woodcutting data adapted from RS Mod
+
+All non-combat skills live in one module, `content/skills`, over a shared base (`Skilling.kt`, docs/mechanics/skilling.md):
+repeating op scripts that keep their interaction, player-global action/animation clocks, and the Wiki success roll
+(`PlayerRef.statRandom`). Woodcutting's tick timeline follows RS Mod `Woodcutting` and its tree, stump, axe and rate
+tables are adapted from RS Mod (ISC; licence header kept in `WoodcuttingData.kt`). Forestry tree timers are applied
+lazily on each swing instead of with a per-tick controller (same counts, no per-tick work).

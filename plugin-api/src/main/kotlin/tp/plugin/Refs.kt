@@ -401,6 +401,18 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         return gained
     }
 
+    /**
+     * The OSRS skilling success roll (Wiki "Skilling success rate", RS Mod `SkillingSuccessRate`): with current level L
+     * (1..99), success chance is `(1 + floor(low * (99 - L) / 98 + high * (L - 1) / 98 + 0.5)) / 256`, rolled with
+     * the world RNG. [low] and [high] are the chances out of 256 at levels 1 and 99.
+     */
+    public fun statRandom(stat: Int, low: Int, high: Int): Boolean {
+        val level = p.stats.level(stat).coerceIn(1, Stats.MAX_LEVEL)
+        val span = Stats.MAX_LEVEL - 1
+        val chance = 1 + kotlin.math.floor((low * (Stats.MAX_LEVEL - level) + high * (level - 1)).toDouble() / span + HALF).toInt()
+        return random(SUCCESS_SCALE) < chance
+    }
+
     // ---- appearance and objs
 
     /** Combat level from base levels (OSRS Wiki "Combat level"). */
@@ -530,6 +542,12 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     private companion object {
         const val XP_TENTHS = 10
+
+        /** Skilling success chances are out of 256 (Wiki "Skilling success rate"). */
+        const val SUCCESS_SCALE = 256
+
+        /** Rounding term of the success-rate interpolation. */
+        const val HALF = 0.5
         const val ATT = 0
         const val DEF = 1
         const val STR = 2
