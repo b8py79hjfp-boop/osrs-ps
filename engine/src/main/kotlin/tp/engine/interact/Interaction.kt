@@ -127,7 +127,9 @@ class InteractionProcessor internal constructor(
                     interacted = true
                 }
 
-                inApRange(player, current) -> {
+                // Engine ap only stands in for a missing script: with an op script the player keeps walking into op
+                // range (interactions.md I3, SOURCE-CONFLICT with the literal pseudocode).
+                current.opScript == null && inApRange(player, current) -> {
                     nothingInteresting(player)
                     interacted = true
                 }

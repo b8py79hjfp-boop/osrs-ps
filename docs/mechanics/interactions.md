@@ -19,6 +19,15 @@ pseudocode verbatim.
 | I8 | Guarded by not delayed and no modal: if nothing interacted, the entity didn't move and has no steps left, send "I can't reach that!" and reset. After an interaction ran, reset unless `aprange` was called or it's persistent. **OPEN-I3:** what makes an interaction persistent (the pseudocode declares it, never sets it). | I pseudocode |
 | I9 | NPCs use the same algorithm without modals, engine scripts or messages. | I |
 
+## SOURCE-CONFLICT (decided)
+
+- **Engine ap in block 2.** The pseudocode's block 2 sends the engine ap message whenever the target is in approach
+  distance, even when an op script exists. Read literally, an op-only interaction (e.g. taking a ground item) would
+  print "Nothing interesting happens." from up to 10 tiles away instead of walking up and running the op. The prose
+  of the same page says "The default engine versions can only execute in the absence of the runescript equivalent"
+  and that only the *undefined* script becomes the engine default. Decision: the engine ap branch also requires that
+  no op script exists. Found in real-client testing, 2026-11-06.
+
 ## OPEN
 
 - **OPEN-I1:** route recalculation for moving targets (players/NPCs). We re-path toward the target when it moves out
