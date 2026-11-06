@@ -1,5 +1,6 @@
 package tp.plugin
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import tp.engine.ContentHandlers
 import tp.engine.World
 import tp.engine.entity.Player
@@ -8,6 +9,12 @@ import tp.engine.script.Script
 import java.util.ServiceLoader
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+
+private val logger = KotlinLogging.logger {}
+
+/** Packed component id split (`iface << 16 | comp`). */
+private const val COMPONENT_SHIFT = 16
+private const val COMPONENT_MASK = 0xFFFF
 
 /**
  * Compiles every registered plugin into the engine's [ContentHandlers]. Built once at boot; lookups are hash maps,
@@ -83,7 +90,14 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {
         val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
-        val handler = h.buttons[base or option.toLong()] ?: h.buttons[base] ?: return
+        val handler = h.buttons[base or option.toLong()] ?: h.buttons[base]
+        if (handler == null) {
+            // Input-driven (not per tick): lets a tester report exactly which button has no content yet.
+            logger.info {
+                "unhandled button ${component ushr COMPONENT_SHIFT}:${component and COMPONENT_MASK} op=$option slot=$slot obj=$obj"
+            }
+            return
+        }
         ref(player).handler(ButtonClick(component, option, slot, obj))
     }
 
