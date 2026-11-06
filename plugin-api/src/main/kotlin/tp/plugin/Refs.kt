@@ -268,6 +268,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun varbit(id: Int): Int = p.vars.getBit(id)
 
+    /** Sends a 64-bit client varp; the server keeps no copy (content keeps the value it mirrors). */
+    public fun sendVarpLong(id: Int, value: Long) {
+        p.session.send(ServerMessage.VarpLong(id, value))
+    }
+
     public fun setVarbit(id: Int, value: Int) {
         p.vars.setBit(id, value)
     }
@@ -337,6 +342,23 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public fun objName(obj: Int): String = p.world.objType(obj)?.name ?: "null"
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
+
+    /** The unnoted form of [obj] (itself when not a note). */
+    public fun unnoted(obj: Int): Int =
+        p.world
+            .objType(obj)
+            ?.takeIf { it.isNoted }
+            ?.certLink ?: obj
+
+    /** The noted form of unnoted [obj], or -1 when it has none. */
+    public fun noted(obj: Int): Int =
+        p.world
+            .objType(obj)
+            ?.takeIf { !it.isNoted }
+            ?.certLink ?: -1
+
+    /** Whether [obj] can be traded on the Grand Exchange (cache flag). */
+    public fun isGeTradeable(obj: Int): Boolean = p.world.objType(unnoted(obj))?.geTradeable == true
 
     /** Item value (kept on death, price checker): the GE guide price if the obj has traded, else cache `cost`. */
     public fun objValue(obj: Int): Int = p.world.guidePrices[obj] ?: p.world.objType(obj)?.cost ?: 0

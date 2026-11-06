@@ -362,7 +362,7 @@ internal class RspSession(
                 }
 
                 is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
-                is ServerMessage.StockMarketSlot, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
+                is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
                 ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
                 is ServerMessage.PrivateMessageEcho, is ServerMessage.ChannelJoined, ServerMessage.ChannelLeft,
                 is ServerMessage.ChannelMember, is ServerMessage.ChannelMessage,
@@ -407,7 +407,7 @@ private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
 private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
         is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
-        is ServerMessage.StockMarketSlot,
+        is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong,
         -> {
             uiProt(message)
         }
@@ -502,6 +502,11 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
 
         is ServerMessage.MusicTrack -> {
             MidiSongV2(message.id, message.fadeOut, 0, message.fadeIn, 0)
+        }
+
+        is ServerMessage.VarpLong -> {
+            net.rsprot.protocol.game.outgoing.varp
+                .VarpLong(message.id, message.value)
         }
 
         is ServerMessage.StockMarketSlot -> {

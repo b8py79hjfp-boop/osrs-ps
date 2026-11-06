@@ -130,6 +130,9 @@ sealed interface ServerMessage {
     /** Sets a client varp. */
     data class Varp(val id: Int, val value: Int) : ServerMessage
 
+    /** Sets a client 64-bit varp (VARP_LONG; e.g. `ge_newoffer_price`). The server keeps no copy. */
+    data class VarpLong(val id: Int, val value: Long) : ServerMessage
+
     /** Zeroes every client varp (sent at login before transmitting server values). */
     data object VarpReset : ServerMessage
 
