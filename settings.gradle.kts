@@ -50,5 +50,6 @@ include(
     ":tools:symbol-gen",
     ":tools:ksp-registry",
     ":client:gamepatch",
+    ":client:launcher",
 )
 // client/runelite (the RuneLite fork) is a patch series built by its own RuneLite Gradle build, not included here.

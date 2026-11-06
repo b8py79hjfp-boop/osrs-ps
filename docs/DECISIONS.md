@@ -311,3 +311,16 @@ through a transaction or the item journal. Display copies must never be real ite
 - **Artifact integrity:** the RuneLite client itself checks only the external-plugin manifest signature
   (`externalplugins.crt`), which goes away with the plugin hub. Launcher-side bootstrap verification is replaced by
   our launcher's Ed25519-signed manifest.
+- **Launcher** (`client/launcher`):
+  - **Runtime:** targets Java 11, the major version RuneLite's launcher 2.6.7 bundles (`.jdk-versions.sh`: 11.0.19
+    on every platform except macOS arm64, which gets 17.0.7). The jlink runtime follows the same split.
+  - **Signature:** the manifest is signed with ECDSA P-256 (`SHA256withECDSA`). Ed25519 would be preferred but needs
+    Java 15+.
+  - **Behaviour:**
+    - a manifest whose signature fails is never used, even when the server is up;
+    - when the server is unreachable, the last verified manifest is used;
+    - each artifact is sha256-checked;
+    - files not in the manifest are deleted.
+  - **Hosting:** the hub serves the update directory at `/update`; `release publish` writes it.
+  - **Keys:** the dev key pair is in `.data/manifest/`. Its public half is in `launcher.properties`; replace it
+    before a public release.

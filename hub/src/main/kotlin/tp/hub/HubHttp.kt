@@ -6,8 +6,14 @@ import java.net.URLDecoder
 
 /** The hub's public HTTP routes (served next to jav_config / worldlist, by the hub or a world node embedding it). */
 object HubHttp {
-    fun routes(hub: Hub): Map<String, (HttpExchange) -> Unit> =
+    fun routes(
+        hub: Hub,
+        updateDir: java.nio.file.Path =
+            java.nio.file.Path
+                .of(".data", "update"),
+    ): Map<String, (HttpExchange) -> Unit> =
         mapOf(
+            "/update" to { ex -> update(updateDir, ex) },
             "/register" to { ex -> register(hub, ex) },
             "/health" to { ex -> health(hub, ex) },
             "/hiscores" to { ex -> hiscores(hub, ex) },
@@ -28,6 +34,37 @@ object HubHttp {
             "/item/prices.js" -> json(ex, prices(hub))
             "/config.json" -> json(ex, "{}")
             else -> reply(ex, HTTP_NOT_FOUND, "not served")
+        }
+    }
+
+    /**
+     * The launcher's update endpoint: static files from [dir] (manifest.json, manifest.json.sig and the artifacts directory), written
+     * by `release publish`. Integrity comes from the signed manifest; this only serves bytes. Paths can't leave [dir].
+     */
+    private fun update(dir: java.nio.file.Path, ex: HttpExchange) {
+        val root = dir.toAbsolutePath().normalize()
+        val file =
+            root
+                .resolve(
+                    ex.requestURI.path
+                        .removePrefix("/update")
+                        .trimStart('/'),
+                ).normalize()
+        if (!file.startsWith(root) ||
+            !java.nio.file.Files
+                .isRegularFile(file)
+        ) {
+            return reply(ex, HTTP_NOT_FOUND, "not found")
+        }
+        ex.responseHeaders.add("Content-Type", "application/octet-stream")
+        ex.sendResponseHeaders(
+            HTTP_OK,
+            java.nio.file.Files
+                .size(file),
+        )
+        ex.responseBody.use { out ->
+            java.nio.file.Files
+                .copy(file, out)
         }
     }
 
