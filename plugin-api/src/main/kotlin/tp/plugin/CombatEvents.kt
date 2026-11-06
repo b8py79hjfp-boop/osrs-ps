@@ -48,7 +48,12 @@ public class SpellAccuracyRoll(public val caster: PlayerRef, public val target: 
 }
 
 /** [entity] died; published when the death sequence completes, before respawn (items kept on death, Retribution). */
-public class DeathEvent(public val entity: EntityRef, public val killer: EntityRef?) : Event
+public class DeathEvent(
+    public val entity: EntityRef,
+    public val killer: EntityRef?,
+    /** For an NPC: the player who dealt it the most damage this life (who gets the drop), or null. */
+    public val lootFor: PlayerRef? = null,
+) : Event
 
 /**
  * Duel Arena rules (docs/mechanics/duel-arena.md DA2): bit numbers in varp `duel_options` (the client's option

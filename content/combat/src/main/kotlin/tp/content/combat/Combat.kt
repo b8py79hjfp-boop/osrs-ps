@@ -168,8 +168,8 @@ internal object CombatSystem {
         }
         onLand?.invoke()
         target.events.publish(HitEvent(target, source, dealt, style))
+        if (target is NpcRef) Bosses.recordDamage(target, source, dealt)
         if (target is NpcRef && boss != null) {
-            Bosses.recordDamage(target, source, dealt)
             if (target.hitpoints <= 0 && boss.onLethal(target)) return
             if (target.hitpoints > 0) boss.afterHit(target, source)
         }
@@ -232,7 +232,8 @@ internal object CombatSystem {
                 Poison.clear(target)
                 Bosses.of(target.type)?.died(target, killer)
                 target.queueHit(NPC_DEATH_DELAY) {
-                    target.events.publish(DeathEvent(target, killer))
+                    // Drops go to the player who dealt the most damage (Wiki "Drops").
+                    target.events.publish(DeathEvent(target, killer, Bosses.topDamager(target) ?: killer as? PlayerRef))
                     // Summoned minions and one-off spawns (maledictus) don't come back (bosses.md B5).
                     if (target[Bosses.MINION] == true) {
                         target.despawn()

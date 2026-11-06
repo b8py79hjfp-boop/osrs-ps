@@ -116,6 +116,7 @@ internal object Bosses {
     fun freezeLands(caster: PlayerRef, target: EntityRef): Boolean =
         target is NpcRef && of(target.type)?.firstFreezeLands == true && !target.isFrozen && caster.bonus(Param.ATTACK_MAGIC) >= 0
 
+    /** Damage per player on any NPC this life (drops, lair credit). */
     fun recordDamage(npc: NpcRef, source: EntityRef?, dealt: Int) {
         if (source !is PlayerRef || dealt <= 0) return
         val map = npc[DAMAGE] ?: HashMap<PlayerRef, Int>().also { npc[DAMAGE] = it }
