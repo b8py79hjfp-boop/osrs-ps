@@ -83,6 +83,15 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
             )
         }
 
+        "enums-with-keys" -> {
+            val keys = args.map { it.toIntOrNull() ?: throw UsageException("keys must be integers") }.toSet()
+            val enums = tp.cache.config.Configs.load(cache).enums
+            for (e in enums) {
+                val k = e.intValues.keys + e.stringValues.keys
+                if (k.containsAll(keys)) println("enum ${e.id} in=${e.inputType.toChar()} out=${e.outputType.toChar()} size=${e.size}: " + (e.intValues.entries.take(40) + e.stringValues.entries.take(40)).joinToString())
+            }
+        }
+
         else -> {
             throw UsageException("unknown command '$command'")
         }
