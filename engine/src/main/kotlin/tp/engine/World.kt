@@ -18,6 +18,7 @@ import tp.engine.npc.NpcAi
 import tp.engine.save.PlayerSave
 import tp.engine.script.Script
 import tp.engine.script.ScriptRunner
+import tp.engine.tick.TickMetrics
 import tp.engine.ui.Interfaces
 import tp.engine.vars.PlayerVars
 import tp.engine.zone.GroundObjs
@@ -193,6 +194,7 @@ class World(
             val now = System.nanoTime()
             if (now > deadline) {
                 missed++
+                metrics.missedDeadlines = missed
                 if (missed % MISSED_LOG_SAMPLE == 1L) {
                     logger.warn { "world ${config.id}: tick $tick overran by ${(now - deadline) / NANOS_PER_MS} ms ($missed total)" }
                 }
@@ -213,14 +215,22 @@ class World(
         }
         tick++
         tracer?.onTickStart(tick)
+        val start = System.nanoTime()
         while (true) (tasks.poll() ?: break).invoke()
         inputPhase()
         npcPhase()
         playerPhase()
         postTick()
+        val logicEnd = System.nanoTime()
         infoPass()
+        metrics.logic.record(logicEnd - start)
+        metrics.info.record(System.nanoTime() - logicEnd)
+        metrics.ticks = tick
         tracer?.onTickEnd(tick)
     }
+
+    /** Tick-time histograms (health checks, metrics, alerts, load tests). */
+    val metrics = TickMetrics()
 
     /** Phase 2: up to 10 commands per player in arrival order (RSProt enforces the cap); acted on now. */
     private fun inputPhase() {

@@ -1,11 +1,9 @@
 package tp.hub
 
-import com.sun.net.httpserver.HttpExchange
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.net.http.ClientConfigServer
 import tp.net.http.WorldEntry
-import java.net.URLDecoder
 import java.nio.file.Path
 
 private val logger = KotlinLogging.logger {}
@@ -45,7 +43,7 @@ fun main(args: Array<String>) {
                 }
             },
             initialWorld = options["--initial-world"]?.toIntOrNull() ?: 1,
-            extraRoutes = mapOf("/register" to { ex -> register(hub, ex) }, "/health" to { ex -> health(hub, ex) }),
+            extraRoutes = HubHttp.routes(hub),
         )
     http.start()
     logger.info { "hub: gRPC :${grpc.port}, HTTP :$httpPort, store ${store.javaClass.simpleName}" }
@@ -59,35 +57,5 @@ fun main(args: Array<String>) {
     Thread.currentThread().join()
 }
 
-/** `POST /register` with form fields `username`, `password` (the release client's "New user" link: brief §4.2, §12). */
-private fun register(hub: Hub, ex: HttpExchange) {
-    if (ex.requestMethod != "POST") return reply(ex, HTTP_METHOD_NOT_ALLOWED, "POST username=…&password=…")
-    val form =
-        ex.requestBody
-            .readNBytes(MAX_FORM)
-            .toString(Charsets.UTF_8)
-            .split('&')
-            .mapNotNull {
-                val k = it.substringBefore('=', "")
-                if (k.isEmpty()) null else k to URLDecoder.decode(it.substringAfter('='), Charsets.UTF_8)
-            }.toMap()
-    val ip = ex.remoteAddress.address.hostAddress
-    val error = runBlocking { hub.accounts.register(form["username"].orEmpty(), form["password"].orEmpty(), ip) }
-    if (error == null) reply(ex, HTTP_OK, "Account created.") else reply(ex, HTTP_BAD_REQUEST, error)
-}
-
-private fun health(hub: Hub, ex: HttpExchange) = reply(ex, HTTP_OK, "ok online=${hub.onlineCount}")
-
-private fun reply(ex: HttpExchange, code: Int, text: String) {
-    val body = text.toByteArray()
-    ex.responseHeaders.add("Content-Type", "text/plain; charset=utf-8")
-    ex.sendResponseHeaders(code, body.size.toLong())
-    ex.responseBody.use { it.write(body) }
-}
-
 private const val DEFAULT_GRPC_PORT = 43600
 private const val DEFAULT_HTTP_PORT = 8080
-private const val MAX_FORM = 4096
-private const val HTTP_OK = 200
-private const val HTTP_BAD_REQUEST = 400
-private const val HTTP_METHOD_NOT_ALLOWED = 405

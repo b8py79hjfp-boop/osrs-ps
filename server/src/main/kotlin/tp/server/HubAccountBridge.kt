@@ -4,6 +4,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.engine.AccountBridge
 import tp.engine.AccountProfile
+import tp.engine.ExchangeOffer
+import tp.engine.ExchangeRequest
 import tp.engine.World
 import tp.engine.entity.Player
 import tp.engine.stat.PlayerStats
@@ -12,6 +14,7 @@ import tp.protocol.api.LoginRejection
 import tp.protocol.api.LoginRequest
 import tp.protocol.api.ServerMessage
 import tp.protocol.api.SocialAction
+import tp.services.GeOffer
 import tp.services.HubServices
 import tp.services.LoginResult
 import tp.services.Rights
@@ -182,6 +185,47 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
+    override fun exchange(player: Player, request: ExchangeRequest, reply: (Player, List<ExchangeOffer>?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply(player, null)
+        io.execute {
+            val result: List<GeOffer>? =
+                call("exchange") {
+                    when (request) {
+                        ExchangeRequest.Offers -> {
+                            hub.exchange.offers(account)
+                        }
+
+                        is ExchangeRequest.Place -> {
+                            listOf(hub.exchange.place(account, request.slot, request.buy, request.obj, request.quantity, request.price))
+                        }
+
+                        is ExchangeRequest.Collect -> {
+                            listOfNotNull(hub.exchange.collect(account, request.slot))
+                        }
+
+                        is ExchangeRequest.Abort -> {
+                            listOfNotNull(hub.exchange.abort(account, request.slot))
+                        }
+                    }
+                }
+            val offers =
+                result?.map {
+                    ExchangeOffer(
+                        it.slot,
+                        it.buy,
+                        it.obj,
+                        it.quantity,
+                        it.price,
+                        it.completed,
+                        it.collectCoins,
+                        it.collectItems,
+                    )
+                }
+            world.execute { world.playerByAccount(account)?.let { reply(it, offers) } }
+        }
+    }
+
     private suspend fun moderate(account: Long, command: String, args: List<String>): String {
         val sanction = SANCTIONS[command] ?: return "Unknown command."
         val minutes = args.getOrNull(1)?.toIntOrNull() ?: 0
@@ -222,8 +266,16 @@ object SaveMetrics {
     @Volatile var maxNanos: Long = 0
         private set
 
+    private val windowMax =
+        java.util.concurrent.atomic
+            .AtomicLong()
+
     fun record(nanos: Long) {
         lastNanos = nanos
         if (nanos > maxNanos) maxNanos = nanos
+        windowMax.accumulateAndGet(nanos, ::maxOf)
     }
+
+    /** Slowest save since the previous call (alert window). */
+    fun takeWindowMaxNanos(): Long = windowMax.getAndSet(0)
 }

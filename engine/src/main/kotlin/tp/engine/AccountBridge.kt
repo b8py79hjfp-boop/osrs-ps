@@ -16,6 +16,32 @@ class AccountProfile(
     val mutedUntil: Long = 0,
 )
 
+/** A Grand Exchange offer as the hub reports it ([collectCoins]/[collectItems] wait to be collected). */
+class ExchangeOffer(
+    val slot: Int,
+    val buy: Boolean,
+    val obj: Int,
+    val quantity: Int,
+    val price: Int,
+    val completed: Int,
+    val collectCoins: Long,
+    val collectItems: Int,
+)
+
+/** Grand Exchange requests (hub skeleton). Items and coins move only through the world's item transactions. */
+sealed interface ExchangeRequest {
+    data object Offers : ExchangeRequest
+
+    /** The world has already removed the coins (buy) or items (sell). */
+    class Place(val slot: Int, val buy: Boolean, val obj: Int, val quantity: Int, val price: Int) : ExchangeRequest
+
+    /** Takes what waits in [slot]; the world then adds it. */
+    class Collect(val slot: Int) : ExchangeRequest
+
+    /** Removes the offer in [slot]; everything still in it (filled or not) comes back for the world to add. */
+    class Abort(val slot: Int) : ExchangeRequest
+}
+
 /** Where a world is reached (hub world directory), for world hops. */
 class WorldAddress(val host: String, val flags: Int)
 
@@ -46,4 +72,12 @@ interface AccountBridge {
      * `update <seconds>`). Content has already checked the staff level; the hub checks rights again and audits.
      */
     fun staff(player: Player, command: String, args: List<String>) {}
+
+    /**
+     * Grand Exchange call; [reply] runs on the world thread with the affected offers (null: the hub failed), only if
+     * the player is still online.
+     */
+    fun exchange(player: Player, request: ExchangeRequest, reply: (Player, List<ExchangeOffer>?) -> Unit) {
+        reply(player, null)
+    }
 }

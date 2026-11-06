@@ -1,5 +1,6 @@
 package tp.plugin
 
+import tp.engine.ExchangeRequest
 import tp.engine.World
 import tp.engine.entity.Entity
 import tp.engine.entity.Player
@@ -19,6 +20,26 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     /** Staff level from the account: 0 player, 1 moderator, 2 administrator. */
     public val staffLevel: Int get() = p.staffLevel
+
+    /**
+     * Grand Exchange call through the hub. [reply] runs later on the world thread (only if the player is still online)
+     * with the affected offers, or null if the hub is unavailable.
+     */
+    public fun exchange(request: GeRequest, reply: PlayerRef.(List<GeOffer>?) -> Unit) {
+        val bridge = p.world.accounts ?: return reply(null)
+        val engineRequest =
+            when (request) {
+                GeRequest.Offers -> ExchangeRequest.Offers
+                is GeRequest.Place -> ExchangeRequest.Place(request.slot, request.buy, request.obj, request.quantity, request.price)
+                is GeRequest.Collect -> ExchangeRequest.Collect(request.slot)
+                is GeRequest.Abort -> ExchangeRequest.Abort(request.slot)
+            }
+        bridge.exchange(p, engineRequest) { player, offers ->
+            PlayerRef(player).reply(
+                offers?.map { GeOffer(it.slot, it.buy, it.obj, it.quantity, it.price, it.completed, it.collectCoins, it.collectItems) },
+            )
+        }
+    }
 
     /** Sends a staff command to the hub (moderation, broadcasts, system update); the reply arrives as a game message. */
     public fun staffCommand(command: String, args: List<String>) {
@@ -348,3 +369,34 @@ public class LocRef internal constructor(public val id: Int, public val coord: C
 public class TimerId(name: String) {
     internal val key: tp.engine.script.TimerKey = tp.engine.script.TimerKey(name)
 }
+
+/** Grand Exchange requests (hub skeleton). */
+public sealed interface GeRequest {
+    public data object Offers : GeRequest
+
+    /** Coins (buy) or items (sell) must already be removed through a transaction. */
+    public class Place(
+        public val slot: Int,
+        public val buy: Boolean,
+        public val obj: Int,
+        public val quantity: Int,
+        public val price: Int,
+    ) :
+        GeRequest
+
+    public class Collect(public val slot: Int) : GeRequest
+
+    public class Abort(public val slot: Int) : GeRequest
+}
+
+/** A Grand Exchange offer ([collectCoins]/[collectItems]: waiting to be collected, or returned by an abort). */
+public class GeOffer(
+    public val slot: Int,
+    public val buy: Boolean,
+    public val obj: Int,
+    public val quantity: Int,
+    public val price: Int,
+    public val completed: Int,
+    public val collectCoins: Long,
+    public val collectItems: Int,
+)

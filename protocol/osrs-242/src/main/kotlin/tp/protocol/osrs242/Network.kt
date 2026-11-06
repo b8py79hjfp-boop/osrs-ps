@@ -48,6 +48,8 @@ import net.rsprot.protocol.loginprot.outgoing.util.AuthenticatorResponse
 import net.rsprot.protocol.message.codec.incoming.GameMessageConsumerRepositoryBuilder
 import net.rsprot.protocol.message.codec.incoming.provider.DefaultGameMessageConsumerRepositoryProvider
 import net.rsprot.protocol.message.codec.incoming.provider.GameMessageConsumerRepositoryProvider
+import org.jire.netty.haproxy.HAProxyMode
+import org.jire.netty.haproxy.HAProxyTrustPredicate
 import tp.cache.js5.Js5Cache
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.ClientSession
@@ -96,6 +98,12 @@ class Osrs242Network(
     private val maxConnectionsPerIp: Int = DEFAULT_MAX_PER_IP,
     /** Address to bind (null = all). Lets several worlds share port 43594 on different addresses. */
     private val bindHost: String? = null,
+    /**
+     * PROXY protocol v2 (brief §12 DDoS setup): connections must come from a trusted proxy ([proxyTrust] CIDRs,
+     * loopback when empty), which prepends the real client address. Off: direct connections.
+     */
+    private val proxyProtocol: Boolean = false,
+    private val proxyTrust: List<String> = emptyList(),
 ) : GameNetwork {
     private val js5 = shared.js5
     private val huffman = shared.huffman
@@ -165,6 +173,9 @@ class Osrs242Network(
         var service: NetworkService<RspSession>? = null
         override val ports: List<Int> = listOf(port)
         override val host: String? = bindHost
+        override val haproxyMode: HAProxyMode = if (proxyProtocol) HAProxyMode.ON else HAProxyMode.OFF
+        override val haproxyTrustPredicate: HAProxyTrustPredicate =
+            if (proxyTrust.isEmpty()) HAProxyTrustPredicate.LOOPBACK_ONLY else HAProxyTrustPredicate.ofCidrs(*proxyTrust.toTypedArray())
         override val supportedClientTypes: List<OldSchoolClientType> = listOf(OldSchoolClientType.DESKTOP)
 
         override fun getRsaKeyPair(): RsaKeyPair = rsa

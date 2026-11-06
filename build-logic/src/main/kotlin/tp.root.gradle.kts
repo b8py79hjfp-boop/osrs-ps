@@ -1,5 +1,6 @@
 import tp.build.GenerateRsaTask
 import tp.build.SetupCacheTask
+import tp.build.UpgradeRevisionTask
 
 val revisionProp = providers.gradleProperty("osrs.revision")
 val cacheIdProp = providers.gradleProperty("osrs.openrs2CacheId")
@@ -18,4 +19,12 @@ tasks.register<GenerateRsaTask>("generateRsa") {
     description = "Generates the 1024-bit login RSA keypair into .data/rsa/ and prints the modulus for proxy-targets.yaml."
     outputDir = layout.projectDirectory.dir(".data/rsa")
     force = providers.gradleProperty("force").map { it.isEmpty() || it.toBoolean() }.orElse(false)
+}
+
+tasks.register<UpgradeRevisionTask>("upgradeRevision") {
+    group = "tickperfect"
+    description = "Moves the project to another revision: -Prev=<N> [-PcacheId=<openrs2 id>] (docs/REVISION-UPGRADE.md)."
+    targetRevision = providers.gradleProperty("rev")
+    cacheId = providers.gradleProperty("cacheId")
+    projectDir = layout.projectDirectory
 }

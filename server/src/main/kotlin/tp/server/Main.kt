@@ -3,6 +3,7 @@ package tp.server
 import io.github.oshai.kotlinlogging.KotlinLogging
 import tp.hub.Hub
 import tp.hub.HubConfig
+import tp.hub.HubHttp
 import tp.hub.MemoryStore
 import tp.hub.PostgresStore
 import tp.net.http.ClientConfigServer
@@ -29,7 +30,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  * hub, default 8080), `--public-host` (address advertised to clients, default 127.0.0.1),
  * `--hub host:port` (remote hub over gRPC; default: an embedded hub), `--db <jdbc url>` `--db-user` `--db-password`
  * (embedded hub's PostgreSQL; default in-memory), `--trace <file>` (tick inspector JSONL, first world),
- * `--admins a,b` (embedded hub: these accounts get administrator rights),
+ * `--proxy-protocol [cidrs]` (PROXY v2 from trusted proxies; default loopback), `--ops-port` (health + Prometheus
+ * metrics, default 9090), `--admins a,b` (embedded hub: these accounts get administrator rights),
  * `--record <file>` (replay log, first world), `--max-per-ip <n>` (default 10; raise for local bot swarms).
  */
 fun main(args: Array<String>) {
@@ -67,16 +69,19 @@ fun main(args: Array<String>) {
                 node.maxPerIp,
                 hub,
                 bindHost = node.hostOf(i).takeIf { node.loopback },
+                proxyTrust = node.proxyTrust,
             )
         }
     val links = worlds.mapIndexed { i, w -> WorldLinks(w, hub, node.hostOf(i), node.portOf(i)).start() }
-    val http = embeddedHub?.let { worldListServer(worlds, node::hostOf, node.httpPort, node.firstWorld) }
+    val http = embeddedHub?.let { worldListServer(it, worlds, node::hostOf, node.httpPort, node.firstWorld) }
+    val ops = Ops(worlds, options["--ops-port"]?.toIntOrNull() ?: Ops.DEFAULT_PORT).start()
     Runtime.getRuntime().addShutdownHook(
         Thread {
             // Graceful shutdown (brief §12): every player is saved (final) before the process stops.
             worlds.forEach { it.execute { it.saveAll(final = true) } }
             Thread.sleep(SHUTDOWN_SAVE_GRACE_MS)
             links.forEach { it.close() }
+            ops.close()
             worlds.forEach { it.stop() }
             traceOut?.close()
             recordOut?.close()
@@ -101,6 +106,10 @@ private class NodeOptions(options: Map<String, String?>) {
     /** The client always connects to 43594, so for local hopping each world binds its own loopback address instead. */
     val loopback = "--loopback-hosts" in options
 
+    /** `--proxy-protocol [cidr,cidr]`: PROXY v2 from these proxies (loopback if none given); null = off. */
+    val proxyTrust: List<String>? =
+        if ("--proxy-protocol" in options) options["--proxy-protocol"]?.split(',')?.map(String::trim).orEmpty() else null
+
     fun hostOf(i: Int): String = if (loopback) "127.0.0.${i + 1}" else host
 
     fun portOf(i: Int): Int = if (loopback) gamePort else gamePort + i
@@ -115,7 +124,13 @@ private fun embeddedHub(options: Map<String, String?>): Hub {
     return Hub(store, HubConfig(autoRegister = true, admins = admins))
 }
 
-private fun worldListServer(worlds: List<tp.engine.World>, hostOf: (Int) -> String, httpPort: Int, firstWorld: Int): ClientConfigServer =
+private fun worldListServer(
+    hub: Hub,
+    worlds: List<tp.engine.World>,
+    hostOf: (Int) -> String,
+    httpPort: Int,
+    firstWorld: Int,
+): ClientConfigServer =
     ClientConfigServer(
         port = httpPort,
         publicBaseUrl = "http://${hostOf(0)}:$httpPort",
@@ -126,6 +141,7 @@ private fun worldListServer(worlds: List<tp.engine.World>, hostOf: (Int) -> Stri
             }
         },
         initialWorld = firstWorld,
+        extraRoutes = HubHttp.routes(hub),
     ).also { it.start() }
 
 /** Time for the final-save tick to run and the hub writes to land before stopping. */

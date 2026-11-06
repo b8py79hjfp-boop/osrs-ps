@@ -94,8 +94,9 @@ object WorldNode {
         maxPerIp: Int = DEFAULT_MAX_PER_IP,
         hub: HubServices? = null,
         bindHost: String? = null,
+        proxyTrust: List<String>? = null,
     ): World {
-        val network = Osrs242Network(data.net, rsa, gamePort, maxPerIp, bindHost)
+        val network = Osrs242Network(data.net, rsa, gamePort, maxPerIp, bindHost, proxyTrust != null, proxyTrust.orEmpty())
         val content = PluginContent.load()
         logger.info { "content: ${content.summary}" }
         val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
