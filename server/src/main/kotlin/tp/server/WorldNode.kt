@@ -86,8 +86,9 @@ object WorldNode {
         seed: Long,
         traceOut: Writer? = null,
         recordOut: Writer? = null,
+        maxPerIp: Int = DEFAULT_MAX_PER_IP,
     ): World {
-        val network = Osrs242Network(data.cache, rsa, gamePort)
+        val network = Osrs242Network(data.cache, rsa, gamePort, maxPerIp)
         val content = PluginContent.load()
         logger.info { "content: ${content.summary}" }
         val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
@@ -97,6 +98,8 @@ object WorldNode {
         return world
     }
 
+    /** Connections per IP (RSProt default). */
+    const val DEFAULT_MAX_PER_IP = 10
     private const val NANOS_PER_MILLI = 1_000_000L
     private const val BYTES_PER_MIB = 1L shl 20
 

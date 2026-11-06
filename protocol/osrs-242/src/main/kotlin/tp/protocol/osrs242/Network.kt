@@ -12,6 +12,7 @@ import net.rsprot.protocol.api.InetAddressTracker
 import net.rsprot.protocol.api.NetworkService
 import net.rsprot.protocol.api.handlers.INetAddressHandlers
 import net.rsprot.protocol.api.implementation.DefaultInetAddressTracker
+import net.rsprot.protocol.api.implementation.DefaultInetAddressValidator
 import net.rsprot.protocol.api.js5.Js5GroupProvider
 import net.rsprot.protocol.api.login.GameLoginResponseHandler
 import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
@@ -55,12 +56,17 @@ import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
 
+/** RSProt `DefaultInetAddressValidator` default: 10 connections per IP. */
+private const val DEFAULT_MAX_PER_IP = 10
+
 /** Revision-242 [GameNetwork] on RSProt (D-005). Listens on [port] for game + JS5 (they share it). */
 @OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
 class Osrs242Network(
     cache: Js5Cache,
     private val rsa: RsaKeyPair,
     private val port: Int,
+    /** Game and JS5 connections allowed per IP address (RSProt default 10); raise for local bot swarms. */
+    private val maxConnectionsPerIp: Int = DEFAULT_MAX_PER_IP,
 ) : GameNetwork {
     private val js5 = Js5Responses.build(cache)
     private val huffman = loadHuffman(cache)
@@ -140,6 +146,7 @@ class Osrs242Network(
         /** Log JS5 and game connections (not per-request) so client connectivity problems are visible. */
         override fun getINetAddressHandlers(): INetAddressHandlers =
             INetAddressHandlers(
+                inetAddressValidator = DefaultInetAddressValidator(maxConnectionsPerIp),
                 js5InetAddressTracker = LoggingTracker("js5"),
                 gameInetAddressTracker = LoggingTracker("game"),
             )

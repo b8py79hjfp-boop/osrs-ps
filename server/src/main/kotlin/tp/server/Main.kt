@@ -19,7 +19,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  * Args: `--cache-dir <path>` (default `.data/cache/<rev>/disk`), `--boot-check` (verify data and exit; CI),
  * `--port` (game + JS5, default 43594), `--http-port` (jav_config/worldlist, default 8080),
  * `--public-host` (address advertised to clients, default 127.0.0.1), `--world` (id, default 1),
- * `--trace <file>` (tick inspector JSONL), `--record <file>` (replay log for tools/replay).
+ * `--trace <file>` (tick inspector JSONL), `--record <file>` (replay log for tools/replay),
+ * `--max-per-ip <n>` (connections per IP, default 10; raise for local bot swarms).
  */
 fun main(args: Array<String>) {
     val options = parseArgs(args)
@@ -42,7 +43,8 @@ fun main(args: Array<String>) {
     val rsa = RsaKeys.load(Path.of(".data", "rsa", "private.pem"))
     val traceOut = options["--trace"]?.let { Files.newBufferedWriter(Path.of(it)) }
     val recordOut = options["--record"]?.let { Files.newBufferedWriter(Path.of(it)) }
-    val world = WorldNode.startWorld(data, rsa, gamePort, worldId, seed = System.nanoTime(), traceOut, recordOut)
+    val maxPerIp = options["--max-per-ip"]?.toIntOrNull() ?: WorldNode.DEFAULT_MAX_PER_IP
+    val world = WorldNode.startWorld(data, rsa, gamePort, worldId, seed = System.nanoTime(), traceOut, recordOut, maxPerIp)
     val http =
         ClientConfigServer(
             port = httpPort,

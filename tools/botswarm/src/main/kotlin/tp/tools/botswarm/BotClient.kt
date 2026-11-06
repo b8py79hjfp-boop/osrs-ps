@@ -268,6 +268,20 @@ class BotClient(
         sendClientPacket(MOVE_GAMECLICK, ByteBufUtil.getBytes(buf))
     }
 
+    /** OPPLAYER2 (opcode 8, fixed 3 bytes): g1Alt2 controlKey, g2 index (RSProt `OpPlayer2Decoder`): "Attack" in the Wilderness. */
+    fun attackPlayer(index: Int) {
+        val buf = Unpooled.buffer(OPPLAYER_BYTES)
+        buf.p1Alt2(0)
+        buf.writeShort(index)
+        sendFixedPacket(OPPLAYER2, ByteBufUtil.getBytes(buf))
+    }
+
+    private fun sendFixedPacket(opcode: Int, payload: ByteArray) {
+        output.writeByte((opcode + encodeCipher.nextInt()) and 0xFF)
+        output.write(payload)
+        output.flush()
+    }
+
     fun cheat(command: String) {
         sendClientPacket(
             CLIENT_CHEAT,
@@ -354,6 +368,10 @@ class BotClient(
         private const val VAR_SHORT = -2
         private const val MOVE_GAMECLICK = 55
         private const val CLIENT_CHEAT = 23
+
+        /** OPPLAYER2 opcode and fixed size (RSProt `GameClientProt`). */
+        private const val OPPLAYER2 = 8
+        private const val OPPLAYER_BYTES = 3
         private const val SOCKET_TIMEOUT_MS = 30_000
         private const val MOVE_CLICK_BYTES = 5
         private val RSA_PUBLIC_EXPONENT: BigInteger = BigInteger.valueOf(65537)
