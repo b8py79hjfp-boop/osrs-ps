@@ -91,6 +91,9 @@ public sealed class EntityRef {
         }
     }
 
+    /** Line of sight from this entity to [other] (footprints, projectile rules). */
+    public fun hasLineOfSight(other: EntityRef): Boolean = e.world.hasLineOfSight(e, other.e)
+
     /** Players within [radius] tiles (Chebyshev, same level), excluding this entity. */
     public fun playersWithin(radius: Int): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
@@ -168,6 +171,33 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
             ?.int(id) ?: default
 
     public val isInWorld: Boolean get() = !n.hidden && n.world.npc(n.index) === n
+
+    /** Hunt range in tiles from the south-west tile; 0 = doesn't hunt (aggression.md). */
+    public var huntRange: Int
+        get() = n.huntRange
+        set(value) {
+            n.huntRange = value.coerceAtLeast(0)
+        }
+
+    /** Combat level from the cache (-1 when not attackable by level). */
+    public val combatLevel: Int get() =
+        n.world.data.configs.npcs[n.type]
+            ?.combatLevel ?: -1
+
+    /** How far from its spawn the NPC may move while fighting (default 7). */
+    public val maxRange: Int get() = n.maxRange
+
+    /** Starts (or, with null, stops) retreating from [from] (osrs-docs Retreat); stops any interaction. */
+    public fun retreat(from: EntityRef?) {
+        if (from != null) n.interactWith(null)
+        n.retreatFrom = from?.e
+    }
+
+    /** Whether the NPC is retreating. */
+    public val isRetreating: Boolean get() = n.retreatFrom != null
+
+    /** Where the NPC (re)spawns. */
+    public val spawn: CoordGrid get() = n.spawn
 
     /** Removes the NPC now and respawns it at its spawn point after [delay] ticks. */
     public fun respawnAfter(delay: Int) {

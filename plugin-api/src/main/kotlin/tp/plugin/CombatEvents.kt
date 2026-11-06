@@ -5,12 +5,13 @@ public enum class HitStyle { MELEE, RANGED, MAGIC, TYPELESS }
 
 /**
  * Asked before an attack starts (PvP rules: wilderness levels, combat brackets, single/multi). Any subscriber may
- * [deny] with a message; the attack doesn't happen. Player-vs-player attacks are denied unless a subscriber [allow]s.
+ * [deny] with a message; the attack doesn't happen. Player-vs-player attacks are denied unless a subscriber [allow]s;
+ * NPC attacks are allowed unless denied.
  */
 public class AttackCheck(public val attacker: EntityRef, public val target: EntityRef) : Event {
     public var denial: String? = null
         private set
-    public var allowed: Boolean = target !is PlayerRef
+    public var allowed: Boolean = target !is PlayerRef || attacker !is PlayerRef
         private set
 
     public fun deny(message: String) {
@@ -48,6 +49,18 @@ public class DeathEvent(public val entity: EntityRef, public val killer: EntityR
 public object SharedAttrs {
     /** Skull icon shown over a player (-1/null = none); PvP content sets it, combat's appearance shows it. */
     public val SKULL_ICON: AttrKey<Int> = AttrKey("skull_icon")
+
+    /** Whether the player stands in the Wilderness (PvP content keeps it current; aggression reads it). */
+    public val IN_WILDERNESS: AttrKey<Boolean> = AttrKey("in_wilderness_shared")
+
+    /** Whether the player stands in a multi-combat area (PvP content keeps it current). */
+    public val IN_MULTI: AttrKey<Boolean> = AttrKey("in_multi_shared")
+
+    /** The NPC that last started attacking this player (single-way combat: no second NPC may join). */
+    public val ENGAGED_BY: AttrKey<NpcRef> = AttrKey("engaged_by_npc")
+
+    /** Tick of the player's last combat (attacked, hit or attacking); aggression skips players in combat (AG2). */
+    public val LAST_COMBAT_TICK: AttrKey<Long> = AttrKey("last_combat_tick")
 
     /** Tick until which teleports are blocked (Tele Block). */
     public val TELEBLOCK_UNTIL: AttrKey<Long> = AttrKey("teleblock_until")

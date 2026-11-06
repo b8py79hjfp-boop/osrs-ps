@@ -50,6 +50,12 @@ interface ContentHandlers {
     /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
     fun onDialogAnswer(player: Player, value: Any) {}
 
+    /** An NPC was added to the world (content may set its hunt range). */
+    fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
+
+    /** A hunting NPC's turn (aggression.md): it has a hunt range, no interaction and isn't delayed. */
+    fun npcHunt(npc: tp.engine.entity.Npc) {}
+
     /** Inventory item op (iop1..5) on a validated slot. */
     fun onInvOp(player: Player, inv: Int, slot: Int, obj: Int, option: Int) {}
 

@@ -190,6 +190,9 @@ internal object CombatSystem {
 
             is NpcRef -> {
                 if (target.target != null) return
+                // Retreat (Wiki "Retreat"): "initiated by attacking an NPC from outside the aggression range".
+                if (NpcCombat.outsideAggressionRange(target, source)) return target.retreat(source)
+                target.retreat(null)
                 target.setAttackClock(maxOf(target.attackClock(), now + npcSpeed(target) / 2))
                 NpcCombat.engage(target, source)
             }
@@ -262,6 +265,8 @@ internal object CombatSystem {
 
     fun announceAttack(attacker: EntityRef, target: EntityRef, style: CombatStyle) {
         attacker.trace("attack ${style.name.lowercase()}")
+        // AG2: both sides are "in combat" for hunting purposes.
+        for (e in listOf(attacker, target)) if (e is PlayerRef) e[tp.plugin.SharedAttrs.LAST_COMBAT_TICK] = e.tick
         bus.publish(AttackEvent(attacker, target, hitStyle(style)))
     }
 
@@ -282,8 +287,24 @@ internal object NpcCombat {
     /** OPEN-N5: NPC ranged/magic attack distance isn't in the cache or the infobox; named default. */
     const val DISTANCE_RANGE = 7
 
+    /**
+     * AG5: the aggression range is the max range around the spawn point plus the attack range (melee 1, else
+     * [DISTANCE_RANGE]), accounting for the NPC's size.
+     */
+    fun outsideAggressionRange(npc: NpcRef, victim: EntityRef): Boolean {
+        val def = NpcCombatTable.of(npc.type)
+        val attackRange = if (def != null && (def.hasRanged || def.hasMagic)) DISTANCE_RANGE else 1
+        val reach = npc.maxRange + attackRange
+        val s = npc.spawn
+        val v = victim.coord
+        val dx = maxOf(0, v.x - (s.x + npc.size - 1 + reach), (s.x - reach) - v.x)
+        val dz = maxOf(0, v.z - (s.z + npc.size - 1 + reach), (s.z - reach) - v.z)
+        return dx > 0 || dz > 0 || v.level != s.level
+    }
+
     /** Starts [npc]'s attack interaction on [victim]. */
     fun engage(npc: NpcRef, victim: EntityRef) {
+        if (victim is PlayerRef) victim[tp.plugin.SharedAttrs.ENGAGED_BY] = npc
         val def = NpcCombatTable.of(npc.type)
         if (def == null || (!def.hasRanged && !def.hasMagic)) {
             npc.interact(victim) { v -> attack(this, v, distance = false) }

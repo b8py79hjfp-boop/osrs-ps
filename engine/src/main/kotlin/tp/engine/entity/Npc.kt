@@ -61,6 +61,15 @@ class Npc internal constructor(
         hidden = false
     }
 
+    /** Max range: how far from its spawn the NPC may move while fighting (aggression.md AG5; Wiki: "almost always seven"). */
+    var maxRange: Int = DEFAULT_MAX_RANGE
+
+    /** The entity this NPC is retreating from (osrs-docs Retreat), or null. */
+    var retreatFrom: Entity? = null
+
+    /** Hunt range in tiles from the south-west tile (aggression.md AG3); 0 = doesn't hunt. Set by content. */
+    var huntRange: Int = 0
+
     /** The NPC's own interaction (NPCs attacking players: interactions.md I9). */
     internal var npcInteraction: NpcInteraction? = null
 
@@ -77,3 +86,6 @@ class Npc internal constructor(
         const val HITPOINTS = 3
     }
 }
+
+/** Wiki "Retreat": "The max range is almost always seven tiles." */
+const val DEFAULT_MAX_RANGE: Int = 7

@@ -124,6 +124,21 @@ class InteractionProcessor internal constructor(
 ) {
     private val lines = LineValidator(flags)
 
+    /** Line of sight between two footprints (projectile rules; rsmod-pathfinder `LineValidator`). */
+    fun hasLineOfSight(from: Entity, to: Entity): Boolean =
+        from.coord.level == to.coord.level &&
+            lines.hasLineOfSight(
+                from.coord.level,
+                from.coord.x,
+                from.coord.z,
+                to.coord.x,
+                to.coord.z,
+                from.size,
+                from.size,
+                to.size,
+                to.size,
+            )
+
     /** Player turn: interactions + movement. [maxSteps] = 1 walk / 2 run. */
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth") // transcription of osrs-docs' pseudocode
     fun processPlayer(player: Player, maxSteps: Int) {
@@ -213,7 +228,7 @@ class InteractionProcessor internal constructor(
         val before = npc.coord
         npc.stepsThisTick = movement.step(npc, 1)
         val follow = start != null && npc.stepsThisTick == 0 && needsToFollow(npc, start)
-        if (follow && start != null && followStep(npc, start)) npc.stepsThisTick = 1
+        if (follow && start != null && !follow(npc, start)) return
         if (npc.coord != before) npc.lastMovementClock = npc.world.tick + 1
         if (start == null || start !== npc.npcInteraction || npc.isDelayed) return
         val ran = if (!interacted || start.apRangeCalled) npcAttempt(npc, start, block = 2) else interacted
@@ -247,7 +262,36 @@ class InteractionProcessor internal constructor(
         }
     }
 
-    /** One naive step toward the target that doesn't enter the target's footprint. */
+    /** One follow step; false when the NPC gave up because the target left its aggression range (AG5). */
+    private fun follow(npc: Npc, i: NpcInteraction): Boolean {
+        if (followStep(npc, i)) {
+            npc.stepsThisTick = 1
+            return true
+        }
+        if (!outsideAggressionRange(npc, i)) return true
+        npc.npcInteraction = null
+        return false
+    }
+
+    /**
+     * AG5 (Wiki "Aggressiveness"): the aggression range is the max range plus the attack range, around the spawn point,
+     * accounting for the NPC's size. The target is outside it when no tile the NPC may stand on could reach it.
+     */
+    private fun outsideAggressionRange(npc: Npc, i: NpcInteraction): Boolean {
+        val r = rect(i.target)
+        val attackRange = if (i.apScript != null && i.view.apRange > 0) i.view.apRange else 1
+        val reach = npc.maxRange + attackRange
+        val s = npc.spawn
+        val dx = maxOf(0, r.x - (s.x + npc.size - 1 + reach), (s.x - reach) - (r.x + r.width - 1))
+        val dz = maxOf(0, r.z - (s.z + npc.size - 1 + reach), (s.z - reach) - (r.z + r.length - 1))
+        return dx > 0 || dz > 0
+    }
+
+    /** Within max range of the spawn point (AG5). */
+    private fun withinMaxRange(npc: Npc, x: Int, z: Int): Boolean =
+        kotlin.math.abs(x - npc.spawn.x) <= npc.maxRange && kotlin.math.abs(z - npc.spawn.z) <= npc.maxRange
+
+    /** One naive step toward the target that doesn't enter the target's footprint or leave the max range. */
     private fun followStep(npc: Npc, i: NpcInteraction): Boolean {
         val r = rect(i.target)
         val c = npc.coord
@@ -258,7 +302,7 @@ class InteractionProcessor internal constructor(
             val nx = c.x + ox
             val nz = c.z + oz
             val overlaps = nx < r.x + r.width && nx + npc.size > r.x && nz < r.z + r.length && nz + npc.size > r.z
-            if (overlaps || !movement.canTravel(c.level, c.x, c.z, ox, oz, npc.size)) continue
+            if (overlaps || !withinMaxRange(npc, nx, nz) || !movement.canTravel(c.level, c.x, c.z, ox, oz, npc.size)) continue
             npc.coord = CoordGrid(nx, nz, c.level)
             return true
         }

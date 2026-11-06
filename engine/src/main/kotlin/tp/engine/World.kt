@@ -83,6 +83,14 @@ class World(
 
     val movement = Movement(data.collision)
     internal val interactions = InteractionProcessor(data.collision, movement)
+
+    /** Whether [npc] can take one step by ([dx], [dz]) from where it stands (collision only). */
+    internal fun canNpcStep(npc: Npc, dx: Int, dz: Int): Boolean =
+        movement.canTravel(npc.coord.level, npc.coord.x, npc.coord.z, dx, dz, npc.size)
+
+    /** Line of sight between two entities' footprints (projectile rules). */
+    fun hasLineOfSight(from: Entity, to: Entity): Boolean = interactions.hasLineOfSight(from, to)
+
     val interfaces = Interfaces()
     val ground = GroundObjs()
     private val npcAi = NpcAi(this)
@@ -715,6 +723,7 @@ class World(
         val npc = Npc(this, index, type, size, at, wanderRange)
         npcs[index] = npc
         network.npcAdded(npc.index, type, at.level, at.x, at.z)
+        content.onNpcSpawn(npc)
         return npc
     }
 

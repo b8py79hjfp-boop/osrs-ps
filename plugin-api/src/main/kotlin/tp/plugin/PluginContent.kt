@@ -105,6 +105,16 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref(player).handler(ButtonClick(component, option, slot, obj))
     }
 
+    override fun onNpcSpawn(npc: tp.engine.entity.Npc) {
+        if (h.npcSpawn.isEmpty()) return
+        val ref = NpcRef(npc)
+        for (handler in h.npcSpawn) ref.handler()
+    }
+
+    override fun npcHunt(npc: tp.engine.entity.Npc) {
+        h.npcHunt?.invoke(NpcRef(npc))
+    }
+
     override fun onDialogAnswer(player: Player, value: Any) {
         val callback = pendingDialogs.remove(player) ?: return
         ref(player).callback(value)

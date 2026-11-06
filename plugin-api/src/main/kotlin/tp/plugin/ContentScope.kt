@@ -16,6 +16,17 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.login += handler
     }
 
+    /** Runs for every NPC added to the world (spawn data, content), e.g. to set its hunt range. */
+    public fun onNpcSpawn(handler: NpcRef.() -> Unit) {
+        handlers.npcSpawn += handler
+    }
+
+    /** The hunt turn of an NPC with a hunt range and no interaction (one handler per world: aggression content). */
+    public fun onNpcHunt(handler: NpcRef.() -> Unit) {
+        check(handlers.npcHunt == null) { "duplicate handler: npc hunt" }
+        handlers.npcHunt = handler
+    }
+
     public fun onLogout(handler: PlayerRef.() -> Unit) {
         handlers.logout += handler
     }
@@ -116,6 +127,8 @@ internal class Handlers {
     val worldStart = ArrayList<WorldRef.() -> Unit>()
     val login = ArrayList<PlayerRef.() -> Unit>()
     val logout = ArrayList<PlayerRef.() -> Unit>()
+    val npcSpawn = ArrayList<NpcRef.() -> Unit>()
+    var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()

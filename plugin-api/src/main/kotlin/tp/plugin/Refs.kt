@@ -105,6 +105,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public val windowMode: Int get() = p.windowMode
     public val isDelayed: Boolean get() = p.isDelayed
 
+    /** Whether a modal interface is open. */
+    public val hasModal: Boolean get() = p.hasModal
+
     /** Run toggle; setting it also updates varp `option_run` (what the run orb displays; RS Mod `toggleRun`). */
     public var runMode: Boolean
         get() = p.runMode

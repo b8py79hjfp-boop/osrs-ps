@@ -47,11 +47,13 @@ public class Wilderness : ContentPlugin {
         val inWild = level(coord, isPvpWorld) > 0
         if (this[IN_WILD] != inWild) {
             this[IN_WILD] = inWild
+            this[tp.plugin.SharedAttrs.IN_WILDERNESS] = inWild
             areaQueue { playerOp(ATTACK_OP, if (inWild) "Attack" else null, top = true) }
         }
         val inMulti = coord in MULTI
         if (this[IN_MULTI] != inMulti) {
             this[IN_MULTI] = inMulti
+            this[tp.plugin.SharedAttrs.IN_MULTI] = inMulti
             areaQueue { setVarbit(Varbits.MULTIWAY_INDICATOR, if (inMulti) 1 else 0) }
         }
         // W13: the singles-plus icon (varbit `singleway_plus_indicator`, set on area entry/exit like RS Mod's script).

@@ -37,4 +37,4 @@ Sources:
 - **OPEN-N7:** a plain "Melee" style is treated as crush.
 - **OPEN-N8:** NPC projectile hit delays use the player formulas (C1). NPC attack animations and projectiles aren't sent
   (no data source; visual only).
-- **OPEN-N9:** aggression (`aggressive`) is imported but NPCs don't yet start fights on their own (needs hunt ranges).
+- Aggression, tolerance, max range and retreat: aggression.md.
