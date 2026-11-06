@@ -485,3 +485,18 @@ RS Mod has no mining and an empty fishing module, so both skills are built on th
   comes before `keepInteraction()` so a missing pickaxe does not repeat its message every tick. (Woodcutting still checks its axe
   after `keepInteraction()`, so a missing axe repeats its message every tick.)
 - **World state.** The amethyst mined-count lives in a world attribute, as the Forestry timers do.
+
+## D-037: Firemaking and cooking from the Wiki, with a "cook all" fallback
+
+- **Sources.** Firemaking logs, levels and xp, the Wiki's lighting success chart (low 64, high 512), food levels and xp, and
+  the burn rolls (each food's skilling success chart) are taken from the OSRS Wiki (CC BY-NC-SA 3.0; `data/PROVENANCE.md`). No RS Mod code
+  was used (its cooking module is empty and it has no firemaking). Rules and OPEN items: `docs/mechanics/{firemaking,cooking}.md`.
+- **Burn roll.** Each food's `low` / `high` per heat source and gauntlets come from its Wiki skilling success chart
+  (`tools/wiki-import/cooking_rates.py`).
+- **Make-X (OPEN-CK3).** The skillmulti dialogue is not implemented (client script arguments unknown); cooking always cooks all
+  raw items of the kind, the Wiki's default left click.
+- **Firemaking is a player timer**, not a delayed script, so walking away cancels it like OSRS; a timer waits while a modal is open.
+  Ashes are queued on the lighting player when the fire is lit (no world hook for loc expiry: OPEN-FM6).
+- **plugin-api.** Added `PlayerRef.walkTo` (a one-step route for the step off a fresh fire).
+- **Loc id lists.** The item-on-loc ids for fires and ranges (`RANGE_LOCS`, `FIRE_LOCS`) were generated from cache 2757 by loc
+  name and ops; `onUseOnLoc` has no by-name variant.

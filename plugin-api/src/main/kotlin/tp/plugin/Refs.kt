@@ -219,6 +219,12 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.teleport(p, to)
     }
 
+    /**
+     * Sets a normal walking route to [to], as a map click would (movement phase of this tick); false if there is no route.
+     * Content uses it for scripted single steps, e.g. the step off a freshly lit fire.
+     */
+    public fun walkTo(to: CoordGrid): Boolean = p.world.movement.routePlayer(p, to.x, to.z, false)
+
     // ---- interfaces
 
     public fun openTop(interfaceId: Int) {
