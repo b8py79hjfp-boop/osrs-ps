@@ -598,3 +598,14 @@ docs/mechanics/slayer.md and hunter.md.
   (`onNpcSpawn` collects the trapped kinds in a world attribute, in spawn order). No per-tick work happens for a player without traps.
   Creatures removed by a catch use `NpcRef.respawnAfter`.
 - **Ferret, three butterflies and the other box-trap creatures are not implemented**: the Wiki has no success chart for them.
+
+## D-043: Construction groundwork: sawmill planks and Wiki furniture/room tables; player-owned house blocked on dynamic regions (construction agent)
+
+`content/skills` gets `Construction.kt` (sawmill operator "Buy-plank") and `ConstructionData.kt`; no engine, protocol or plugin-api change.
+Rules and OPEN items: docs/mechanics/construction.md.
+- **The house is not implemented.** The engine has only the static `Rebuild` (build area on the real map); a POH needs `RebuildRegionV2`
+  (present in vendored RSProt), per-player instance coordinates, instance collision and visibility. The design note is in construction.md
+  ("Engine gap"); it belongs to the main session (engine/, protocol*).
+- **Data first.** `tools/wiki-import/construction.py` writes `construction-furniture.tsv` (451 pieces: level, xp, room, hotspot, loc ids, materials)
+  and `construction-rooms.tsv` (24 rooms). Both are validated at plugin start so a bad import fails early; nothing reads them yet.
+- **Buy-plank uses the chatbox option menu and number prompt** because the cache does not name the Wiki's sawmill interface (OPEN-CO1).

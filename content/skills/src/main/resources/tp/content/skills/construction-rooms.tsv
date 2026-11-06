@@ -1,0 +1,25 @@
+name	level	cost
+Parlour	1	1000
+Garden	1	1000
+Kitchen	5	5000
+Dining room	10	5000
+Workshop	15	10000
+Bedroom	20	10000
+Hall (skill trophies)	25	15000
+League hall	27	15000
+Games room	30	25000
+Combat room	32	25000
+Hall (quest trophies)	35	25000
+Menagerie	37	30000
+Study	40	50000
+Costume room	42	50000
+Chapel	45	50000
+Portal chamber	50	100000
+Formal garden	55	75000
+Throne room	60	150000
+Superior garden	65	75000
+Portal nexus	72	200000
+Achievement gallery	80	200000
+Oubliette	65	150000
+Dungeon (Construction)	70	7500
+Treasure room	75	250000

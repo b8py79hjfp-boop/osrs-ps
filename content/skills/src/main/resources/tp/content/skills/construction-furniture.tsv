@@ -1,0 +1,452 @@
+name	level	xp	room	hotspot	locs	flatpack	ticks	tools	materials
+4-poster bed	53	450	Bedroom	Bed space	13153	-1	5	8794,2347	8782:3,8790:2
+Advanced arena	73	199	Menagerie	Arena space	26863	-1	5	8794,2347	8780:2,8790:1,954:1
+Alchemical chart	43	30	Study	Wall chart space	13662	-1	5	8794,2347	8790:2
+Amulet of Glory	47	290	Quest Hall	Guild trophy space	13523	-1	5	8794,2347	8780:3,1704:1
+Ancient altar	80	1490	Achievement Gallery	Altar space	29147	-1	5	8794,2347	3420:10,8788:1,26945:1,20611:1
+Anti-dragon shield	47	280	Quest hall	Guild trophy space	13522	-1	5	8794,2347	8780:3,1540:1
+Archery target	81	600	Games room	Ranging game space	13402,13403	-1	5	8794,2347	8780:6,2353:3
+Armillary sphere	77	960	Study	Globe space	13653	-1	5	8794,2347	8782:2,8784:2,2353:4
+Armour stand	55	500	Workshop	Repair space	6802	-1	5	8794,2347	8778:8,3420:1
+Astronomical chart	63	45	Study	Wall chart space	13663	-1	5	8794,2347	8790:3
+Baby red dragon	82	387	Oubliette, Dungeon	Guard space	13372	-1	5		995:150000
+Balance beam	81	1000	Combat room	Combat ring space	13142,13143,13144	-1	5	8794,2347	8780:10,2353:5
+Banner easel	66	510	Workshop	Heraldry space	6805	-1	5	8794,2347	8778:8,8790:2
+Banner stand	30	40	League hall	Banner stand space		-1	5	8794,2347	3420:2
+Basic jewellery box	81	605	Achievement Gallery	Jewellery box space	37492,37493,37494,37495,37496,37497,37498,37499,37500,50710	-1	5	8794,2347	8790:1,2353:1,2552:3,3853:3
+Beehive (Construction)	1	0	Garden, Formal garden	Big plant space 1, big plant space 2, Big plant, big plant 2		-1	5	8794,2347	28674:10
+Bell-pull	37	120	Dining room	Bell pull space	13308	-1	5	8794,2347	8780:1,8790:2
+Bells	58	480	Chapel	Musical space	13215	-1	5	8794,2347	8780:4,2353:6
+Bench with lathe	77	140	Workshop	Workbench space	6795	-1	5	8794,2347	8378:1,8778:2,2353:1
+Bob icon	71	1160	Chapel	Icon space	13178	-1	5	8794,2347	8782:4,8784:2
+Bone cage	85	603	Oubliette	Prison space	13325,13326,13327	-1	5	8794,2347	8778:10,526:10
+Boss lair display	87	1483	Achievement Gallery	Boss lair space	29157	-1	5	8794,2347	8782:10,1775:5,2353:4
+Boundary stones	55	100	Formal garden	Fencing	5152	-1	5	8794,2347	1761:10
+Boxing ring	32	420	Combat room	Combat ring space	13129,13130,13131,13132	-1	5	8794,2347	8778:6,8790:4
+Brown rug	2	30	Parlour, bedroom, chapel, portal nexus	Rug space	6759,6760,6761	-1	5	8794,2347	8790:2
+Candles	72	243	Dungeon, Oubliette, Treasure room	Lighting space	13342	-1	5	8794,2347	8778:4,36:4
+Cape hanger	80	800	Achievement gallery	Display space	29166	-1	5	8794,2347	8786:1,8784:1
+Cape of Legends	47	300	Quest hall	Guild trophy space	13524	-1	5	8794,2347	8780:3,1052:1
+Carved oak bench	31	240	Dining room	Seating space	13302	-1	5	8794,2347	8778:4
+Carved oak wardrobe	51	360	Costume Room	Magic wardrobe space		-1	5	8794,2347	9852:1,8778:6
+Carved oak table	31	360	Dining room	Table space	13295	-1	5	8794,2347	8778:6
+Carved teak bench	44	360	Dining room, throne room	Seating space	13304,13694,26214	-1	5	8794,2347	8780:4
+Carved teak wardrobe	69	540	Costume Room	Magic wardrobe space		-1	5	8794,2347	9854:1,8780:6
+Carved teak table	45	600	Dining room	Table space	13297	-1	5	8794,2347	8780:6,8790:4
+Cat basket	19	58	Kitchen	Cat basket space	13575	-1	5	8794,2347	960:2,1539:2
+Cat blanket	5	15	Kitchen	Cat basket space	13574	-1	5	8794,2347	8790:1
+Celestial globe	68	570	Study	Globe space	13652	-1	5	8794,2347	8780:3,8784:1
+Clay attack stone	39	100	Games room	Stone space	13392	-1	5	8794,2347	1761:10
+Clay fireplace	3	30	Parlour, dining room, bedroom	Fireplace space	6780	-1	5	8794,2347	1761:3
+Cloth altar	56	390	Chapel	Altar space		-1	5	8794,2347	8780:4,8790:2
+Combat dummy	48	660	Combat Room	Combat dummy space	29336	-1	5	8794,2347	8780:5,8790:4,1783:5
+Combat ring	51	630	Combat room	Combat ring space	13137,13138,13139,13140	-1	5	8794,2347	8780:6,8790:6
+Consecrated house	70	1560	Menagerie	Pet house space	26830	-1	5	8794,2347	12706:1,8782:4,8788:1
+Crafting table 1	16	240	Workshop	Clockmaking space	6796	-1	5	8794,2347	8778:4
+Crafting table 2	25	1	Workshop	Clockmaking space	6797	-1	5	8794,2347	8380:1,1775:1
+Crafting table 3	34	2	Workshop	Clockmaking space	6798	-1	5	8794,2347	8381:1,1775:2
+Crafting table 4	42	120	Workshop	Clockmaking space	6799	-1	5	8794,2347	8382:1,8778:2
+Crude wooden chair	1	57	Parlour	Chair space	6752	-1	5	8794,2347	960:2,1539:2
+Crystal ball	42	280	Study	Crystal ball space	13659	-1	5	8794,2347	8780:3,567:1
+Crystal of power	66	890	Study	Crystal ball space	13661	-1	5	8794,2347	8782:2,8784:2,567:1
+Crystal throne	95	15000	Throne room	Throne space	13670	-1	5	8794,2347	8788:15
+Cushioned basket	33	58	Kitchen	Cat basket space	13576	-1	5	8794,2347	960:2,1737:2,1539:2
+Dagannoth	90	2738	Treasure room	Monster space	13376	-1	5		995:7500000
+Dark altar	80	3888	Achievement gallery	Altar space	29149	-1	5	8794,2347	3420:10,8788:1,565:5000,566:5000,20615:1
+Darklight	42	202	Quest hall	Sword space	13520	-1	5	8794,2347	8780:2,6746:1
+Dartboard	54	290	Games room	Ranging game space	13400	-1	5	8794,2347	8780:3,2353:1
+Deadman rug	28	283	Parlour, bedroom, skill hall, quest hall, chapel, dungeon, portal nexus	Rug space, stair space	54114,54115,54116	-1	5	8794,2347	8790:4,29619:1
+Decorative blood	72	4	Oubliette, Dungeon, Treasure room	Decoration space	13312	-1	5	8794,2347	1763:4
+Decorative pipe	83	120	Oubliette, Dungeon, Treasure room	Decoration space	13311	-1	5	8794,2347	2353:6
+Decorative rock	5	100	Garden	Centrepiece space	4526	-1	5	8794,2347	3420:5
+Decorative window	69	4	Chapel	Window space		-1	5	8794,2347	1775:8
+Demon	75	707	Treasure room	Monster space	13378	-1	5		995:500000
+Demon lectern	47	120	Study	Lectern space	13644	-1	5	8794,2347	8778:2
+Demonic throne	99	25000	Throne room	Throne space		-1	5	8794,2347	8788:25
+Desecrated house	81	160	Menagerie	Pet house space	26831	-1	5	8794,2347	12707:1,8782:1,3420:1
+Desert habitat	57	181	Menagerie	Habitat space	26842,26848,26854	-1	5		8431:1,1783:5
+Dungeon entrance	70	500	Garden, Formal garden	Centrepiece space	4529	-1	5	8794,2347	8786:1
+Eagle lectern	47	120	Study	Lectern space	13643	-1	5	8794,2347	8778:2
+Elemental sphere	54	580	Study	Crystal ball space	13660	-1	5	8794,2347	8780:3,8784:1,567:1
+Elena	35	211	Quest hall	Portrait space	13511	-1	5	8794,2347	8780:2,7996:1
+Excalibur	42	194	Quest hall	Sword space	13521	-1	5	8794,2347	8780:2,35:1
+Exit portal	1	100	Garden, Formal Garden	Centrepiece space		-1	5	8794,2347	2351:10
+Extra weapons rack	54	440	Combat room	Storage space	13383	-1	5	8794,2347	8780:4,2353:4
+Fairy ring	85	535	Superior garden	Teleport space	29228	-1	5	5331	6004:10,20609:1
+Fancy jewellery box	86	1350	Achievement gallery	Jewellery box space	37501,37502,37503,37504,37505,37506,37507,37508,37509,37510,37511,37512,37513,37514,37515,37516,37517,37518,37519,50711	-1	5	8794,2347	20626:1,8784:1,11118:5,11105:5
+Fancy range	42	160	Kitchen	Stove space		-1	5	8794,2347	2353:8
+Fancy teak dresser	56	182	Bedroom	Dresser space	13166	-1	5	8794,2347	8780:2,1775:2
+Fencing ring	41	570	Combat room	Combat ring space	13133,13134,13135,13136	-1	5	8794,2347	8778:8,8790:6
+Firepit	5	40	Kitchen	Stove space	13528	-1	5	8794,2347	2353:1,1761:2
+Firepit with hook	11	60	Kitchen	Stove space		-1	5	8794,2347	2353:2,1761:2
+Firepit with pot	17	80	Kitchen	Stove space		-1	5	8794,2347	2353:3,1761:2
+Flame pit	77	357	Oubliette	Floor space	13337	-1	5	8794,2347	590:20,995:125000
+Floor decoration	61	700	Throne room	Floor space		-1	5	8794,2347	8782:5
+Forest habitat	47	51	Menagerie	Habitat space	26841,26847,26853	-1	5	5331	8419:1,6032:3
+Garden fence	75	940	Formal garden	Fencing	5632	-1	5	8794,2347	8780:10,2353:2
+Gazebo	65	1200	Formal garden	Centrepiece space	6748	-1	5	8794,2347	8782:8,2353:4
+Giant Dwarf	35	211	Quest hall	Portrait space	13512	-1	5	8794,2347	8780:2,7997:1
+Bed	60	1330	Bedroom	Bed space	13154	-1	5	8794,2347	8782:5,8790:2,8784:2
+Gilded adventure log	88	1100	Achievement gallery	Adventure log space	29152	-1	5	8794,2347	8782:3,8784:2,4155:1
+Gilded altar	75	2230	Chapel	Altar space		-1	5	8794,2347	8786:2,8790:2,8784:4
+Gilded bench	61	1760	Dining room, throne room	Seating space	13306,13696	-1	5	8794,2347	8782:4,8784:4
+Gilded cape rack	81	860	Costume room	Cape rack space	18769	-1	5	8794,2347	9845:1,8782:4,8784:1
+Gilded clock	85	602	Bedroom	Corner space	13171	-1	5	8794,2347	8782:2,8792:1,8784:1
+Gilded decoration	56	1020	Dining room, combat room, throne room	Decoration space	13782,13783,13784,13785,13786,13787,13788,13789,13790,13791,13792,13793,13794,13795,13796,13797	-1	5	8794,2347	8782:3,8784:2
+Gilded display	78	600	Skill hall	Head trophy space	56112	-1	5	8794,2347	8782:2,8784:2
+Gilded dresser	74	582	Bedroom	Dresser space	13168	-1	5	8794,2347	8782:2,1775:2,8784:1
+Gilded wardrobe	87	860	Costume Room	Magic wardrobe space		-1	5	8794,2347	9856:1,8782:4,8784:1
+Gilded portal nexus	82	2600	Portal nexus	Portal nexus space	33409	-1	5	8794,2347	22705:1,8786:4,8784:2
+Gilded throne	81	2600	Throne room	Throne space	13668	-1	5	8794,2347	8782:5,8786:2,8784:3
+Gilded wardrobe	87	720	Bedroom	Wardrobe space	13161	-1	5	8794,2347	8782:3,8784:1
+Globe	41	180	Study	Globe space	13649	-1	5	8794,2347	8778:3
+Glorious arena	83	299	Menagerie	Arena space	26864	-1	5	8794,2347	8782:2,8790:1,954:1
+Glove rack	34	120	Combat room	Storage space	13381	-1	5	8794,2347	8778:2
+Gnome bench	77	840	Superior garden	Seating space	29272,29273	-1	5	8794,2347	8782:6
+Gnome child icon	45	100	Chapel	Icon space	40871	-1	5	8794,2347	8778:3,25319:1
+Gold candlesticks	57	46	Chapel	Lamp space		-1	5	8794,2347	2357:6,36:6
+Gold Sink	47	11144	Kitchen	Sink space		-1	5	8794,2347	26266:10,8782:5,8784:5
+Grassland habitat	37	37	Menagerie	Habitat space	26840,26846,26852	-1	5	5331	8417:1,6032:2
+Greater magic cage	89	4700	Throne room	Floor space	13683	-1	5	8794,2347	8782:5,8788:4
+Greater magical balance	77	356	Games room	Elemental balance space	13397	-1	5	8794,2347	556:2000,557:2000,554:2000,555:2000
+Greater teleport focus	65	500	Portal chamber	Centrepiece space	13641	-1	5	8794,2347	8786:1
+Greenman carving	1	0	Dining room, combat room, throne room	Decoration space	57012	-1	5	8794,2347	31024:1
+Greenman statue	1	0	Garden, Formal garden	Centrepiece space, Big Plant space 1, Big Plant space 2	57013,57014,57015	-1	5	8794,2347	31027:1
+Grid Master Icon	45	180	Chapel	Icon space	57733	-1	5	8794,2347	8778:3,31205:1
+Guard dog	74	273	Oubliette, Dungeon	Guard space	13367	-1	5		995:75000
+Guthix icon	59	960	Chapel	Icon space	13177	-1	5	8794,2347	8780:4,8784:2
+Guthix symbol	48	120	Chapel	Icon space	13174	-1	5	8794,2347	8778:2
+Hangman	59	1200	Games room	Game space	13404	-1	5	8794,2347	8780:12,2353:6
+Hellhound	94	2236	Oubliette, Dungeon	Guard space	2715	-1	5		995:5000000
+Hobgoblin guard	78	316	Oubliette, Dungeon	Guard space	13368	-1	5		995:100000
+Hoop and stick	30	120	Games room	Ranging game space	13398,13399	-1	5	8794,2347	8778:2
+Huge spider	86	447	Oubliette, Dungeon	Guard space	13370	-1	5		995:200000
+Imp statue	15	150	Garden	Centrepiece space	4528	-1	5	8794,2347	3420:5,1761:5
+Mahogany burner	65	600	Chapel	Lamp space		-1	5	8794,2347	8782:4,2353:2
+Incense burner	61	280	Chapel	Lamp space		-1	5	8794,2347	8778:4,2353:2
+Infernal chart	83	60	Study	Wall chart space	13664	-1	5	8794,2347	8790:4
+Iron railings	67	220	Formal garden	Fencing	5155	-1	5	8794,2347	2351:10,3420:6
+Isafdar	65	464	Quest hall	Landscape space	13515	-1	5	8794,2347	8782:3,8000:1
+Jester	39	360	Games room	Game space		-1	5	8794,2347	8780:4
+Kalphite Soldier	80	866	Treasure Room	Monster space	13374	-1	5		995:750000
+Karamja	65	464	Quest hall	Landscape space	13516	-1	5	8794,2347	8782:3,8001:1
+King Arthur	35	211	Quest hall	Portrait space	13510	-1	5	8794,2347	8780:2,7995:1
+Kitchen table	12	87	Kitchen	Table space	13577	-1	5	8794,2347	960:3,1539:3
+Kite shield	86	420	Throne Room, Treasure Room	Decoration space		-1	5	8794,2347	8782:3
+Large fountain	75	1000	Formal Garden	Centrepiece space	6750	-1	5	8794,2347	8786:2
+Large oak bed	34	330	Bedroom	Bed space	13150	-1	5	8794,2347	8778:5,8790:2
+Large orrery	95	1420	Study	Globe space	13655	-1	5	8794,2347	8782:3,8784:5
+Large oven	29	100	Kitchen	Stove space		-1	5	8794,2347	2353:5
+Large statue	89	1500	Chapel	Statue space		-1	5	8794,2347	8786:3
+Large storage unit	90	150	Chambers of Xeric resource room	Storage unit	29780	-1	5	2347	21038:1,21036:2
+Large teak bed	45	480	Bedroom	Bed space	13152	-1	5	8794,2347	8780:5,8790:2
+League accomplishments scroll	48	310	League hall	Accomplishment scroll space	41182	-1	5	8794,2347	970:10,8784:1
+League statue	32	120	League hall	Statue space	41179	-1	5	8794,2347	3420:6
+Lesser magic cage	82	2700	Throne Room	Floor space	13682	-1	5	8794,2347	8782:5,8788:2
+Lesser magical balance	37	176	Games room	Elemental balance space	13395	-1	5	8794,2347	556:500,557:500,554:500,555:500
+Limestone altar	64	910	Chapel	Altar space		-1	5	8794,2347	8782:6,8790:2,3420:2
+Limestone attack stone	59	200	Games room	Stone space	13393	-1	5	8794,2347	3420:10
+Spiral staircase	67	1040	Skill hall, quest hall, dungeon	Rug space, Stair space	13503	-1	5	8794,2347	8780:10,3420:7
+Lumbridge	44	314	Quest hall	Landscape space	13517	-1	5	8794,2347	8780:3,8002:1
+Lunar altar	80	1957	Achievement Gallery	Altar space	29148	-1	5	8794,2347	3420:10,8788:1,9075:10000,20613:1
+Lunar globe	59	570	Study	Globe space	13651	-1	5	8794,2347	8780:3,8784:1
+Magic chest	91	1000	Treasure Room	Treasure space		-1	5	8794,2347	8788:1
+Magical cape rack	99	1000	Costume Room	Cape rack space	18771	-1	5	8794,2347	9847:1,8788:1
+Mahogany adventure log	83	504	Achievement Gallery	Adventure log space	29151	-1	5	8794,2347	8782:3,970:2,4155:1
+Mahogany altar	60	590	Chapel	Altar space		-1	5	8794,2347	8782:4,8790:2
+Mahogany armchair	50	280	Parlour	Chair space	6758	-1	5	8794,2347	8782:2
+Mahogany armour case	82	420	Costume room	Armour case space		-1	5	8794,2347	9860:1,8782:3
+Mahogany bed	70	336	Mahogany Homes clients	Bed space		-1	5	8794,2347	8782:3
+Mahogany bed	70	224	Mahogany Homes clients	Bed space		-1	5	8794,2347	8782:2
+Mahogany bench	52	560	Dining room, throne room	Seating space	13305,13695	-1	5	8794,2347	8782:4
+Mahogany bookcase	40	420	Parlour, quest hall, Study	Bookcase space	6770	-1	5	8794,2347	8782:3
+Mahogany bookcase	70	224	Mahogany Homes clients	Bookcase space		-1	5	8794,2347	8782:2
+Mahogany cabinet	70	224	Mahogany Homes clients	Cabinet space	39903,39909	-1	5	8794,2347	8782:2
+Mahogany cape rack	72	560	Costume room	Cape rack space	18768	-1	5	8794,2347	9844:1,8782:4
+Mahogany chair	70	112	Mahogany Homes clients	Chair space		-1	5	8794,2347	8782:1
+Mahogany chest	87	1000	Treasure Room	Treasure space		-1	5	8794,2347	8782:5,8784:1
+Mahogany cupboard	70	224	Mahogany Homes clients	Cupboard space	40041,40119	-1	5	8794,2347	8782:2
+Mahogany demon	67	580	Study	Lectern space	13648	-1	5	8794,2347	8782:2,8784:1
+Mahogany display	76	280	Skill hall	Fishing trophy space	56132	-1	5	8794,2347	8782:2
+Mahogany display	58	280	Skill hall	Head trophy space	56111	-1	5	8794,2347	8782:2
+Mahogany drawers	70	224	Mahogany Homes clients	Drawer space	39927,40060,40147,40155,40185,40191	-1	5	8794,2347	8782:2
+Mahogany dresser	64	281	Bedroom	Dresser space	13167	-1	5	8794,2347	8782:2,1775:1
+Mahogany dresser	70	224	Mahogany Homes clients	Dresser space	39952	-1	5	8794,2347	8782:2
+Mahogany eagle	67	580	Study	Lectern space	13647	-1	5	8794,2347	8782:2,8784:1
+Mahogany costume box	80	280	Costume room	Fancy dress box space		-1	5	8794,2347	9866:1,8782:2
+Mahogany feeder	59	862	Menagerie	Pet feeder space	26872	-1	5	8794,2347	8782:4,8784:1,1927:1
+Mahogany house	59	560	Menagerie	Pet house space	26299	-1	5	8794,2347	12705:1,8782:4
+Mahogany ladder	88	700	Oubliette	Ladder space	13330	-1	5	8794,2347	8782:5
+Mahogany Lever	88	700	Throne Room	Lever space	13673	-1	5	8794,2347	8782:5
+Mahogany wardrobe	78	560	Costume Room	Magic wardrobe space		-1	5	8794,2347	9855:1,8782:4
+Mahogany outfit stand	74	860	League hall	Outfit stand space	41172,41173,41174,41175,41176,41177,41178,42971,42972,42973,49990,49991,49992,55862,55863,55864,29564,29565,29566	-1	5	8794,2347	8782:4,8784:1
+Mahogany portal	65	420	Portal Chamber	Portal space	13637	-1	5	8794,2347	8782:3
+Mahogany prize chest	54	860	Games room	Prize chest space		-1	5	8794,2347	8782:4,8784:1
+Mahogany scratching post	59	304	Menagerie	Scratching post space	26860	-1	5	8794,2347	8782:2,3420:1,954:1
+Mahogany shelves	70	224	Mahogany Homes clients	Shelves space	39939,40029,40125	-1	5	8794,2347	8782:2
+Mahogany table	52	840	Dining room	Table space	13298	-1	5	8794,2347	8782:6
+Mahogany table	70	448	Mahogany Homes clients	Table space	39896	-1	5	8794,2347	8782:4
+Mahogany table	70	336	Mahogany Homes clients	Table space	40021,40106,40112,39965	-1	5	8794,2347	8782:3
+Mahogany table	70	224	Mahogany Homes clients	Table space	39971,40035	-1	5	8794,2347	8782:2
+Mahogany telescope	84	281	Study	Telescope space	13658	-1	5	8794,2347	8782:2,1775:1
+Mahogany throne	74	2200	Throne Room	Throne space	13667	-1	5	8794,2347	8782:5,8786:3
+Mahogany toy box	86	280	Costume room	Toy box space		-1	5	8794,2347	8782:2
+Mahogany Trapdoor	88	700	Throne Room	Trapdoor space		-1	5	8794,2347	8782:5
+Mahogany treasure chest	84	280	Costume Room	Treasure chest space		-1	5	8794,2347	9863:1,8782:2
+Mahogany trophy case	78	1440	League hall	Trophy case space		-1	5	8794,2347	8782:6,8784:2
+Mahogany wardrobe	75	420	Bedroom	Wardrobe space	13160	-1	5	8794,2347	8782:3
+Mahogany wardrobe	70	224	Mahogany Homes clients	Wardrobe space	39921	-1	5	8794,2347	8782:2
+Man trap	76	273	Dungeon	Trap space	13357	-1	5		995:75000
+Marble adventure log	93	1160	Achievement Gallery	Adventure log space	29153	-1	5	8794,2347	8786:2,3420:4,4155:1
+Marble altar	70	1030	Chapel	Altar space		-1	5	8794,2347	8786:2,8790:2
+Marble attack stone	79	2000	Games room	Stone space	13394	-1	5	8794,2347	8786:4
+Marble cape rack	90	500	Costume room	Cape rack space	18770	-1	5	8794,2347	9846:1,8786:1
+Marble decorative bench	88	3000	Superior garden	Seating space	29274,29275	-1	5	8794,2347	8786:6
+Marble door	94	2000	Dungeon, Treasure Room	Door space	13348,13349	-1	5	8794,2347	8786:4
+Marble lectern	77	1800	Study	Lectern space	37349	-1	5	8794,2347	8786:1,8788:1,8784:1
+Marble wardrobe	96	500	Costume Room	Magic wardrobe space		-1	5	8794,2347	9857:1,8786:1
+Marble portal nexus	72	2000	Portal Nexus	Portal Nexus space	33408	-1	5	8794,2347	8786:4
+Marble spiral	97	4400	Skill Hall, quest hall, dungeon	Rug space, stair space	13505	-1	5	8794,2347	8780:10,8786:7
+Marble staircase	82	3200	Skill hall, quest hall, dungeon	Rug space, stair space	13501,13502	-1	5	8794,2347	8782:5,8786:5
+Marble trap	84	387	Dungeon	Trap space	13359	-1	5		995:150000
+Marble wall	79	4000	Formal garden, superior garden	Fence space, Fencing	5907	-1	5	8794,2347	8786:8
+Massive storage unit	99	150	Chambers of Xeric resource room	Storage unit	37978	-1	5	2347	21039:1,21036:2
+Medium balance	57	252	Games room	Elemental balance space	13396	-1	5	8794,2347	556:1000,557:1000,554:1000,555:1000
+Medium statue	69	500	Chapel	Statue space		-1	5	8794,2347	8786:1
+Medium storage unit	60	150	Chambers of Xeric resource room	Storage unit	29779	-1	5	2347	21037:1,21036:2
+Miscellanians	55	311	Quest hall	Portrait space	13513	-1	5	8794,2347	8782:2,7998:1
+Morytania	44	314	Quest hall	Landscape space	13518	-1	5	8794,2347	8780:3,8003:1
+Mounted coins	80	800	Achievement Gallery	Display space	29165	-1	5	8794,2347	8786:1,8784:1,995:100000000
+Mounted digsite pendant	82	800	Portal nexus	Amulet space	33416,33417,33418,33420	-1	5	8794,2347	8782:1,8784:1,22710:1
+Mounted emblem	80	5300	Achievement Gallery	Display space	29164	-1	5	8794,2347	8786:1,8784:1,24287:1
+Mounted xeric's talisman	72	500	Portal Nexus	Amulet space	33411,33412,33413,33414,33415,33419	-1	5	8794,2347	8782:1,8784:1,13391:5000,13392:1
+Mythical cape	47	370	Quest hall	Guild trophy space	31986	-1	5	8794,2347	8780:3,21913:1
+Nature house	92	158	Menagerie	Pet house space	26832	-1	5	8794,2347	12708:1,8782:1,1929:2,6034:3
+Oak altar	45	240	Chapel	Altar space		-1	5	8794,2347	8778:4
+Oak and steel cage	70	800	Oubliette	Prison space	13316,13317,13318	-1	5	8794,2347	8778:10,2353:10
+Oak armchair	26	180	Parlour	Chair space	6756	-1	5	8794,2347	8778:3
+Oak armour case	46	180	Costume room	Armour case space		-1	5	8794,2347	8778:3
+Oak bed	30	210	Bedroom	Bed space	13149	-1	5	8794,2347	8778:3,8790:2
+Oak bed	20	144	Mahogany Homes clients	Bed space		-1	5	8794,2347	8778:3
+Oak bed	20	96	Mahogany Homes clients	Bed space		-1	5	8794,2347	8778:2
+Oak bench	22	240	Dining room	Seating space	13301	-1	5	8794,2347	8778:4
+Oak bookcase	29	180	Parlour, quest hall, study	Bookcase space	6769	-1	5	8794,2347	8778:3
+Oak bookcase	20	96	Mahogany Homes clients	Bookcase space		-1	5	8794,2347	8778:2
+Oak cabinet	20	96	Mahogany Homes clients	Cabinet space	39901,39907	-1	5	8794,2347	8778:2
+Oak cage	65	640	Oubliette	Prison space	13313,13314,13315	-1	5	8794,2347	8778:10,2353:2
+Oak cape rack	54	240	Costume room	Cape rack space	18766	-1	5	8794,2347	8778:4
+Oak chair	19	120	Parlour	Chair space	6755	-1	5	8794,2347	8778:2
+Oak chair	20	48	Mahogany Homes clients	Chair space	39957,40064	-1	5	8794,2347	8778:1
+Oak chest	79	340	Treasure Room	Treasure space		-1	5	8794,2347	8778:5,2353:2
+Oak clock	25	142	Bedroom	Corner space	13169	-1	5	8794,2347	8778:2,8792:1
+Oak cupboard	20	96	Mahogany Homes clients	Cupboard space	40039,40117	-1	5	8794,2347	8778:2
+Oak dining table	22	240	Dining room	Table space	13294	-1	5	8794,2347	8778:4
+Oak display	36	120	Skill hall	Fishing trophy space	56130	-1	5	8794,2347	8778:2
+Oak door	74	600	Dungeon, Treasure Room	Door space	13344,13345	-1	5	8794,2347	8778:10
+Oak drawers	27	120	Bedroom	Wardrobe space	13156	-1	5	8794,2347	8778:2
+Oak drawers	20	96	Mahogany Homes clients	Drawer space	39925,40058,40145,40153,40189	-1	5	8794,2347	8778:2
+Oak dresser	37	121	Bedroom	Dresser space	13164	-1	5	8794,2347	8778:2,1775:1
+Oak dresser	20	96	Mahogany Homes clients	Dresser space	39950	-1	5	8794,2347	8778:2
+Oak costume box	44	120	Costume room	Fancy dress box space		-1	5	8794,2347	8778:2
+Oak feeder	37	182	Menagerie	Pet feeder space	26870	-1	5	8794,2347	8778:3,1927:1
+Oak house	37	240	Menagerie	Pet house space	26297	-1	5	8794,2347	8778:4
+Oak kitchen table	32	180	Kitchen	Table space	13578	-1	5	8794,2347	8778:3
+Oak ladder	68	300	Oubliette	Ladder space	13328	-1	5	8794,2347	8778:5
+Oak larder	33	480	Kitchen	Larder space	13566	-1	5	8794,2347	8778:8
+Oak lectern	40	60	Study	Lectern space	13642	-1	5	8794,2347	8778:1
+Oak lever	68	300	Throne Room	Lever space	13674	-1	5	8794,2347	8778:5
+Oak wardrobe	42	240	Costume Room	Magic wardrobe space		-1	5	8794,2347	8778:4
+Oak outfit stand	34	240	League hall	Outfit stand space	41165,41166,41167,41168,41169,41170,41171,42929,42930,42970,49987,49988,49989,55859,55860,55861,29561,29562,29563	-1	5	8794,2347	8778:4
+Oak prize chest	34	240	Games room	Prize chest space		-1	5	8794,2347	8778:4
+Oak scratching post	39	124	Menagerie	Scratching post space	26858	-1	5	8794,2347	8778:2,954:1
+Oak shaving stand	29	61	Bedroom	Dresser space	13163	-1	5	8794,2347	8778:1,1775:1
+Oak shelves	20	96	Mahogany Homes clients	Shelves space	39937,40027,40123	-1	5	8794,2347	8778:2
+Oak shelves 1	34	240	Kitchen	Shelf space		-1	5	8794,2347	8778:3,1761:6
+Oak shelves 2	45	240	Kitchen	Shelf space		-1	5	8794,2347	8778:3,1761:6
+Oak staircase	27	680	Skill hall, quest hall, dungeon	Rug space, Stair space	13497,13498	-1	5	8794,2347	8778:10,2353:4
+Oak table	20	192	Mahogany Homes clients	Table space	39894	-1	5	8794,2347	8778:4
+Oak table	20	144	Mahogany Homes clients	Table space	39931,39963,40019,40104,40110	-1	5	8794,2347	8778:3
+Oak table	20	96	Mahogany Homes clients	Table space	39969,40033	-1	5	8794,2347	8778:2
+Oak telescope	44	121	Study	Telescope space	13656	-1	5	8794,2347	8778:2,1775:1
+Oak throne	60	800	Throne Room	Throne space	13665	-1	5	8794,2347	8778:5,8786:1
+Oak toy box	50	120	Costume room	Toy box space		-1	5	8794,2347	8778:2
+Oak trapdoor	68	300	Throne Room	Trapdoor space		-1	5	8794,2347	8778:5
+Oak treasure chest	48	120	Costume Room	Treasure chest space		-1	5	8794,2347	8778:2
+Oak trophy case	36	360	League hall	Trophy case space		-1	5	8794,2347	8778:6
+Oak wall decoration	16	120	Dining room, combat room, throne room	Decoration space	13798,13799,13800,13801,13802,13803,13804,13805,13806,13807,13808,13809,13810,13811,13812,13813	-1	5	8794,2347	8778:2
+Oak wardrobe	39	180	Bedroom	Wardrobe space	13157	-1	5	8794,2347	8778:3
+Oak wardrobe	20	96	Mahogany Homes clients	Wardrobe space	39919	-1	5	8794,2347	8778:2
+Oak workbench	32	300	Workshop	Workbench space	6792	-1	5	8794,2347	8778:5
+Obelisk	80	3000	Superior garden	Teleport space	31554	-1	5	8794,2347	21804:4,8786:4
+Obsidian decorative bench	98	2331	Superior garden	Seating space	29276,29277	-1	5	8794,2347	8786:3,6573:1,554:250,4699:500
+Obsidian fence	83	2741	Superior garden	Fence space	29267	-1	5	8794,2347	6526:10,6528:2,6522:25
+Occult altar	90	3445	Achievement Gallery	Altar space	31858,31859,31860,31861	-1	5	8794,2347	20617:1,565:5000,566:5000,9075:10000,20615:1,20613:1
+Old man's coffin	35	715	Wise Old Man's house	Coffin hotspot	33264,33265	-1	5	8794,2347	8782:5,8790:1
+Opulent rug	65	360	Parlour, bedroom, league hall, skill hall, quest hall, chapel, dungeon, portal nexus	Rug space, stair space	6765,6766,6767	-1	5	8794,2347	8790:4,8784:1
+Opulent table	72	3100	Dining room	Table space	13299	-1	5	8794,2347	8782:6,8790:4,8784:4,8786:2
+Organ	69	680	Chapel	Musical space	13216	-1	5	8794,2347	8782:4,2353:6
+Ornamental globe	50	270	Study	Globe space	13650	-1	5	8794,2347	8780:3
+Ornate banner stand	66	1300	League hall	Banner stand space		-1	5	8794,2347	8786:2,8784:1
+Ornate jewellery box	91	2680	Achievement Gallery	Jewellery box space	37520,37521,37522,37523,37524,37525,37526,37527,37528,37529,37530,37531,37532,37533,37534,37535,37536,37537,37538,37539,37540,37541,37542,37543,37544,37545,37546,50712	-1	5	8794,2347	20627:1,8784:2,11980:8,1712:8
+Ornate league statue	68	3300	League hall	Statue space	41180	-1	5	8794,2347	8786:6,8784:1
+Ornate trophy pedestal	64	2106	League hall	Pedestal space	41050,41051,41052,41053,41054,41055,41056,41057,41058,41059,41060,41061,41062,41063,41064,41080,41081,41082,41083,41084,41085,41086,41087,41088,41089,41090,41091,41092,41093,41094,41110,41111,41112,41113,41114,41115,41116,41117,41118,41119,41120,41121,41122,41123,41124,42868,42869,42870,42871,42872,42873,42874,42882,42883,42884,42885,42886,42887,42888,42896,42897,42922,42923,42924,42925,42926,49950,49951,49952,49953,49954,49955,49956,49964,49965,49966,49967,49968,49969,49970,49978,49979,49980,49981,49982,49983,49984,55822,55823,55824,55825,55826,55827,55828,55836,55837,55838,55839,55840,55841,55842,55850,55851,55852,55853,55854,55855,55856,29422,29423,29424,29425,29426,29427,29428,29436,29437,29438,29439,29440,29441,29442,29450,29451,29452,29453,29454,29455,29456	-1	5	8794,2347	8786:3,954:1,1763:1,8784:1
+Ornate undead combat dummy	58	300	Combat Room	Combat dummy space		-1	5	8794,2347	20746:1,8784:1
+Otherworldly theme	75	316	Superior garden	Theme space	29253	-1	5	5331	6034:8,1767:1,6004:4,7409:1
+Pet list	38	198	Menagerie	Pet list space	26868	-1	5	8794,2347	8778:3,8790:1,970:1
+Picket fence	71	640	Formal garden	Fencing	5631	-1	5	8794,2347	8778:10,2353:2
+Pluming stand	16	120	Workshop	Heraldry space	6803	-1	5	8794,2347	8778:2
+Polar habitat	67	271	Menagerie	Habitat space	26843,26849,26855	-1	5		8778:3,555:2000,6696:5
+Pond	10	100	Garden	Centrepiece space	4527	-1	5	8794,2347	1761:10
+Posh bell-pull	60	420	Dining room	Bell pull space	13309	-1	5	8794,2347	8780:1,8790:2,8784:1
+Posh fountain	81	1500	Formal Garden	Centrepiece space	6751	-1	5	8794,2347	8786:3
+Pump and drain	7	100	Kitchen	Sink space		-1	5	8794,2347	2353:5
+Pump and tub	27	200	Kitchen	Sink space		-1	5	8794,2347	2353:10
+Pumpkin	1	1				-1	5	5340	24977:1
+Quest list	80	310	Achievement Gallery	Quest list space	29226	-1	5	8794,2347	970:10,8784:1
+Raging echoes curtains (Construction)	65	487	Parlour, bedroom, dining room, portal nexus	Curtain space		-1	5	8794,2347	8782:3,8790:3,30557:1
+Raging echoes rug	73	82			56076,56077,56078	-1	5	8794,2347	8790:4,30554:1
+Ranging pedestals	71	720	Combat room	Combat ring space	13147	-1	5	8794,2347	8780:8
+Redwood fence	75	240	Superior garden	Fence space	29262	-1	5	8794,2347	19669:10,2353:2
+Repair bench	15	120	Workshop	Repair space	6800	-1	5	8794,2347	8778:2
+Rocking chair	14	87	Parlour	Chair space	6754	-1	5	8794,2347	960:3,1539:3
+Rocnar	83	387	Oubliette	Floor space	13373	-1	5		995:150000
+Rope bell-pull	26	64	Dining room	Bell pull space	13307	-1	5	8794,2347	8778:1,954:1
+Round shield	66	120	Throne Room, Treasure Room	Decoration space		-1	5	8794,2347	8778:2
+Rug	13	60	Parlour, bedroom, league hall, skill hall, quest hall, chapel, dungeon, portal nexus	Rug space, Stair space	6762,6763,6764	-1	5	8794,2347	8790:4
+Rune dragon	99	5000	Treasure Room	Monster space	31984	-1	5		995:25000000
+S.t.a.s.h chart	40	16	Study	Wall chart space	41434	-1	5	8794,2347	8790:1,25612:1
+Saradomin icon	59	960	Chapel	Icon space	13175	-1	5	8794,2347	8780:4,8784:2
+Saradomin symbol	48	120	Chapel	Icon space	13172	-1	5	8794,2347	8778:2
+Servant's money bag	58	595	Bedroom	Corner space	28859	-1	5	8794,2347	8782:2,8790:1,8784:1
+Shaving stand	21	30	Bedroom	Dresser space	13162	-1	5	8794,2347	960:1,1539:1,1775:1
+Shield easel	41	240	Workshop	Heraldry space	6804	-1	5	8794,2347	8778:4
+Shoe box	20	58	Bedroom	Wardrobe space	13155	-1	5	8794,2347	960:2,1539:2
+Shuttered window	49	228	Chapel	Window space	13217,13226,13235,13244,13253,13262,27073,37441	-1	5	8794,2347	960:8,1539:8
+Silverlight	42	187	Quest Hall	Sword space	13519	-1	5	8794,2347	8780:2,2402:1
+Simple arena	63	139	Menagerie	Arena space	26862	-1	5	8794,2347	8778:2,8790:1,954:1
+Sink	47	300	Kitchen	Sink space		-1	5	8794,2347	2353:15
+Skeleton guard	70	223	Oubliette, Dungeon	Guard space	13366	-1	5		995:50000
+Small fountain	71	500	Formal Garden	Centrepiece space	6749	-1	5	8794,2347	8786:1
+Small orrery	86	1320	Study	Globe space	13654	-1	5	8794,2347	8782:3,8784:3
+Small oven	24	80	Kitchen	Stove space		-1	5	8794,2347	2353:4
+Small statue	49	40	Chapel	Statue space		-1	5	8794,2347	3420:2
+Small storage unit	30	150	Chambers of Xeric resource room	Storage unit	29770	-1	5	2347	21036:2
+Spice Rack	60	374	Kitchen	Spice rack space	37621	-1	5	8794,2347	8780:3,1761:6,7488:1,7484:1,7480:1,7492:1
+Spike trap	72	223	Dungeon	Trap space	13356	-1	5		995:50000
+Spiked cage	80	500	Oubliette	Prison space	13322,13323,13324	-1	5	8794,2347	2353:25
+Spikes	65	623	Oubliette	Floor space	13334,13335,13336	-1	5	8794,2347	2353:20,995:50000
+Square shield	76	360	Throne Room, Treasure Room	Decoration space		-1	5	8794,2347	8780:4
+Stained glass	89	5	Chapel	Window space		-1	5	8794,2347	1775:16
+Steel cage	68	1100	Throne Room	Floor space	13681	-1	5	8794,2347	8782:5,2353:20
+Steel cage	75	400	Oubliette	Prison space	13319,13320,13321	-1	5	8794,2347	2353:20
+Steel candlesticks	53	124	Chapel	Lamp space		-1	5	8794,2347	2353:6,36:6
+Steel dragon	95	3162	Treasure Room	Monster space	13375	-1	5		995:10000000
+Steel framed workbench	46	440	Workshop	Workbench space	6793	-1	5	8794,2347	8778:6,2353:4
+Steel range	34	120	Kitchen	Stove space		-1	5	8794,2347	2353:6
+Steel torches	45	40	Chapel	Lamp space		-1	5	8794,2347	2353:2
+Steel-plated door	84	800	Dungeon, Treasure Room	Door space	13346,13347	-1	5	8794,2347	8778:10,2353:10
+Stone wall	63	200	Formal garden	Fencing	5154	-1	5	8794,2347	3420:10
+Tangle vine	80	316	Dungeon	Trap space	13358	-1	5		995:100000
+Teak altar	50	360	Chapel	Altar space		-1	5	8794,2347	8780:4
+Teak armchair	35	180	Parlour	Chair space	6757	-1	5	8794,2347	8780:2
+Teak armour case	64	270	Costume room	Armour case space		-1	5	8794,2347	9859:1,8780:3
+Teak bed	40	300	Bedroom	Bed space	13151	-1	5	8794,2347	8780:3,8790:2
+Teak bed	50	216	Mahogany Homes clients	Bed space		-1	5	8794,2347	8780:3
+Teak bed	50	144	Mahogany Homes clients	Bed space		-1	5	8794,2347	8780:2
+Teak bookcase	50	144	Mahogany Homes clients	Bookcase space		-1	5	8794,2347	8780:2
+Teak cabinet	50	144	Mahogany Homes clients	Cabinet space	39902,39908	-1	5	8794,2347	8780:2
+Teak cape rack	63	360	Costume room	Cape rack space	18767	-1	5	8794,2347	9843:1,8780:4
+Teak chair	50	72	Mahogany Homes clients	Chair space	39958,40065	-1	5	8794,2347	8780:1
+Teak chest	83	530	Treasure Room	Treasure space		-1	5	8794,2347	8780:5,2353:4
+Teak clock	55	202	Bedroom	Corner space	13170	-1	5	8794,2347	8780:2,8792:1
+Teak cupboard	50	144	Mahogany Homes clients	Cupboard space	40040,40118	-1	5	8794,2347	8780:2
+Teak demon lectern	57	180	Study	Lectern space	13646	-1	5	8794,2347	8780:2
+Teak dining bench	38	360	Dining room	Seating space	13303,26213,26240	-1	5	8794,2347	8780:4
+Teak display	56	180	Skill hall	Fishing trophy space	56131	-1	5	8794,2347	8780:2
+Teak display	38	180	Skill hall	Head trophy space	56110	-1	5	8794,2347	8780:2
+Teak drawers	51	180	Bedroom	Wardrobe space	13158	-1	5	8794,2347	8780:2
+Teak drawers	50	144	Mahogany Homes clients	Drawer space	39926,40059,40146,40154,40190	-1	5	8794,2347	8780:2
+Teak dresser	46	181	Bedroom	Dresser space	13165	-1	5	8794,2347	8780:2,1775:1
+Teak dresser	50	144	Mahogany Homes clients	Dresser space	39951	-1	5	8794,2347	8780:2
+Teak eagle lectern	57	180	Study	Lectern space	13645	-1	5	8794,2347	8780:2
+Teak costume box	62	180	Costume room	Fancy dress box space		-1	5	8794,2347	9865:1,8780:2
+Teak feeder	48	272	Menagerie	Pet feeder space	26871	-1	5	8794,2347	8780:3,1927:1
+Teak garden bench	66	540	Superior garden	Seating space	29111,29112,29270,29271	-1	5	8794,2347	8780:6
+Teak house	48	360	Menagerie	Pet house space	26298	-1	5	8794,2347	12704:1,8780:4
+Teak kitchen table	52	270	Kitchen	Table space	13579	-1	5	8794,2347	8780:3
+Teak ladder	78	450	Oubliette	Ladder space	13329	-1	5	8794,2347	8780:5
+Teak larder	43	750	Kitchen	Larder space	13567	-1	5	8794,2347	8780:8,8790:2
+Teak Lever	78	450	Throne Room	Lever space	13672	-1	5	8794,2347	8780:5
+Teak wardrobe	60	360	Costume Room	Magic wardrobe space		-1	5	8794,2347	9853:1,8780:4
+Teak portal	50	270	Portal Chamber	Portal space	13636	-1	5	8794,2347	8780:3
+Teak chest	44	660	Games room	Prize chest space		-1	5	8794,2347	8780:4,8784:1
+Teak scratching post	49	204	Menagerie	Scratching post space	26859	-1	5	8794,2347	8780:2,3420:1,954:1
+Teak shelves	50	144	Mahogany Homes clients	Shelves space	39938,40028,40124	-1	5	8794,2347	8780:2
+Teak shelves 1	56	330	Kitchen	Shelf space		-1	5	8794,2347	8780:3,1761:6
+Teak shelves 2	67	930	Kitchen	Shelf space		-1	5	8794,2347	8780:3,1761:6,8784:2
+Teak staircase	48	980	Skill hall, quest hall, dungeon	Rug space, Stair space	13499	-1	5	8794,2347	8780:10,2353:4
+Teak table	38	360	Dining room	Table space	13296	-1	5	8794,2347	8780:4
+Teak table	50	288	Mahogany Homes clients	Table space	39895	-1	5	8794,2347	8780:4
+Teak table	50	216	Mahogany Homes clients	Table space	40020,40105,40111,39964	-1	5	8794,2347	8780:3
+Teak table	50	144	Mahogany Homes clients	Table space	39970,40034	-1	5	8794,2347	8780:2
+Teak telescope	64	181	Study	Telescope space	13657	-1	5	8794,2347	8780:2,1775:1
+Teak throne	67	1450	Throne Room	Throne space	13666	-1	5	8794,2347	8780:5,8786:2
+Teak toy box	68	180	Costume room	Toy box space		-1	5	8794,2347	8780:2
+Teak trapdoor	78	450	Throne Room	Trapdoor space		-1	5	8794,2347	8780:5
+Teak treasure chest	66	180	Costume Room	Treasure chest space		-1	5	8794,2347	9862:1,8780:2
+Teak wall decoration	36	180	Dining room, combat room, throne room	Decoration space	13814,13815,13816,13817,13818,13819,13820,13821,13822,13823,13824,13825,13826,13827,13828,13829	-1	5	8794,2347	8780:2
+Teak wardrobe	63	270	Bedroom	Wardrobe space	13159	-1	5	8794,2347	8780:3
+Teak wardrobe	50	144	Mahogany Homes clients	Wardrobe space	39920	-1	5	8794,2347	8780:2
+Teleport focus	50	40	Portal Chamber	Centrepiece space	13640	-1	5	8794,2347	3420:2
+Teleport trap	88	447	Dungeon	Trap space	13360	-1	5		995:200000
+Tentacle pool	71	326	Oubliette	Floor space	13331,13332,13333	-1	5	8794,2347	1929:20,995:100000
+The Desert	44	314	Quest hall	Landscape space	13514	-1	5	8794,2347	8780:3,7999:1
+Tip jar	40	651	Garden, Formal Garden	Tip jar space	29146	-1	5	8794,2347	8782:2,1775:1,8784:1,13204:5
+Tok-Xil	85	2236	Treasure Room	Monster space	13377	-1	5		995:5000000
+Tool store 1	15	120	Workshop	Tool space	6786	-1	5	8794,2347	8778:2
+Tool store 2	25	120	Workshop	Tool space	6787	-1	5	8794,2347	8384:1,8778:2
+Tool store 3	35	120	Workshop	Tool space	6788	-1	5	8794,2347	8385:1,8778:2
+Tool store 4	44	120	Workshop	Tool space	6789	-1	5	8794,2347	8386:1,8778:2
+Tool store 5	55	120	Workshop	Tool space	6790	-1	5	8794,2347	8387:1,8778:2
+Torches	84	244	Dungeon, Oubliette, Treasure Room	Lighting space	13341	-1	5	8794,2347	8778:4,594:4
+Trailblazer globe	28	120	League hall	Statue space	41181	-1	5	8794,2347	8778:2,25093:1
+Trailblazer rug	28	60	League hall	Rug space	41132,41133,41134,41135,41136,41137,41138,41139,41140,41141,41142,41143,41144,41145,41146,41147,41148,41149,41150,41151,41152,41153,41154	-1	5	8794,2347	8790:4,25096:1
+Trapdoor	74	770	Throne Room	Floor space	6521,40423	-1	5	8794,2347	8782:5,8792:10
+Treasure hunt	49	800	Games room	Game space	13379,13380	-1	5	8794,2347	8780:8,2353:4
+Troll guard	90	1000	Oubliette, Dungeon	Guard space	13369	-1	5		995:1000000
+Trophy pedestal	27	86	League hall	Pedestal space	41035,41036,41037,41038,41039,41040,41041,41042,41043,41044,41045,41046,41047,41048,41049,41065,41066,41067,41068,41069,41070,41071,41072,41073,41074,41075,41076,41077,41078,41079,41095,41096,41097,41098,41099,41100,41101,41102,41103,41104,41105,41106,41107,41108,41109,42861,42862,42863,42864,42865,42866,42867,42875,42876,42877,42878,42879,42880,42881,42889,42890,42891,42892,42893,42894,42895,49943,49944,49945,49946,49947,49948,49949,49957,49958,49959,49960,49961,49962,49963,49971,49972,49973,49974,49975,49976,49977,55815,55816,55817,55818,55819,55820,55821,55829,55830,55831,55832,55833,55834,55835,55843,55844,55845,55846,55847,55848,55849,29415,29416,29417,29418,29419,29420,29429,29430,29431,29432,29433,29434,29435,29443,29444,29445,29446,29447,29448,29449	-1	5	8794,2347	3420:4,954:1,1763:1
+Undead combat dummy	53	220	Combat room	Combat dummy space	29337	-1	5	8794,2347	20745:1,8921:1,4286:4
+Volcanic habitat	77	46	Menagerie	Habitat space	26844,26850,26856	-1	5		6983:5,4699:100
+Volcanic theme	85	4464	Superior garden	Theme space	29261	-1	5	5331	6983:2,6573:6,554:1000,4699:2000
+Weapons rack	44	180	Combat room	Storage space	13382	-1	5	8794,2347	8780:2
+Whetstone	35	260	Workshop	Repair space	6801	-1	5	8794,2347	8778:4,3420:1
+Windchimes	49	323	Chapel	Musical space	13214	-1	5	8794,2347	8778:4,1539:4,2353:4
+Wood dining table	10	115	Dining room	Table space	13293	-1	5	8794,2347	960:4,1539:4
+Wooden bed	20	117	Bedroom	Bed space	13148	-1	5	8794,2347	960:3,8790:2,1539:3
+Wooden bed	1	67.5	Mahogany Homes clients	Bed space		-1	5	8794,2347	960:3
+Wooden bed	1	45	Mahogany Homes clients	Bed space		-1	5	8794,2347	960:2
+Wooden bench	10	115	Dining room	Seating space	13300	-1	5	8794,2347	960:4,1539:4
+Wooden bookcase	4	115	Parlour, quest hall, study	Bookcase space	6768	-1	5	8794,2347	960:4,1539:4
+Wooden bookcase	1	45	Mahogany Homes clients	Bookcase space		-1	5	8794,2347	960:2
+Wooden cabinet	1	45	Mahogany Homes clients	Cabinet space	39900,39906	-1	5	8794,2347	960:2
+Wooden chair	8	87	Parlour	Chair space	6753	-1	5	8794,2347	960:3,1539:3
+Wooden chair	1	22.5	Mahogany Homes clients	Chair space	39956,40063	-1	5	8794,2347	960:1
+Wooden crate	75	143	Treasure Room	Treasure space		-1	5	8794,2347	960:5,1539:5
+Wooden cupboard	1	45	Mahogany Homes clients	Cupboard space	40038,40116	-1	5	8794,2347	960:2
+Wooden drawers	1	45	Mahogany Homes clients	Drawer space	39924,40057,40144,40152,40188	-1	5	8794,2347	960:2
+Wooden dresser	1	45	Mahogany Homes clients	Dresser space	39949	-1	5	8794,2347	960:2
+Wooden fence	59	280	Formal Garden	Fencing	5153	-1	5	8794,2347	960:10
+Wooden larder	9	228	Kitchen	Larder space	13565	-1	5	8794,2347	960:8,1539:8
+Wooden shelves	1	45	Mahogany Homes clients	Shelves space	39936,40026,40122	-1	5	8794,2347	960:2
+Wooden shelves 1	6	87	Kitchen	Shelf space		-1	5	8794,2347	960:3,1539:3
+Wooden shelves 2	12	147	Kitchen	Shelf space		-1	5	8794,2347	960:3,1761:6,1539:3
+Wooden shelves 3	23	147	Kitchen	Shelf space		-1	5	8794,2347	960:3,1761:6,1539:3
+Wooden table	1	90	Mahogany Homes clients	Table space	39893	-1	5	8794,2347	960:4
+Wooden table	1	67.5	Mahogany Homes clients	Table space	39930,39962,40018,40103,40109	-1	5	8794,2347	960:3
+Wooden table	1	45	Mahogany Homes clients	Table space	39968,40032	-1	5	8794,2347	960:2
+Wooden torches	49	58	Chapel	Lamp space		-1	5	8794,2347	960:2,1539:2
+Wooden wardrobe	1	45	Mahogany Homes clients	Wardrobe space	39918	-1	5	8794,2347	960:2
+Wooden workbench	17	143	Workshop	Workbench space	6791	-1	5	8794,2347	960:5,1539:5
+Zamorak icon	59	960	Chapel	Icon space	13176	-1	5	8794,2347	8780:4,8784:2
+Zamorak symbol	48	120	Chapel	Icon space	13173	-1	5	8794,2347	8778:2
+Zen theme	65	474	Superior garden	Theme space	29247	-1	5	5331	8419:1,6955:1,1783:6
