@@ -77,3 +77,16 @@ These RuneLite service endpoints are not called (the code was removed or cannot 
 `/telemetry`, `/xp/update`, `/pluginhub` and `/manifest`, `/account/*`, `/config` (cloud sync), `/loottracker`,
 `/ws` (party). `{api}/session`, `{api}/ws` and the plugin hub URL exist only as properties so the client can start.
 The game client's own traffic (JS5, login, the web links inside the game) is not governed by this document.
+
+## Served by the hub (2026-11-06)
+
+- `{api}/worlds.js`, `{api}/item/prices.js` (GE guide prices) and `{api}/config.json` (`{}`) come from `HubHttp`.
+- `{static}/item/stats.ids.min.json` and `{static}/npcs/npcs.min.json` are generated from our cache by
+  `tp.cache.export.RuneLiteStatic`:
+  - **Item stats** (15,851 items): bonuses from obj params 0–14 and 299, `is2h` from wearpos2 = shield, weight
+    converted from grams to kg.
+  - **NPC hitpoints** (13,994 NPCs): cache NPC stat 3.
+  - **Not in the cache:** GE buy limits. `ge_limit` is 0.
+  - **Who writes them:** the world node rewrites both into `.data/runelite-static/` at every boot; for a standalone hub,
+    run `cache-dump runelite-static`.
+  - **Serving:** the hub serves the directory at `{api}/static/` and refuses any path that resolves outside it.

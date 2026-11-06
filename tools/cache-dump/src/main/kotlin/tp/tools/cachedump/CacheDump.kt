@@ -55,8 +55,13 @@ private fun extractCacheDir(args: List<String>): Pair<Path, List<String>> {
     return Path.of(value) to (args.take(index) + args.drop(index + 2))
 }
 
+@Suppress("LongMethod") // one branch per command; each delegates in a line or two
 private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cacheDir: Path) {
     when (command) {
+        "runelite-static" -> {
+            runeliteStatic(cache, args)
+        }
+
         "summary" -> {
             printSummary(cache, cacheDir)
         }
@@ -180,4 +185,16 @@ private fun printConfig(cache: Js5Cache, args: List<String>) {
     val id = intArg(args, 1, "id or $ALL_FLAG")
     val lines = printer.one(id) ?: throw UsageException("$typeName $id does not exist")
     lines.forEach(::println)
+}
+
+/** RuneLite static data for the release client (a standalone hub serves this directory at /runelite/static). */
+private fun runeliteStatic(cache: Js5Cache, args: List<String>) {
+    val dir = Path.of(args.getOrNull(0) ?: ".data/runelite-static")
+    tp.cache.export.RuneLiteStatic
+        .write(
+            tp.cache.config.Configs
+                .load(cache),
+            dir,
+        )
+    println("wrote RuneLite static data to $dir")
 }

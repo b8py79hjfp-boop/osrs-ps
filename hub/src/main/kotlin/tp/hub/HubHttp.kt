@@ -30,33 +30,55 @@ object HubHttp {
     private fun runelite(hub: Hub, ex: HttpExchange) {
         val path = ex.requestURI.path.removePrefix("/runelite")
         when (path) {
-            "/worlds.js" -> json(ex, worlds(hub))
-            "/item/prices.js" -> json(ex, prices(hub))
-            "/config.json" -> json(ex, "{}")
-            else -> reply(ex, HTTP_NOT_FOUND, "not served")
+            "/worlds.js" -> {
+                json(ex, worlds(hub))
+            }
+
+            "/item/prices.js" -> {
+                json(ex, prices(hub))
+            }
+
+            "/config.json" -> {
+                json(ex, "{}")
+            }
+
+            // Item stats and NPC hitpoints, generated from the cache (world node at boot, or cache-dump runelite-static).
+            else -> {
+                if (path.startsWith(
+                        "/static/",
+                    )
+                ) {
+                    serveFile(staticDir, path.removePrefix("/static"), ex)
+                } else {
+                    reply(ex, HTTP_NOT_FOUND, "not served")
+                }
+            }
         }
     }
+
+    /** Where the world node / cache-dump writes RuneLite's static data. */
+    private val staticDir: java.nio.file.Path =
+        java.nio.file.Path
+            .of(".data", "runelite-static")
 
     /**
      * The launcher's update endpoint: static files from [dir] (manifest.json, manifest.json.sig and the artifacts directory), written
      * by `release publish`. Integrity comes from the signed manifest; this only serves bytes. Paths can't leave [dir].
      */
-    private fun update(dir: java.nio.file.Path, ex: HttpExchange) {
+    private fun update(dir: java.nio.file.Path, ex: HttpExchange) = serveFile(dir, ex.requestURI.path.removePrefix("/update"), ex)
+
+    /** Serves [relative] from [dir]; paths resolving outside [dir] (e.g. `..`) or to missing files answer 404. */
+    private fun serveFile(dir: java.nio.file.Path, relative: String, ex: HttpExchange) {
         val root = dir.toAbsolutePath().normalize()
-        val file =
-            root
-                .resolve(
-                    ex.requestURI.path
-                        .removePrefix("/update")
-                        .trimStart('/'),
-                ).normalize()
+        val file = root.resolve(relative.trimStart('/')).normalize()
         if (!file.startsWith(root) ||
             !java.nio.file.Files
                 .isRegularFile(file)
         ) {
             return reply(ex, HTTP_NOT_FOUND, "not found")
         }
-        ex.responseHeaders.add("Content-Type", "application/octet-stream")
+        val type = if (file.toString().endsWith(".json")) "application/json" else "application/octet-stream"
+        ex.responseHeaders.add("Content-Type", type)
         ex.sendResponseHeaders(
             HTTP_OK,
             java.nio.file.Files

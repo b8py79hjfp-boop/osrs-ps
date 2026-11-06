@@ -76,6 +76,16 @@ object WorldNode {
                 "skipped groups ${map.skippedGroups}, terrain extensions ${map.extendedSquares} (collision.md OPEN-1/2)"
         }
         logger.info { "boot data ready in ${millisSince(opened)} ms, heap used ${usedHeapMib()} MiB" }
+        // RuneLite static data (item stats, NPC hitpoints) for the release client, served by the hub at
+        // /runelite/static. Rebuilt every boot, so it always matches the cache in use.
+        runCatching {
+            tp.cache.export.RuneLiteStatic
+                .write(
+                    configs,
+                    java.nio.file.Path
+                        .of(".data", "runelite-static"),
+                )
+        }.onFailure { logger.warn(it) { "could not write RuneLite static data" } }
         return BootData(cache, configs, WorldData(configs, collision, StaticLocs.build(map, configs.locs)))
     }
 
