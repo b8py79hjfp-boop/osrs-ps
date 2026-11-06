@@ -189,7 +189,16 @@ class World(
         val start = System.nanoTime()
         var missed = 0L
         while (running) {
-            runTick()
+            try {
+                runTick()
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: RuntimeException,
+            ) {
+                // Last line of defence: one faulty tick must never stop the world (every player would freeze).
+                // Per-player work is already isolated; this catches anything that escaped it. Logged every time,
+                // since it should never happen and must be fixed at its source.
+                logger.error(e) { "world ${config.id}: tick $tick failed; continuing" }
+            }
             val deadline = start + (tick * TICK_NANOS)
             val now = System.nanoTime()
             if (now > deadline) {
@@ -719,8 +728,12 @@ class World(
         val session =
             try {
                 request.accept(slot, LoginDetails(staffModLevel = profile?.staffLevel ?: 0))
-            } catch (e: IllegalStateException) {
-                logger.warn(e) { "login accept failed for ${request.username}" }
+            } catch (
+                @Suppress("TooGenericExceptionCaught") e: RuntimeException,
+            ) {
+                // The client can be gone by the time the hub answers (timeout, closed window): RSProt then fails on
+                // the dead channel's pipeline (NoSuchElementException) or session state (IllegalStateException).
+                logger.warn { "login accept failed for ${request.username}: $e" }
                 profile?.let { accounts?.refused(it) }
                 return
             }
