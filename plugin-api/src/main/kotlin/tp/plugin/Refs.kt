@@ -131,6 +131,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.GameMessage(text))
     }
 
+    /** A chatbox line of client message [type] (e.g. 27 item / 28 NPC / 29 scenery examine). */
+    public fun message(text: String, type: Int) {
+        p.session.send(ServerMessage.GameMessage(text, type))
+    }
+
     /** A clickable request line from [from]: chat type 101 (trade) or 103 (duel), e.g. "<name> wishes to trade with you." */
     public fun requestMessage(from: PlayerRef, text: String, duel: Boolean) {
         p.session.send(ServerMessage.GameMessage(text, if (duel) DUEL_REQUEST_TYPE else TRADE_REQUEST_TYPE, from.username))
@@ -438,6 +443,16 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
             ?.getOrNull(index)
 
     public fun objName(obj: Int): String = p.world.objType(obj)?.name ?: "null"
+
+    /** Cache name of NPC type [npc]. */
+    public fun npcName(npc: Int): String =
+        p.world.data.configs.npcs[npc]
+            ?.name ?: "null"
+
+    /** Cache name of loc type [loc]. */
+    public fun locName(loc: Int): String =
+        p.world.data.configs.locs[loc]
+            ?.name ?: "null"
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 

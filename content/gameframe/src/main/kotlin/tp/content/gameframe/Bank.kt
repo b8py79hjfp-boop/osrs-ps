@@ -148,7 +148,11 @@ public class Bank : ContentPlugin {
         val bank = inv(Invs.BANK, stackAll = true)
         val slot = click.slot
         val obj = click.obj
-        if (click.op == OP_EXAMINE || !validSlot(bank, slot, obj)) return
+        if (click.op == OP_EXAMINE) {
+            if (validSlot(bank, slot, obj)) Examines.item(this, obj, bank.count(slot))
+            return
+        }
+        if (!validSlot(bank, slot, obj)) return
         if (isPlaceholder(obj)) return clearSlots("bank release placeholder", listOf(slot))
         val have = bank.count(slot)
         when (click.op) {
@@ -554,7 +558,7 @@ public class Bank : ContentPlugin {
         const val OP_SIDE_X = 7
         const val OP_SIDE_ALL = 8
 
-        /** Button op 10 on item grids is "Examine" (RS Mod `BankInvScript`); no examine texts exist yet (PROGRESS: deferred). */
+        /** Button op 10 on item grids is "Examine" (RS Mod `BankInvScript`). */
         const val OP_EXAMINE = 10
 
         /** Tab ops: 6 collapses a tab, 7 releases its placeholders (RS Mod `selectTab`). */

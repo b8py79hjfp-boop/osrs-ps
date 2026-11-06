@@ -257,8 +257,12 @@ class Osrs242Network(
         override fun getCount(address: String): Int = delegate.getCount(address)
     }
 
-    /** Item / spell use-on packets: OPLOCT, OPOBJT, IF_BUTTONT. */
+    /** Item / spell use-on packets: OPLOCT, OPOBJT, IF_BUTTONT; examine packets OPLOC6, OPNPC6, OPOBJ6. */
     private fun targetedConsumers(b: GameMessageConsumerRepositoryBuilder<RspSession>) {
+        b.addListener(net.rsprot.protocol.game.incoming.locs.OpLoc6V1::class.java) { s, m -> s.deliver(ClientCommand.Examine(0, m.id)) }
+        b.addListener(net.rsprot.protocol.game.incoming.locs.OpLoc6V2::class.java) { s, m -> s.deliver(ClientCommand.Examine(0, m.id)) }
+        b.addListener(net.rsprot.protocol.game.incoming.npcs.OpNpc6::class.java) { s, m -> s.deliver(ClientCommand.Examine(1, m.id)) }
+        b.addListener(net.rsprot.protocol.game.incoming.objs.OpObj6::class.java) { s, m -> s.deliver(ClientCommand.Examine(2, m.id)) }
         b.addListener(net.rsprot.protocol.game.incoming.locs.OpLocTV1::class.java) { s, m ->
             s.deliver(ClientCommand.OpLocT(m.id, m.x, m.z, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
         }

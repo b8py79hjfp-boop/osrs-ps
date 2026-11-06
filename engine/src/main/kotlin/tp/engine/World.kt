@@ -361,6 +361,18 @@ class World(
                 )
             }
 
+            is ClientCommand.Examine -> {
+                val known =
+                    when (command.kind) {
+                        0 -> data.configs.locs[command.id] != null
+                        1 -> data.configs.npcs[command.id] != null
+                        2 -> data.configs.objs[command.id] != null
+                        else -> false
+                    }
+                if (!known) return invalid(player, command)
+                content.onExamine(player, command.kind, command.id)
+            }
+
             is ClientCommand.ButtonT -> {
                 val fromOpen = interfaces.isOpen(player, command.fromComponent ushr COMPONENT_SHIFT)
                 val toOpen = interfaces.isOpen(player, command.toComponent ushr COMPONENT_SHIFT)

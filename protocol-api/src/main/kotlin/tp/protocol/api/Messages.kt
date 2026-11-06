@@ -51,6 +51,9 @@ sealed interface ClientCommand {
         val ctrl: Boolean,
     ) : ClientCommand
 
+    /** Examine a loc / NPC type / ground obj by config id (OPLOC6 / OPNPC6 / OPOBJ6). [kind]: 0 loc, 1 npc, 2 obj. */
+    data class Examine(val kind: Int, val id: Int) : ClientCommand
+
     /** One component slot used on another (IF_BUTTONT: item on item, spell on item). */
     data class ButtonT(
         val fromComponent: Int,

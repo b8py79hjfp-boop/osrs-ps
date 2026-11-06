@@ -52,6 +52,9 @@ interface ContentHandlers {
 
     fun apObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? = null
 
+    /** Examine of a loc (kind 0), NPC type (1) or ground obj (2). */
+    fun onExamine(player: Player, kind: Int, id: Int) {}
+
     /** IF_BUTTONT: slot [fromSub] ([fromObj]) of [fromComponent] used on slot [toSub] ([toObj]) of [toComponent]. */
     fun onButtonT(player: Player, fromComponent: Int, fromSub: Int, fromObj: Int, toComponent: Int, toSub: Int, toObj: Int) {}
 

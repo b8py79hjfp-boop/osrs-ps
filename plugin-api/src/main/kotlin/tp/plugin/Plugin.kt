@@ -52,3 +52,8 @@ public class ItemOnItem internal constructor(
 
 /** The inventory slot a use-on interaction started from ([PlayerScript.used]). */
 public class UsedItem internal constructor(public val component: Int, public val slot: Int, public val obj: Int)
+
+/** An examine request: [kind] and the config id. */
+public class Examined internal constructor(public val kind: Kind, public val id: Int) {
+    public enum class Kind { LOC, NPC, OBJ }
+}

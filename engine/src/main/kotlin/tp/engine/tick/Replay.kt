@@ -60,6 +60,7 @@ object CommandCodec {
             is ClientCommand.OpNpcT -> "opnpct ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.OpLocT -> "oploct ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.OpObjT -> "opobjt ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
+            is ClientCommand.Examine -> "examine ${c.kind} ${c.id}"
             is ClientCommand.ButtonT -> "buttont ${c.fromComponent} ${c.fromSub} ${c.fromObj} ${c.toComponent} ${c.toSub} ${c.toObj}"
             is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj} ${c.subop}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
@@ -73,7 +74,7 @@ object CommandCodec {
             is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)} ${c.rank}"
         }
 
-    @Suppress("CyclomaticComplexMethod", "MagicNumber") // one branch per command; indices are field positions
+    @Suppress("CyclomaticComplexMethod", "MagicNumber", "LongMethod") // one branch per command; indices are field positions
     fun decode(parts: List<String>): ClientCommand {
         fun i(n: Int) = parts[n].toInt()
 
@@ -121,6 +122,10 @@ object CommandCodec {
 
             "opobjt" -> {
                 ClientCommand.OpObjT(i(1), i(2), i(3), i(4), i(5), i(6), b(7))
+            }
+
+            "examine" -> {
+                ClientCommand.Examine(i(1), i(2))
             }
 
             "buttont" -> {

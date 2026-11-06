@@ -142,8 +142,17 @@
     - challenge, rules and disabled worn slots, presets, coin/platinum stakes, confirm;
     - four arenas, countdown, forfeit, safe death, taxed winnings.
     - Verified in the client with two accounts, and headless.
-  - In progress, uncommitted: generic doors, gates, ladders and stairs.
-    - `cache-dump loc-links` generates doors.tsv (387 door/gate pairs) and climbs.tsv (4,441 climb links).
+  - Generic doors, gates, ladders and stairs (doors-and-climbing.md): 387 door/gate pairs and 4,369 climb links,
+    generated from the cache.
+  - Teleport leftovers: IF_SUBOP right-click Rub, home cooldown in varp 892, Revenant Caves 2-tick delay.
+  - Player trading (trade.md): request, offer with a mirrored inventory, confirm, one atomic swap. Verified in the
+    client.
+  - Dialogue system (dialogue.md): NPC/player chat heads, options, message and item boxes, page wrapping on real glyph
+    widths. Verified in the client.
+  - Using items on items, locs, NPCs and ground items (interactions.md I10).
+  - Equipment level requirements (cache params 434–437).
+  - Examine texts from the Wiki (examine.md).
+  - In progress (agents): NPC drop tables; shops.
 
 ## Blocking
 
@@ -176,14 +185,14 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 3. Phase 7 order (the user's list):
    1. ~~Wilderness bosses and revenants~~ done;
    2. ~~Duel Arena~~ done;
-   3. doors, gates, ladders and stairs (in progress);
-   4. teleport leftovers (IF_SUBOP for Rub, persisted home cooldown, Tele Group);
-   5. drop tables;
-   6. trade;
-   7. shops;
-   8. dialogue;
-   9. item-on-item, item-on-loc and item-on-NPC;
-   10. equip requirements and examine texts;
+   3. ~~doors, gates, ladders and stairs~~;
+   4. ~~teleport leftovers~~ (Tele Group, Arceuus and Teleport to Target move to full magic);
+   5. drop tables (agent);
+   6. ~~trade~~;
+   7. shops (agent);
+   8. ~~dialogue system~~ (NPC conversation content still to import);
+   9. ~~item-on-item, item-on-loc and item-on-NPC~~;
+   10. ~~equip requirements and examine texts~~;
    11. non-combat skills;
    12. full magic;
    13. gravestones;

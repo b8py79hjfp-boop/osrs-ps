@@ -204,6 +204,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref.handler(event)
     }
 
+    override fun onExamine(player: Player, kind: Int, id: Int) {
+        val handler = h.examine ?: return
+        ref(player).handler(Examined(Examined.Kind.entries[kind], id))
+    }
+
     /** Item use-on: the handler if any (run only while the used slot still holds the item), else the OSRS default line. */
     private fun <T> useScript(
         handler: (suspend PlayerScript.(T) -> Unit)?,

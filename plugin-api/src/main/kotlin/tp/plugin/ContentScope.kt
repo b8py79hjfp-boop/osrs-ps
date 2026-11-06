@@ -60,6 +60,12 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.buttonT, component, handler, "buttont $component")
     }
 
+    /** Examine of a loc / NPC / ground obj ([Examined.kind]); one handler (the examine plugin). */
+    public fun onExamine(handler: PlayerRef.(Examined) -> Unit) {
+        check(handlers.examine == null) { "duplicate handler: examine" }
+        handlers.examine = handler
+    }
+
     private fun useKey(a: Int, b: Int): Long = (a.toLong() shl Int.SIZE_BITS) or Integer.toUnsignedLong(b)
 
     /** Runs for every NPC added to the world (spawn data, content), e.g. to set its hunt range. */
@@ -229,6 +235,7 @@ internal class Handlers {
     val opLocT = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opObjT = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
+    var examine: (PlayerRef.(Examined) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
