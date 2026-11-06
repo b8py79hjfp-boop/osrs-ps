@@ -6,7 +6,7 @@
 - [x] **Phase 1 — Cache and world data** — done 2026-11-05 (pending CI confirmation on JDK 25)
 - [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
 - [x] **Phase 3 — Engine core** — done 2026-11-06 (awaiting real-client check)
-- [ ] Phase 4 — Combat and PvP
+- [ ] Phase 4 — Combat and PvP — golden scenarios 3a–3h and the DPS parity matrix pass; awaiting the RuneLite 1v1 + 20-player multi check
 - [ ] Phase 5 — Scale and operations
 - [ ] Phase 6 — Release client
 - [ ] Phase 7+ — Content breadth
@@ -72,6 +72,18 @@
     `content/dev` (`::pos ::run ::tele ::item ::empty ::xp ::trace`, a few Lumbridge NPCs).
   - Tick inspector (`--trace file.jsonl`, `::trace` to chatbox), replay (`--record file`, `tools/replay`), scenario
     runner (`tools/scenario`, headless). Live 5-bot recording replayed headlessly: all 149 tick hashes match.
+- Phase 4 (2026-11-06, pending the RuneLite check):
+  - Mechanics docs with sources and verifier passes: combat-timeline, combat-formulas, combat-data, prayers,
+    consumables, freeze, wilderness (+ scripts.md Q13: queue delays count the defender's own turns).
+  - Engine: visuals on the protocol seam (anim, spot anim, hitsplat, head bar, face, projectiles as zone ops),
+    appearance, entity attributes, freeze movement block, NPC interactions, NPC respawn, targeted ops (spells).
+  - content/combat: equipment from cache params, weapon styles, prayers (cache enum 4956 + Wiki), food/brew/karambwan
+    clocks, melee/ranged/Ice spells, specials as data, freezes with immunity and the 10-tile break, hit queue,
+    retaliation, death, Smite/Redemption/Retribution, items kept on death, stat restoration.
+  - content/pvp: Wilderness levels/brackets, PvP worlds, multi areas (RS Mod polygons), single-way PJ timers, skulls,
+    logout lock, Tele Block, Vengeance, recoil.
+  - Test 3 (golden 3a–3h) passes; DPS parity matrix (688 rows from the Wiki DPS calculator) passes.
+  - 20-bot multi fight (`botswarm 20 … fight`, `--max-per-ip 100`): 486 attacks, attack clocks respected.
 - Deferred from the Phase 3 plan (tracked for Phase 4 start): dynamic locs (zone loc add/del), inventory drag
   (IF_BUTTOND), examine ops, resizable gameframes, wilderness drop rule (ground-items G4), RSProx `.bin` recording.
 
@@ -88,8 +100,8 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. User check of Phase 3 with the real client (gameframe tabs, chat, stats, `::item` + drop/take, NPCs, `::trace`).
-2. Phase 4 plan: combat and PvP (brief §8), golden scenarios on tools/scenario (test 3), plus the deferred items above.
+1. User check of Phase 4 in RuneLite: a 1v1 and a 20-bot multi fight timed in the tick inspector (`::trace`, `--trace`).
+2. Phase 5 plan: scale and operations.
 
 ## Open questions
 
