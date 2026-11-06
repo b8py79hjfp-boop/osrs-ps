@@ -390,8 +390,16 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun baseLevel(stat: Int): Int = p.stats.baseLevel(stat)
 
-    /** Adds [xp] (fractional xp allowed, stored in tenths); returns levels gained. */
-    public fun addXp(stat: Int, xp: Double): Int = p.stats.addXp(stat, (xp * XP_TENTHS).toInt())
+    /**
+     * Adds [xp] (fractional xp allowed, stored in tenths); returns levels gained. A gain publishes [StatAdvanceEvent]
+     * (the level-up message and display, docs/mechanics/level-up.md).
+     */
+    public fun addXp(stat: Int, xp: Double): Int {
+        val from = p.stats.baseLevel(stat)
+        val gained = p.stats.addXp(stat, (xp * XP_TENTHS).toInt())
+        if (gained > 0) events.publish(StatAdvanceEvent(this, stat, from, from + gained))
+        return gained
+    }
 
     // ---- appearance and objs
 
