@@ -70,6 +70,12 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 | Granite maul | — | — (extra instant attack, 60% / ornate 50%) | SA:2241-2251 |
 | Dark bow | — | ×1.3 (dragon arrows ×1.5) | SA:2119-2127 |
 
+## SOURCE-CONFLICT (decided)
+
+- Magic accuracy: DA:20-25 gives ⌊Mag × Prayer⌋ + 8 (+3 accurate staff, +1 longrange); the Wiki DPS calculator uses
+  +9 (+2 more on accurate). Brief §8 validates against the calculator, so spells use +9 (D-024; DPS parity matrix).
+- 5% strength prayers: at least +1 level (MM:42; calculator: +1 at level ≤ 20).
+
 ## Notes
 
 - Elite ranged void: 1.125 for strength (MR:23), 1.1 for the attack roll (DR:17, DR:38). Not a conflict.

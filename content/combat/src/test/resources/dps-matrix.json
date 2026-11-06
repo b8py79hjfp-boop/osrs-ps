@@ -1,0 +1,3442 @@
+[
+ {
+  "id": "melee|unarmed|none|1|0|crush|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 768
+ },
+ {
+  "id": "melee|unarmed|none|1|1|crush|Aggressive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|none|1|2|crush|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|none|10|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1344
+ },
+ {
+  "id": "melee|unarmed|none|10|1|crush|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1152
+ },
+ {
+  "id": "melee|unarmed|none|10|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1152
+ },
+ {
+  "id": "melee|unarmed|none|70|0|crush|Accurate",
+  "maxHit": 8,
+  "maxAttackRoll": 5184
+ },
+ {
+  "id": "melee|unarmed|none|70|1|crush|Aggressive",
+  "maxHit": 8,
+  "maxAttackRoll": 4992
+ },
+ {
+  "id": "melee|unarmed|none|70|2|crush|Defensive",
+  "maxHit": 8,
+  "maxAttackRoll": 4992
+ },
+ {
+  "id": "melee|unarmed|none|99|0|crush|Accurate",
+  "maxHit": 11,
+  "maxAttackRoll": 7040
+ },
+ {
+  "id": "melee|unarmed|none|99|1|crush|Aggressive",
+  "maxHit": 11,
+  "maxAttackRoll": 6848
+ },
+ {
+  "id": "melee|unarmed|none|99|2|crush|Defensive",
+  "maxHit": 11,
+  "maxAttackRoll": 6848
+ },
+ {
+  "id": "melee|unarmed|piety|1|0|crush|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 768
+ },
+ {
+  "id": "melee|unarmed|piety|1|1|crush|Aggressive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|piety|1|2|crush|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|piety|10|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1472
+ },
+ {
+  "id": "melee|unarmed|piety|10|1|crush|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1280
+ },
+ {
+  "id": "melee|unarmed|piety|10|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1280
+ },
+ {
+  "id": "melee|unarmed|piety|70|0|crush|Accurate",
+  "maxHit": 9,
+  "maxAttackRoll": 6080
+ },
+ {
+  "id": "melee|unarmed|piety|70|1|crush|Aggressive",
+  "maxHit": 10,
+  "maxAttackRoll": 5888
+ },
+ {
+  "id": "melee|unarmed|piety|70|2|crush|Defensive",
+  "maxHit": 9,
+  "maxAttackRoll": 5888
+ },
+ {
+  "id": "melee|unarmed|piety|99|0|crush|Accurate",
+  "maxHit": 13,
+  "maxAttackRoll": 8256
+ },
+ {
+  "id": "melee|unarmed|piety|99|1|crush|Aggressive",
+  "maxHit": 13,
+  "maxAttackRoll": 8064
+ },
+ {
+  "id": "melee|unarmed|piety|99|2|crush|Defensive",
+  "maxHit": 13,
+  "maxAttackRoll": 8064
+ },
+ {
+  "id": "melee|unarmed|us_ir|1|0|crush|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 768
+ },
+ {
+  "id": "melee|unarmed|us_ir|1|1|crush|Aggressive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|us_ir|1|2|crush|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|us_ir|10|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1408
+ },
+ {
+  "id": "melee|unarmed|us_ir|10|1|crush|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1216
+ },
+ {
+  "id": "melee|unarmed|us_ir|10|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1216
+ },
+ {
+  "id": "melee|unarmed|us_ir|70|0|crush|Accurate",
+  "maxHit": 9,
+  "maxAttackRoll": 5824
+ },
+ {
+  "id": "melee|unarmed|us_ir|70|1|crush|Aggressive",
+  "maxHit": 9,
+  "maxAttackRoll": 5632
+ },
+ {
+  "id": "melee|unarmed|us_ir|70|2|crush|Defensive",
+  "maxHit": 9,
+  "maxAttackRoll": 5632
+ },
+ {
+  "id": "melee|unarmed|us_ir|99|0|crush|Accurate",
+  "maxHit": 12,
+  "maxAttackRoll": 7936
+ },
+ {
+  "id": "melee|unarmed|us_ir|99|1|crush|Aggressive",
+  "maxHit": 12,
+  "maxAttackRoll": 7744
+ },
+ {
+  "id": "melee|unarmed|us_ir|99|2|crush|Defensive",
+  "maxHit": 12,
+  "maxAttackRoll": 7744
+ },
+ {
+  "id": "melee|unarmed|burst|1|0|crush|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 768
+ },
+ {
+  "id": "melee|unarmed|burst|1|1|crush|Aggressive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|burst|1|2|crush|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 576
+ },
+ {
+  "id": "melee|unarmed|burst|10|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1344
+ },
+ {
+  "id": "melee|unarmed|burst|10|1|crush|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1152
+ },
+ {
+  "id": "melee|unarmed|burst|10|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1152
+ },
+ {
+  "id": "melee|unarmed|burst|70|0|crush|Accurate",
+  "maxHit": 8,
+  "maxAttackRoll": 5376
+ },
+ {
+  "id": "melee|unarmed|burst|70|1|crush|Aggressive",
+  "maxHit": 8,
+  "maxAttackRoll": 5184
+ },
+ {
+  "id": "melee|unarmed|burst|70|2|crush|Defensive",
+  "maxHit": 8,
+  "maxAttackRoll": 5184
+ },
+ {
+  "id": "melee|unarmed|burst|99|0|crush|Accurate",
+  "maxHit": 11,
+  "maxAttackRoll": 7296
+ },
+ {
+  "id": "melee|unarmed|burst|99|1|crush|Aggressive",
+  "maxHit": 11,
+  "maxAttackRoll": 7104
+ },
+ {
+  "id": "melee|unarmed|burst|99|2|crush|Defensive",
+  "maxHit": 11,
+  "maxAttackRoll": 7104
+ },
+ {
+  "id": "melee|whip|none|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whip|none|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whip|none|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whip|none|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whip|none|10|1|slash|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whip|none|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2628
+ },
+ {
+  "id": "melee|whip|none|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 11826
+ },
+ {
+  "id": "melee|whip|none|70|1|slash|Controlled",
+  "maxHit": 18,
+  "maxAttackRoll": 11534
+ },
+ {
+  "id": "melee|whip|none|70|2|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11388
+ },
+ {
+  "id": "melee|whip|none|99|0|slash|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 16060
+ },
+ {
+  "id": "melee|whip|none|99|1|slash|Controlled",
+  "maxHit": 25,
+  "maxAttackRoll": 15768
+ },
+ {
+  "id": "melee|whip|none|99|2|slash|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15622
+ },
+ {
+  "id": "melee|whip|piety|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whip|piety|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whip|piety|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whip|piety|10|0|slash|Accurate",
+  "maxHit": 5,
+  "maxAttackRoll": 3358
+ },
+ {
+  "id": "melee|whip|piety|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whip|piety|10|2|slash|Defensive",
+  "maxHit": 5,
+  "maxAttackRoll": 2920
+ },
+ {
+  "id": "melee|whip|piety|70|0|slash|Accurate",
+  "maxHit": 21,
+  "maxAttackRoll": 13870
+ },
+ {
+  "id": "melee|whip|piety|70|1|slash|Controlled",
+  "maxHit": 22,
+  "maxAttackRoll": 13578
+ },
+ {
+  "id": "melee|whip|piety|70|2|slash|Defensive",
+  "maxHit": 21,
+  "maxAttackRoll": 13432
+ },
+ {
+  "id": "melee|whip|piety|99|0|slash|Accurate",
+  "maxHit": 29,
+  "maxAttackRoll": 18834
+ },
+ {
+  "id": "melee|whip|piety|99|1|slash|Controlled",
+  "maxHit": 30,
+  "maxAttackRoll": 18542
+ },
+ {
+  "id": "melee|whip|piety|99|2|slash|Defensive",
+  "maxHit": 29,
+  "maxAttackRoll": 18396
+ },
+ {
+  "id": "melee|whip|us_ir|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whip|us_ir|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whip|us_ir|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whip|us_ir|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3212
+ },
+ {
+  "id": "melee|whip|us_ir|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 2920
+ },
+ {
+  "id": "melee|whip|us_ir|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whip|us_ir|70|0|slash|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 13286
+ },
+ {
+  "id": "melee|whip|us_ir|70|1|slash|Controlled",
+  "maxHit": 20,
+  "maxAttackRoll": 12994
+ },
+ {
+  "id": "melee|whip|us_ir|70|2|slash|Defensive",
+  "maxHit": 20,
+  "maxAttackRoll": 12848
+ },
+ {
+  "id": "melee|whip|us_ir|99|0|slash|Accurate",
+  "maxHit": 28,
+  "maxAttackRoll": 18104
+ },
+ {
+  "id": "melee|whip|us_ir|99|1|slash|Controlled",
+  "maxHit": 28,
+  "maxAttackRoll": 17812
+ },
+ {
+  "id": "melee|whip|us_ir|99|2|slash|Defensive",
+  "maxHit": 28,
+  "maxAttackRoll": 17666
+ },
+ {
+  "id": "melee|whip|burst|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whip|burst|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whip|burst|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whip|burst|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whip|burst|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whip|burst|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2628
+ },
+ {
+  "id": "melee|whip|burst|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 12264
+ },
+ {
+  "id": "melee|whip|burst|70|1|slash|Controlled",
+  "maxHit": 19,
+  "maxAttackRoll": 11972
+ },
+ {
+  "id": "melee|whip|burst|70|2|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11826
+ },
+ {
+  "id": "melee|whip|burst|99|0|slash|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 16644
+ },
+ {
+  "id": "melee|whip|burst|99|1|slash|Controlled",
+  "maxHit": 26,
+  "maxAttackRoll": 16352
+ },
+ {
+  "id": "melee|whip|burst|99|2|slash|Defensive",
+  "maxHit": 25,
+  "maxAttackRoll": 16206
+ },
+ {
+  "id": "melee|dscim|none|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1572
+ },
+ {
+  "id": "melee|dscim|none|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|none|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 720
+ },
+ {
+  "id": "melee|dscim|none|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|none|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2751
+ },
+ {
+  "id": "melee|dscim|none|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2358
+ },
+ {
+  "id": "melee|dscim|none|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1368
+ },
+ {
+  "id": "melee|dscim|none|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2358
+ },
+ {
+  "id": "melee|dscim|none|70|0|slash|Accurate",
+  "maxHit": 16,
+  "maxAttackRoll": 10611
+ },
+ {
+  "id": "melee|dscim|none|70|1|slash|Aggressive",
+  "maxHit": 16,
+  "maxAttackRoll": 10218
+ },
+ {
+  "id": "melee|dscim|none|70|2|stab|Controlled",
+  "maxHit": 16,
+  "maxAttackRoll": 5688
+ },
+ {
+  "id": "melee|dscim|none|70|3|slash|Defensive",
+  "maxHit": 16,
+  "maxAttackRoll": 10218
+ },
+ {
+  "id": "melee|dscim|none|99|0|slash|Accurate",
+  "maxHit": 22,
+  "maxAttackRoll": 14410
+ },
+ {
+  "id": "melee|dscim|none|99|1|slash|Aggressive",
+  "maxHit": 22,
+  "maxAttackRoll": 14017
+ },
+ {
+  "id": "melee|dscim|none|99|2|stab|Controlled",
+  "maxHit": 22,
+  "maxAttackRoll": 7776
+ },
+ {
+  "id": "melee|dscim|none|99|3|slash|Defensive",
+  "maxHit": 22,
+  "maxAttackRoll": 14017
+ },
+ {
+  "id": "melee|dscim|piety|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1572
+ },
+ {
+  "id": "melee|dscim|piety|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|piety|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 720
+ },
+ {
+  "id": "melee|dscim|piety|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|piety|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3013
+ },
+ {
+  "id": "melee|dscim|piety|10|1|slash|Aggressive",
+  "maxHit": 5,
+  "maxAttackRoll": 2620
+ },
+ {
+  "id": "melee|dscim|piety|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1512
+ },
+ {
+  "id": "melee|dscim|piety|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2620
+ },
+ {
+  "id": "melee|dscim|piety|70|0|slash|Accurate",
+  "maxHit": 19,
+  "maxAttackRoll": 12445
+ },
+ {
+  "id": "melee|dscim|piety|70|1|slash|Aggressive",
+  "maxHit": 20,
+  "maxAttackRoll": 12052
+ },
+ {
+  "id": "melee|dscim|piety|70|2|stab|Controlled",
+  "maxHit": 19,
+  "maxAttackRoll": 6696
+ },
+ {
+  "id": "melee|dscim|piety|70|3|slash|Defensive",
+  "maxHit": 19,
+  "maxAttackRoll": 12052
+ },
+ {
+  "id": "melee|dscim|piety|99|0|slash|Accurate",
+  "maxHit": 26,
+  "maxAttackRoll": 16899
+ },
+ {
+  "id": "melee|dscim|piety|99|1|slash|Aggressive",
+  "maxHit": 27,
+  "maxAttackRoll": 16506
+ },
+ {
+  "id": "melee|dscim|piety|99|2|stab|Controlled",
+  "maxHit": 26,
+  "maxAttackRoll": 9144
+ },
+ {
+  "id": "melee|dscim|piety|99|3|slash|Defensive",
+  "maxHit": 26,
+  "maxAttackRoll": 16506
+ },
+ {
+  "id": "melee|dscim|us_ir|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1572
+ },
+ {
+  "id": "melee|dscim|us_ir|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|us_ir|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 720
+ },
+ {
+  "id": "melee|dscim|us_ir|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|us_ir|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2882
+ },
+ {
+  "id": "melee|dscim|us_ir|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2489
+ },
+ {
+  "id": "melee|dscim|us_ir|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1440
+ },
+ {
+  "id": "melee|dscim|us_ir|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2489
+ },
+ {
+  "id": "melee|dscim|us_ir|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 11921
+ },
+ {
+  "id": "melee|dscim|us_ir|70|1|slash|Aggressive",
+  "maxHit": 18,
+  "maxAttackRoll": 11528
+ },
+ {
+  "id": "melee|dscim|us_ir|70|2|stab|Controlled",
+  "maxHit": 18,
+  "maxAttackRoll": 6408
+ },
+ {
+  "id": "melee|dscim|us_ir|70|3|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11528
+ },
+ {
+  "id": "melee|dscim|us_ir|99|0|slash|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 16244
+ },
+ {
+  "id": "melee|dscim|us_ir|99|1|slash|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 15851
+ },
+ {
+  "id": "melee|dscim|us_ir|99|2|stab|Controlled",
+  "maxHit": 25,
+  "maxAttackRoll": 8784
+ },
+ {
+  "id": "melee|dscim|us_ir|99|3|slash|Defensive",
+  "maxHit": 25,
+  "maxAttackRoll": 15851
+ },
+ {
+  "id": "melee|dscim|burst|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1572
+ },
+ {
+  "id": "melee|dscim|burst|1|1|slash|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|burst|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 720
+ },
+ {
+  "id": "melee|dscim|burst|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1179
+ },
+ {
+  "id": "melee|dscim|burst|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2751
+ },
+ {
+  "id": "melee|dscim|burst|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2358
+ },
+ {
+  "id": "melee|dscim|burst|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1368
+ },
+ {
+  "id": "melee|dscim|burst|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2358
+ },
+ {
+  "id": "melee|dscim|burst|70|0|slash|Accurate",
+  "maxHit": 16,
+  "maxAttackRoll": 11004
+ },
+ {
+  "id": "melee|dscim|burst|70|1|slash|Aggressive",
+  "maxHit": 17,
+  "maxAttackRoll": 10611
+ },
+ {
+  "id": "melee|dscim|burst|70|2|stab|Controlled",
+  "maxHit": 17,
+  "maxAttackRoll": 5904
+ },
+ {
+  "id": "melee|dscim|burst|70|3|slash|Defensive",
+  "maxHit": 16,
+  "maxAttackRoll": 10611
+ },
+ {
+  "id": "melee|dscim|burst|99|0|slash|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 14934
+ },
+ {
+  "id": "melee|dscim|burst|99|1|slash|Aggressive",
+  "maxHit": 23,
+  "maxAttackRoll": 14541
+ },
+ {
+  "id": "melee|dscim|burst|99|2|stab|Controlled",
+  "maxHit": 23,
+  "maxAttackRoll": 8064
+ },
+ {
+  "id": "melee|dscim|burst|99|3|slash|Defensive",
+  "maxHit": 23,
+  "maxAttackRoll": 14541
+ },
+ {
+  "id": "melee|ags|none|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2352
+ },
+ {
+  "id": "melee|ags|none|1|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|none|1|2|crush|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1296
+ },
+ {
+  "id": "melee|ags|none|1|3|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|none|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4116
+ },
+ {
+  "id": "melee|ags|none|10|1|slash|Aggressive",
+  "maxHit": 6,
+  "maxAttackRoll": 3528
+ },
+ {
+  "id": "melee|ags|none|10|2|crush|Aggressive",
+  "maxHit": 6,
+  "maxAttackRoll": 2592
+ },
+ {
+  "id": "melee|ags|none|10|3|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3528
+ },
+ {
+  "id": "melee|ags|none|70|0|slash|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 15876
+ },
+ {
+  "id": "melee|ags|none|70|1|slash|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 15288
+ },
+ {
+  "id": "melee|ags|none|70|2|crush|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 11232
+ },
+ {
+  "id": "melee|ags|none|70|3|slash|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15288
+ },
+ {
+  "id": "melee|ags|none|99|0|slash|Accurate",
+  "maxHit": 33,
+  "maxAttackRoll": 21560
+ },
+ {
+  "id": "melee|ags|none|99|1|slash|Aggressive",
+  "maxHit": 34,
+  "maxAttackRoll": 20972
+ },
+ {
+  "id": "melee|ags|none|99|2|crush|Aggressive",
+  "maxHit": 34,
+  "maxAttackRoll": 15408
+ },
+ {
+  "id": "melee|ags|none|99|3|slash|Defensive",
+  "maxHit": 33,
+  "maxAttackRoll": 20972
+ },
+ {
+  "id": "melee|ags|piety|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2352
+ },
+ {
+  "id": "melee|ags|piety|1|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|piety|1|2|crush|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1296
+ },
+ {
+  "id": "melee|ags|piety|1|3|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|piety|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4508
+ },
+ {
+  "id": "melee|ags|piety|10|1|slash|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 3920
+ },
+ {
+  "id": "melee|ags|piety|10|2|crush|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 2880
+ },
+ {
+  "id": "melee|ags|piety|10|3|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3920
+ },
+ {
+  "id": "melee|ags|piety|70|0|slash|Accurate",
+  "maxHit": 29,
+  "maxAttackRoll": 18620
+ },
+ {
+  "id": "melee|ags|piety|70|1|slash|Aggressive",
+  "maxHit": 30,
+  "maxAttackRoll": 18032
+ },
+ {
+  "id": "melee|ags|piety|70|2|crush|Aggressive",
+  "maxHit": 30,
+  "maxAttackRoll": 13248
+ },
+ {
+  "id": "melee|ags|piety|70|3|slash|Defensive",
+  "maxHit": 29,
+  "maxAttackRoll": 18032
+ },
+ {
+  "id": "melee|ags|piety|99|0|slash|Accurate",
+  "maxHit": 40,
+  "maxAttackRoll": 25284
+ },
+ {
+  "id": "melee|ags|piety|99|1|slash|Aggressive",
+  "maxHit": 40,
+  "maxAttackRoll": 24696
+ },
+ {
+  "id": "melee|ags|piety|99|2|crush|Aggressive",
+  "maxHit": 40,
+  "maxAttackRoll": 18144
+ },
+ {
+  "id": "melee|ags|piety|99|3|slash|Defensive",
+  "maxHit": 40,
+  "maxAttackRoll": 24696
+ },
+ {
+  "id": "melee|ags|us_ir|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2352
+ },
+ {
+  "id": "melee|ags|us_ir|1|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|us_ir|1|2|crush|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1296
+ },
+ {
+  "id": "melee|ags|us_ir|1|3|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|us_ir|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4312
+ },
+ {
+  "id": "melee|ags|us_ir|10|1|slash|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 3724
+ },
+ {
+  "id": "melee|ags|us_ir|10|2|crush|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 2736
+ },
+ {
+  "id": "melee|ags|us_ir|10|3|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3724
+ },
+ {
+  "id": "melee|ags|us_ir|70|0|slash|Accurate",
+  "maxHit": 27,
+  "maxAttackRoll": 17836
+ },
+ {
+  "id": "melee|ags|us_ir|70|1|slash|Aggressive",
+  "maxHit": 28,
+  "maxAttackRoll": 17248
+ },
+ {
+  "id": "melee|ags|us_ir|70|2|crush|Aggressive",
+  "maxHit": 28,
+  "maxAttackRoll": 12672
+ },
+ {
+  "id": "melee|ags|us_ir|70|3|slash|Defensive",
+  "maxHit": 27,
+  "maxAttackRoll": 17248
+ },
+ {
+  "id": "melee|ags|us_ir|99|0|slash|Accurate",
+  "maxHit": 37,
+  "maxAttackRoll": 24304
+ },
+ {
+  "id": "melee|ags|us_ir|99|1|slash|Aggressive",
+  "maxHit": 38,
+  "maxAttackRoll": 23716
+ },
+ {
+  "id": "melee|ags|us_ir|99|2|crush|Aggressive",
+  "maxHit": 38,
+  "maxAttackRoll": 17424
+ },
+ {
+  "id": "melee|ags|us_ir|99|3|slash|Defensive",
+  "maxHit": 37,
+  "maxAttackRoll": 23716
+ },
+ {
+  "id": "melee|ags|burst|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2352
+ },
+ {
+  "id": "melee|ags|burst|1|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|burst|1|2|crush|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1296
+ },
+ {
+  "id": "melee|ags|burst|1|3|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1764
+ },
+ {
+  "id": "melee|ags|burst|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4116
+ },
+ {
+  "id": "melee|ags|burst|10|1|slash|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 3528
+ },
+ {
+  "id": "melee|ags|burst|10|2|crush|Aggressive",
+  "maxHit": 7,
+  "maxAttackRoll": 2592
+ },
+ {
+  "id": "melee|ags|burst|10|3|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3528
+ },
+ {
+  "id": "melee|ags|burst|70|0|slash|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 16464
+ },
+ {
+  "id": "melee|ags|burst|70|1|slash|Aggressive",
+  "maxHit": 26,
+  "maxAttackRoll": 15876
+ },
+ {
+  "id": "melee|ags|burst|70|2|crush|Aggressive",
+  "maxHit": 26,
+  "maxAttackRoll": 11664
+ },
+ {
+  "id": "melee|ags|burst|70|3|slash|Defensive",
+  "maxHit": 25,
+  "maxAttackRoll": 15876
+ },
+ {
+  "id": "melee|ags|burst|99|0|slash|Accurate",
+  "maxHit": 34,
+  "maxAttackRoll": 22344
+ },
+ {
+  "id": "melee|ags|burst|99|1|slash|Aggressive",
+  "maxHit": 35,
+  "maxAttackRoll": 21756
+ },
+ {
+  "id": "melee|ags|burst|99|2|crush|Aggressive",
+  "maxHit": 35,
+  "maxAttackRoll": 15984
+ },
+ {
+  "id": "melee|ags|burst|99|3|slash|Defensive",
+  "maxHit": 34,
+  "maxAttackRoll": 21756
+ },
+ {
+  "id": "melee|gmaul|none|1|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1740
+ },
+ {
+  "id": "melee|gmaul|none|1|1|crush|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|none|1|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|none|10|0|crush|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3045
+ },
+ {
+  "id": "melee|gmaul|none|10|1|crush|Aggressive",
+  "maxHit": 5,
+  "maxAttackRoll": 2610
+ },
+ {
+  "id": "melee|gmaul|none|10|2|crush|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2610
+ },
+ {
+  "id": "melee|gmaul|none|70|0|crush|Accurate",
+  "maxHit": 17,
+  "maxAttackRoll": 11745
+ },
+ {
+  "id": "melee|gmaul|none|70|1|crush|Aggressive",
+  "maxHit": 18,
+  "maxAttackRoll": 11310
+ },
+ {
+  "id": "melee|gmaul|none|70|2|crush|Defensive",
+  "maxHit": 17,
+  "maxAttackRoll": 11310
+ },
+ {
+  "id": "melee|gmaul|none|99|0|crush|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 15950
+ },
+ {
+  "id": "melee|gmaul|none|99|1|crush|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 15515
+ },
+ {
+  "id": "melee|gmaul|none|99|2|crush|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15515
+ },
+ {
+  "id": "melee|gmaul|piety|1|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1740
+ },
+ {
+  "id": "melee|gmaul|piety|1|1|crush|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|piety|1|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|piety|10|0|crush|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3335
+ },
+ {
+  "id": "melee|gmaul|piety|10|1|crush|Aggressive",
+  "maxHit": 5,
+  "maxAttackRoll": 2900
+ },
+ {
+  "id": "melee|gmaul|piety|10|2|crush|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2900
+ },
+ {
+  "id": "melee|gmaul|piety|70|0|crush|Accurate",
+  "maxHit": 21,
+  "maxAttackRoll": 13775
+ },
+ {
+  "id": "melee|gmaul|piety|70|1|crush|Aggressive",
+  "maxHit": 22,
+  "maxAttackRoll": 13340
+ },
+ {
+  "id": "melee|gmaul|piety|70|2|crush|Defensive",
+  "maxHit": 21,
+  "maxAttackRoll": 13340
+ },
+ {
+  "id": "melee|gmaul|piety|99|0|crush|Accurate",
+  "maxHit": 29,
+  "maxAttackRoll": 18705
+ },
+ {
+  "id": "melee|gmaul|piety|99|1|crush|Aggressive",
+  "maxHit": 29,
+  "maxAttackRoll": 18270
+ },
+ {
+  "id": "melee|gmaul|piety|99|2|crush|Defensive",
+  "maxHit": 29,
+  "maxAttackRoll": 18270
+ },
+ {
+  "id": "melee|gmaul|us_ir|1|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1740
+ },
+ {
+  "id": "melee|gmaul|us_ir|1|1|crush|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|us_ir|1|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|us_ir|10|0|crush|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3190
+ },
+ {
+  "id": "melee|gmaul|us_ir|10|1|crush|Aggressive",
+  "maxHit": 5,
+  "maxAttackRoll": 2755
+ },
+ {
+  "id": "melee|gmaul|us_ir|10|2|crush|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2755
+ },
+ {
+  "id": "melee|gmaul|us_ir|70|0|crush|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 13195
+ },
+ {
+  "id": "melee|gmaul|us_ir|70|1|crush|Aggressive",
+  "maxHit": 20,
+  "maxAttackRoll": 12760
+ },
+ {
+  "id": "melee|gmaul|us_ir|70|2|crush|Defensive",
+  "maxHit": 20,
+  "maxAttackRoll": 12760
+ },
+ {
+  "id": "melee|gmaul|us_ir|99|0|crush|Accurate",
+  "maxHit": 27,
+  "maxAttackRoll": 17980
+ },
+ {
+  "id": "melee|gmaul|us_ir|99|1|crush|Aggressive",
+  "maxHit": 28,
+  "maxAttackRoll": 17545
+ },
+ {
+  "id": "melee|gmaul|us_ir|99|2|crush|Defensive",
+  "maxHit": 27,
+  "maxAttackRoll": 17545
+ },
+ {
+  "id": "melee|gmaul|burst|1|0|crush|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1740
+ },
+ {
+  "id": "melee|gmaul|burst|1|1|crush|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|burst|1|2|crush|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1305
+ },
+ {
+  "id": "melee|gmaul|burst|10|0|crush|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3045
+ },
+ {
+  "id": "melee|gmaul|burst|10|1|crush|Aggressive",
+  "maxHit": 5,
+  "maxAttackRoll": 2610
+ },
+ {
+  "id": "melee|gmaul|burst|10|2|crush|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2610
+ },
+ {
+  "id": "melee|gmaul|burst|70|0|crush|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 12180
+ },
+ {
+  "id": "melee|gmaul|burst|70|1|crush|Aggressive",
+  "maxHit": 19,
+  "maxAttackRoll": 11745
+ },
+ {
+  "id": "melee|gmaul|burst|70|2|crush|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11745
+ },
+ {
+  "id": "melee|gmaul|burst|99|0|crush|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 16530
+ },
+ {
+  "id": "melee|gmaul|burst|99|1|crush|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 16095
+ },
+ {
+  "id": "melee|gmaul|burst|99|2|crush|Defensive",
+  "maxHit": 25,
+  "maxAttackRoll": 16095
+ },
+ {
+  "id": "melee|claws|none|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1452
+ },
+ {
+  "id": "melee|claws|none|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|none|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1050
+ },
+ {
+  "id": "melee|claws|none|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|none|10|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2541
+ },
+ {
+  "id": "melee|claws|none|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2178
+ },
+ {
+  "id": "melee|claws|none|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1995
+ },
+ {
+  "id": "melee|claws|none|10|3|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 2178
+ },
+ {
+  "id": "melee|claws|none|70|0|slash|Accurate",
+  "maxHit": 15,
+  "maxAttackRoll": 9801
+ },
+ {
+  "id": "melee|claws|none|70|1|slash|Aggressive",
+  "maxHit": 15,
+  "maxAttackRoll": 9438
+ },
+ {
+  "id": "melee|claws|none|70|2|stab|Controlled",
+  "maxHit": 15,
+  "maxAttackRoll": 8295
+ },
+ {
+  "id": "melee|claws|none|70|3|slash|Defensive",
+  "maxHit": 15,
+  "maxAttackRoll": 9438
+ },
+ {
+  "id": "melee|claws|none|99|0|slash|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 13310
+ },
+ {
+  "id": "melee|claws|none|99|1|slash|Aggressive",
+  "maxHit": 21,
+  "maxAttackRoll": 12947
+ },
+ {
+  "id": "melee|claws|none|99|2|stab|Controlled",
+  "maxHit": 20,
+  "maxAttackRoll": 11340
+ },
+ {
+  "id": "melee|claws|none|99|3|slash|Defensive",
+  "maxHit": 20,
+  "maxAttackRoll": 12947
+ },
+ {
+  "id": "melee|claws|piety|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1452
+ },
+ {
+  "id": "melee|claws|piety|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|piety|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1050
+ },
+ {
+  "id": "melee|claws|piety|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|piety|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2783
+ },
+ {
+  "id": "melee|claws|piety|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2420
+ },
+ {
+  "id": "melee|claws|piety|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 2205
+ },
+ {
+  "id": "melee|claws|piety|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2420
+ },
+ {
+  "id": "melee|claws|piety|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 11495
+ },
+ {
+  "id": "melee|claws|piety|70|1|slash|Aggressive",
+  "maxHit": 18,
+  "maxAttackRoll": 11132
+ },
+ {
+  "id": "melee|claws|piety|70|2|stab|Controlled",
+  "maxHit": 18,
+  "maxAttackRoll": 9765
+ },
+ {
+  "id": "melee|claws|piety|70|3|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11132
+ },
+ {
+  "id": "melee|claws|piety|99|0|slash|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 15609
+ },
+ {
+  "id": "melee|claws|piety|99|1|slash|Aggressive",
+  "maxHit": 25,
+  "maxAttackRoll": 15246
+ },
+ {
+  "id": "melee|claws|piety|99|2|stab|Controlled",
+  "maxHit": 24,
+  "maxAttackRoll": 13335
+ },
+ {
+  "id": "melee|claws|piety|99|3|slash|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15246
+ },
+ {
+  "id": "melee|claws|us_ir|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1452
+ },
+ {
+  "id": "melee|claws|us_ir|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|us_ir|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1050
+ },
+ {
+  "id": "melee|claws|us_ir|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|us_ir|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2662
+ },
+ {
+  "id": "melee|claws|us_ir|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2299
+ },
+ {
+  "id": "melee|claws|us_ir|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 2100
+ },
+ {
+  "id": "melee|claws|us_ir|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2299
+ },
+ {
+  "id": "melee|claws|us_ir|70|0|slash|Accurate",
+  "maxHit": 17,
+  "maxAttackRoll": 11011
+ },
+ {
+  "id": "melee|claws|us_ir|70|1|slash|Aggressive",
+  "maxHit": 17,
+  "maxAttackRoll": 10648
+ },
+ {
+  "id": "melee|claws|us_ir|70|2|stab|Controlled",
+  "maxHit": 17,
+  "maxAttackRoll": 9345
+ },
+ {
+  "id": "melee|claws|us_ir|70|3|slash|Defensive",
+  "maxHit": 17,
+  "maxAttackRoll": 10648
+ },
+ {
+  "id": "melee|claws|us_ir|99|0|slash|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 15004
+ },
+ {
+  "id": "melee|claws|us_ir|99|1|slash|Aggressive",
+  "maxHit": 23,
+  "maxAttackRoll": 14641
+ },
+ {
+  "id": "melee|claws|us_ir|99|2|stab|Controlled",
+  "maxHit": 23,
+  "maxAttackRoll": 12810
+ },
+ {
+  "id": "melee|claws|us_ir|99|3|slash|Defensive",
+  "maxHit": 23,
+  "maxAttackRoll": 14641
+ },
+ {
+  "id": "melee|claws|burst|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1452
+ },
+ {
+  "id": "melee|claws|burst|1|1|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|burst|1|2|stab|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1050
+ },
+ {
+  "id": "melee|claws|burst|1|3|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1089
+ },
+ {
+  "id": "melee|claws|burst|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2541
+ },
+ {
+  "id": "melee|claws|burst|10|1|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2178
+ },
+ {
+  "id": "melee|claws|burst|10|2|stab|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 1995
+ },
+ {
+  "id": "melee|claws|burst|10|3|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2178
+ },
+ {
+  "id": "melee|claws|burst|70|0|slash|Accurate",
+  "maxHit": 15,
+  "maxAttackRoll": 10164
+ },
+ {
+  "id": "melee|claws|burst|70|1|slash|Aggressive",
+  "maxHit": 16,
+  "maxAttackRoll": 9801
+ },
+ {
+  "id": "melee|claws|burst|70|2|stab|Controlled",
+  "maxHit": 15,
+  "maxAttackRoll": 8610
+ },
+ {
+  "id": "melee|claws|burst|70|3|slash|Defensive",
+  "maxHit": 15,
+  "maxAttackRoll": 9801
+ },
+ {
+  "id": "melee|claws|burst|99|0|slash|Accurate",
+  "maxHit": 21,
+  "maxAttackRoll": 13794
+ },
+ {
+  "id": "melee|claws|burst|99|1|slash|Aggressive",
+  "maxHit": 21,
+  "maxAttackRoll": 13431
+ },
+ {
+  "id": "melee|claws|burst|99|2|stab|Controlled",
+  "maxHit": 21,
+  "maxAttackRoll": 11760
+ },
+ {
+  "id": "melee|claws|burst|99|3|slash|Defensive",
+  "maxHit": 21,
+  "maxAttackRoll": 13431
+ },
+ {
+  "id": "melee|dds|none|1|0|stab|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 1248
+ },
+ {
+  "id": "melee|dds|none|1|1|stab|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|none|1|2|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 801
+ },
+ {
+  "id": "melee|dds|none|1|3|stab|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|none|10|0|stab|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2184
+ },
+ {
+  "id": "melee|dds|none|10|1|stab|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1872
+ },
+ {
+  "id": "melee|dds|none|10|2|slash|Aggressive",
+  "maxHit": 3,
+  "maxAttackRoll": 1602
+ },
+ {
+  "id": "melee|dds|none|10|3|stab|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1872
+ },
+ {
+  "id": "melee|dds|none|70|0|stab|Accurate",
+  "maxHit": 13,
+  "maxAttackRoll": 8424
+ },
+ {
+  "id": "melee|dds|none|70|1|stab|Aggressive",
+  "maxHit": 13,
+  "maxAttackRoll": 8112
+ },
+ {
+  "id": "melee|dds|none|70|2|slash|Aggressive",
+  "maxHit": 13,
+  "maxAttackRoll": 6942
+ },
+ {
+  "id": "melee|dds|none|70|3|stab|Defensive",
+  "maxHit": 13,
+  "maxAttackRoll": 8112
+ },
+ {
+  "id": "melee|dds|none|99|0|stab|Accurate",
+  "maxHit": 17,
+  "maxAttackRoll": 11440
+ },
+ {
+  "id": "melee|dds|none|99|1|stab|Aggressive",
+  "maxHit": 18,
+  "maxAttackRoll": 11128
+ },
+ {
+  "id": "melee|dds|none|99|2|slash|Aggressive",
+  "maxHit": 18,
+  "maxAttackRoll": 9523
+ },
+ {
+  "id": "melee|dds|none|99|3|stab|Defensive",
+  "maxHit": 17,
+  "maxAttackRoll": 11128
+ },
+ {
+  "id": "melee|dds|piety|1|0|stab|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 1248
+ },
+ {
+  "id": "melee|dds|piety|1|1|stab|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|piety|1|2|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 801
+ },
+ {
+  "id": "melee|dds|piety|1|3|stab|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|piety|10|0|stab|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2392
+ },
+ {
+  "id": "melee|dds|piety|10|1|stab|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 2080
+ },
+ {
+  "id": "melee|dds|piety|10|2|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1780
+ },
+ {
+  "id": "melee|dds|piety|10|3|stab|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 2080
+ },
+ {
+  "id": "melee|dds|piety|70|0|stab|Accurate",
+  "maxHit": 15,
+  "maxAttackRoll": 9880
+ },
+ {
+  "id": "melee|dds|piety|70|1|stab|Aggressive",
+  "maxHit": 16,
+  "maxAttackRoll": 9568
+ },
+ {
+  "id": "melee|dds|piety|70|2|slash|Aggressive",
+  "maxHit": 16,
+  "maxAttackRoll": 8188
+ },
+ {
+  "id": "melee|dds|piety|70|3|stab|Defensive",
+  "maxHit": 15,
+  "maxAttackRoll": 9568
+ },
+ {
+  "id": "melee|dds|piety|99|0|stab|Accurate",
+  "maxHit": 21,
+  "maxAttackRoll": 13416
+ },
+ {
+  "id": "melee|dds|piety|99|1|stab|Aggressive",
+  "maxHit": 21,
+  "maxAttackRoll": 13104
+ },
+ {
+  "id": "melee|dds|piety|99|2|slash|Aggressive",
+  "maxHit": 21,
+  "maxAttackRoll": 11214
+ },
+ {
+  "id": "melee|dds|piety|99|3|stab|Defensive",
+  "maxHit": 21,
+  "maxAttackRoll": 13104
+ },
+ {
+  "id": "melee|dds|us_ir|1|0|stab|Accurate",
+  "maxHit": 1,
+  "maxAttackRoll": 1248
+ },
+ {
+  "id": "melee|dds|us_ir|1|1|stab|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|us_ir|1|2|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 801
+ },
+ {
+  "id": "melee|dds|us_ir|1|3|stab|Defensive",
+  "maxHit": 1,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|us_ir|10|0|stab|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2288
+ },
+ {
+  "id": "melee|dds|us_ir|10|1|stab|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1976
+ },
+ {
+  "id": "melee|dds|us_ir|10|2|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1691
+ },
+ {
+  "id": "melee|dds|us_ir|10|3|stab|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1976
+ },
+ {
+  "id": "melee|dds|us_ir|70|0|stab|Accurate",
+  "maxHit": 14,
+  "maxAttackRoll": 9464
+ },
+ {
+  "id": "melee|dds|us_ir|70|1|stab|Aggressive",
+  "maxHit": 15,
+  "maxAttackRoll": 9152
+ },
+ {
+  "id": "melee|dds|us_ir|70|2|slash|Aggressive",
+  "maxHit": 15,
+  "maxAttackRoll": 7832
+ },
+ {
+  "id": "melee|dds|us_ir|70|3|stab|Defensive",
+  "maxHit": 14,
+  "maxAttackRoll": 9152
+ },
+ {
+  "id": "melee|dds|us_ir|99|0|stab|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 12896
+ },
+ {
+  "id": "melee|dds|us_ir|99|1|stab|Aggressive",
+  "maxHit": 20,
+  "maxAttackRoll": 12584
+ },
+ {
+  "id": "melee|dds|us_ir|99|2|slash|Aggressive",
+  "maxHit": 20,
+  "maxAttackRoll": 10769
+ },
+ {
+  "id": "melee|dds|us_ir|99|3|stab|Defensive",
+  "maxHit": 20,
+  "maxAttackRoll": 12584
+ },
+ {
+  "id": "melee|dds|burst|1|0|stab|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1248
+ },
+ {
+  "id": "melee|dds|burst|1|1|stab|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|burst|1|2|slash|Aggressive",
+  "maxHit": 2,
+  "maxAttackRoll": 801
+ },
+ {
+  "id": "melee|dds|burst|1|3|stab|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 936
+ },
+ {
+  "id": "melee|dds|burst|10|0|stab|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2184
+ },
+ {
+  "id": "melee|dds|burst|10|1|stab|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1872
+ },
+ {
+  "id": "melee|dds|burst|10|2|slash|Aggressive",
+  "maxHit": 4,
+  "maxAttackRoll": 1602
+ },
+ {
+  "id": "melee|dds|burst|10|3|stab|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1872
+ },
+ {
+  "id": "melee|dds|burst|70|0|stab|Accurate",
+  "maxHit": 13,
+  "maxAttackRoll": 8736
+ },
+ {
+  "id": "melee|dds|burst|70|1|stab|Aggressive",
+  "maxHit": 14,
+  "maxAttackRoll": 8424
+ },
+ {
+  "id": "melee|dds|burst|70|2|slash|Aggressive",
+  "maxHit": 14,
+  "maxAttackRoll": 7209
+ },
+ {
+  "id": "melee|dds|burst|70|3|stab|Defensive",
+  "maxHit": 13,
+  "maxAttackRoll": 8424
+ },
+ {
+  "id": "melee|dds|burst|99|0|stab|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 11856
+ },
+ {
+  "id": "melee|dds|burst|99|1|stab|Aggressive",
+  "maxHit": 19,
+  "maxAttackRoll": 11544
+ },
+ {
+  "id": "melee|dds|burst|99|2|slash|Aggressive",
+  "maxHit": 19,
+  "maxAttackRoll": 9879
+ },
+ {
+  "id": "melee|dds|burst|99|3|stab|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11544
+ },
+ {
+  "id": "melee|whipRune|none|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whipRune|none|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whipRune|none|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whipRune|none|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whipRune|none|10|1|slash|Controlled",
+  "maxHit": 4,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whipRune|none|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2628
+ },
+ {
+  "id": "melee|whipRune|none|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 11826
+ },
+ {
+  "id": "melee|whipRune|none|70|1|slash|Controlled",
+  "maxHit": 18,
+  "maxAttackRoll": 11534
+ },
+ {
+  "id": "melee|whipRune|none|70|2|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11388
+ },
+ {
+  "id": "melee|whipRune|none|99|0|slash|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 16060
+ },
+ {
+  "id": "melee|whipRune|none|99|1|slash|Controlled",
+  "maxHit": 25,
+  "maxAttackRoll": 15768
+ },
+ {
+  "id": "melee|whipRune|none|99|2|slash|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15622
+ },
+ {
+  "id": "melee|whipRune|piety|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whipRune|piety|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whipRune|piety|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whipRune|piety|10|0|slash|Accurate",
+  "maxHit": 5,
+  "maxAttackRoll": 3358
+ },
+ {
+  "id": "melee|whipRune|piety|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whipRune|piety|10|2|slash|Defensive",
+  "maxHit": 5,
+  "maxAttackRoll": 2920
+ },
+ {
+  "id": "melee|whipRune|piety|70|0|slash|Accurate",
+  "maxHit": 21,
+  "maxAttackRoll": 13870
+ },
+ {
+  "id": "melee|whipRune|piety|70|1|slash|Controlled",
+  "maxHit": 22,
+  "maxAttackRoll": 13578
+ },
+ {
+  "id": "melee|whipRune|piety|70|2|slash|Defensive",
+  "maxHit": 21,
+  "maxAttackRoll": 13432
+ },
+ {
+  "id": "melee|whipRune|piety|99|0|slash|Accurate",
+  "maxHit": 29,
+  "maxAttackRoll": 18834
+ },
+ {
+  "id": "melee|whipRune|piety|99|1|slash|Controlled",
+  "maxHit": 30,
+  "maxAttackRoll": 18542
+ },
+ {
+  "id": "melee|whipRune|piety|99|2|slash|Defensive",
+  "maxHit": 29,
+  "maxAttackRoll": 18396
+ },
+ {
+  "id": "melee|whipRune|us_ir|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whipRune|us_ir|1|1|slash|Controlled",
+  "maxHit": 2,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whipRune|us_ir|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whipRune|us_ir|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3212
+ },
+ {
+  "id": "melee|whipRune|us_ir|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 2920
+ },
+ {
+  "id": "melee|whipRune|us_ir|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whipRune|us_ir|70|0|slash|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 13286
+ },
+ {
+  "id": "melee|whipRune|us_ir|70|1|slash|Controlled",
+  "maxHit": 20,
+  "maxAttackRoll": 12994
+ },
+ {
+  "id": "melee|whipRune|us_ir|70|2|slash|Defensive",
+  "maxHit": 20,
+  "maxAttackRoll": 12848
+ },
+ {
+  "id": "melee|whipRune|us_ir|99|0|slash|Accurate",
+  "maxHit": 28,
+  "maxAttackRoll": 18104
+ },
+ {
+  "id": "melee|whipRune|us_ir|99|1|slash|Controlled",
+  "maxHit": 28,
+  "maxAttackRoll": 17812
+ },
+ {
+  "id": "melee|whipRune|us_ir|99|2|slash|Defensive",
+  "maxHit": 28,
+  "maxAttackRoll": 17666
+ },
+ {
+  "id": "melee|whipRune|burst|1|0|slash|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1752
+ },
+ {
+  "id": "melee|whipRune|burst|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1460
+ },
+ {
+  "id": "melee|whipRune|burst|1|2|slash|Defensive",
+  "maxHit": 2,
+  "maxAttackRoll": 1314
+ },
+ {
+  "id": "melee|whipRune|burst|10|0|slash|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3066
+ },
+ {
+  "id": "melee|whipRune|burst|10|1|slash|Controlled",
+  "maxHit": 5,
+  "maxAttackRoll": 2774
+ },
+ {
+  "id": "melee|whipRune|burst|10|2|slash|Defensive",
+  "maxHit": 4,
+  "maxAttackRoll": 2628
+ },
+ {
+  "id": "melee|whipRune|burst|70|0|slash|Accurate",
+  "maxHit": 18,
+  "maxAttackRoll": 12264
+ },
+ {
+  "id": "melee|whipRune|burst|70|1|slash|Controlled",
+  "maxHit": 19,
+  "maxAttackRoll": 11972
+ },
+ {
+  "id": "melee|whipRune|burst|70|2|slash|Defensive",
+  "maxHit": 18,
+  "maxAttackRoll": 11826
+ },
+ {
+  "id": "melee|whipRune|burst|99|0|slash|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 16644
+ },
+ {
+  "id": "melee|whipRune|burst|99|1|slash|Controlled",
+  "maxHit": 26,
+  "maxAttackRoll": 16352
+ },
+ {
+  "id": "melee|whipRune|burst|99|2|slash|Defensive",
+  "maxHit": 25,
+  "maxAttackRoll": 16206
+ },
+ {
+  "id": "melee|whipMax|none|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2316
+ },
+ {
+  "id": "melee|whipMax|none|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1930
+ },
+ {
+  "id": "melee|whipMax|none|1|2|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1737
+ },
+ {
+  "id": "melee|whipMax|none|10|0|slash|Accurate",
+  "maxHit": 5,
+  "maxAttackRoll": 4053
+ },
+ {
+  "id": "melee|whipMax|none|10|1|slash|Controlled",
+  "maxHit": 6,
+  "maxAttackRoll": 3667
+ },
+ {
+  "id": "melee|whipMax|none|10|2|slash|Defensive",
+  "maxHit": 5,
+  "maxAttackRoll": 3474
+ },
+ {
+  "id": "melee|whipMax|none|70|0|slash|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 15633
+ },
+ {
+  "id": "melee|whipMax|none|70|1|slash|Controlled",
+  "maxHit": 24,
+  "maxAttackRoll": 15247
+ },
+ {
+  "id": "melee|whipMax|none|70|2|slash|Defensive",
+  "maxHit": 23,
+  "maxAttackRoll": 15054
+ },
+ {
+  "id": "melee|whipMax|none|99|0|slash|Accurate",
+  "maxHit": 32,
+  "maxAttackRoll": 21230
+ },
+ {
+  "id": "melee|whipMax|none|99|1|slash|Controlled",
+  "maxHit": 32,
+  "maxAttackRoll": 20844
+ },
+ {
+  "id": "melee|whipMax|none|99|2|slash|Defensive",
+  "maxHit": 32,
+  "maxAttackRoll": 20651
+ },
+ {
+  "id": "melee|whipMax|piety|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2316
+ },
+ {
+  "id": "melee|whipMax|piety|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1930
+ },
+ {
+  "id": "melee|whipMax|piety|1|2|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1737
+ },
+ {
+  "id": "melee|whipMax|piety|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4439
+ },
+ {
+  "id": "melee|whipMax|piety|10|1|slash|Controlled",
+  "maxHit": 6,
+  "maxAttackRoll": 4053
+ },
+ {
+  "id": "melee|whipMax|piety|10|2|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3860
+ },
+ {
+  "id": "melee|whipMax|piety|70|0|slash|Accurate",
+  "maxHit": 28,
+  "maxAttackRoll": 18335
+ },
+ {
+  "id": "melee|whipMax|piety|70|1|slash|Controlled",
+  "maxHit": 28,
+  "maxAttackRoll": 17949
+ },
+ {
+  "id": "melee|whipMax|piety|70|2|slash|Defensive",
+  "maxHit": 28,
+  "maxAttackRoll": 17756
+ },
+ {
+  "id": "melee|whipMax|piety|99|0|slash|Accurate",
+  "maxHit": 38,
+  "maxAttackRoll": 24897
+ },
+ {
+  "id": "melee|whipMax|piety|99|1|slash|Controlled",
+  "maxHit": 39,
+  "maxAttackRoll": 24511
+ },
+ {
+  "id": "melee|whipMax|piety|99|2|slash|Defensive",
+  "maxHit": 38,
+  "maxAttackRoll": 24318
+ },
+ {
+  "id": "melee|whipMax|us_ir|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2316
+ },
+ {
+  "id": "melee|whipMax|us_ir|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1930
+ },
+ {
+  "id": "melee|whipMax|us_ir|1|2|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1737
+ },
+ {
+  "id": "melee|whipMax|us_ir|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4246
+ },
+ {
+  "id": "melee|whipMax|us_ir|10|1|slash|Controlled",
+  "maxHit": 6,
+  "maxAttackRoll": 3860
+ },
+ {
+  "id": "melee|whipMax|us_ir|10|2|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3667
+ },
+ {
+  "id": "melee|whipMax|us_ir|70|0|slash|Accurate",
+  "maxHit": 26,
+  "maxAttackRoll": 17563
+ },
+ {
+  "id": "melee|whipMax|us_ir|70|1|slash|Controlled",
+  "maxHit": 27,
+  "maxAttackRoll": 17177
+ },
+ {
+  "id": "melee|whipMax|us_ir|70|2|slash|Defensive",
+  "maxHit": 26,
+  "maxAttackRoll": 16984
+ },
+ {
+  "id": "melee|whipMax|us_ir|99|0|slash|Accurate",
+  "maxHit": 36,
+  "maxAttackRoll": 23932
+ },
+ {
+  "id": "melee|whipMax|us_ir|99|1|slash|Controlled",
+  "maxHit": 36,
+  "maxAttackRoll": 23546
+ },
+ {
+  "id": "melee|whipMax|us_ir|99|2|slash|Defensive",
+  "maxHit": 36,
+  "maxAttackRoll": 23353
+ },
+ {
+  "id": "melee|whipMax|burst|1|0|slash|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2316
+ },
+ {
+  "id": "melee|whipMax|burst|1|1|slash|Controlled",
+  "maxHit": 3,
+  "maxAttackRoll": 1930
+ },
+ {
+  "id": "melee|whipMax|burst|1|2|slash|Defensive",
+  "maxHit": 3,
+  "maxAttackRoll": 1737
+ },
+ {
+  "id": "melee|whipMax|burst|10|0|slash|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4053
+ },
+ {
+  "id": "melee|whipMax|burst|10|1|slash|Controlled",
+  "maxHit": 6,
+  "maxAttackRoll": 3667
+ },
+ {
+  "id": "melee|whipMax|burst|10|2|slash|Defensive",
+  "maxHit": 6,
+  "maxAttackRoll": 3474
+ },
+ {
+  "id": "melee|whipMax|burst|70|0|slash|Accurate",
+  "maxHit": 24,
+  "maxAttackRoll": 16212
+ },
+ {
+  "id": "melee|whipMax|burst|70|1|slash|Controlled",
+  "maxHit": 24,
+  "maxAttackRoll": 15826
+ },
+ {
+  "id": "melee|whipMax|burst|70|2|slash|Defensive",
+  "maxHit": 24,
+  "maxAttackRoll": 15633
+ },
+ {
+  "id": "melee|whipMax|burst|99|0|slash|Accurate",
+  "maxHit": 33,
+  "maxAttackRoll": 22002
+ },
+ {
+  "id": "melee|whipMax|burst|99|1|slash|Controlled",
+  "maxHit": 33,
+  "maxAttackRoll": 21616
+ },
+ {
+  "id": "melee|whipMax|burst|99|2|slash|Defensive",
+  "maxHit": 33,
+  "maxAttackRoll": 21423
+ },
+ {
+  "id": "ranged|rcb|none|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 1848
+ },
+ {
+  "id": "ranged|rcb|none|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|none|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|none|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 3234
+ },
+ {
+  "id": "ranged|rcb|none|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 2772
+ },
+ {
+  "id": "ranged|rcb|none|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 2772
+ },
+ {
+  "id": "ranged|rcb|none|70|0|ranged|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 12474
+ },
+ {
+  "id": "ranged|rcb|none|70|1|ranged|Rapid",
+  "maxHit": 22,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "ranged|rcb|none|70|2|ranged|Longrange",
+  "maxHit": 22,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "ranged|rcb|none|99|0|ranged|Accurate",
+  "maxHit": 31,
+  "maxAttackRoll": 16940
+ },
+ {
+  "id": "ranged|rcb|none|99|1|ranged|Rapid",
+  "maxHit": 30,
+  "maxAttackRoll": 16478
+ },
+ {
+  "id": "ranged|rcb|none|99|2|ranged|Longrange",
+  "maxHit": 30,
+  "maxAttackRoll": 16478
+ },
+ {
+  "id": "ranged|rcb|rigour|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 1848
+ },
+ {
+  "id": "ranged|rcb|rigour|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|rigour|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|rigour|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 3542
+ },
+ {
+  "id": "ranged|rcb|rigour|10|1|ranged|Rapid",
+  "maxHit": 6,
+  "maxAttackRoll": 3080
+ },
+ {
+  "id": "ranged|rcb|rigour|10|2|ranged|Longrange",
+  "maxHit": 6,
+  "maxAttackRoll": 3080
+ },
+ {
+  "id": "ranged|rcb|rigour|70|0|ranged|Accurate",
+  "maxHit": 27,
+  "maxAttackRoll": 14630
+ },
+ {
+  "id": "ranged|rcb|rigour|70|1|ranged|Rapid",
+  "maxHit": 26,
+  "maxAttackRoll": 14168
+ },
+ {
+  "id": "ranged|rcb|rigour|70|2|ranged|Longrange",
+  "maxHit": 26,
+  "maxAttackRoll": 14168
+ },
+ {
+  "id": "ranged|rcb|rigour|99|0|ranged|Accurate",
+  "maxHit": 37,
+  "maxAttackRoll": 19866
+ },
+ {
+  "id": "ranged|rcb|rigour|99|1|ranged|Rapid",
+  "maxHit": 36,
+  "maxAttackRoll": 19404
+ },
+ {
+  "id": "ranged|rcb|rigour|99|2|ranged|Longrange",
+  "maxHit": 36,
+  "maxAttackRoll": 19404
+ },
+ {
+  "id": "ranged|rcb|eagle|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 1848
+ },
+ {
+  "id": "ranged|rcb|eagle|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|eagle|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|eagle|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 3388
+ },
+ {
+  "id": "ranged|rcb|eagle|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 2926
+ },
+ {
+  "id": "ranged|rcb|eagle|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 2926
+ },
+ {
+  "id": "ranged|rcb|eagle|70|0|ranged|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 14014
+ },
+ {
+  "id": "ranged|rcb|eagle|70|1|ranged|Rapid",
+  "maxHit": 25,
+  "maxAttackRoll": 13552
+ },
+ {
+  "id": "ranged|rcb|eagle|70|2|ranged|Longrange",
+  "maxHit": 25,
+  "maxAttackRoll": 13552
+ },
+ {
+  "id": "ranged|rcb|eagle|99|0|ranged|Accurate",
+  "maxHit": 35,
+  "maxAttackRoll": 19096
+ },
+ {
+  "id": "ranged|rcb|eagle|99|1|ranged|Rapid",
+  "maxHit": 34,
+  "maxAttackRoll": 18634
+ },
+ {
+  "id": "ranged|rcb|eagle|99|2|ranged|Longrange",
+  "maxHit": 34,
+  "maxAttackRoll": 18634
+ },
+ {
+  "id": "ranged|rcb|sharp|1|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 1848
+ },
+ {
+  "id": "ranged|rcb|sharp|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|sharp|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 1386
+ },
+ {
+  "id": "ranged|rcb|sharp|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 3234
+ },
+ {
+  "id": "ranged|rcb|sharp|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 2772
+ },
+ {
+  "id": "ranged|rcb|sharp|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 2772
+ },
+ {
+  "id": "ranged|rcb|sharp|70|0|ranged|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 12936
+ },
+ {
+  "id": "ranged|rcb|sharp|70|1|ranged|Rapid",
+  "maxHit": 23,
+  "maxAttackRoll": 12474
+ },
+ {
+  "id": "ranged|rcb|sharp|70|2|ranged|Longrange",
+  "maxHit": 23,
+  "maxAttackRoll": 12474
+ },
+ {
+  "id": "ranged|rcb|sharp|99|0|ranged|Accurate",
+  "maxHit": 32,
+  "maxAttackRoll": 17556
+ },
+ {
+  "id": "ranged|rcb|sharp|99|1|ranged|Rapid",
+  "maxHit": 31,
+  "maxAttackRoll": 17094
+ },
+ {
+  "id": "ranged|rcb|sharp|99|2|ranged|Longrange",
+  "maxHit": 31,
+  "maxAttackRoll": 17094
+ },
+ {
+  "id": "ranged|msb|none|1|0|ranged|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1596
+ },
+ {
+  "id": "ranged|msb|none|1|1|ranged|Rapid",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|none|1|2|ranged|Longrange",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|none|10|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2793
+ },
+ {
+  "id": "ranged|msb|none|10|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2394
+ },
+ {
+  "id": "ranged|msb|none|10|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2394
+ },
+ {
+  "id": "ranged|msb|none|70|0|ranged|Accurate",
+  "maxHit": 14,
+  "maxAttackRoll": 10773
+ },
+ {
+  "id": "ranged|msb|none|70|1|ranged|Rapid",
+  "maxHit": 14,
+  "maxAttackRoll": 10374
+ },
+ {
+  "id": "ranged|msb|none|70|2|ranged|Longrange",
+  "maxHit": 14,
+  "maxAttackRoll": 10374
+ },
+ {
+  "id": "ranged|msb|none|99|0|ranged|Accurate",
+  "maxHit": 19,
+  "maxAttackRoll": 14630
+ },
+ {
+  "id": "ranged|msb|none|99|1|ranged|Rapid",
+  "maxHit": 19,
+  "maxAttackRoll": 14231
+ },
+ {
+  "id": "ranged|msb|none|99|2|ranged|Longrange",
+  "maxHit": 19,
+  "maxAttackRoll": 14231
+ },
+ {
+  "id": "ranged|msb|rigour|1|0|ranged|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1596
+ },
+ {
+  "id": "ranged|msb|rigour|1|1|ranged|Rapid",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|rigour|1|2|ranged|Longrange",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|rigour|10|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 3059
+ },
+ {
+  "id": "ranged|msb|rigour|10|1|ranged|Rapid",
+  "maxHit": 4,
+  "maxAttackRoll": 2660
+ },
+ {
+  "id": "ranged|msb|rigour|10|2|ranged|Longrange",
+  "maxHit": 4,
+  "maxAttackRoll": 2660
+ },
+ {
+  "id": "ranged|msb|rigour|70|0|ranged|Accurate",
+  "maxHit": 17,
+  "maxAttackRoll": 12635
+ },
+ {
+  "id": "ranged|msb|rigour|70|1|ranged|Rapid",
+  "maxHit": 17,
+  "maxAttackRoll": 12236
+ },
+ {
+  "id": "ranged|msb|rigour|70|2|ranged|Longrange",
+  "maxHit": 17,
+  "maxAttackRoll": 12236
+ },
+ {
+  "id": "ranged|msb|rigour|99|0|ranged|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 17157
+ },
+ {
+  "id": "ranged|msb|rigour|99|1|ranged|Rapid",
+  "maxHit": 23,
+  "maxAttackRoll": 16758
+ },
+ {
+  "id": "ranged|msb|rigour|99|2|ranged|Longrange",
+  "maxHit": 23,
+  "maxAttackRoll": 16758
+ },
+ {
+  "id": "ranged|msb|eagle|1|0|ranged|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1596
+ },
+ {
+  "id": "ranged|msb|eagle|1|1|ranged|Rapid",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|eagle|1|2|ranged|Longrange",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|eagle|10|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2926
+ },
+ {
+  "id": "ranged|msb|eagle|10|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2527
+ },
+ {
+  "id": "ranged|msb|eagle|10|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2527
+ },
+ {
+  "id": "ranged|msb|eagle|70|0|ranged|Accurate",
+  "maxHit": 16,
+  "maxAttackRoll": 12103
+ },
+ {
+  "id": "ranged|msb|eagle|70|1|ranged|Rapid",
+  "maxHit": 16,
+  "maxAttackRoll": 11704
+ },
+ {
+  "id": "ranged|msb|eagle|70|2|ranged|Longrange",
+  "maxHit": 16,
+  "maxAttackRoll": 11704
+ },
+ {
+  "id": "ranged|msb|eagle|99|0|ranged|Accurate",
+  "maxHit": 22,
+  "maxAttackRoll": 16492
+ },
+ {
+  "id": "ranged|msb|eagle|99|1|ranged|Rapid",
+  "maxHit": 21,
+  "maxAttackRoll": 16093
+ },
+ {
+  "id": "ranged|msb|eagle|99|2|ranged|Longrange",
+  "maxHit": 21,
+  "maxAttackRoll": 16093
+ },
+ {
+  "id": "ranged|msb|sharp|1|0|ranged|Accurate",
+  "maxHit": 2,
+  "maxAttackRoll": 1596
+ },
+ {
+  "id": "ranged|msb|sharp|1|1|ranged|Rapid",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|sharp|1|2|ranged|Longrange",
+  "maxHit": 2,
+  "maxAttackRoll": 1197
+ },
+ {
+  "id": "ranged|msb|sharp|10|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2793
+ },
+ {
+  "id": "ranged|msb|sharp|10|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2394
+ },
+ {
+  "id": "ranged|msb|sharp|10|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2394
+ },
+ {
+  "id": "ranged|msb|sharp|70|0|ranged|Accurate",
+  "maxHit": 15,
+  "maxAttackRoll": 11172
+ },
+ {
+  "id": "ranged|msb|sharp|70|1|ranged|Rapid",
+  "maxHit": 14,
+  "maxAttackRoll": 10773
+ },
+ {
+  "id": "ranged|msb|sharp|70|2|ranged|Longrange",
+  "maxHit": 14,
+  "maxAttackRoll": 10773
+ },
+ {
+  "id": "ranged|msb|sharp|99|0|ranged|Accurate",
+  "maxHit": 20,
+  "maxAttackRoll": 15162
+ },
+ {
+  "id": "ranged|msb|sharp|99|1|ranged|Rapid",
+  "maxHit": 20,
+  "maxAttackRoll": 14763
+ },
+ {
+  "id": "ranged|msb|sharp|99|2|ranged|Longrange",
+  "maxHit": 20,
+  "maxAttackRoll": 14763
+ },
+ {
+  "id": "ranged|rcbMax|none|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2700
+ },
+ {
+  "id": "ranged|rcbMax|none|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|none|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|none|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4725
+ },
+ {
+  "id": "ranged|rcbMax|none|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 4050
+ },
+ {
+  "id": "ranged|rcbMax|none|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 4050
+ },
+ {
+  "id": "ranged|rcbMax|none|70|0|ranged|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 18225
+ },
+ {
+  "id": "ranged|rcbMax|none|70|1|ranged|Rapid",
+  "maxHit": 22,
+  "maxAttackRoll": 17550
+ },
+ {
+  "id": "ranged|rcbMax|none|70|2|ranged|Longrange",
+  "maxHit": 22,
+  "maxAttackRoll": 17550
+ },
+ {
+  "id": "ranged|rcbMax|none|99|0|ranged|Accurate",
+  "maxHit": 31,
+  "maxAttackRoll": 24750
+ },
+ {
+  "id": "ranged|rcbMax|none|99|1|ranged|Rapid",
+  "maxHit": 30,
+  "maxAttackRoll": 24075
+ },
+ {
+  "id": "ranged|rcbMax|none|99|2|ranged|Longrange",
+  "maxHit": 30,
+  "maxAttackRoll": 24075
+ },
+ {
+  "id": "ranged|rcbMax|rigour|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2700
+ },
+ {
+  "id": "ranged|rcbMax|rigour|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|rigour|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|rigour|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 5175
+ },
+ {
+  "id": "ranged|rcbMax|rigour|10|1|ranged|Rapid",
+  "maxHit": 6,
+  "maxAttackRoll": 4500
+ },
+ {
+  "id": "ranged|rcbMax|rigour|10|2|ranged|Longrange",
+  "maxHit": 6,
+  "maxAttackRoll": 4500
+ },
+ {
+  "id": "ranged|rcbMax|rigour|70|0|ranged|Accurate",
+  "maxHit": 27,
+  "maxAttackRoll": 21375
+ },
+ {
+  "id": "ranged|rcbMax|rigour|70|1|ranged|Rapid",
+  "maxHit": 26,
+  "maxAttackRoll": 20700
+ },
+ {
+  "id": "ranged|rcbMax|rigour|70|2|ranged|Longrange",
+  "maxHit": 26,
+  "maxAttackRoll": 20700
+ },
+ {
+  "id": "ranged|rcbMax|rigour|99|0|ranged|Accurate",
+  "maxHit": 37,
+  "maxAttackRoll": 29025
+ },
+ {
+  "id": "ranged|rcbMax|rigour|99|1|ranged|Rapid",
+  "maxHit": 36,
+  "maxAttackRoll": 28350
+ },
+ {
+  "id": "ranged|rcbMax|rigour|99|2|ranged|Longrange",
+  "maxHit": 36,
+  "maxAttackRoll": 28350
+ },
+ {
+  "id": "ranged|rcbMax|eagle|1|0|ranged|Accurate",
+  "maxHit": 3,
+  "maxAttackRoll": 2700
+ },
+ {
+  "id": "ranged|rcbMax|eagle|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|eagle|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|eagle|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4950
+ },
+ {
+  "id": "ranged|rcbMax|eagle|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 4275
+ },
+ {
+  "id": "ranged|rcbMax|eagle|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 4275
+ },
+ {
+  "id": "ranged|rcbMax|eagle|70|0|ranged|Accurate",
+  "maxHit": 25,
+  "maxAttackRoll": 20475
+ },
+ {
+  "id": "ranged|rcbMax|eagle|70|1|ranged|Rapid",
+  "maxHit": 25,
+  "maxAttackRoll": 19800
+ },
+ {
+  "id": "ranged|rcbMax|eagle|70|2|ranged|Longrange",
+  "maxHit": 25,
+  "maxAttackRoll": 19800
+ },
+ {
+  "id": "ranged|rcbMax|eagle|99|0|ranged|Accurate",
+  "maxHit": 35,
+  "maxAttackRoll": 27900
+ },
+ {
+  "id": "ranged|rcbMax|eagle|99|1|ranged|Rapid",
+  "maxHit": 34,
+  "maxAttackRoll": 27225
+ },
+ {
+  "id": "ranged|rcbMax|eagle|99|2|ranged|Longrange",
+  "maxHit": 34,
+  "maxAttackRoll": 27225
+ },
+ {
+  "id": "ranged|rcbMax|sharp|1|0|ranged|Accurate",
+  "maxHit": 4,
+  "maxAttackRoll": 2700
+ },
+ {
+  "id": "ranged|rcbMax|sharp|1|1|ranged|Rapid",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|sharp|1|2|ranged|Longrange",
+  "maxHit": 3,
+  "maxAttackRoll": 2025
+ },
+ {
+  "id": "ranged|rcbMax|sharp|10|0|ranged|Accurate",
+  "maxHit": 6,
+  "maxAttackRoll": 4725
+ },
+ {
+  "id": "ranged|rcbMax|sharp|10|1|ranged|Rapid",
+  "maxHit": 5,
+  "maxAttackRoll": 4050
+ },
+ {
+  "id": "ranged|rcbMax|sharp|10|2|ranged|Longrange",
+  "maxHit": 5,
+  "maxAttackRoll": 4050
+ },
+ {
+  "id": "ranged|rcbMax|sharp|70|0|ranged|Accurate",
+  "maxHit": 23,
+  "maxAttackRoll": 18900
+ },
+ {
+  "id": "ranged|rcbMax|sharp|70|1|ranged|Rapid",
+  "maxHit": 23,
+  "maxAttackRoll": 18225
+ },
+ {
+  "id": "ranged|rcbMax|sharp|70|2|ranged|Longrange",
+  "maxHit": 23,
+  "maxAttackRoll": 18225
+ },
+ {
+  "id": "ranged|rcbMax|sharp|99|0|ranged|Accurate",
+  "maxHit": 32,
+  "maxAttackRoll": 25650
+ },
+ {
+  "id": "ranged|rcbMax|sharp|99|1|ranged|Rapid",
+  "maxHit": 31,
+  "maxAttackRoll": 24975
+ },
+ {
+  "id": "ranged|rcbMax|sharp|99|2|ranged|Longrange",
+  "maxHit": 31,
+  "maxAttackRoll": 24975
+ },
+ {
+  "id": "magic|staff|Ice Barrage|none|94",
+  "maxHit": 30,
+  "maxAttackRoll": 8137
+ },
+ {
+  "id": "magic|staff|Ice Barrage|none|99",
+  "maxHit": 30,
+  "maxAttackRoll": 8532
+ },
+ {
+  "id": "magic|staff|Ice Barrage|augury|94",
+  "maxHit": 31,
+  "maxAttackRoll": 9954
+ },
+ {
+  "id": "magic|staff|Ice Barrage|augury|99",
+  "maxHit": 31,
+  "maxAttackRoll": 10428
+ },
+ {
+  "id": "magic|staff|Ice Barrage|might|94",
+  "maxHit": 30,
+  "maxAttackRoll": 9243
+ },
+ {
+  "id": "magic|staff|Ice Barrage|might|99",
+  "maxHit": 30,
+  "maxAttackRoll": 9638
+ },
+ {
+  "id": "magic|staff|Ice Blitz|none|94",
+  "maxHit": 26,
+  "maxAttackRoll": 8137
+ },
+ {
+  "id": "magic|staff|Ice Blitz|none|99",
+  "maxHit": 26,
+  "maxAttackRoll": 8532
+ },
+ {
+  "id": "magic|staff|Ice Blitz|augury|94",
+  "maxHit": 27,
+  "maxAttackRoll": 9954
+ },
+ {
+  "id": "magic|staff|Ice Blitz|augury|99",
+  "maxHit": 27,
+  "maxAttackRoll": 10428
+ },
+ {
+  "id": "magic|staff|Ice Blitz|might|94",
+  "maxHit": 26,
+  "maxAttackRoll": 9243
+ },
+ {
+  "id": "magic|staff|Ice Blitz|might|99",
+  "maxHit": 26,
+  "maxAttackRoll": 9638
+ },
+ {
+  "id": "magic|staff|Ice Burst|none|94",
+  "maxHit": 22,
+  "maxAttackRoll": 8137
+ },
+ {
+  "id": "magic|staff|Ice Burst|none|99",
+  "maxHit": 22,
+  "maxAttackRoll": 8532
+ },
+ {
+  "id": "magic|staff|Ice Burst|augury|94",
+  "maxHit": 22,
+  "maxAttackRoll": 9954
+ },
+ {
+  "id": "magic|staff|Ice Burst|augury|99",
+  "maxHit": 22,
+  "maxAttackRoll": 10428
+ },
+ {
+  "id": "magic|staff|Ice Burst|might|94",
+  "maxHit": 22,
+  "maxAttackRoll": 9243
+ },
+ {
+  "id": "magic|staff|Ice Burst|might|99",
+  "maxHit": 22,
+  "maxAttackRoll": 9638
+ },
+ {
+  "id": "magic|staff|Ice Rush|none|94",
+  "maxHit": 16,
+  "maxAttackRoll": 8137
+ },
+ {
+  "id": "magic|staff|Ice Rush|none|99",
+  "maxHit": 16,
+  "maxAttackRoll": 8532
+ },
+ {
+  "id": "magic|staff|Ice Rush|augury|94",
+  "maxHit": 16,
+  "maxAttackRoll": 9954
+ },
+ {
+  "id": "magic|staff|Ice Rush|augury|99",
+  "maxHit": 16,
+  "maxAttackRoll": 10428
+ },
+ {
+  "id": "magic|staff|Ice Rush|might|94",
+  "maxHit": 16,
+  "maxAttackRoll": 9243
+ },
+ {
+  "id": "magic|staff|Ice Rush|might|99",
+  "maxHit": 16,
+  "maxAttackRoll": 9638
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|none|94",
+  "maxHit": 31,
+  "maxAttackRoll": 9373
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|none|99",
+  "maxHit": 31,
+  "maxAttackRoll": 9828
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|augury|94",
+  "maxHit": 32,
+  "maxAttackRoll": 11466
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|augury|99",
+  "maxHit": 32,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|might|94",
+  "maxHit": 32,
+  "maxAttackRoll": 10647
+ },
+ {
+  "id": "magic|staffOccult|Ice Barrage|might|99",
+  "maxHit": 32,
+  "maxAttackRoll": 11102
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|none|94",
+  "maxHit": 27,
+  "maxAttackRoll": 9373
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|none|99",
+  "maxHit": 27,
+  "maxAttackRoll": 9828
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|augury|94",
+  "maxHit": 28,
+  "maxAttackRoll": 11466
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|augury|99",
+  "maxHit": 28,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|might|94",
+  "maxHit": 27,
+  "maxAttackRoll": 10647
+ },
+ {
+  "id": "magic|staffOccult|Ice Blitz|might|99",
+  "maxHit": 27,
+  "maxAttackRoll": 11102
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|none|94",
+  "maxHit": 23,
+  "maxAttackRoll": 9373
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|none|99",
+  "maxHit": 23,
+  "maxAttackRoll": 9828
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|augury|94",
+  "maxHit": 23,
+  "maxAttackRoll": 11466
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|augury|99",
+  "maxHit": 23,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|might|94",
+  "maxHit": 23,
+  "maxAttackRoll": 10647
+ },
+ {
+  "id": "magic|staffOccult|Ice Burst|might|99",
+  "maxHit": 23,
+  "maxAttackRoll": 11102
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|none|94",
+  "maxHit": 16,
+  "maxAttackRoll": 9373
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|none|99",
+  "maxHit": 16,
+  "maxAttackRoll": 9828
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|augury|94",
+  "maxHit": 17,
+  "maxAttackRoll": 11466
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|augury|99",
+  "maxHit": 17,
+  "maxAttackRoll": 12012
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|might|94",
+  "maxHit": 17,
+  "maxAttackRoll": 10647
+ },
+ {
+  "id": "magic|staffOccult|Ice Rush|might|99",
+  "maxHit": 17,
+  "maxAttackRoll": 11102
+ }
+]

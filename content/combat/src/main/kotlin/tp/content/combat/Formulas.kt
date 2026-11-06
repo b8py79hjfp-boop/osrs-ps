@@ -11,11 +11,18 @@ internal object Formulas {
     private const val MAX_HIT_HALF = 320
     private const val PERCENT = 100
 
-    /** F1/F4/F8/F10: ⌊(⌊level × prayer⌋ + stance + 8) × void⌋; prayer and void in percent. */
-    fun effectiveLevel(level: Int, prayerPercent: Int, stance: Int, voidPercent: Int = PERCENT): Int {
-        val prayed = level * prayerPercent / PERCENT
+    /**
+     * F1/F4/F8/F10: ⌊(⌊level × prayer⌋ + stance + 8) × void⌋; prayer and void in percent. [strength]: the 5% strength
+     * prayers (Burst of Strength, Sharp Eye's damage part) give at least +1 level (MM:42 "at least +1 level"; the
+     * Wiki DPS calculator adds 1 at level ≤ 20, which is the same thing).
+     */
+    fun effectiveLevel(level: Int, prayerPercent: Int, stance: Int, voidPercent: Int = PERCENT, strength: Boolean = false): Int {
+        var prayed = level * prayerPercent / PERCENT
+        if (strength && prayerPercent == MIN_PRAYER_PERCENT) prayed = maxOf(prayed, level + 1)
         return (prayed + stance + EFFECTIVE_BASE) * voidPercent / PERCENT
     }
+
+    private const val MIN_PRAYER_PERCENT = 105
 
     /** F5/F10/F14: ⌊effective × (bonus + 64) × gear⌋ (gear in percent). */
     fun roll(effective: Int, bonus: Int, gearPercent: Int = PERCENT): Int =

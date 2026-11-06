@@ -85,12 +85,26 @@ internal object Attacks {
     fun maxHit(player: PlayerRef, stance: Stance, type: AttackType): Int =
         when (type.style) {
             CombatStyle.MELEE -> {
-                val eff = Formulas.effectiveLevel(player.level(Stat.STRENGTH), player.prayerPercent { it.strength }, stance.strengthBonus)
+                val eff =
+                    Formulas.effectiveLevel(
+                        player.level(Stat.STRENGTH),
+                        player.prayerPercent { it.strength },
+                        stance.strengthBonus,
+                        strength = true,
+                    )
                 Formulas.maxHit(eff, player.bonus(Param.MELEE_STRENGTH))
             }
 
             CombatStyle.RANGED -> {
-                val eff = Formulas.effectiveLevel(player.level(Stat.RANGED), player.prayerPercent { it.rangedStrength }, stance.rangedBonus)
+                val eff =
+                    Formulas.effectiveLevel(
+                        player.level(Stat.RANGED),
+                        player.prayerPercent {
+                            it.rangedStrength
+                        },
+                        stance.rangedBonus,
+                        strength = true,
+                    )
                 Formulas.maxHit(eff, player.bonus(Param.RANGED_STRENGTH))
             }
 

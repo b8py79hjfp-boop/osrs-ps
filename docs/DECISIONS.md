@@ -243,3 +243,23 @@ starts the restricted lambda on the engine script's continuation. KSP (`tools/ks
 module's `<Module>Registry` and its `META-INF/services/tp.plugin.ContentRegistry` line; the server loads registries
 with `ServiceLoader`, which reads those generated index files (no classpath scanning). Duplicate handler keys fail at
 boot.
+
+## D-024 — DPS-calculator parity matrix; magic accuracy +9
+
+Phase 4's "DPS-calculator parity matrix" is recorded from the OSRS Wiki DPS calculator itself
+(github.com/weirdgloop/osrs-dps-calc @ 498bd2ae666c83b0af3ac2265076ed237a27d1aa): `tools/dps-matrix/Matrix.test.ts`
+runs it for 688 combinations (14 gear sets, 9 prayer sets, 4–6 levels, every stance; melee, ranged, Ice spells) and
+`content/combat`'s `DpsParityTest` recomputes max hit and max attack roll from our formulas and cache params. Only the
+output numbers are stored (no calculator code). Two rules came from it:
+- Magic accuracy uses +9 (+2 more on accurate staves), where the Wiki "Damage per second/Magic" page shows +8. The
+  brief names the calculator as the validation target, so we match it (combat-formulas.md SOURCE-CONFLICT).
+- Burst of Strength and Sharp Eye's damage part give at least +1 level (the calculator adds 1 at level ≤ 20; MM:42).
+
+## D-025 — Content modules: combat owns prayers, death items; pvp owns Wilderness rules
+
+`content/combat` holds equipment, styles, prayers (cache enum 4956 + Wiki effects), consumables, attacks, specials,
+magic, freezes, Smite/Redemption/Retribution and items kept on death (they need prayer state). `content/pvp` holds
+Wilderness levels/brackets, single-way PJ timers, skulls, the logout lock, Tele Block, Vengeance and recoil. They talk
+through plugin-api events (`AttackCheck`, `AttackEvent`, `HitEvent`, `DeathEvent`, `AppearanceChanged`) and
+`SharedAttrs`. Hits are queued with `EntityRef.queueHit` (strong queue on players, NPC queue on NPCs); queue delays
+count the defender's own turns (scripts.md Q13), which yields the processing-order +1 for every hit delay.

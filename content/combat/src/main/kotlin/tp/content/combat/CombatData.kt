@@ -77,8 +77,12 @@ internal enum class Stance(
     ACCURATE_MAGIC(0, 0, 0, magicBonus = 3),
     LONGRANGE_MAGIC(0, 0, 3, magicBonus = 1),
 
-    /** Manual spell casts: no invisible bonus. */
-    SPELL(0, 0, 0),
+    /**
+     * Manual spell casts. Magic accuracy uses +9 (the Wiki DPS calculator: `effectiveLevel += 9`, +2 more when
+     * accurate); the Wiki "Damage per second/Magic" page shows +8 (SOURCE-CONFLICT, combat-formulas.md: we match the
+     * calculator, brief §8). Expressed here as a +1 magic stance bonus on top of the shared +8.
+     */
+    SPELL(0, 0, 0, magicBonus = 1),
 }
 
 /** A weapon category's four combat-tab slots (null = unused). */
