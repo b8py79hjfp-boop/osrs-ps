@@ -2,11 +2,37 @@ package tp.content.gameframe
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.IfEvents
 import tp.plugin.PlayerRef
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Varbits
 import tp.symbols.Varps
+
+/** Events the settings side panel needs, also re-sent when it replaces the house options in its side slot. */
+internal object SettingsPanel {
+    /** Volume and brightness sliders have bobble slots 0..21. */
+    private const val SLIDER_LAST_SLOT = 21
+    private const val PLAYER_PRIORITY_LAST = 5
+    private const val NPC_PRIORITY_LAST = 4
+
+    private val SLIDERS: List<Int> =
+        listOf(
+            Components.Settings_Side.MASTER_BOBBLE_CONTAINER,
+            Components.Settings_Side.MUSIC_BOBBLE_CONTAINER,
+            Components.Settings_Side.SOUND_BOBBLE_CONTAINER,
+            Components.Settings_Side.AREASOUNDS_BOBBLE_CONTAINER,
+            Components.Settings_Side.BRIGHTNESS_BOBBLE_CONTAINER,
+        )
+
+    /** Slider and button grids send op 1 per slot (RS Mod `SettingsSideScript.updateIfEvents`). */
+    fun enableEvents(player: PlayerRef) {
+        val op1 = IfEvents.op(1)
+        for (slider in SLIDERS) player.ifEvents(slider, 0..SLIDER_LAST_SLOT, op1)
+        player.ifEvents(Components.Settings_Side.ATTACK_PRIORITY_PLAYER_BUTTONS, 1..PLAYER_PRIORITY_LAST, op1)
+        player.ifEvents(Components.Settings_Side.ATTACK_PRIORITY_NPC_BUTTONS, 1..NPC_PRIORITY_LAST, op1)
+    }
+}
 
 /**
  * Settings side panel (docs/mechanics/gameframe-buttons.md S1..S8). Every control only changes the varp/varbit the
@@ -18,6 +44,15 @@ public class SettingsTab : ContentPlugin {
         onButton(Components.Settings_Side.AUDIO_TAB) { setVarbit(Varbits.SETTINGS_SIDE_PANEL_TAB, PANEL_AUDIO) }
         onButton(Components.Settings_Side.DISPLAY_TAB) { setVarbit(Varbits.SETTINGS_SIDE_PANEL_TAB, PANEL_DISPLAY) }
         onButton(Components.Settings_Side.SETTINGS_OPEN) { openModal(Components.Toplevel.MAINMODAL, Interfaces.SETTINGS) }
+        // Bond pouch: a plain main modal with a fully transparent background (RS Mod `selectBondPouch`).
+        onButton(Components.Settings_Side.BONDOPTIONS) { SideInventory.openMain(this, Interfaces.BOND_MAIN, BOND_TRANSPARENCY) }
+        // House options replace the settings panel in its side slot until Close (RS Mod opens them in the sidemodal).
+        // The house itself does not exist yet, so only opening and closing the panel work (OPEN-S8).
+        onButton(Components.Settings_Side.HOUSEOPTIONS) { openOverlay(Components.Toplevel.SIDE11, Interfaces.POH_OPTIONS) }
+        onButton(Components.Poh_Options.COM_24) {
+            openOverlay(Components.Toplevel.SIDE11, Interfaces.SETTINGS_SIDE)
+            SettingsPanel.enableEvents(this)
+        }
 
         // Controls panel.
         onButton(Components.Settings_Side.ACCEPTAID) { flip(Varbits.OPTION_ACCEPTAID) }
@@ -92,6 +127,9 @@ public class SettingsTab : ContentPlugin {
 
     private companion object {
         const val OP_PRIMARY = 1
+
+        /** Main modal background transparency of the bond pouch (RS Mod passes colour -1, transparency -2). */
+        const val BOND_TRANSPARENCY = -2
 
         /** `settings_side_panel_tab` values (RS Mod `SettingsSideScript.Panel`). */
         const val PANEL_CONTROLS = 0

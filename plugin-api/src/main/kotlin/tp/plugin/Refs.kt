@@ -188,6 +188,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     private fun dialogs() = (p.world.content as PluginContent).pendingDialogs
 
+    /**
+     * Sends [invId] to the client as [objs]/[counts] without changing any server inventory: for panels that only show
+     * items (items kept on death). Nothing moves, so nothing goes through a transaction or the item journal.
+     */
+    public fun showInv(invId: Int, objs: IntArray, counts: IntArray) {
+        p.session.send(ServerMessage.Inventory(invId, objs, counts, null))
+    }
+
     /** Sets the text of packed [component] (`tp.symbols.Components`). */
     public fun ifText(component: Int, text: String) {
         p.session.send(ServerMessage.IfText(component, text))

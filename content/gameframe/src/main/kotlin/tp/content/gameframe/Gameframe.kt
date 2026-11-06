@@ -30,49 +30,18 @@ public class Gameframe : ContentPlugin {
         openTop(Interfaces.TOPLEVEL)
         for ((iface, target) in OVERLAYS) openOverlay(target, iface)
         // Inventory tab item ops (RS Mod `InvOpenScript`).
-        ifEvents(Components.Inventory.ITEMS, 0..INV_LAST_SLOT, INV_ITEM_EVENTS)
+        SideInventory.enableEvents(this)
         // Run orb shows varp option_run, which the saved run mode must set (the engine does not).
         runMode = runMode
-        enableSettingsEvents()
+        SettingsPanel.enableEvents(this)
         EmoteTab.enableEvents(this)
         // The side journal opens empty; fill its active sub-tab (RS Mod `JournalTabScript.onIfOpen`).
         with(JournalTab) { open(varbit(Varbits.SIDE_JOURNAL_TAB)) }
     }
 
-    /** Slider and button grids of the settings panel send op 1 per slot (RS Mod `SettingsSideScript.updateIfEvents`). */
-    private fun PlayerRef.enableSettingsEvents() {
-        val op1 = IfEvents.op(1)
-        for (slider in SETTINGS_SLIDERS) ifEvents(slider, 0..SLIDER_LAST_SLOT, op1)
-        ifEvents(Components.Settings_Side.ATTACK_PRIORITY_PLAYER_BUTTONS, 1..PLAYER_PRIORITY_LAST, op1)
-        ifEvents(Components.Settings_Side.ATTACK_PRIORITY_NPC_BUTTONS, 1..NPC_PRIORITY_LAST, op1)
-    }
-
     private companion object {
-        /** Volume and brightness sliders have bobble slots 0..21. */
-        const val SLIDER_LAST_SLOT = 21
-        const val PLAYER_PRIORITY_LAST = 5
-        const val NPC_PRIORITY_LAST = 4
-
-        val SETTINGS_SLIDERS: List<Int> =
-            listOf(
-                Components.Settings_Side.MASTER_BOBBLE_CONTAINER,
-                Components.Settings_Side.MUSIC_BOBBLE_CONTAINER,
-                Components.Settings_Side.SOUND_BOBBLE_CONTAINER,
-                Components.Settings_Side.AREASOUNDS_BOBBLE_CONTAINER,
-                Components.Settings_Side.BRIGHTNESS_BOBBLE_CONTAINER,
-            )
-
         /** Highest world id the switcher can send (world ids are u16 in LOGOUT_TRANSFER; OSRS uses up to ~600). */
         const val MAX_WORLD_ID = 2047
-
-        /** Backpack slots 0..27. */
-        const val INV_LAST_SLOT = 27
-
-        @Suppress("MagicNumber") // op numbers
-        val INV_ITEM_EVENTS: Long =
-            IfEvents.op(2) or IfEvents.op(3) or IfEvents.op(4) or IfEvents.op(6) or IfEvents.op(7) or IfEvents.op(10) or
-                IfEvents.TGT_OBJ or IfEvents.TGT_NPC or IfEvents.TGT_LOC or IfEvents.TGT_PLAYER or IfEvents.TGT_INV or
-                IfEvents.TGT_COM or IfEvents.DEPTH1 or IfEvents.DRAG_TARGET or IfEvents.TARGET
 
         val OVERLAYS: List<Pair<Int, Int>> =
             listOf(

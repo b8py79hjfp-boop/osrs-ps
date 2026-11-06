@@ -285,3 +285,11 @@ v2 (ISC, github.com/rsmod/rsmod `content/interfaces/{settings,emotes,equipment,j
 No source was copied: it was re-expressed against `plugin-api` with gameval symbols, so no ISC header is kept in the
 files; each KDoc names the RS Mod script it follows. Plugin-api gained `WorldRef.enumStrings` and `PlayerRef.runMode`
 now also writes varp `option_run` (the run orb reads it). The quick-prayer toggle stays with content/combat (OPEN-O3).
+
+Addendum (equipment, price checker, items kept on death, music, XP drops, bond/house options): modals that come with a
+list of items borrow the backpack's side slot (`openOverlay` on `toplevel:side3`, backpack reopened afterwards) instead of
+RS Mod's `sidemodal`, because plugin-api cannot close a sub-interface; the close is detected by a soft once-per-tick timer
+(`ModalWatch`), which also returns price-checker items at logout. plugin-api gained `PlayerRef.varbitFits` (check a client
+value before `setVarbit`) and `WorldRef.dbRows` / `DbRowRef` (cache db rows, used for the music table). Items kept on death
+sends display-only inventory updates for 584/468 (`PlayerRef.showInv`). No server inventory changes, so nothing goes
+through a transaction or the item journal. Display copies must never be real items (brief §12).

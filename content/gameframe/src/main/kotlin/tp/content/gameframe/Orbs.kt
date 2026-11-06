@@ -4,12 +4,12 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.symbols.Components
-import tp.symbols.Interfaces
 import tp.symbols.Varbits
 
 /**
- * Minimap orbs (docs/mechanics/gameframe-buttons.md O1..O5): run toggle, XP drops toggle/setup, quick-prayer setup and
- * the world map orb. The special attack orb lives in content/combat; the quick-prayer toggle (op 1) is OPEN-O3.
+ * Minimap orbs (docs/mechanics/gameframe-buttons.md O1..O5): run toggle, XP drops toggle (its setup panel is
+ * [XpDropsSetup]), quick-prayer setup and the world map orb. The special attack orb lives in content/combat; the
+ * quick-prayer toggle (op 1) is OPEN-O3.
  */
 public class Orbs : ContentPlugin {
     override fun ContentScope.register() {
@@ -17,10 +17,6 @@ public class Orbs : ContentPlugin {
         onButton(Components.Settings_Side.RUNMODE) { toggleRun() }
 
         onButton(Components.Orbs.XP_DROPS, OP_PRIMARY) { setVarbit(Varbits.XPDROPS_ENABLED, 1 - varbit(Varbits.XPDROPS_ENABLED)) }
-        onButton(Components.Orbs.XP_DROPS, OP_SETUP) {
-            // OPEN-O2: the setup panel's own buttons are not handled yet.
-            openModal(Components.Toplevel.MAINMODAL, Interfaces.XPDROPS_SETUP)
-        }
 
         // The world map is drawn by the client; RS Mod has no server handler for the orb (O5).
         onButton(Components.Orbs.WORLDMAP) { }
