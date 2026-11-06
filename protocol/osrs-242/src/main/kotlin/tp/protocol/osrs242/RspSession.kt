@@ -34,6 +34,7 @@ import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
 import net.rsprot.protocol.game.outgoing.misc.player.SetPlayerOp
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateRunEnergy
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateStatV2
+import net.rsprot.protocol.game.outgoing.misc.player.UpdateStockMarketSlotV1
 import net.rsprot.protocol.game.outgoing.social.FriendListLoaded
 import net.rsprot.protocol.game.outgoing.social.MessagePrivate
 import net.rsprot.protocol.game.outgoing.social.MessagePrivateEcho
@@ -361,7 +362,8 @@ internal class RspSession(
                 }
 
                 is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
-                is ServerMessage.FriendList, is ServerMessage.IgnoreList, ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
+                is ServerMessage.StockMarketSlot, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
+                ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
                 is ServerMessage.PrivateMessageEcho, is ServerMessage.ChannelJoined, ServerMessage.ChannelLeft,
                 is ServerMessage.ChannelMember, is ServerMessage.ChannelMessage,
                 -> {
@@ -404,7 +406,9 @@ private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
 /** Friends/ignore lists, private messages, friends chat (and interface/music updates, via [uiProt]). */
 private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
-        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack -> {
+        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+        is ServerMessage.StockMarketSlot,
+        -> {
             uiProt(message)
         }
 
@@ -498,6 +502,23 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
 
         is ServerMessage.MusicTrack -> {
             MidiSongV2(message.id, message.fadeOut, 0, message.fadeIn, 0)
+        }
+
+        is ServerMessage.StockMarketSlot -> {
+            val update =
+                if (message.status == 0) {
+                    UpdateStockMarketSlotV1.ResetStockMarketSlot
+                } else {
+                    UpdateStockMarketSlotV1.SetStockMarketSlot(
+                        message.status,
+                        message.obj,
+                        message.price,
+                        message.count,
+                        message.completed,
+                        message.gold,
+                    )
+                }
+            UpdateStockMarketSlotV1(message.slot, update)
         }
 
         else -> {

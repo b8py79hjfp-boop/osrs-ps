@@ -39,6 +39,7 @@ import net.rsprot.protocol.game.incoming.objs.OpObjV2
 import net.rsprot.protocol.game.incoming.players.OpPlayer
 import net.rsprot.protocol.game.incoming.players.OpPlayerT
 import net.rsprot.protocol.game.incoming.resumed.ResumePCountDialog
+import net.rsprot.protocol.game.incoming.resumed.ResumePObjDialog
 import net.rsprot.protocol.game.incoming.resumed.ResumePStringDialog
 import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
 import net.rsprot.protocol.game.incoming.social.FriendListAdd
@@ -306,6 +307,7 @@ class Osrs242Network(
         b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
         b.addListener(ResumePStringDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeString(m.string)) }
         b.addListener(ResumePCountDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeCount(m.count)) }
+        b.addListener(ResumePObjDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeObj(m.obj)) }
         b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }
         b.addListener(WindowStatus::class.java) { s, m ->
             s.deliver(ClientCommand.WindowStatus(m.windowMode, m.frameWidth, m.frameHeight))

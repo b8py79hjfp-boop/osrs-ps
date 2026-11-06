@@ -186,6 +186,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.ClientScript(MESLAYER_COUNT, listOf(title)))
     }
 
+    /**
+     * Opens the chatbox item search (client script 750 `meslayer_mode14`, RS Mod `ClientScripts.objSearch`): [title],
+     * tradeable items only, no enum filter, no "last searched" row. [answer] runs with the chosen obj (-1 = cancelled).
+     */
+    public fun objDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
+        dialogs()[p] = { (it as? tp.engine.ObjDialogAnswer)?.let { a -> answer(a.obj) } }
+        p.session.send(ServerMessage.ClientScript(OBJ_SEARCH, listOf(title, 1, -1, 0)))
+    }
+
+    /** Sends one Grand Exchange slot to the client ([status] 0 clears it). */
+    public fun stockMarketSlot(slot: Int, status: Int, obj: Int, price: Int, count: Int, completed: Int, gold: Int) {
+        p.session.send(ServerMessage.StockMarketSlot(slot, status, obj, price, count, completed, gold))
+    }
+
     private fun dialogs() = (p.world.content as PluginContent).pendingDialogs
 
     /**
@@ -510,6 +524,7 @@ public class GeOffer(
 /** Client scripts that open chatbox input dialogs (cache clientscript names; RS Mod `ClientScripts.mesLayerMode7/9`). */
 private const val MESLAYER_COUNT = 108
 private const val MESLAYER_STRING = 110
+private const val OBJ_SEARCH = 750
 
 /**
  * Friends chat settings. A null [name] means the channel is disabled. Ranks are minimums: -1 anyone, 0 any friends,

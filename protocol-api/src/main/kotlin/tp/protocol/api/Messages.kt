@@ -47,6 +47,9 @@ sealed interface ClientCommand {
     /** Answer to a number input dialog (RESUME_P_COUNTDIALOG). */
     data class ResumeCount(val count: Int) : ClientCommand
 
+    /** Answer to the chatbox item search (RESUME_P_OBJDIALOG); -1 when cancelled. */
+    data class ResumeObj(val obj: Int) : ClientCommand
+
     /** Client closed its modal (Escape / close button). */
     data object CloseModal : ClientCommand
 
@@ -181,6 +184,20 @@ sealed interface ServerMessage {
 
     /** Plays music track [id] (MIDI_SONG; fades in client cycles, 0 = cut). */
     data class MusicTrack(val id: Int, val fadeOut: Int = 0, val fadeIn: Int = 0) : ServerMessage
+
+    /**
+     * One Grand Exchange slot (UPDATE_STOCKMARKET_SLOT). [status] 0 clears the slot (the other fields are ignored);
+     * [gold] is the coins spent (buy) or received (sell) so far.
+     */
+    data class StockMarketSlot(
+        val slot: Int,
+        val status: Int,
+        val obj: Int,
+        val price: Int,
+        val count: Int,
+        val completed: Int,
+        val gold: Int,
+    ) : ServerMessage
 
     /** Friends list rows (full list at login, single rows on changes). */
     data class FriendList(val friends: List<FriendRow>) : ServerMessage

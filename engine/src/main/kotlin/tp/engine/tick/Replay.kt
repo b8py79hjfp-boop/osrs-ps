@@ -59,6 +59,7 @@ object CommandCodec {
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
             is ClientCommand.ResumeString -> "resumestring ${str(c.text)}"
             is ClientCommand.ResumeCount -> "resumecount ${c.count}"
+            is ClientCommand.ResumeObj -> "resumeobj ${c.obj}"
             ClientCommand.CloseModal -> "closemodal"
             is ClientCommand.WindowStatus -> "window ${c.mode} ${c.width} ${c.height}"
             is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)} ${c.rank}"
@@ -116,6 +117,18 @@ object CommandCodec {
 
             "resume" -> {
                 ClientCommand.ResumePause(i(1), i(2))
+            }
+
+            "resumeobj" -> {
+                ClientCommand.ResumeObj(i(1))
+            }
+
+            "resumestring" -> {
+                ClientCommand.ResumeString(unstr(parts[1]))
+            }
+
+            "resumecount" -> {
+                ClientCommand.ResumeCount(i(1))
             }
 
             "closemodal" -> {

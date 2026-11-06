@@ -356,6 +356,12 @@ class World(
                 if (!player.resumeInput(command.count)) content.onDialogAnswer(player, command.count)
             }
 
+            is ClientCommand.ResumeObj -> {
+                // Hostile input (§12): only -1 (cancel) or an obj the cache defines.
+                if (command.obj != -1 && data.configs.objs[command.obj] == null) return invalid(player, command)
+                content.onDialogAnswer(player, ObjDialogAnswer(command.obj))
+            }
+
             ClientCommand.CloseModal -> {
                 player.closeModal()
             }
@@ -918,6 +924,9 @@ class World(
         private const val INVALID_INPUT_WINDOW = 100L
     }
 }
+
+/** The chatbox item search's answer (RESUME_P_OBJDIALOG); obj -1 = cancelled. Passed to content as a dialog answer. */
+data class ObjDialogAnswer(val obj: Int)
 
 /** Tick inspector / scenario hooks (brief §5.5). Implementations must not block. */
 interface TickTracer {
