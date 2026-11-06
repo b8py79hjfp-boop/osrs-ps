@@ -324,3 +324,52 @@ through a transaction or the item journal. Display copies must never be real ite
   - **Hosting:** the hub serves the update directory at `/update`; `release publish` writes it.
   - **Keys:** the dev key pair is in `.data/manifest/`. Its public half is in `launcher.properties`; replace it
     before a public release.
+
+### D-028 addendum — RuneLite fork: decision per check (brief §4.2 items 3 and 4)
+
+Fork source: `client/runelite/patches`; what the client calls: `client/runelite/ENDPOINTS.md`. The tag, the data
+directory and the host guard are the cross-cutting choices; the rest is per check.
+
+- **Allowlist, fail closed:** `PluginManager.loadPlugins`, the one entry point for core, sideloaded and external
+  plugins, skips any class not in `allowlist.txt`; a missing list is fatal. A plugin RuneLite adds in a later
+  release therefore does not load until it is reviewed. 117 of the 131 core plugins are allowed. Not loaded:
+  chatcommands (kc/pb/hiscore lookups through the RuneLite API), opponentinfo (looks up the opponent's hiscores:
+  a PvP information advantage), party (needs the RuneLite websocket), loginscreen and emojis (static-host assets),
+  devtools. Deleted from the source (third-party endpoints): account, crowdsourcing, discord, hiscore, jagexauth,
+  twitch, wiki, xpupdater. Loot Tracker stays: its cloud sync needs a RuneLite session, which cannot exist.
+- **Host guard:** the base OkHttp client refuses every host except those of `site`, `api` and loopback
+  (`RuneLiteProperties.isReleaseHost`), so a missed call site cannot reach Jagex, RuneLite or anyone else. It
+  does not cover the game client's own traffic.
+- **Plugin manifest signature (`externalplugins.crt`):** removed with the hub (the certificate is deleted, manifest
+  download throws). Not re-rooted, because there is no hub to sign for.
+- **RuneLite's installer updater** (downloads `RuneLiteSetup.exe` from GitHub, checks a pinned sha256, runs it):
+  deleted. Our launcher's signed manifest replaces it.
+- **Telemetry, session ping, XP-tracker submission:** removed; `--disable-telemetry` is now a no-op.
+- **RuneLite account, config sync, websocket:** `SessionManager` never loads or opens a session, so `ConfigClient`
+  and `AccountClient` are unreachable; the Account plugin is deleted. `runelite.session`, `.ws` and
+  `.pluginhub.url` stay as properties pointing at unused hub paths only because the client binds them at startup.
+- **Jagex Account / launcher tokens:** `rs/auth`, the Jagex Auth plugin and the `net.runelite:jagexauth` dependency
+  are gone, as are `--character` and `--insecure-write-credentials`. Reading `JX_*` environment variables inside
+  the game client itself is a game-client matter (`client/gamepatch`).
+- **Runtime config (`{api}/config.json`):** kept, served by the hub. The hub may set client properties and system
+  properties through it, which is acceptable because the hub is ours and the host guard still applies.
+- **World list, item prices, item stats and NPC data:** served by the hub (`worlds.js`, `item/prices.js`,
+  `static/item/stats.ids.min.json`, `static/npcs/npcs.min.json`). The Jagex world-address fallback for jav_config
+  is deleted. Hiscore URLs point at `{api}/hiscore/<slug>/index_lite.json`; only Player-owned House still uses them.
+- **Data directory:** `~/.<name>` (placeholder `~/.tickperfect`) instead of `~/.runelite`, so a player's stock
+  RuneLite settings, session and cache are neither read nor overwritten; the `~/jagexcache` copy is dropped.
+- **Branding:** placeholder icons and splash are generated (`client/runelite/branding/generate.py`); no RuneLite
+  artwork or logo is shipped. The BSD-2 notice and the bundled-library list ship as `LICENSES.txt` in the jar and
+  open from the Info panel.
+- **Kept as is:** `--insecure-skip-tls-verification` and `--jav_config` (a player can only point their own client
+  elsewhere); the allowlist already stops `--developer-mode` from loading anything not listed.
+
+- **Game-client host check:** the class holding the string `invalidhost` accepts a codebase host only if it is under
+  `jagex.com` or `runescape.com`, is `127.0.0.1`, or starts with `192.168.1.`. The rules rewrite `.runescape.com` to
+  `""`, so its suffix test is true for every host, and rewrite the bare `jagex.com` / `runescape.com` /
+  `.jagex.com` hosts to ours. Together these let the client use our own domains and leave no Jagex host in the
+  client.
+- **Bundling the patched client:** `client/runelite/build.sh` runs the game-client patcher after the fork build and
+  overwrites the injected-client classes inside the shaded jar (753 classes). Final-jar scan:
+  - exactly one 1024-bit modulus, ours;
+  - no Jagex, RuneLite or Discord URLs.

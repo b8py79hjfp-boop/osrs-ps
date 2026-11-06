@@ -1,0 +1,1745 @@
+From 765d825fec4da411b03c0273518707561ec24bf3 Mon Sep 17 00:00:00 2001
+From: tickperfect fork <fork@localhost>
+Date: Fri, 6 Nov 2026 09:23:59 +0000
+Subject: [PATCH] Remove Jagex Account and launcher token login
+
+---
+ libs.versions.toml                            |   1 -
+ runelite-client/build.gradle.kts              |   1 -
+ .../java/net/runelite/client/RuneLite.java    |  56 ----
+ .../net/runelite/client/RuneLiteModule.java   |   4 -
+ .../plugins/jagexauth/JagexAuthPanel.java     | 206 --------------
+ .../plugins/jagexauth/JagexAuthPlugin.java    |  78 ------
+ .../net/runelite/client/rs/auth/Account.java  |  36 ---
+ .../net/runelite/client/rs/auth/Crypt.java    | 113 --------
+ .../client/rs/auth/JagexAuthClient.java       |  96 -------
+ .../runelite/client/rs/auth/JagexAuthJwt.java |  69 -----
+ .../client/rs/auth/JagexAuthService.java      | 256 ------------------
+ .../client/rs/auth/MacOSCredentialStore.java  | 198 --------------
+ .../net/runelite/client/rs/auth/Session.java  |  39 ---
+ .../runelite/client/rs/auth/SessionStore.java | 134 ---------
+ .../rs/auth/WindowsCredentialStore.java       | 148 ----------
+ .../client/plugins/jagexauth/icon.png         | Bin 417 -> 0 bytes
+ .../client/plugins/PluginManagerTest.java     |   2 +-
+ .../runelite/client/rs/auth/CryptTest.java    |  59 ----
+ 18 files changed, 1 insertion(+), 1495 deletions(-)
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPanel.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPlugin.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/Account.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/Crypt.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthClient.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthJwt.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthService.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/MacOSCredentialStore.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/Session.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/SessionStore.java
+ delete mode 100644 runelite-client/src/main/java/net/runelite/client/rs/auth/WindowsCredentialStore.java
+ delete mode 100644 runelite-client/src/main/resources/net/runelite/client/plugins/jagexauth/icon.png
+ delete mode 100644 runelite-client/src/test/java/net/runelite/client/rs/auth/CryptTest.java
+
+diff --git a/libs.versions.toml b/libs.versions.toml
+index d3a7146..cdacc1c 100644
+--- a/libs.versions.toml
++++ b/libs.versions.toml
+@@ -43,7 +43,6 @@ rl-http-api = "net.runelite.arn:http-api:1.2.26"
+ rl-awt = "net.runelite:rlawt:1.8"
+ rl-discord = "net.runelite:discord:1.4"
+ rl-orange = "net.runelite:orange-extensions:1.1"
+-rl-jagexauth = "net.runelite:jagexauth:0.3"
+ 
+ antlr-core = { module = "org.antlr:antlr4", version.ref="antlr" }
+ antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref="antlr" }
+diff --git a/runelite-client/build.gradle.kts b/runelite-client/build.gradle.kts
+index 161c734..a7cd976 100644
+--- a/runelite-client/build.gradle.kts
++++ b/runelite-client/build.gradle.kts
+@@ -53,7 +53,6 @@ dependencies {
+     api(libs.rl.discord)
+     api(libs.rl.awt)
+     compileOnly(libs.rl.orange)
+-    runtimeOnly(libs.rl.jagexauth)
+ 
+     api(libs.slf4j.api)
+     api(libs.logback.classic) {
+diff --git a/runelite-client/src/main/java/net/runelite/client/RuneLite.java b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+index 002c277..95d766b 100644
+--- a/runelite-client/src/main/java/net/runelite/client/RuneLite.java
++++ b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+@@ -58,7 +58,6 @@ import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.TimeUnit;
+ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
+-import javax.inject.Named;
+ import javax.inject.Singleton;
+ import javax.management.ObjectName;
+ import javax.net.ssl.SSLContext;
+@@ -69,7 +68,6 @@ import javax.swing.SwingUtilities;
+ import joptsimple.ArgumentAcceptingOptionSpec;
+ import joptsimple.OptionParser;
+ import joptsimple.OptionSet;
+-import joptsimple.OptionSpec;
+ import joptsimple.ValueConversionException;
+ import joptsimple.ValueConverter;
+ import lombok.Getter;
+@@ -82,9 +80,6 @@ import net.runelite.client.eventbus.EventBus;
+ import net.runelite.client.externalplugins.ExternalPluginManager;
+ import net.runelite.client.plugins.PluginManager;
+ import net.runelite.client.rs.ClientLoader;
+-import net.runelite.client.rs.auth.Account;
+-import net.runelite.client.rs.auth.JagexAuthService;
+-import net.runelite.client.rs.auth.Session;
+ import net.runelite.client.ui.ClientUI;
+ import net.runelite.client.ui.FatalErrorDialog;
+ import net.runelite.client.ui.SplashScreen;
+@@ -162,14 +157,6 @@ public class RuneLite
+ 	@Inject
+ 	private ScheduledExecutorService scheduledExecutorService;
+ 
+-	@Inject
+-	@Named("character")
+-	@Nullable
+-	private String character;
+-
+-	@Inject
+-	private JagexAuthService jagexAuthService;
+-
+ 	public static void main(String[] args) throws Exception
+ 	{
+ 		Locale.setDefault(Locale.ENGLISH);
+@@ -184,7 +171,6 @@ public class RuneLite
+ 			.defaultsTo(RuneLiteProperties.getJavConfig());
+ 		parser.accepts("disable-telemetry", "Disable telemetry");
+ 		parser.accepts("profile", "Configuration profile to use").withRequiredArg();
+-		parser.accepts("character", "Character name to use").withRequiredArg();
+ 		parser.accepts("noupdate", "Skips the launcher update");
+ 
+ 		final ArgumentAcceptingOptionSpec<File> sessionfile = parser.accepts("sessionfile", "Use a specified session file")
+@@ -192,8 +178,6 @@ public class RuneLite
+ 			.withValuesConvertedBy(new ConfigFileConverter())
+ 			.defaultsTo(DEFAULT_SESSION_FILE);
+ 
+-		final OptionSpec<Void> insecureWriteCredentials = parser.accepts("insecure-write-credentials", "Dump authentication tokens from the Jagex Launcher to a text file to be used for development");
+-
+ 		parser.accepts("help", "Show this text").forHelp();
+ 		OptionSet options = parser.parse(args);
+ 
+@@ -271,8 +255,6 @@ public class RuneLite
+ 				options.has("disable-telemetry"),
+ 				options.valueOf(sessionfile),
+ 				(String) options.valueOf("profile"),
+-				(String) options.valueOf("character"),
+-				options.has(insecureWriteCredentials),
+ 				options.has("noupdate")
+ 			));
+ 
+@@ -368,8 +350,6 @@ public class RuneLite
+ 
+ 		client.unblockStartup();
+ 
+-		setCharacter();
+-
+ 		if (telemetryClient != null)
+ 		{
+ 			scheduledExecutorService.execute(() ->
+@@ -729,40 +709,4 @@ public class RuneLite
+ 		okHttpClientBuilder.sslSocketFactory(sc.getSocketFactory(), trustManager);
+ 	}
+ 	// endregion
+-
+-	private void setCharacter()
+-	{
+-		if (character == null)
+-		{
+-			return;
+-		}
+-
+-		jagexAuthService.loadFromStore()
+-			.thenRun(() ->
+-			{
+-				int numChars = 0;
+-				for (Session session : jagexAuthService.getSessions())
+-				{
+-					Account[] accounts = jagexAuthService.getAccounts(session.getSessionId());
+-					if (accounts == null)
+-					{
+-						continue;
+-					}
+-
+-					numChars += accounts.length;
+-					for (Account account : accounts)
+-					{
+-						String displayName = account.getDisplayName();
+-						if (displayName != null && displayName.equalsIgnoreCase(character))
+-						{
+-							log.info("Switching to character {}", displayName);
+-							jagexAuthService.switchJagexAccount(session.getSessionId(), Long.toString(account.getAccountId()), displayName);
+-							return;
+-						}
+-					}
+-				}
+-
+-				log.info("Unable to find character {} ({} sessions and {} characters total)", character, jagexAuthService.getSessions().size(), numChars);
+-			});
+-	}
+ }
+diff --git a/runelite-client/src/main/java/net/runelite/client/RuneLiteModule.java b/runelite-client/src/main/java/net/runelite/client/RuneLiteModule.java
+index 885da45..36c8403 100644
+--- a/runelite-client/src/main/java/net/runelite/client/RuneLiteModule.java
++++ b/runelite-client/src/main/java/net/runelite/client/RuneLiteModule.java
+@@ -74,8 +74,6 @@ public class RuneLiteModule extends AbstractModule
+ 	private final boolean disableTelemetry;
+ 	private final File sessionfile;
+ 	private final String profile;
+-	private final String character;
+-	private final boolean insecureWriteCredentials;
+ 	private final boolean noupdate;
+ 
+ 	@Override
+@@ -123,8 +121,6 @@ public class RuneLiteModule extends AbstractModule
+ 		bindConstant().annotatedWith(Names.named("disableTelemetry")).to(disableTelemetry);
+ 		bind(File.class).annotatedWith(Names.named("sessionfile")).toInstance(sessionfile);
+ 		bind(String.class).annotatedWith(Names.named("profile")).toProvider(Providers.of(profile));
+-		bind(String.class).annotatedWith(Names.named("character")).toProvider(Providers.of(character));
+-		bindConstant().annotatedWith(Names.named("insecureWriteCredentials")).to(insecureWriteCredentials);
+ 		bindConstant().annotatedWith(Names.named("noupdate")).to(noupdate);
+ 		bind(File.class).annotatedWith(Names.named("runeLiteDir")).toInstance(RuneLite.RUNELITE_DIR);
+ 		bind(ScheduledExecutorService.class).toInstance(new ExecutorServiceExceptionLogger(Executors.newSingleThreadScheduledExecutor()));
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPanel.java b/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPanel.java
+deleted file mode 100644
+index 88ff963..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPanel.java
++++ /dev/null
+@@ -1,206 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * Copyright (c) 2026, LlemonDuck <napkinorton@gmail.com>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.plugins.jagexauth;
+-
+-import com.google.common.base.MoreObjects;
+-import java.awt.BorderLayout;
+-import java.awt.GridLayout;
+-import java.util.List;
+-import javax.inject.Inject;
+-import javax.swing.ImageIcon;
+-import javax.swing.JButton;
+-import javax.swing.JLabel;
+-import javax.swing.JPanel;
+-import javax.swing.SwingConstants;
+-import javax.swing.SwingUtilities;
+-import javax.swing.border.CompoundBorder;
+-import javax.swing.border.EmptyBorder;
+-import javax.swing.border.MatteBorder;
+-import lombok.extern.slf4j.Slf4j;
+-import net.runelite.client.rs.auth.Account;
+-import net.runelite.client.rs.auth.JagexAuthService;
+-import net.runelite.client.rs.auth.Session;
+-import net.runelite.client.ui.ColorScheme;
+-import net.runelite.client.ui.DynamicGridLayout;
+-import net.runelite.client.ui.FontManager;
+-import net.runelite.client.ui.PluginPanel;
+-import net.runelite.client.util.ImageUtil;
+-import net.runelite.client.util.SwingUtil;
+-
+-@Slf4j
+-class JagexAuthPanel extends PluginPanel
+-{
+-	private static final ImageIcon DELETE_ICON = new ImageIcon(ImageUtil.loadImageResource(
+-		JagexAuthPanel.class, "/net/runelite/client/plugins/config/mdi_delete.png"));
+-	private static final ImageIcon JAGEX_ACCOUNT_ICON = new ImageIcon(ImageUtil.resizeImage(
+-		ImageUtil.loadImageResource(JagexAuthPanel.class, "icon.png"), 16, 16));
+-
+-	private final JagexAuthService jagexAuthService;
+-
+-	private final JPanel sessionList = new JPanel(new DynamicGridLayout(0, 1, 0, 8));
+-	private final JPanel actions = new JPanel(new GridLayout(0, 1, 0, 4));
+-	private final JButton addAccountButton = new JButton("Add Jagex Account");
+-	private final JLabel infoLabel = new JLabel();
+-
+-	@Inject
+-	private JagexAuthPanel(JagexAuthService jagexAuthService)
+-	{
+-		this.jagexAuthService = jagexAuthService;
+-
+-		setBorder(new EmptyBorder(10, 10, 10, 10));
+-		setLayout(new DynamicGridLayout(0, 1, 0, 10));
+-
+-		sessionList.setOpaque(false);
+-
+-		addAccountButton.setToolTipText("Log in to a Jagex account");
+-		addAccountButton.addActionListener(e -> addAccount());
+-
+-		JButton legacyAccountButton = new JButton("Use Legacy Account");
+-		legacyAccountButton.setToolTipText("Log in with a non-Jagex account");
+-		legacyAccountButton.addActionListener(e -> jagexAuthService.switchJagexAccount(null, null, null));
+-
+-		actions.setOpaque(false);
+-		actions.add(addAccountButton);
+-		actions.add(legacyAccountButton);
+-	}
+-
+-	void rebuild()
+-	{
+-		List<Session> sessions = jagexAuthService.getSessions();
+-
+-		removeAll();
+-		sessionList.removeAll();
+-
+-		for (Session session : sessions)
+-		{
+-			sessionList.add(createSessionCard(session));
+-		}
+-
+-		infoLabel.setText(sessions.isEmpty()
+-			? "<html>You can create a Jagex account with the Jagex Launcher.</html>"
+-			: "<html>Click a character to switch to it. New characters can be created with the Jagex Launcher.</html>");
+-
+-		if (!sessions.isEmpty())
+-		{
+-			add(sessionList);
+-		}
+-		add(actions);
+-		add(infoLabel);
+-
+-		revalidate();
+-		repaint();
+-	}
+-
+-	private void addAccount()
+-	{
+-		addAccountButton.setEnabled(false);
+-		new Thread(() ->
+-		{
+-			try
+-			{
+-				jagexAuthService.performJagexAuthFlow();
+-			}
+-			catch (Exception ex)
+-			{
+-				log.error("Unable to add Jagex account", ex);
+-			}
+-			finally
+-			{
+-				SwingUtilities.invokeLater(() ->
+-				{
+-					addAccountButton.setEnabled(true);
+-					rebuild();
+-				});
+-			}
+-		}, "JagexAuth").start();
+-	}
+-
+-	private void removeSession(Session session)
+-	{
+-		jagexAuthService.removeSession(session);
+-		rebuild();
+-	}
+-
+-	private JPanel createSessionCard(Session session)
+-	{
+-		JLabel title = new JLabel(session.getNickname(), JAGEX_ACCOUNT_ICON, SwingConstants.LEADING);
+-		title.setIconTextGap(6);
+-		title.setFont(FontManager.getRunescapeBoldFont());
+-		title.setForeground(ColorScheme.BRAND_ORANGE);
+-
+-		JButton removeButton = new JButton(DELETE_ICON);
+-		SwingUtil.removeButtonDecorations(removeButton);
+-		removeButton.setToolTipText("Remove account");
+-		removeButton.addActionListener(e -> removeSession(session));
+-
+-		JPanel header = new JPanel(new BorderLayout(4, 0));
+-		header.setOpaque(false);
+-		header.setBorder(new CompoundBorder(
+-			new MatteBorder(0, 0, 1, 0, ColorScheme.DARK_GRAY_COLOR),
+-			new EmptyBorder(2, 10, 2, 0)));
+-		header.add(title, BorderLayout.CENTER);
+-		header.add(removeButton, BorderLayout.EAST);
+-
+-		JPanel characters = new JPanel(new DynamicGridLayout(0, 1));
+-		characters.setOpaque(false);
+-		characters.setBorder(new EmptyBorder(2, 0, 2, 0));
+-
+-		Account[] accounts = jagexAuthService.getAccounts(session.getSessionId());
+-		if (accounts == null || accounts.length == 0)
+-		{
+-			JLabel empty = new JLabel("No characters");
+-			empty.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+-			empty.setBorder(new EmptyBorder(6, 10, 6, 10));
+-			characters.add(empty);
+-		}
+-		else
+-		{
+-			for (Account account : accounts)
+-			{
+-				String displayName = account.getDisplayName();
+-				JButton button = createCharacterButton(MoreObjects.firstNonNull(displayName, "<New Character>"));
+-				button.addActionListener(e -> jagexAuthService.switchJagexAccount(
+-					session.getSessionId(), Long.toString(account.getAccountId()), displayName));
+-				characters.add(button);
+-			}
+-		}
+-
+-		JPanel card = new JPanel(new BorderLayout());
+-		card.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+-		card.add(header, BorderLayout.NORTH);
+-		card.add(characters, BorderLayout.CENTER);
+-		return card;
+-	}
+-
+-	private static JButton createCharacterButton(String text)
+-	{
+-		JButton button = new JButton(text);
+-		button.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+-		button.setBorder(new EmptyBorder(6, 10, 6, 10));
+-		button.setHorizontalAlignment(SwingConstants.LEADING);
+-		return button;
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPlugin.java b/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPlugin.java
+deleted file mode 100644
+index 7e9ee7c..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/jagexauth/JagexAuthPlugin.java
++++ /dev/null
+@@ -1,78 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * Copyright (c) 2026, LlemonDuck <napkinorton@gmail.com>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.plugins.jagexauth;
+-
+-import javax.inject.Inject;
+-import javax.swing.SwingUtilities;
+-import lombok.extern.slf4j.Slf4j;
+-import net.runelite.client.plugins.Plugin;
+-import net.runelite.client.plugins.PluginDescriptor;
+-import net.runelite.client.rs.auth.JagexAuthService;
+-import net.runelite.client.ui.ClientToolbar;
+-import net.runelite.client.ui.NavigationButton;
+-import net.runelite.client.util.ImageUtil;
+-
+-@PluginDescriptor(
+-	name = "Jagex Auth",
+-	description = "Jagex Account integration",
+-	developerPlugin = true,
+-	hidden = true
+-)
+-@Slf4j
+-public class JagexAuthPlugin extends Plugin
+-{
+-	@Inject
+-	private ClientToolbar clientToolbar;
+-
+-	@Inject
+-	private JagexAuthService jagexAuthService;
+-
+-	private NavigationButton navButton;
+-
+-	@Override
+-	protected void startUp()
+-	{
+-		JagexAuthPanel panel = injector.getInstance(JagexAuthPanel.class);
+-
+-		navButton = NavigationButton.builder()
+-			.tooltip("Jagex Accounts")
+-			.icon(ImageUtil.loadImageResource(getClass(), "icon.png"))
+-			.priority(2)
+-			.panel(panel)
+-			.build();
+-
+-		clientToolbar.addNavigation(navButton);
+-
+-		jagexAuthService.loadFromStore()
+-			.thenRun(() -> SwingUtilities.invokeLater(panel::rebuild));
+-	}
+-
+-	@Override
+-	protected void shutDown()
+-	{
+-		clientToolbar.removeNavigation(navButton);
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/Account.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/Account.java
+deleted file mode 100644
+index 93be4e7..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/Account.java
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import lombok.Data;
+-import lombok.NoArgsConstructor;
+-
+-@Data
+-@NoArgsConstructor
+-public class Account
+-{
+-	long accountId; // character id
+-	String displayName;
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/Crypt.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/Crypt.java
+deleted file mode 100644
+index 1af3317..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/Crypt.java
++++ /dev/null
+@@ -1,113 +0,0 @@
+-/*
+- * Copyright (c) 2021 Abex
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import java.io.IOException;
+-import java.security.GeneralSecurityException;
+-import java.security.SecureRandom;
+-import java.util.Arrays;
+-import javax.crypto.AEADBadTagException;
+-import javax.crypto.Cipher;
+-import javax.crypto.spec.GCMParameterSpec;
+-import javax.crypto.spec.SecretKeySpec;
+-
+-class Crypt
+-{
+-	private static final String CIPHER_TRANSFORM = "AES/GCM/NoPadding";
+-	private static final int NONCE_LENGTH = 12;
+-	private static final int TAG_LENGTH_BITS = 128;
+-	private static final int TAG_LENGTH_BYTES = TAG_LENGTH_BITS / 8;
+-	private static final int DATA_VERSION = 1;
+-	private static final int HEADER_LENGTH = 2 + NONCE_LENGTH;
+-
+-	private Crypt()
+-	{
+-	}
+-
+-	static byte[] encryptData(byte[] plaintext, byte[] key) throws IOException
+-	{
+-		try
+-		{
+-			byte[] nonce = new byte[NONCE_LENGTH];
+-			new SecureRandom().nextBytes(nonce);
+-			Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORM);
+-			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(TAG_LENGTH_BITS, nonce));
+-			byte[] header = createHeader(nonce);
+-			cipher.updateAAD(header);
+-			byte[] ciphertext = cipher.doFinal(plaintext);
+-			byte[] output = Arrays.copyOf(header, header.length + ciphertext.length);
+-			System.arraycopy(ciphertext, 0, output, header.length, ciphertext.length);
+-			return output;
+-		}
+-		catch (GeneralSecurityException e)
+-		{
+-			throw new IOException("unable to encrypt data", e);
+-		}
+-	}
+-
+-	static byte[] decryptData(byte[] cryptData, byte[] key) throws IOException
+-	{
+-		if (cryptData.length < HEADER_LENGTH + TAG_LENGTH_BYTES || getU16(cryptData, 0) != DATA_VERSION)
+-		{
+-			throw new IOException("invalid encrypted data");
+-		}
+-
+-		try
+-		{
+-			byte[] nonce = Arrays.copyOfRange(cryptData, 2, HEADER_LENGTH);
+-			Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORM);
+-			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(TAG_LENGTH_BITS, nonce));
+-			cipher.updateAAD(cryptData, 0, HEADER_LENGTH);
+-			return cipher.doFinal(cryptData, HEADER_LENGTH, cryptData.length - HEADER_LENGTH);
+-		}
+-		catch (AEADBadTagException e)
+-		{
+-			throw new IOException("incorrect key or corrupt encrypted data", e);
+-		}
+-		catch (GeneralSecurityException e)
+-		{
+-			throw new IOException("unable to decrypt data", e);
+-		}
+-	}
+-
+-	private static byte[] createHeader(byte[] nonce)
+-	{
+-		byte[] header = new byte[HEADER_LENGTH];
+-		putU16(header, 0, DATA_VERSION);
+-		System.arraycopy(nonce, 0, header, 2, nonce.length);
+-		return header;
+-	}
+-
+-	private static void putU16(byte[] data, int offset, int value)
+-	{
+-		data[offset] = (byte) (value >> 8);
+-		data[offset + 1] = (byte) value;
+-	}
+-
+-	private static int getU16(byte[] data, int offset)
+-	{
+-		return ((data[offset] & 0xFF) << 8) | (data[offset + 1] & 0xFF);
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthClient.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthClient.java
+deleted file mode 100644
+index d6d535a..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthClient.java
++++ /dev/null
+@@ -1,96 +0,0 @@
+-/*
+- * Copyright (c) 2021 Abex
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.google.gson.Gson;
+-import java.io.IOException;
+-import java.io.InputStream;
+-import java.io.InputStreamReader;
+-import java.nio.charset.StandardCharsets;
+-import java.util.HashMap;
+-import java.util.Map;
+-import javax.inject.Inject;
+-import javax.inject.Singleton;
+-import lombok.extern.slf4j.Slf4j;
+-import okhttp3.MediaType;
+-import okhttp3.OkHttpClient;
+-import okhttp3.Request;
+-import okhttp3.RequestBody;
+-import okhttp3.Response;
+-
+-@Slf4j
+-@Singleton
+-public class JagexAuthClient
+-{
+-	private final OkHttpClient client;
+-	private final Gson gson;
+-
+-	@Inject
+-	public JagexAuthClient(OkHttpClient client, Gson gson)
+-	{
+-		this.client = client;
+-		this.gson = gson;
+-	}
+-
+-	public String getSessionId(String idToken) throws IOException
+-	{
+-		Map<String, String> bodym = new HashMap<>();
+-		bodym.put("idToken", idToken);
+-
+-		try (Response res = client.newCall(new Request.Builder()
+-				.url("https://auth.jagex.com/game-session/v1/sessions")
+-				.post(RequestBody.create(MediaType.get("application/json"), gson.toJson(bodym)))
+-				.build())
+-			.execute())
+-		{
+-			if (!res.isSuccessful())
+-			{
+-				throw new IOException("unable to get session: " + res.message());
+-			}
+-			InputStream in = res.body().byteStream();
+-			Map resm = gson.fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), Map.class);
+-			return (String) resm.get("sessionId");
+-		}
+-	}
+-
+-	public Account[] getAccounts(String sessionId) throws IOException
+-	{
+-		try (Response res = client.newCall(new Request.Builder()
+-				.url("https://auth.jagex.com/game-session/v1/accounts")
+-				.header("Authorization", "Bearer " + sessionId)
+-				.header("Accept", "application/json")
+-				.get()
+-				.build())
+-			.execute())
+-		{
+-			if (!res.isSuccessful())
+-			{
+-				throw new IOException("unable to get accounts: " + res.message());
+-			}
+-			InputStream in = res.body().byteStream();
+-			return gson.fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), Account[].class);
+-		}
+-	}
+-}
+\ No newline at end of file
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthJwt.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthJwt.java
+deleted file mode 100644
+index 572e740..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthJwt.java
++++ /dev/null
+@@ -1,69 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.google.gson.Gson;
+-import com.google.gson.JsonParseException;
+-import com.google.gson.annotations.SerializedName;
+-import java.io.IOException;
+-import java.nio.charset.StandardCharsets;
+-import java.util.Base64;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+-
+-@Getter
+-@NoArgsConstructor
+-public class JagexAuthJwt
+-{
+-	@SerializedName("sub")
+-	private String sub;
+-
+-	@SerializedName("nickname")
+-	private String nickname;
+-
+-	public static JagexAuthJwt decode(String token, Gson gson) throws IOException
+-	{
+-		String[] parts = token.split("\\.", -1);
+-		if (parts.length != 3 || parts[1].isEmpty())
+-		{
+-			throw new IOException("Invalid JWT");
+-		}
+-
+-		try
+-		{
+-			byte[] payload = Base64.getUrlDecoder().decode(parts[1]);
+-			JagexAuthJwt jwt = gson.fromJson(new String(payload, StandardCharsets.UTF_8), JagexAuthJwt.class);
+-			if (jwt == null || jwt.sub == null || jwt.sub.isEmpty() || jwt.nickname == null || jwt.nickname.isEmpty())
+-			{
+-				throw new IOException("JWT is missing sub or nickname");
+-			}
+-			return jwt;
+-		}
+-		catch (IllegalArgumentException | JsonParseException e)
+-		{
+-			throw new IOException("Unable to decode JWT", e);
+-		}
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthService.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthService.java
+deleted file mode 100644
+index 3a529da..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/JagexAuthService.java
++++ /dev/null
+@@ -1,256 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * Copyright (c) 2026, LlemonDuck <napkinorton@gmail.com>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.google.gson.Gson;
+-import java.io.BufferedReader;
+-import java.io.IOException;
+-import java.io.InputStreamReader;
+-import java.net.MalformedURLException;
+-import java.net.URL;
+-import java.nio.file.Files;
+-import java.nio.file.Path;
+-import java.nio.file.StandardCopyOption;
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.concurrent.CompletableFuture;
+-import java.util.concurrent.ScheduledExecutorService;
+-import javax.inject.Inject;
+-import javax.inject.Singleton;
+-import lombok.RequiredArgsConstructor;
+-import lombok.extern.slf4j.Slf4j;
+-import net.runelite.api.Client;
+-import net.runelite.client.callback.ClientThread;
+-import net.runelite.client.util.OSType;
+-
+-@Slf4j
+-@Singleton
+-@RequiredArgsConstructor(onConstructor_ = @Inject)
+-public class JagexAuthService
+-{
+-	private final Client client;
+-	private final ClientThread clientThread;
+-	private final JagexAuthClient authClient;
+-	private final SessionStore sessionStore;
+-	private final Gson gson;
+-	private final ScheduledExecutorService executor;
+-
+-	private final List<Session> sessions = new ArrayList<>();
+-	private final Map<String, Account[]> accounts = new HashMap<>();
+-
+-	public CompletableFuture<Void> loadFromStore()
+-	{
+-		return CompletableFuture.runAsync(
+-			() ->
+-			{
+-				try
+-				{
+-					List<Session> sessions = sessionStore.load();
+-					synchronized (this)
+-					{
+-						this.sessions.clear();
+-						this.accounts.clear();
+-						for (Session session : sessions)
+-						{
+-							loadSession(session);
+-						}
+-					}
+-				}
+-				catch (Exception e)
+-				{
+-					log.error("Unable to load saved Jagex accounts", e);
+-				}
+-			},
+-			executor
+-		);
+-	}
+-
+-	public synchronized List<Session> getSessions()
+-	{
+-		return new ArrayList<>(sessions);
+-	}
+-
+-	public synchronized Account[] getAccounts(String sessionId)
+-	{
+-		return accounts.get(sessionId);
+-	}
+-
+-	public synchronized void removeSession(Session session)
+-	{
+-		List<Session> updatedAccounts = new ArrayList<>(sessions);
+-		if (!updatedAccounts.remove(session))
+-		{
+-			return;
+-		}
+-
+-		try
+-		{
+-			sessionStore.save(updatedAccounts);
+-		}
+-		catch (IOException e)
+-		{
+-			log.error("Unable to remove Jagex account session for {}", session.getNickname(), e);
+-			return;
+-		}
+-
+-		sessions.clear();
+-		sessions.addAll(updatedAccounts);
+-		accounts.remove(session.getSessionId());
+-	}
+-
+-	public void performJagexAuthFlow() throws IOException, InterruptedException
+-	{
+-		String idToken = launchJagexAuth();
+-		handleJagexAuthCompletion(idToken);
+-	}
+-
+-	private String launchJagexAuth() throws IOException, InterruptedException
+-	{
+-		var url = getJagexAuthURL();
+-		if (url == null)
+-		{
+-			throw new RuntimeException("jagexauth not found");
+-		}
+-
+-		Path temp;
+-		try (var in = url.openStream())
+-		{
+-			temp = Files.createTempFile("runelite_jagexauth", "");
+-			Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
+-		}
+-
+-		temp.toFile().setExecutable(true);
+-
+-		Process process = new ProcessBuilder(
+-			temp.toAbsolutePath().toString(),
+-			"--prompt=login"
+-		)
+-			.redirectErrorStream(true)
+-			.start();
+-
+-		String idToken = "";
+-		try (var in = new BufferedReader(new InputStreamReader(process.getInputStream())))
+-		{
+-			for (String s; (s = in.readLine()) != null;)
+-			{
+-				s = s.trim();
+-				String[] split = s.split(" ");
+-				if (split.length > 1 && split[0].equals("id_token:"))
+-				{
+-					idToken = split[1];
+-				}
+-			}
+-		}
+-
+-		if (idToken.isBlank())
+-		{
+-			throw new RuntimeException("Login did not return an id token");
+-		}
+-
+-		process.waitFor();
+-		Files.delete(temp);
+-		return idToken;
+-	}
+-
+-	private void handleJagexAuthCompletion(String idToken) throws IOException
+-	{
+-		JagexAuthJwt jwt = JagexAuthJwt.decode(idToken, gson);
+-		String subject = jwt.getSub();
+-		String nickname = jwt.getNickname();
+-
+-		String sessionId = authClient.getSessionId(idToken);
+-		Session session = new Session(sessionId, subject, nickname);
+-
+-		synchronized (this)
+-		{
+-			if (sessions.stream().anyMatch(a -> subject.equals(a.getSub())))
+-			{
+-				log.info("Jagex account {} ({}) already exists", subject, nickname);
+-				return;
+-			}
+-
+-			loadSession(session);
+-			sessionStore.save(sessions);
+-		}
+-	}
+-
+-	private void loadSession(Session session)
+-	{
+-		try
+-		{
+-			Account[] characters = authClient.getAccounts(session.getSessionId());
+-			sessions.add(session);
+-			accounts.put(session.getSessionId(), characters);
+-		}
+-		catch (IOException e)
+-		{
+-			log.error("Unable to load characters for Jagex account {}", session.getNickname(), e);
+-		}
+-	}
+-
+-	public void switchJagexAccount(String sessionId, String sub, String displayName)
+-	{
+-		clientThread.invoke(() -> client.switchJagexAccount(sessionId, sub, displayName));
+-	}
+-
+-	private static URL getJagexAuthURL()
+-	{
+-		String propOverride = System.getProperty("runelite.jagexauth");
+-		if (propOverride != null)
+-		{
+-			var path = Path.of(propOverride);
+-			try
+-			{
+-				return path.toUri().toURL();
+-			}
+-			catch (MalformedURLException e)
+-			{
+-				throw new RuntimeException(e);
+-			}
+-		}
+-
+-		String os, ext = "";
+-		switch (OSType.getOSType())
+-		{
+-			case Windows:
+-				os = "Win";
+-				ext = ".exe";
+-				break;
+-			case MacOS:
+-				os = "macOS";
+-				break;
+-			case Linux:
+-				os = "Linux";
+-				break;
+-			default:
+-				return null;
+-		}
+-		String arch = System.getProperty("os.arch");
+-		return JagexAuthService.class.getResource("/net/runelite/jagexauth/JagexAuth-" + os + "-" + arch + ext);
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/MacOSCredentialStore.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/MacOSCredentialStore.java
+deleted file mode 100644
+index 3296092..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/MacOSCredentialStore.java
++++ /dev/null
+@@ -1,198 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.sun.jna.Library;
+-import com.sun.jna.Native;
+-import com.sun.jna.NativeLong;
+-import com.sun.jna.NativeLibrary;
+-import com.sun.jna.Pointer;
+-import com.sun.jna.ptr.PointerByReference;
+-import java.io.IOException;
+-import java.security.SecureRandom;
+-import java.util.Arrays;
+-
+-class MacOSCredentialStore
+-{
+-	private static final String SERVICE = "RuneLite";
+-	private static final String ACCOUNT = "SessionStore";
+-	private static final int ERR_SEC_ITEM_NOT_FOUND = -25300;
+-	private static final int KEY_LENGTH = 32;
+-	private static final int K_CF_STRING_ENCODING_UTF8 = 0x08000100;
+-	private static final Pointer CF_TYPE_DICTIONARY_KEY_CALLBACKS =
+-		globalAddress("CoreFoundation", "kCFTypeDictionaryKeyCallBacks");
+-	private static final Pointer CF_TYPE_DICTIONARY_VALUE_CALLBACKS =
+-		globalAddress("CoreFoundation", "kCFTypeDictionaryValueCallBacks");
+-	private static final Pointer CF_BOOLEAN_TRUE = global("CoreFoundation", "kCFBooleanTrue");
+-	private static final Pointer SEC_CLASS = global("Security", "kSecClass");
+-	private static final Pointer SEC_CLASS_GENERIC_PASSWORD = global("Security", "kSecClassGenericPassword");
+-	private static final Pointer SEC_ATTR_SERVICE = global("Security", "kSecAttrService");
+-	private static final Pointer SEC_ATTR_ACCOUNT = global("Security", "kSecAttrAccount");
+-	private static final Pointer SEC_RETURN_DATA = global("Security", "kSecReturnData");
+-	private static final Pointer SEC_MATCH_LIMIT = global("Security", "kSecMatchLimit");
+-	private static final Pointer SEC_MATCH_LIMIT_ONE = global("Security", "kSecMatchLimitOne");
+-	private static final Pointer SEC_VALUE_DATA = global("Security", "kSecValueData");
+-
+-	private MacOSCredentialStore()
+-	{
+-	}
+-
+-	static byte[] getOrCreateKey() throws IOException
+-	{
+-		int status;
+-		PointerByReference resultRef = new PointerByReference();
+-		Pointer query = createQuery(true);
+-		try
+-		{
+-			status = Security.INSTANCE.SecItemCopyMatching(query, resultRef);
+-		}
+-		finally
+-		{
+-			CoreFoundation.INSTANCE.CFRelease(query);
+-		}
+-
+-		if (status == 0)
+-		{
+-			Pointer result = resultRef.getValue();
+-			try
+-			{
+-				if (result == null || CoreFoundation.INSTANCE.CFDataGetLength(result).longValue() != KEY_LENGTH)
+-				{
+-					throw new IOException("Invalid encryption key in macOS Keychain");
+-				}
+-				Pointer data = CoreFoundation.INSTANCE.CFDataGetBytePtr(result);
+-				if (data == null)
+-				{
+-					throw new IOException("Unable to read encryption key from macOS Keychain");
+-				}
+-				return data.getByteArray(0, KEY_LENGTH);
+-			}
+-			finally
+-			{
+-				CoreFoundation.INSTANCE.CFRelease(result);
+-			}
+-		}
+-
+-		if (status != ERR_SEC_ITEM_NOT_FOUND)
+-		{
+-			throw new IOException("Unable to read encryption key from macOS Keychain (error " + status + ")");
+-		}
+-
+-		byte[] key = new byte[KEY_LENGTH];
+-		new SecureRandom().nextBytes(key);
+-		Pointer attributes = createQuery(false);
+-		Pointer keyData = CoreFoundation.INSTANCE.CFDataCreate(null, key, new NativeLong(key.length));
+-		try
+-		{
+-			put(attributes, SEC_VALUE_DATA, keyData);
+-			status = Security.INSTANCE.SecItemAdd(attributes, null);
+-		}
+-		finally
+-		{
+-			CoreFoundation.INSTANCE.CFRelease(keyData);
+-			CoreFoundation.INSTANCE.CFRelease(attributes);
+-		}
+-
+-		if (status == 0)
+-		{
+-			return key;
+-		}
+-		Arrays.fill(key, (byte) 0);
+-		throw new IOException("Unable to save encryption key to macOS Keychain (error " + status + ")");
+-	}
+-
+-	private static Pointer createQuery(boolean returnData)
+-	{
+-		Pointer query = CoreFoundation.INSTANCE.CFDictionaryCreateMutable(null, new NativeLong(4),
+-			CF_TYPE_DICTIONARY_KEY_CALLBACKS, CF_TYPE_DICTIONARY_VALUE_CALLBACKS);
+-		put(query, SEC_CLASS, SEC_CLASS_GENERIC_PASSWORD);
+-		putString(query, SEC_ATTR_SERVICE, SERVICE);
+-		putString(query, SEC_ATTR_ACCOUNT, ACCOUNT);
+-		if (returnData)
+-		{
+-			put(query, SEC_RETURN_DATA, CF_BOOLEAN_TRUE);
+-			put(query, SEC_MATCH_LIMIT, SEC_MATCH_LIMIT_ONE);
+-		}
+-		return query;
+-	}
+-
+-	private static void putString(Pointer dictionary, Pointer key, String value)
+-	{
+-		Pointer cfString = CoreFoundation.INSTANCE.CFStringCreateWithCString(null, value, K_CF_STRING_ENCODING_UTF8);
+-		try
+-		{
+-			put(dictionary, key, cfString);
+-		}
+-		finally
+-		{
+-			CoreFoundation.INSTANCE.CFRelease(cfString);
+-		}
+-	}
+-
+-	private static void put(Pointer dictionary, Pointer key, Pointer value)
+-	{
+-		CoreFoundation.INSTANCE.CFDictionarySetValue(dictionary, key, value);
+-	}
+-
+-	private static Pointer global(String library, String name)
+-	{
+-		NativeLibrary nativeLibrary = NativeLibrary.getInstance(library);
+-		return nativeLibrary.getGlobalVariableAddress(name).getPointer(0);
+-	}
+-
+-	private static Pointer globalAddress(String library, String name)
+-	{
+-		return NativeLibrary.getInstance(library).getGlobalVariableAddress(name);
+-	}
+-
+-	private interface Security extends Library
+-	{
+-		Security INSTANCE = Native.load("Security", Security.class);
+-
+-		int SecItemAdd(Pointer attributes, PointerByReference result);
+-
+-		int SecItemCopyMatching(Pointer query, PointerByReference result);
+-	}
+-
+-	private interface CoreFoundation extends Library
+-	{
+-		CoreFoundation INSTANCE = Native.load("CoreFoundation", CoreFoundation.class);
+-
+-		Pointer CFDictionaryCreateMutable(Pointer allocator, NativeLong capacity, Pointer keyCallBacks,
+-			Pointer valueCallBacks);
+-
+-		void CFDictionarySetValue(Pointer dictionary, Pointer key, Pointer value);
+-
+-		Pointer CFStringCreateWithCString(Pointer allocator, String string, int encoding);
+-
+-		Pointer CFDataCreate(Pointer allocator, byte[] bytes, NativeLong length);
+-
+-		NativeLong CFDataGetLength(Pointer data);
+-
+-		Pointer CFDataGetBytePtr(Pointer data);
+-
+-		void CFRelease(Pointer object);
+-	}
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/Session.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/Session.java
+deleted file mode 100644
+index 83f4804..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/Session.java
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import lombok.AllArgsConstructor;
+-import lombok.Data;
+-import lombok.NoArgsConstructor;
+-
+-@Data
+-@NoArgsConstructor
+-@AllArgsConstructor
+-public class Session
+-{
+-	String sessionId;
+-	String sub;
+-	String nickname;
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/SessionStore.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/SessionStore.java
+deleted file mode 100644
+index c65082d..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/SessionStore.java
++++ /dev/null
+@@ -1,134 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.google.gson.Gson;
+-import com.google.gson.reflect.TypeToken;
+-import java.io.IOException;
+-import java.nio.charset.StandardCharsets;
+-import java.nio.file.Files;
+-import java.nio.file.Path;
+-import java.security.MessageDigest;
+-import java.security.NoSuchAlgorithmException;
+-import java.util.Arrays;
+-import java.util.Collections;
+-import java.util.List;
+-import javax.inject.Inject;
+-import javax.inject.Singleton;
+-import net.runelite.client.RuneLite;
+-import net.runelite.client.util.OSType;
+-
+-@Singleton
+-public class SessionStore
+-{
+-	private static final Path SESSIONS_FILE = RuneLite.RUNELITE_DIR.toPath().resolve("jagex-accounts.dat");
+-
+-	private final Gson gson;
+-
+-	@Inject
+-	private SessionStore(Gson gson)
+-	{
+-		this.gson = gson;
+-	}
+-
+-	public List<Session> load() throws IOException
+-	{
+-		if (!Files.exists(SESSIONS_FILE))
+-		{
+-			return Collections.emptyList();
+-		}
+-
+-		byte[] encrypted = Files.readAllBytes(SESSIONS_FILE);
+-		byte[] key = getEncryptionKey();
+-		byte[] json;
+-		try
+-		{
+-			json = Crypt.decryptData(encrypted, key);
+-		}
+-		finally
+-		{
+-			Arrays.fill(key, (byte) 0);
+-		}
+-		// CHECKSTYLE:OFF
+-		List<Session> sessions = gson.fromJson(new String(json, StandardCharsets.UTF_8), new TypeToken<List<Session>>(){}.getType());
+-		// CHECKSTYLE:ON
+-		return sessions == null ? Collections.emptyList() : sessions;
+-	}
+-
+-	public void save(List<Session> sessions) throws IOException
+-	{
+-		Files.createDirectories(SESSIONS_FILE.getParent());
+-		// CHECKSTYLE:OFF
+-		byte[] json = gson.toJson(sessions, new TypeToken<List<Session>>(){}.getType()).getBytes(StandardCharsets.UTF_8);
+-		// CHECKSTYLE:ON
+-		byte[] key = getEncryptionKey();
+-		try
+-		{
+-			Files.write(SESSIONS_FILE, Crypt.encryptData(json, key));
+-		}
+-		finally
+-		{
+-			Arrays.fill(key, (byte) 0);
+-			Arrays.fill(json, (byte) 0);
+-		}
+-	}
+-
+-	private static byte[] getEncryptionKey() throws IOException
+-	{
+-		switch (OSType.getOSType())
+-		{
+-			case Windows:
+-				return WindowsCredentialStore.getOrCreateKey();
+-			case MacOS:
+-				return MacOSCredentialStore.getOrCreateKey();
+-			default:
+-				return getEncryptionKeyDefault();
+-		}
+-	}
+-
+-	private static byte[] getEncryptionKeyDefault()
+-	{
+-		try
+-		{
+-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+-			byte[] username = System.getProperty("user.name", "").getBytes(StandardCharsets.UTF_8);
+-			digest.update(username);
+-			try
+-			{
+-				byte[] machineid = Files.readAllBytes(Path.of("/etc/machine-id"));
+-				digest.update(machineid);
+-			}
+-			catch (IOException ignored)
+-			{
+-			}
+-			return digest.digest();
+-		}
+-		catch (NoSuchAlgorithmException e)
+-		{
+-			throw new RuntimeException("Unable to derive session store key", e);
+-		}
+-	}
+-
+-}
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/auth/WindowsCredentialStore.java b/runelite-client/src/main/java/net/runelite/client/rs/auth/WindowsCredentialStore.java
+deleted file mode 100644
+index 08d5046..0000000
+--- a/runelite-client/src/main/java/net/runelite/client/rs/auth/WindowsCredentialStore.java
++++ /dev/null
+@@ -1,148 +0,0 @@
+-/*
+- * Copyright (c) 2026, Adam <Adam@sigterm.info>
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import com.sun.jna.Memory;
+-import com.sun.jna.Native;
+-import com.sun.jna.Pointer;
+-import com.sun.jna.Structure;
+-import com.sun.jna.WString;
+-import com.sun.jna.platform.win32.Kernel32;
+-import com.sun.jna.platform.win32.WinBase;
+-import com.sun.jna.platform.win32.WinDef.DWORD;
+-import com.sun.jna.ptr.PointerByReference;
+-import com.sun.jna.win32.StdCallLibrary;
+-import com.sun.jna.win32.W32APIOptions;
+-import java.io.IOException;
+-import java.security.SecureRandom;
+-
+-class WindowsCredentialStore
+-{
+-	private static final String TARGET = "RuneLite SessionStore";
+-	private static final int CRED_TYPE_GENERIC = 1;
+-	private static final int CRED_PERSIST_LOCAL_MACHINE = 2;
+-	private static final int ERROR_NOT_FOUND = 1168;
+-	private static final int KEY_LENGTH = 32;
+-
+-	private WindowsCredentialStore()
+-	{
+-	}
+-
+-	static byte[] getOrCreateKey() throws IOException
+-	{
+-		PointerByReference credentialRef = new PointerByReference();
+-		if (Advapi32.INSTANCE.CredReadW(new WString(TARGET), CRED_TYPE_GENERIC, 0, credentialRef))
+-		{
+-			Pointer credentialPointer = credentialRef.getValue();
+-			try
+-			{
+-				Credential credential = new Credential(credentialPointer);
+-				credential.read();
+-				if (credential.credentialBlobSize.intValue() != KEY_LENGTH || credential.credentialBlob == null)
+-				{
+-					throw new IOException("Invalid encryption key in Windows Credential Manager");
+-				}
+-				return credential.credentialBlob.getByteArray(0, KEY_LENGTH);
+-			}
+-			finally
+-			{
+-				Advapi32.INSTANCE.CredFree(credentialPointer);
+-			}
+-		}
+-
+-		int error = Kernel32.INSTANCE.GetLastError();
+-		if (error != ERROR_NOT_FOUND)
+-		{
+-			throw new IOException("Unable to read Windows credential (error " + error + ")");
+-		}
+-
+-		byte[] key = new byte[KEY_LENGTH];
+-		new SecureRandom().nextBytes(key);
+-		writeKey(key);
+-		return key;
+-	}
+-
+-	private static void writeKey(byte[] key) throws IOException
+-	{
+-		Memory blob = new Memory(key.length);
+-		blob.write(0, key, 0, key.length);
+-		Credential credential = new Credential();
+-		credential.flags = new DWORD(0);
+-		credential.type = new DWORD(CRED_TYPE_GENERIC);
+-		credential.targetName = new WString(TARGET);
+-		credential.comment = new WString("RuneLite Jagex account session token encryption key");
+-		credential.lastWritten = new WinBase.FILETIME();
+-		credential.credentialBlobSize = new DWORD(key.length);
+-		credential.credentialBlob = blob;
+-		credential.persist = new DWORD(CRED_PERSIST_LOCAL_MACHINE);
+-		credential.attributeCount = new DWORD(0);
+-		credential.attributes = null;
+-		credential.targetAlias = null;
+-		credential.userName = new WString("RuneLite");
+-		credential.write();
+-		if (!Advapi32.INSTANCE.CredWriteW(credential, 0))
+-		{
+-			throw new IOException("Unable to save encryption key to Windows Credential Manager (error " + Kernel32.INSTANCE.GetLastError() + ")");
+-		}
+-	}
+-
+-	private interface Advapi32 extends StdCallLibrary
+-	{
+-		Advapi32 INSTANCE = Native.load("Advapi32", Advapi32.class, W32APIOptions.UNICODE_OPTIONS);
+-
+-		boolean CredReadW(WString target, int type, int flags, PointerByReference credential);
+-
+-		boolean CredWriteW(Credential credential, int flags);
+-
+-		void CredFree(Pointer credential);
+-	}
+-
+-	@Structure.FieldOrder({"flags", "type", "targetName", "comment", "lastWritten", "credentialBlobSize",
+-		"credentialBlob", "persist", "attributeCount", "attributes", "targetAlias", "userName"})
+-	public static class Credential extends Structure
+-	{
+-		public DWORD flags;
+-		public DWORD type;
+-		public WString targetName;
+-		public WString comment;
+-		public WinBase.FILETIME lastWritten;
+-		public DWORD credentialBlobSize;
+-		public Pointer credentialBlob;
+-		public DWORD persist;
+-		public DWORD attributeCount;
+-		public Pointer attributes;
+-		public WString targetAlias;
+-		public WString userName;
+-
+-		public Credential()
+-		{
+-		}
+-
+-		private Credential(Pointer pointer)
+-		{
+-			super(pointer);
+-		}
+-	}
+-}
+diff --git a/runelite-client/src/main/resources/net/runelite/client/plugins/jagexauth/icon.png b/runelite-client/src/main/resources/net/runelite/client/plugins/jagexauth/icon.png
+deleted file mode 100644
+index 37d569694e8dc2e4f790e4c5a946c0267f3c1f3b..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 417
+zcmV;S0bc%zP)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F800001b5ch_0Itp)
+z=>Px#1ZP1_K>z@;j|==^1poj532;bRa{vGi!vFvd!vV){sAK>D0X9iQK~z{r&6Ep{
+z!$1f_d-NPFH)};&B4Y!SsF}2up0qNb0aESbk?T2$p}1fcsW@piKYiT!j{(@cn`o@-
+z`mAIz&OcJ;D(a)LEDP5KSv=PC`6zxX9l*eC>~DJ%sfOiT?!)ht18`%GV;(-j@gqIb
+z0Ss)cXMfWTfJ-#n8)8TUZq7OUX^c@VAjZz<3KsY8j{b@54KV^Jj=dlLYI{SBz~~Ch
+z$?Xj>1Qf@ZGr1qc5UQrxMXKBeF#^>m$bR|myDs?zDD=DLRZW2yJJt3^*Zkxa#MnV)
+zF&>KJRV^XLMz_6h$bOb%8eBn)4HU<GxNZRM(d3E|w)cOv2Kpwh^Sms-xq=wskxE%Z
+zJbR|%3en&#GZl@7_1Vxezz^8O=3VUKz+D7!a5kwpX%<6q!BvP}9^X1Q&~ziA00000
+LNkvXXu0mjfDI2kM
+
+diff --git a/runelite-client/src/test/java/net/runelite/client/plugins/PluginManagerTest.java b/runelite-client/src/test/java/net/runelite/client/plugins/PluginManagerTest.java
+index 77efb9e..d91c415 100644
+--- a/runelite-client/src/test/java/net/runelite/client/plugins/PluginManagerTest.java
++++ b/runelite-client/src/test/java/net/runelite/client/plugins/PluginManagerTest.java
+@@ -109,7 +109,7 @@ public class PluginManagerTest
+ 		Injector injector = Guice.createInjector(Modules
+ 			.override(new RuneLiteModule(okHttpClient, () -> null, configLoader, true, false, false,
+ 				RuneLite.DEFAULT_SESSION_FILE,
+-				null, null, false, false
++				null, false
+ 			))
+ 			.with(BoundFieldModule.of(this)));
+ 
+diff --git a/runelite-client/src/test/java/net/runelite/client/rs/auth/CryptTest.java b/runelite-client/src/test/java/net/runelite/client/rs/auth/CryptTest.java
+deleted file mode 100644
+index 690f5ce..0000000
+--- a/runelite-client/src/test/java/net/runelite/client/rs/auth/CryptTest.java
++++ /dev/null
+@@ -1,59 +0,0 @@
+-/*
+- * Copyright (c) 2021 Abex
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions are met:
+- *
+- * 1. Redistributions of source code must retain the above copyright notice, this
+- *    list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright notice,
+- *    this list of conditions and the following disclaimer in the documentation
+- *    and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS "AS IS" AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-package net.runelite.client.rs.auth;
+-
+-import java.io.IOException;
+-import java.nio.charset.StandardCharsets;
+-import java.util.Arrays;
+-import org.junit.Assert;
+-import org.junit.Test;
+-
+-public class CryptTest
+-{
+-	@Test
+-	public void testDataRoundtrip() throws IOException
+-	{
+-		byte[] plaintext = "session store payload".getBytes(StandardCharsets.UTF_8);
+-		byte[] key = new byte[32];
+-		Arrays.fill(key, (byte) 7);
+-
+-		byte[] encryptedA = Crypt.encryptData(plaintext, key);
+-		byte[] encryptedB = Crypt.encryptData(plaintext, key);
+-
+-		Assert.assertFalse(Arrays.equals(encryptedA, encryptedB));
+-		Assert.assertArrayEquals(plaintext, Crypt.decryptData(encryptedA, key));
+-		Assert.assertArrayEquals(plaintext, Crypt.decryptData(encryptedB, key));
+-
+-		encryptedA[encryptedA.length - 1] ^= 1;
+-		try
+-		{
+-			Crypt.decryptData(encryptedA, key);
+-			Assert.fail("Tampered ciphertext must not decrypt");
+-		}
+-		catch (IOException expected)
+-		{
+-		}
+-	}
+-}
+-- 
+2.43.0
+

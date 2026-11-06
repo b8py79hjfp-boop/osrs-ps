@@ -109,7 +109,8 @@ object GamePatcher {
 
 /**
  * Rules for this release: the RSA modulus (the client's only 256-hex-digit constant, found by shape and value) plus
- * the URL rewrites from [config] (client/gamepatch/patches.json), whose `{site}` placeholder becomes [site].
+ * the URL rewrites from [config] (client/gamepatch/patches.json), whose `{site}` / `{host}` placeholders become [site]
+ * and its host.
  */
 fun rules(config: Path, modulusHex: String, site: String): List<Rule> {
     require(modulusHex.matches(Regex("[0-9a-f]{1,256}"))) { "modulus must be lower-case hex" }

@@ -1,0 +1,74 @@
+@@NAME@@ — About and licenses
+=============================
+
+This client is a modified build of RuneLite (https://github.com/runelite/runelite), version 1.13.6, with changes
+that point it at this server and remove integrations with third-party services. It is not affiliated with or
+endorsed by RuneLite or by Jagex Ltd. "RuneLite" and its logo are not used as this product's name or artwork.
+"Old School RuneScape" is a trademark of Jagex Ltd.
+
+The RuneLite-derived source is available under the same license as below; the patch series that produces this
+build is part of the project's source repository (client/runelite/patches).
+
+
+RuneLite
+--------
+
+BSD 2-Clause License
+
+Copyright (c) 2016-2017, Adam <Adam@sigterm.info>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Individual RuneLite source files carry their own copyright lines (for example "Copyright (c) 2016-2017, Adam
+<Adam@sigterm.info>"); they are all released under the BSD 2-Clause terms above.
+
+
+Bundled libraries
+-----------------
+
+Each library is distributed under its own license. Where a library ships its license or notice text in its jar
+(META-INF), that text is part of this distribution and applies.
+
+  Google Guice 4.1.0 ...................... Apache License 2.0
+  Google Guava 23.2 ....................... Apache License 2.0
+  Google Gson 2.8.5 ....................... Apache License 2.0
+  Protocol Buffers (javalite) 3.21.12 ..... BSD 3-Clause
+  Square OkHttp 3.14.9, Okio 1.17.2 ....... Apache License 2.0
+  javax.inject 1, AOP Alliance 1.0 ........ Apache License 2.0 / public domain
+  jsr305 3.0.2 ............................ see the library's published license
+  Apache Commons Lang 3.7, Text 1.2 ....... Apache License 2.0
+  jopt-simple 5.0.1 ....................... MIT
+  SLF4J 1.7.25 ............................ MIT
+  Logback 1.2.9 ........................... Eclipse Public License 1.0 or LGPL 2.1 (dual)
+  FlatLaf 3.2.5 (RuneLite build) .......... Apache License 2.0
+  JNA / JNA Platform 5.9.0 ................ LGPL 2.1 or later, or Apache License 2.0 (dual)
+  LWJGL 3.3.2 (core, OpenGL, OpenCL) ...... BSD 3-Clause
+  RSyntaxTextArea 3.1.2, AutoComplete ..... BSD 3-Clause
+  JSVG 1.2.0 .............................. MIT
+  org.json 20090211 ....................... The JSON License
+  RuneLite rlawt, rlicn, http-api ......... BSD 2-Clause (RuneLite)
+
+Sound, icon and font resources keep the notices they carry in the RuneLite repository (for example
+net/runelite/client/notification.txt for the notification sound).
+
+The game client that RuneLite runs ("injected-client") is a Jagex Ltd. work, not covered by the licenses above.

@@ -1,0 +1,99 @@
+From 6b1757651a45b43537a6e815b1d35b386744f275 Mon Sep 17 00:00:00 2001
+From: tickperfect fork <fork@localhost>
+Date: Fri, 6 Nov 2026 09:23:59 +0000
+Subject: [PATCH] Enforce a plugin allowlist in PluginManager
+
+---
+ .../client/plugins/PluginManager.java         | 49 +++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/PluginManager.java b/runelite-client/src/main/java/net/runelite/client/plugins/PluginManager.java
+index d7ee2a3..2613309 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/PluginManager.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/PluginManager.java
+@@ -36,8 +36,12 @@ import com.google.inject.Injector;
+ import com.google.inject.Key;
+ import com.google.inject.Module;
+ import java.io.File;
++import java.io.BufferedReader;
+ import java.io.IOException;
++import java.io.InputStream;
++import java.io.InputStreamReader;
+ import java.lang.reflect.InvocationTargetException;
++import java.nio.charset.StandardCharsets;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.Collection;
+@@ -76,10 +80,16 @@ public class PluginManager
+ 	 * Base package where the core plugins are
+ 	 */
+ 	private static final String PLUGIN_PACKAGE = "net.runelite.client.plugins";
++	/**
++	 * Resource listing the fully qualified class names of the plugins that may be loaded, one per line. Blank
++	 * lines and lines starting with '#' are ignored. It is copied into the jar from the release's allowlist.txt.
++	 */
++	private static final String ALLOWLIST_RESOURCE = "allowlist.txt";
+ 	private static final File SIDELOADED_PLUGINS = new File(RuneLite.RUNELITE_DIR, "sideloaded-plugins");
+ 
+ 	private final boolean developerMode;
+ 	private final boolean safeMode;
++	private final Set<String> allowlist = loadAllowlist();
+ 	private final EventBus eventBus;
+ 	private final Scheduler scheduler;
+ 	private final ConfigManager configManager;
+@@ -250,6 +260,37 @@ public class PluginManager
+ 		}
+ 	}
+ 
++	/**
++	 * Reads the plugin allowlist. A missing allowlist is fatal: no plugin is loaded without one.
++	 */
++	private Set<String> loadAllowlist()
++	{
++		try (InputStream in = PluginManager.class.getResourceAsStream(ALLOWLIST_RESOURCE))
++		{
++			if (in == null)
++			{
++				throw new IllegalStateException("Plugin allowlist " + ALLOWLIST_RESOURCE + " is missing");
++			}
++
++			final Set<String> names = new HashSet<>();
++			final BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
++			String line;
++			while ((line = reader.readLine()) != null)
++			{
++				line = line.trim();
++				if (!line.isEmpty() && line.charAt(0) != '#')
++				{
++					names.add(line);
++				}
++			}
++			return names;
++		}
++		catch (IOException e)
++		{
++			throw new IllegalStateException("Unable to read the plugin allowlist", e);
++		}
++	}
++
+ 	public void loadCorePlugins() throws IOException, PluginInstantiationException
+ 	{
+ 		SplashScreen.stage(.59, null, "Loading plugins");
+@@ -327,6 +368,14 @@ public class PluginManager
+ 				continue;
+ 			}
+ 
++			// Plugins that are not on the allowlist are never loaded, whichever way they were found (core,
++			// sideloaded or external).
++			if (!allowlist.contains(clazz.getName()))
++			{
++				log.debug("Not loading {}: not on the plugin allowlist", clazz.getName());
++				continue;
++			}
++
+ 			if (pluginDescriptor.developerPlugin() && !developerMode)
+ 			{
+ 				continue;
+-- 
+2.43.0
+

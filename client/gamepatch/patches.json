@@ -1,5 +1,5 @@
 {
-  "comment": "Game-client URL rewrites (brief §4.2 change set 2). Found by exact value; 'count' is how many constant sites must match (LDC operands + field values). {site} = our website/hub base URL.",
+  "comment": "Game-client URL rewrites (brief §4.2 change set 2). Found by exact value; 'count' is how many constant sites must match (LDC operands + field values). {site} = our website/hub base URL, {host} = its host name. Note: rewriting '.runescape.com' to '' also makes the client's codebase host check (the class holding 'invalidhost') accept any host, which our own domains need (DECISIONS D-028).",
   "urls": [
     { "name": "support-home", "from": "https://support.runescape.com/hc/en-gb", "to": "{site}/support", "count": 5 },
     { "name": "support-article-ja", "from": "https://support.runescape.com/hc/articles/34153372787857", "to": "{site}/support", "count": 1 },
@@ -14,6 +14,9 @@
     { "name": "play-page", "from": "https://oldschool.runescape.com/play?utm_source=osrs_java&utm_medium=game_client", "to": "{site}", "count": 1 },
     { "name": "displaynames-wtqa", "from": "https://secure-wtqa.runescape.com/m=displaynames", "to": "{site}/m=displaynames", "count": 4 },
     { "name": "secure-prefix", "from": "https://secure", "to": "{site}", "count": 5 },
-    { "name": "runescape-domain", "from": ".runescape.com", "to": "", "count": 9 }
+    { "name": "runescape-domain", "from": ".runescape.com", "to": "", "count": 9 },
+    { "name": "runescape-host", "from": "runescape.com", "to": "{host}", "count": 5 },
+    { "name": "jagex-host", "from": "jagex.com", "to": "{host}", "count": 4 },
+    { "name": "jagex-domain", "from": ".jagex.com", "to": ".{host}", "count": 4 }
   ]
 }

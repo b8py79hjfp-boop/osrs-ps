@@ -1,0 +1,108 @@
+From 538764083685974fe5bc8c4b713e9b9a04f1e708 Mon Sep 17 00:00:00 2001
+From: tickperfect fork <fork@localhost>
+Date: Fri, 6 Nov 2026 09:24:00 +0000
+Subject: [PATCH] Use a per-release data directory and drop the jagexcache copy
+
+---
+ .../java/net/runelite/client/RuneLite.java    | 43 +++----------------
+ .../net/runelite/client/plugins/Plugin.java   |  2 +-
+ 2 files changed, 7 insertions(+), 38 deletions(-)
+
+diff --git a/runelite-client/src/main/java/net/runelite/client/RuneLite.java b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+index 8dc7a2e..c79b045 100644
+--- a/runelite-client/src/main/java/net/runelite/client/RuneLite.java
++++ b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+@@ -41,7 +41,6 @@ import java.nio.file.Files;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
+ import java.nio.file.StandardCopyOption;
+-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+ import java.security.KeyManagementException;
+ import java.security.KeyStore;
+ import java.security.KeyStoreException;
+@@ -56,7 +55,6 @@ import java.util.Locale;
+ import java.util.Map;
+ import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.TimeUnit;
+-import java.util.stream.Stream;
+ import javax.annotation.Nullable;
+ import javax.inject.Singleton;
+ import javax.management.ObjectName;
+@@ -96,7 +94,12 @@ import org.slf4j.LoggerFactory;
+ @Slf4j
+ public class RuneLite
+ {
+-	public static final File RUNELITE_DIR = new File(System.getProperty("user.home"), ".runelite");
++	/**
++	 * Per-release data directory name (for example ".tickperfect"), so this client never reads or overwrites the
++	 * settings, session or cache of a stock RuneLite installation.
++	 */
++	private static final String DATA_DIR_NAME = "." + RuneLiteProperties.getTitle().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
++	public static final File RUNELITE_DIR = new File(System.getProperty("user.home"), DATA_DIR_NAME);
+ 	public static final File CACHE_DIR = new File(RUNELITE_DIR, "cache");
+ 	public static final File PLUGINS_DIR = new File(RUNELITE_DIR, "plugins");
+ 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
+@@ -279,8 +282,6 @@ public class RuneLite
+ 		setupSystemProps();
+ 		setupCompilerControl();
+ 
+-		copyJagexCache();
+-
+ 		System.setProperty("jagex.disableBouncyCastle", "true");
+ 		System.setProperty("jagex.userhome", RUNELITE_DIR.getAbsolutePath());
+ 
+@@ -458,38 +459,6 @@ public class RuneLite
+ 		return builder.build();
+ 	}
+ 
+-	private static void copyJagexCache()
+-	{
+-		Path from = Paths.get(System.getProperty("user.home"), "jagexcache");
+-		Path to = Paths.get(System.getProperty("user.home"), ".runelite", "jagexcache");
+-		if (Files.exists(to) || !Files.exists(from))
+-		{
+-			return;
+-		}
+-
+-		log.info("Copying jagexcache from {} to {}", from, to);
+-
+-		// Recursively copy path https://stackoverflow.com/a/50418060
+-		try (Stream<Path> stream = Files.walk(from))
+-		{
+-			stream.forEach(source ->
+-			{
+-				try
+-				{
+-					Files.copy(source, to.resolve(from.relativize(source)), COPY_ATTRIBUTES);
+-				}
+-				catch (IOException e)
+-				{
+-					throw new RuntimeException(e);
+-				}
+-			});
+-		}
+-		catch (Exception e)
+-		{
+-			log.warn("unable to copy jagexcache", e);
+-		}
+-	}
+-
+ 	private void setupSystemProps()
+ 	{
+ 		if (runtimeConfig == null || runtimeConfig.getSysProps() == null)
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/Plugin.java b/runelite-client/src/main/java/net/runelite/client/plugins/Plugin.java
+index 1e17cbb..8c6ffaa 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/Plugin.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/Plugin.java
+@@ -83,7 +83,7 @@ public abstract class Plugin implements Module
+ 	}
+ 
+ 	/**
+-	 * Gets this plugin's data directory, located in .runelite/plugin-data/[internal-name]. If
++	 * Gets this plugin's data directory, located in the data directory's plugin-data/[internal-name]. If
+ 	 * {@link PluginDescriptor#legacyDataDirectory()} is set, it will be migrated to the plugin's
+ 	 * data directory on the first call of {@code getPluginDirectory}
+ 	 */
+-- 
+2.43.0
+

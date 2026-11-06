@@ -1,0 +1,147 @@
+# Core plugins that may be loaded. One fully qualified class name per line; '#' starts a comment.
+# PluginManager refuses every plugin that is not listed here (core, sideloaded and external alike),
+# and a missing allowlist is fatal. build.sh copies this file into the jar as
+# net/runelite/client/plugins/allowlist.txt.
+#
+# Policy: all core plugins except those that give a PvP information advantage beyond the vanilla game, or that
+# contact a third party. The server stays authoritative; this only limits information advantages.
+#
+# Not listed (still in the source, never loaded):
+#   - chatcommands: kc/pb/hiscore lookups of other players through the RuneLite API (not provided)
+#   - opponentinfo: looks up the opponent's hiscores (stat comparison, HP level), a PvP information advantage
+#   - party: needs the RuneLite websocket service (not provided); shares locations and stats
+#   - loginscreen: downloads login screen assets from the static host and overrides the login screen branding
+#   - emojis: downloads emoji images from the static host
+#   - devtools: developer tools (var/widget/script inspectors); never for players
+#
+# Removed from the source entirely by the patch series (they contain third-party endpoints):
+#   - account: RuneLite account sign-in and cloud config sync
+#   - crowdsourcing: sends game data to the OSRS Wiki
+#   - discord: Discord rich presence and avatar downloads
+#   - hiscore: Jagex hiscore panel (opponent stat lookups)
+#   - jagexauth: Jagex Account sign-in
+#   - twitch: Twitch chat integration
+#   - wiki: OSRS Wiki lookups and DPS calculator
+#   - xpupdater: sends stats to Wise Old Man, TempleOSRS and Crystal Math Labs
+#
+# Kept although they talk to the API: loottracker (cloud sync needs an account session, which cannot exist),
+# slayer / raids / poh (submit own task or layout to <api>/chat, which the hub may answer with 404),
+# grandexchange / itemprices (prices from <api>/item/prices.js), worldhopper / defaultworld (<api>/worlds.js).
+
+net.runelite.client.plugins.achievementdiary.DiaryRequirementsPlugin
+net.runelite.client.plugins.agility.AgilityPlugin
+net.runelite.client.plugins.ammo.AmmoPlugin
+net.runelite.client.plugins.animsmoothing.AnimationSmoothingPlugin
+net.runelite.client.plugins.antidrag.AntiDragPlugin
+net.runelite.client.plugins.attackstyles.AttackStylesPlugin
+net.runelite.client.plugins.bank.BankPlugin
+net.runelite.client.plugins.banktags.BankTagsPlugin
+net.runelite.client.plugins.barbarianassault.BarbarianAssaultPlugin
+net.runelite.client.plugins.barrows.BarrowsPlugin
+net.runelite.client.plugins.blastfurnace.BlastFurnacePlugin
+net.runelite.client.plugins.blastmine.BlastMinePlugin
+net.runelite.client.plugins.boosts.BoostsPlugin
+net.runelite.client.plugins.bosstimer.BossTimersPlugin
+net.runelite.client.plugins.camera.CameraPlugin
+net.runelite.client.plugins.cannon.CannonPlugin
+net.runelite.client.plugins.chatchannel.ChatChannelPlugin
+net.runelite.client.plugins.chatfilter.ChatFilterPlugin
+net.runelite.client.plugins.chathistory.ChatHistoryPlugin
+net.runelite.client.plugins.chatnotifications.ChatNotificationsPlugin
+net.runelite.client.plugins.cluescrolls.ClueScrollPlugin
+net.runelite.client.plugins.combatlevel.CombatLevelPlugin
+net.runelite.client.plugins.config.ConfigPlugin
+net.runelite.client.plugins.cooking.CookingPlugin
+net.runelite.client.plugins.corp.CorpPlugin
+net.runelite.client.plugins.customcursor.CustomCursorPlugin
+net.runelite.client.plugins.dailytaskindicators.DailyTasksPlugin
+net.runelite.client.plugins.defaultworld.DefaultWorldPlugin
+net.runelite.client.plugins.dpscounter.DpsCounterPlugin
+net.runelite.client.plugins.driftnet.DriftNetPlugin
+net.runelite.client.plugins.entityhider.EntityHiderPlugin
+net.runelite.client.plugins.examine.ExaminePlugin
+net.runelite.client.plugins.fairyring.FairyRingPlugin
+net.runelite.client.plugins.fishing.FishingPlugin
+net.runelite.client.plugins.fps.FpsPlugin
+net.runelite.client.plugins.friendlist.FriendListPlugin
+net.runelite.client.plugins.friendnotes.FriendNotesPlugin
+net.runelite.client.plugins.gpu.GpuPlugin
+net.runelite.client.plugins.grandexchange.GrandExchangePlugin
+net.runelite.client.plugins.grounditems.GroundItemsPlugin
+net.runelite.client.plugins.groundmarkers.GroundMarkerPlugin
+net.runelite.client.plugins.herbiboars.HerbiboarPlugin
+net.runelite.client.plugins.hunter.HunterPlugin
+net.runelite.client.plugins.idlenotifier.IdleNotifierPlugin
+net.runelite.client.plugins.implings.ImplingsPlugin
+net.runelite.client.plugins.info.InfoPlugin
+net.runelite.client.plugins.instancemap.InstanceMapPlugin
+net.runelite.client.plugins.interacthighlight.InteractHighlightPlugin
+net.runelite.client.plugins.interfacestyles.InterfaceStylesPlugin
+net.runelite.client.plugins.inventorygrid.InventoryGridPlugin
+net.runelite.client.plugins.inventorytags.InventoryTagsPlugin
+net.runelite.client.plugins.inventoryviewer.InventoryViewerPlugin
+net.runelite.client.plugins.itemcharges.ItemChargePlugin
+net.runelite.client.plugins.itemidentification.ItemIdentificationPlugin
+net.runelite.client.plugins.itemprices.ItemPricesPlugin
+net.runelite.client.plugins.itemstats.ItemStatPlugin
+net.runelite.client.plugins.keyremapping.KeyRemappingPlugin
+net.runelite.client.plugins.kingdomofmiscellania.KingdomPlugin
+net.runelite.client.plugins.kourendlibrary.KourendLibraryPlugin
+net.runelite.client.plugins.logouttimer.LogoutTimerPlugin
+net.runelite.client.plugins.loottracker.LootTrackerPlugin
+net.runelite.client.plugins.lowmemory.LowMemoryPlugin
+net.runelite.client.plugins.menuentryswapper.MenuEntrySwapperPlugin
+net.runelite.client.plugins.metronome.MetronomePlugin
+net.runelite.client.plugins.minimap.MinimapPlugin
+net.runelite.client.plugins.mining.MiningPlugin
+net.runelite.client.plugins.motherlode.MotherlodePlugin
+net.runelite.client.plugins.mousehighlight.MouseHighlightPlugin
+net.runelite.client.plugins.mta.MTAPlugin
+net.runelite.client.plugins.music.MusicPlugin
+net.runelite.client.plugins.nightmarezone.NightmareZonePlugin
+net.runelite.client.plugins.notes.NotesPlugin
+net.runelite.client.plugins.npchighlight.NpcIndicatorsPlugin
+net.runelite.client.plugins.npcunaggroarea.NpcAggroAreaPlugin
+net.runelite.client.plugins.objectindicators.ObjectIndicatorsPlugin
+net.runelite.client.plugins.pestcontrol.PestControlPlugin
+net.runelite.client.plugins.playerindicators.PlayerIndicatorsPlugin
+net.runelite.client.plugins.poh.PohPlugin
+net.runelite.client.plugins.poison.PoisonPlugin
+net.runelite.client.plugins.prayer.PrayerPlugin
+net.runelite.client.plugins.puzzlesolver.PuzzleSolverPlugin
+net.runelite.client.plugins.pyramidplunder.PyramidPlunderPlugin
+net.runelite.client.plugins.questlist.QuestListPlugin
+net.runelite.client.plugins.raids.RaidsPlugin
+net.runelite.client.plugins.randomevents.RandomEventPlugin
+net.runelite.client.plugins.regenmeter.RegenMeterPlugin
+net.runelite.client.plugins.reportbutton.ReportButtonPlugin
+net.runelite.client.plugins.roofremoval.RoofRemovalPlugin
+net.runelite.client.plugins.runecraft.RunecraftPlugin
+net.runelite.client.plugins.runenergy.RunEnergyPlugin
+net.runelite.client.plugins.runepouch.RunepouchPlugin
+net.runelite.client.plugins.screenmarkers.ScreenMarkerPlugin
+net.runelite.client.plugins.screenshot.ScreenshotPlugin
+net.runelite.client.plugins.skillcalculator.SkillCalculatorPlugin
+net.runelite.client.plugins.skybox.SkyboxPlugin
+net.runelite.client.plugins.slayer.SlayerPlugin
+net.runelite.client.plugins.smelting.SmeltingPlugin
+net.runelite.client.plugins.specialcounter.SpecialCounterPlugin
+net.runelite.client.plugins.spellbook.SpellbookPlugin
+net.runelite.client.plugins.statusbars.StatusBarsPlugin
+net.runelite.client.plugins.stretchedmode.StretchedModePlugin
+net.runelite.client.plugins.team.TeamPlugin
+net.runelite.client.plugins.tearsofguthix.TearsOfGuthixPlugin
+net.runelite.client.plugins.tileindicators.TileIndicatorsPlugin
+net.runelite.client.plugins.timersandbuffs.TimersAndBuffsPlugin
+net.runelite.client.plugins.timestamp.TimestampPlugin
+net.runelite.client.plugins.timetracking.TimeTrackingPlugin
+net.runelite.client.plugins.tithefarm.TitheFarmPlugin
+net.runelite.client.plugins.virtuallevels.VirtualLevelsPlugin
+net.runelite.client.plugins.wintertodt.WintertodtPlugin
+net.runelite.client.plugins.woodcutting.WoodcuttingPlugin
+net.runelite.client.plugins.worldhopper.WorldHopperPlugin
+net.runelite.client.plugins.worldmap.WorldMapPlugin
+net.runelite.client.plugins.xpdrop.XpDropPlugin
+net.runelite.client.plugins.xpglobes.XpGlobesPlugin
+net.runelite.client.plugins.xptracker.XpTrackerPlugin
+net.runelite.client.plugins.zalcano.ZalcanoPlugin

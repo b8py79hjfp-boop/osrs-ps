@@ -1,0 +1,65 @@
+From bd51fb416740a1da2d276a6919b20e9facdf7f6a Mon Sep 17 00:00:00 2001
+From: tickperfect fork <fork@localhost>
+Date: Fri, 6 Nov 2026 09:23:59 +0000
+Subject: [PATCH] Point runelite.properties at release tokens and disable
+ Discord and the plugin hub URL
+
+---
+ .../net/runelite/client/runelite.properties   | 41 +++++++++----------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
+
+diff --git a/runelite-client/src/main/resources/net/runelite/client/runelite.properties b/runelite-client/src/main/resources/net/runelite/client/runelite.properties
+index fb896bf..cfe665d 100644
+--- a/runelite-client/src/main/resources/net/runelite/client/runelite.properties
++++ b/runelite-client/src/main/resources/net/runelite/client/runelite.properties
+@@ -1,25 +1,24 @@
+-runelite.title=RuneLite
++runelite.title=@@NAME@@
+ runelite.version=${project.version}
+ runelite.commit=${git.commit.id.abbrev}
+ runelite.dirty=${git.dirty}
+-runelite.discord.enable=true
+-runelite.discord.appid=409416265891971072
+-runelite.discord.invite=https://discord.gg/ArdAhnN
+-runelite.github.link=https://github.com/runelite/runelite/discussions
+-runelite.wiki.link=https://github.com/runelite/runelite/wiki
+-runelite.patreon.link=https://www.patreon.com/runelite
+-runelite.wiki.troubleshooting.link=https://github.com/runelite/runelite/wiki/Troubleshooting-problems-with-the-client
+-runelite.wiki.building.link=https://github.com/runelite/runelite/wiki/Building-with-IntelliJ-IDEA#client-failing-to-start
+-runelite.dnschange.link=https://1.1.1.1/dns/#setup-instructions
+-runelite.jav_config=https://oldschool.config.runescape.com/jav_config.ws
+-runelite.jav_config_backup=https://static.runelite.net/jav_config.ws
+-runelite.pluginhub.url=https://repo.runelite.net/plugins
++runelite.discord.enable=false
++runelite.discord.appid=
++runelite.discord.invite=@@SITE@@/discord
++runelite.github.link=@@SITE@@/community
++runelite.wiki.link=@@SITE@@/wiki
++runelite.wiki.troubleshooting.link=@@SITE@@/support/troubleshooting
++runelite.wiki.building.link=@@SITE@@/support/troubleshooting
++runelite.dnschange.link=@@SITE@@/support/dns
++runelite.jav_config=@@SITE@@/jav_config.ws
++runelite.jav_config_backup=@@SITE@@/jav_config.ws
++runelite.pluginhub.url=@@SITE@@/pluginhub-disabled
+ runelite.pluginhub.version=${project.version}
+-runelite.api.base=https://api.runelite.net/runelite-${project.version}
+-runelite.session=https://api.runelite.net/session
+-runelite.static.base=https://static.runelite.net
+-runelite.ws=https://api.runelite.net/ws2
+-runelite.config=https://static.runelite.net/config.json
+-runelite.osrstwitter.link=https://twitter.com/OldSchoolRS
+-runelite.oauth.redirect=https://runelite.net/logged-in
+-runelite.jagex.domainblock=.discord.com,.runescape.wiki
+\ No newline at end of file
++runelite.api.base=@@API@@
++runelite.session=@@API@@/session
++runelite.static.base=@@API@@/static
++runelite.ws=@@API@@/ws
++runelite.config=@@API@@/config.json
++runelite.osrstwitter.link=@@SITE@@/news
++runelite.oauth.redirect=
++runelite.jagex.domainblock=.discord.com
+\ No newline at end of file
+-- 
+2.43.0
+

@@ -1,0 +1,607 @@
+From 88996ab15f2426bad2163248b46fa2dd8ce38196 Mon Sep 17 00:00:00 2001
+From: tickperfect fork <fork@localhost>
+Date: Fri, 6 Nov 2026 09:24:00 +0000
+Subject: [PATCH] Rebrand user-visible text and add an About and licenses entry
+
+---
+ .../java/net/runelite/client/RuneLite.java    |  12 +-
+ .../runelite/client/config/ConfigData.java    |   3 +-
+ .../client/plugins/config/ConfigPlugin.java   |   3 +-
+ .../plugins/config/NotificationPanel.java     |   3 +-
+ .../client/plugins/info/InfoPanel.java        | 128 ++++++------------
+ .../client/plugins/worldhopper/ping/Ping.java |   3 +-
+ .../net/runelite/client/rs/ClientLoader.java  |   2 +-
+ .../net/runelite/client/rs/RSAppletStub.java  |  24 ++--
+ .../java/net/runelite/client/ui/ClientUI.java |   4 +-
+ .../runelite/client/ui/FatalErrorDialog.java  |  14 +-
+ .../net/runelite/client/ui/SplashScreen.java  |   3 +-
+ .../colorpicker/RuneliteColorPicker.java      |   3 +-
+ .../client/plugins/info/patreon_icon.png      | Bin 619 -> 0 bytes
+ 13 files changed, 83 insertions(+), 119 deletions(-)
+ delete mode 100644 runelite-client/src/main/resources/net/runelite/client/plugins/info/patreon_icon.png
+
+diff --git a/runelite-client/src/main/java/net/runelite/client/RuneLite.java b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+index 266dc56..8dc7a2e 100644
+--- a/runelite-client/src/main/java/net/runelite/client/RuneLite.java
++++ b/runelite-client/src/main/java/net/runelite/client/RuneLite.java
+@@ -107,7 +107,7 @@ public class RuneLite
+ 	public static final Path PLUGIN_DATA = new File(RuneLite.RUNELITE_DIR, "plugin-data").toPath();
+ 
+ 	private static final int MAX_OKHTTP_CACHE_SIZE = 20 * 1024 * 1024; // 20mb
+-	public static String USER_AGENT = "RuneLite/" + RuneLiteProperties.getVersion() + "-" + RuneLiteProperties.getCommit() + (RuneLiteProperties.isDirty() ? "+" : "");
++	public static String USER_AGENT = RuneLiteProperties.getTitle().replace(' ', '-') + "/" + RuneLiteProperties.getVersion() + "-" + RuneLiteProperties.getCommit() + (RuneLiteProperties.isDirty() ? "+" : "");
+ 
+ 	@Getter
+ 	private static Injector injector;
+@@ -199,7 +199,7 @@ public class RuneLite
+ 		RuneLiteAPI.CLIENT = okHttpClient;
+ 
+ 		SplashScreen.init();
+-		SplashScreen.stage(0, "Preparing RuneScape", "");
++		SplashScreen.stage(0, "Preparing " + RuneLiteProperties.getTitle(), "");
+ 
+ 		try
+ 		{
+@@ -229,8 +229,8 @@ public class RuneLite
+ 				}
+ 			}
+ 
+-			log.info("RuneLite {} (launcher version {}) starting up, args: {}",
+-				RuneLiteProperties.getVersion(), MoreObjects.firstNonNull(RuneLiteProperties.getLauncherVersion(), "unknown"),
++			log.info("{} {} (launcher version {}) starting up, args: {}",
++				RuneLiteProperties.getTitle(), RuneLiteProperties.getVersion(), MoreObjects.firstNonNull(RuneLiteProperties.getLauncherVersion(), "unknown"),
+ 				args.length == 0 ? "none" : String.join(" ", args));
+ 
+ 			final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+@@ -261,7 +261,7 @@ public class RuneLite
+ 		{
+ 			log.error("Failure during startup", e);
+ 			SwingUtilities.invokeLater(() ->
+-				new FatalErrorDialog("RuneLite has encountered an unexpected error during startup.")
++				new FatalErrorDialog(RuneLiteProperties.getTitle() + " has encountered an unexpected error during startup.")
+ 					.addHelpButtons()
+ 					.open());
+ 		}
+@@ -412,7 +412,7 @@ public class RuneLite
+ 				{
+ 					ua = USER_AGENT;
+ 				}
+-				else if (!ua.startsWith("RuneLite"))
++				else if (!ua.startsWith(RuneLiteProperties.getTitle().replace(' ', '-')))
+ 				{
+ 					ua = USER_AGENT + " " + ua;
+ 				}
+diff --git a/runelite-client/src/main/java/net/runelite/client/config/ConfigData.java b/runelite-client/src/main/java/net/runelite/client/config/ConfigData.java
+index 26334e9..8a94345 100644
+--- a/runelite-client/src/main/java/net/runelite/client/config/ConfigData.java
++++ b/runelite-client/src/main/java/net/runelite/client/config/ConfigData.java
+@@ -44,6 +44,7 @@ import java.util.Properties;
+ import java.util.Set;
+ import java.util.concurrent.ConcurrentHashMap;
+ import lombok.extern.slf4j.Slf4j;
++import net.runelite.client.RuneLiteProperties;
+ 
+ @Slf4j
+ class ConfigData
+@@ -180,7 +181,7 @@ class ConfigData
+ 				OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8))
+ 			{
+ 				channel.lock();
+-				tempProps.store(writer, "RuneLite configuration");
++				tempProps.store(writer, RuneLiteProperties.getTitle() + " configuration");
+ 				writer.flush();
+ 				channel.force(true);
+ 			}
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/config/ConfigPlugin.java b/runelite-client/src/main/java/net/runelite/client/plugins/config/ConfigPlugin.java
+index a23e314..eebc0f6 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/config/ConfigPlugin.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/config/ConfigPlugin.java
+@@ -29,6 +29,7 @@ import javax.inject.Inject;
+ import javax.inject.Provider;
+ import javax.swing.SwingUtilities;
+ import net.runelite.api.MenuAction;
++import net.runelite.client.RuneLiteProperties;
+ import net.runelite.client.config.ChatColorConfig;
+ import net.runelite.client.config.ConfigManager;
+ import net.runelite.client.config.RuneLiteConfig;
+@@ -75,7 +76,7 @@ public class ConfigPlugin extends Plugin
+ 	{
+ 		PluginListPanel pluginListPanel = pluginListPanelProvider.get();
+ 		pluginListPanel.addFakePlugin(new PluginConfigurationDescriptor(
+-				"RuneLite", "RuneLite client settings",
++				RuneLiteProperties.getTitle(), "Client settings",
+ 				new String[]{"client", "notification", "size", "position", "window", "chrome", "focus", "font", "overlay", "tooltip", "infobox"},
+ 				runeLiteConfig, configManager.getConfigDescriptor(runeLiteConfig)
+ 			),
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/config/NotificationPanel.java b/runelite-client/src/main/java/net/runelite/client/plugins/config/NotificationPanel.java
+index 862eb8b..1269321 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/config/NotificationPanel.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/config/NotificationPanel.java
+@@ -58,6 +58,7 @@ import javax.swing.border.EmptyBorder;
+ import lombok.AllArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import net.runelite.client.RuneLite;
++import net.runelite.client.RuneLiteProperties;
+ import net.runelite.client.config.ConfigDescriptor;
+ import net.runelite.client.config.ConfigItemDescriptor;
+ import net.runelite.client.config.ConfigManager;
+@@ -420,7 +421,7 @@ class NotificationPanel extends PluginPanel
+ 			mainPanel.add(infoPanel);
+ 
+ 			infoPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+-			infoPanel.add(new JLabel("<html>Notification settings can be customized for each type of notification. Notifications without custom settings use the default settings found in the 'RuneLite' configuration under 'Notification Settings'.</html>"));
++			infoPanel.add(new JLabel("<html>Notification settings can be customized for each type of notification. Notifications without custom settings use the default settings found in the '" + RuneLiteProperties.getTitle() + "' configuration under 'Notification Settings'.</html>"));
+ 		}
+ 	}
+ 
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/info/InfoPanel.java b/runelite-client/src/main/java/net/runelite/client/plugins/info/InfoPanel.java
+index aba9d69..048db74 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/info/InfoPanel.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/info/InfoPanel.java
+@@ -26,29 +26,30 @@
+ package net.runelite.client.plugins.info;
+ 
+ import com.google.common.base.MoreObjects;
++import com.google.common.io.CharStreams;
+ import com.google.inject.Inject;
+ import java.awt.BorderLayout;
+ import java.awt.Color;
+ import java.awt.Cursor;
+ import java.awt.Font;
++import java.awt.Dimension;
+ import java.awt.GridLayout;
+ import java.awt.event.MouseAdapter;
+ import java.awt.event.MouseEvent;
+-import java.util.concurrent.ScheduledExecutorService;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.InputStreamReader;
++import java.nio.charset.StandardCharsets;
+ import javax.inject.Named;
+-import javax.swing.Box;
+ import javax.swing.ImageIcon;
+ import javax.swing.JLabel;
+ import javax.swing.JPanel;
++import javax.swing.JScrollPane;
++import javax.swing.JTextArea;
++import javax.swing.JOptionPane;
+ import javax.swing.border.EmptyBorder;
+-import javax.swing.event.HyperlinkEvent;
+ import net.runelite.api.Client;
+ import net.runelite.client.RuneLiteProperties;
+-import net.runelite.client.account.SessionManager;
+-import net.runelite.client.eventbus.EventBus;
+-import net.runelite.client.eventbus.Subscribe;
+-import net.runelite.client.events.SessionClose;
+-import net.runelite.client.events.SessionOpen;
+ import net.runelite.client.ui.ColorScheme;
+ import net.runelite.client.ui.FontManager;
+ import net.runelite.client.ui.PluginPanel;
+@@ -57,30 +58,22 @@ import net.runelite.client.util.LinkBrowser;
+ 
+ public class InfoPanel extends PluginPanel
+ {
+-	private static final String RUNELITE_LOGIN = "https://runelite_login/";
++	/**
++	 * Notices of RuneLite (BSD-2) and the bundled libraries; copied into the jar root by the release build.
++	 */
++	private static final String LICENSES_RESOURCE = "/LICENSES.txt";
+ 
+ 	private static final ImageIcon ARROW_RIGHT_ICON;
+ 	private static final ImageIcon GITHUB_ICON;
+ 	private static final ImageIcon DISCORD_ICON;
+-	private static final ImageIcon PATREON_ICON;
++	private static final ImageIcon LICENSES_ICON;
+ 	private static final ImageIcon WIKI_ICON;
+ 
+-	private final JLabel loggedLabel = new JLabel();
+-	private final JRichTextPane emailLabel = new JRichTextPane();
+ 	private JPanel actionsContainer;
+ 
+ 	@Inject
+ 	private Client client;
+ 
+-	@Inject
+-	private EventBus eventBus;
+-
+-	@Inject
+-	private SessionManager sessionManager;
+-
+-	@Inject
+-	private ScheduledExecutorService executor;
+-
+ 	@Inject
+ 	@Named("runelite.version")
+ 	private String runeliteVersion;
+@@ -93,10 +86,6 @@ public class InfoPanel extends PluginPanel
+ 	@Named("runelite.discord.invite")
+ 	private String discordInvite;
+ 
+-	@Inject
+-	@Named("runelite.patreon.link")
+-	private String patreonLink;
+-
+ 	@Inject
+ 	@Named("runelite.wiki.link")
+ 	private String wikiLink;
+@@ -106,7 +95,7 @@ public class InfoPanel extends PluginPanel
+ 		ARROW_RIGHT_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "/util/arrow_right.png"));
+ 		GITHUB_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "github_icon.png"));
+ 		DISCORD_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "discord_icon.png"));
+-		PATREON_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "patreon_icon.png"));
++		LICENSES_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "info_icon.png"));
+ 		WIKI_ICON = new ImageIcon(ImageUtil.loadImageResource(InfoPanel.class, "wiki_icon.png"));
+ 	}
+ 
+@@ -123,7 +112,7 @@ public class InfoPanel extends PluginPanel
+ 
+ 		final Font smallFont = FontManager.getRunescapeSmallFont();
+ 
+-		JLabel version = new JLabel(htmlLabel("RuneLite version: ", runeliteVersion));
++		JLabel version = new JLabel(htmlLabel(RuneLiteProperties.getTitle() + " version: ", runeliteVersion));
+ 		version.setFont(smallFont);
+ 
+ 		JLabel revision = new JLabel();
+@@ -137,49 +126,50 @@ public class InfoPanel extends PluginPanel
+ 			.firstNonNull(RuneLiteProperties.getLauncherVersion(), "Unknown")));
+ 		launcher.setFont(smallFont);
+ 
+-		loggedLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+-		loggedLabel.setFont(smallFont);
+-
+-		emailLabel.setForeground(Color.WHITE);
+-		emailLabel.setFont(smallFont);
+-		emailLabel.enableAutoLinkHandler(false);
+-		emailLabel.addHyperlinkListener(e ->
+-		{
+-			if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType()) && e.getURL() != null)
+-			{
+-				if (e.getURL().toString().equals(RUNELITE_LOGIN))
+-				{
+-					executor.execute(sessionManager::login);
+-				}
+-			}
+-		});
+-
+ 		versionPanel.add(version);
+ 		versionPanel.add(revision);
+ 		versionPanel.add(launcher);
+-		versionPanel.add(Box.createGlue());
+-		versionPanel.add(loggedLabel);
+-		versionPanel.add(emailLabel);
+ 
+ 		actionsContainer = new JPanel();
+ 		actionsContainer.setBorder(new EmptyBorder(10, 0, 0, 0));
+ 		actionsContainer.setLayout(new GridLayout(0, 1, 0, 10));
+ 
+ 		actionsContainer.add(buildLinkPanel(GITHUB_ICON, "Report an issue or", "make a suggestion", githubLink));
+-		actionsContainer.add(buildLinkPanel(DISCORD_ICON, "Talk to us on our", "Discord server", discordInvite));
+-		actionsContainer.add(buildLinkPanel(PATREON_ICON, "Become a patron to", "help support RuneLite", patreonLink));
+-		actionsContainer.add(buildLinkPanel(WIKI_ICON, "Information about", "RuneLite and plugins", wikiLink));
++		actionsContainer.add(buildLinkPanel(DISCORD_ICON, "Talk to us on our", "community page", discordInvite));
++		actionsContainer.add(buildLinkPanel(WIKI_ICON, "Information about", "the game and plugins", wikiLink));
++		actionsContainer.add(buildLinkPanel(LICENSES_ICON, "About and", "open source licenses", this::showLicenses));
+ 
+ 		add(versionPanel, BorderLayout.NORTH);
+ 		add(actionsContainer, BorderLayout.CENTER);
+ 
+-		updateLoggedIn();
+-		eventBus.register(this);
+ 	}
+ 
+ 	void deinit()
+ 	{
+-		eventBus.unregister(this);
++	}
++
++	/**
++	 * Shows the About text and the license notices, which RuneLite's BSD-2 license requires us to keep.
++	 */
++	private void showLicenses()
++	{
++		String text;
++		try (InputStream in = InfoPanel.class.getResourceAsStream(LICENSES_RESOURCE))
++		{
++			text = in == null ? "The license notices are missing from this build."
++				: CharStreams.toString(new InputStreamReader(in, StandardCharsets.UTF_8));
++		}
++		catch (IOException e)
++		{
++			text = "The license notices could not be read: " + e.getMessage();
++		}
++
++		final JTextArea area = new JTextArea(text);
++		area.setEditable(false);
++		area.setCaretPosition(0);
++		final JScrollPane scroll = new JScrollPane(area);
++		scroll.setPreferredSize(new Dimension(640, 480));
++		JOptionPane.showMessageDialog(this, scroll, "About " + RuneLiteProperties.getTitle(), JOptionPane.PLAIN_MESSAGE);
+ 	}
+ 
+ 	/**
+@@ -264,40 +254,8 @@ public class InfoPanel extends PluginPanel
+ 		return container;
+ 	}
+ 
+-	private void updateLoggedIn()
+-	{
+-		final String name = sessionManager.getAccountSession() != null
+-			? sessionManager.getAccountSession().getUsername()
+-			: null;
+-
+-		if (name != null)
+-		{
+-			emailLabel.setContentType("text/plain");
+-			emailLabel.setText(name);
+-			loggedLabel.setText("Signed in as");
+-		}
+-		else
+-		{
+-			emailLabel.setContentType("text/html");
+-			emailLabel.setText("<a href=\"" + RUNELITE_LOGIN + "\">Sign in</a> to sync settings to the cloud.");
+-			loggedLabel.setText("Not signed in");
+-		}
+-	}
+-
+ 	private static String htmlLabel(String key, String value)
+ 	{
+ 		return "<html><body style = 'color:#a5a5a5'>" + key + "<span style = 'color:white'>" + value + "</span></body></html>";
+ 	}
+-
+-	@Subscribe
+-	public void onSessionOpen(SessionOpen sessionOpen)
+-	{
+-		updateLoggedIn();
+-	}
+-
+-	@Subscribe
+-	public void onSessionClose(SessionClose e)
+-	{
+-		updateLoggedIn();
+-	}
+ }
+diff --git a/runelite-client/src/main/java/net/runelite/client/plugins/worldhopper/ping/Ping.java b/runelite-client/src/main/java/net/runelite/client/plugins/worldhopper/ping/Ping.java
+index a90374c..d9444d3 100644
+--- a/runelite-client/src/main/java/net/runelite/client/plugins/worldhopper/ping/Ping.java
++++ b/runelite-client/src/main/java/net/runelite/client/plugins/worldhopper/ping/Ping.java
+@@ -42,13 +42,14 @@ import java.net.Socket;
+ import java.net.UnknownHostException;
+ import javax.annotation.Nullable;
+ import lombok.extern.slf4j.Slf4j;
++import net.runelite.client.RuneLiteProperties;
+ import net.runelite.client.util.OSType;
+ import net.runelite.http.api.worlds.World;
+ 
+ @Slf4j
+ public class Ping
+ {
+-	private static final byte[] RUNELITE_PING = "RuneLitePing".getBytes(Charsets.UTF_8);
++	private static final byte[] RUNELITE_PING = (RuneLiteProperties.getTitle().replace(" ", "") + "Ping").getBytes(Charsets.UTF_8);
+ 	private static final int TIMEOUT = 2000; // ms
+ 	private static final int PORT = 43594;
+ 	private static final int MAX_IPV4_HEADER_SIZE = 60;
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/ClientLoader.java b/runelite-client/src/main/java/net/runelite/client/rs/ClientLoader.java
+index 1a9c69f..f14657c 100644
+--- a/runelite-client/src/main/java/net/runelite/client/rs/ClientLoader.java
++++ b/runelite-client/src/main/java/net/runelite/client/rs/ClientLoader.java
+@@ -81,7 +81,7 @@ public class ClientLoader implements Supplier<Client>
+ 			SplashScreen.stage(0, null, "Fetching client config");
+ 			RSConfig config = downloadConfig();
+ 
+-			SplashScreen.stage(.3, "Starting", "Starting Old School RuneScape");
++			SplashScreen.stage(.3, "Starting", "Starting " + RuneLiteProperties.getTitle());
+ 
+ 			Client rs = loadClient(config);
+ 
+diff --git a/runelite-client/src/main/java/net/runelite/client/rs/RSAppletStub.java b/runelite-client/src/main/java/net/runelite/client/rs/RSAppletStub.java
+index d3d8184..318fb38 100644
+--- a/runelite-client/src/main/java/net/runelite/client/rs/RSAppletStub.java
++++ b/runelite-client/src/main/java/net/runelite/client/rs/RSAppletStub.java
+@@ -79,39 +79,39 @@ class RSAppletStub implements ClientConfiguration
+ 		if (code.equals("error_game_js5connect"))
+ 		{
+ 			SwingUtilities.invokeLater(() ->
+-				new FatalErrorDialog("RuneLite is unable to connect to the RuneScape update server. " +
+-					"RuneScape might be offline for an update, check the game status page. If the game " +
+-					"is online, then either a firewall is blocking RuneLite, or you don't have internet access.")
+-					.setTitle("RuneLite", "Unable to connect to update server")
++				new FatalErrorDialog(RuneLiteProperties.getTitle() + " is unable to connect to the game update server. " +
++					"The game might be offline for an update, check the game status page. If the game " +
++					"is online, then either a firewall is blocking " + RuneLiteProperties.getTitle() + ", or you don't have internet access.")
++					.setTitle(RuneLiteProperties.getTitle(), "Unable to connect to update server")
+ 					.addButton("Game Status", () -> LinkBrowser.browse(RuneLiteProperties.getSiteLink() + "/status"))
+ 					.open());
+ 		}
+ 		else if (code.equals("error_game_js5io"))
+ 		{
+ 			SwingUtilities.invokeLater(() ->
+-				new FatalErrorDialog("OldSchool RuneScape is unable to retrieve updates from its update server. " +
+-					"This is likely due to a firewall blocking the RuneScape server. Try disabling your firewall, or use " +
++				new FatalErrorDialog("The game is unable to retrieve updates from its update server. " +
++					"This is likely due to a firewall blocking the game server. Try disabling your firewall, or use " +
+ 					"a different network.")
+-					.setTitle("RuneLite", "Unable to connect to update server")
++					.setTitle(RuneLiteProperties.getTitle(), "Unable to connect to update server")
+ 					.addHelpButtons()
+ 					.open());
+ 		}
+ 		else if (code.equals("error_game_crash"))
+ 		{
+ 			SwingUtilities.invokeLater(() ->
+-				new FatalErrorDialog("OldSchool RuneScape has crashed. Crashes are most commonly caused by plugin hub plugins, " +
+-					"but can also be caused by RuneLite or Jagex client bugs. If you receive this message commonly, try playing in " +
++				new FatalErrorDialog("The game has crashed. Crashes can be caused by " +
++					"client bugs. If you receive this message commonly, try playing in " +
+ 					"safe mode to eliminate the potential of plugins causing the crash. The client log file will contain additional " +
+ 					"information about the crash.")
+-					.setTitle("RuneLite", "OldSchool RuneScape has crashed")
++					.setTitle(RuneLiteProperties.getTitle(), "The game has crashed")
+ 					.addHelpButtons()
+ 					.open());
+ 		}
+ 		else
+ 		{
+ 			SwingUtilities.invokeLater(() ->
+-				new FatalErrorDialog("OldSchool RuneScape has crashed with the message: " + code)
+-					.setTitle("RuneLite", "OldSchool RuneScape has crashed")
++				new FatalErrorDialog("The game has crashed with the message: " + code)
++					.setTitle(RuneLiteProperties.getTitle(), "The game has crashed")
+ 					.addHelpButtons()
+ 					.open());
+ 		}
+diff --git a/runelite-client/src/main/java/net/runelite/client/ui/ClientUI.java b/runelite-client/src/main/java/net/runelite/client/ui/ClientUI.java
+index a4b7f13..40c7637 100644
+--- a/runelite-client/src/main/java/net/runelite/client/ui/ClientUI.java
++++ b/runelite-client/src/main/java/net/runelite/client/ui/ClientUI.java
+@@ -711,7 +711,7 @@ public class ClientUI
+ 				JEditorPane ep = new JEditorPane("text/html",
+ 					"Your Java memory limit is " + maxMemory + "mb, which is lower than the recommended " + recommendedMemoryLimit + "mb.<br>" +
+ 						"This can cause instability, and it is recommended you remove or increase this limit.<br>" +
+-						"Join <a href=\"" + RuneLiteProperties.getDiscordInvite() + "\">Discord</a> for assistance."
++						"Join <a href=\"" + RuneLiteProperties.getDiscordInvite() + "\">our community page</a> for assistance."
+ 				);
+ 				ep.addHyperlinkListener(e ->
+ 				{
+@@ -823,7 +823,7 @@ public class ClientUI
+ 			{
+ 			}
+ 			System.exit(0);
+-		}, "RuneLite Shutdown").start();
++		}, RuneLiteProperties.getTitle() + " Shutdown").start();
+ 	}
+ 
+ 	/**
+diff --git a/runelite-client/src/main/java/net/runelite/client/ui/FatalErrorDialog.java b/runelite-client/src/main/java/net/runelite/client/ui/FatalErrorDialog.java
+index 02bef16..4604283 100644
+--- a/runelite-client/src/main/java/net/runelite/client/ui/FatalErrorDialog.java
++++ b/runelite-client/src/main/java/net/runelite/client/ui/FatalErrorDialog.java
+@@ -94,7 +94,7 @@ public class FatalErrorDialog extends JDialog
+ 			}
+ 		});
+ 
+-		setTitle("Fatal error starting RuneLite");
++		setTitle("Fatal error starting " + RuneLiteProperties.getTitle());
+ 		setLayout(new BorderLayout());
+ 
+ 		JPanel pane = (JPanel) getContentPane();
+@@ -104,7 +104,7 @@ public class FatalErrorDialog extends JDialog
+ 		leftPane.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+ 		leftPane.setLayout(new BorderLayout());
+ 
+-		title = new JLabel("There was a fatal error starting RuneLite");
++		title = new JLabel("There was a fatal error starting " + RuneLiteProperties.getTitle());
+ 		title.setForeground(Color.WHITE);
+ 		title.setFont(font.deriveFont(16.f));
+ 		title.setBorder(new EmptyBorder(10, 10, 10, 10));
+@@ -187,7 +187,7 @@ public class FatalErrorDialog extends JDialog
+ 	public FatalErrorDialog addHelpButtons()
+ 	{
+ 		return addButton("Open logs folder", () -> LinkBrowser.open(RuneLite.LOGS_DIR.toString()))
+-			.addButton("Get help on Discord", () -> LinkBrowser.browse(RuneLiteProperties.getDiscordInvite()))
++			.addButton("Get help on our community page", () -> LinkBrowser.browse(RuneLiteProperties.getDiscordInvite()))
+ 			.addButton("Troubleshooting steps", () -> LinkBrowser.browse(RuneLiteProperties.getTroubleshootingLink()));
+ 	}
+ 
+@@ -200,7 +200,7 @@ public class FatalErrorDialog extends JDialog
+ 	{
+ 		if (err instanceof VerificationException || err instanceof GeneralSecurityException)
+ 		{
+-			new FatalErrorDialog("RuneLite was unable to verify the security of its connection to the internet while " +
++			new FatalErrorDialog(RuneLiteProperties.getTitle() + " was unable to verify the security of its connection to the internet while " +
+ 				action + ". You may have a misbehaving antivirus, internet service provider, a proxy, or an incomplete" +
+ 				" java installation.")
+ 				.addHelpButtons()
+@@ -210,7 +210,7 @@ public class FatalErrorDialog extends JDialog
+ 
+ 		if (err instanceof ConnectException)
+ 		{
+-			new FatalErrorDialog("RuneLite is unable to connect to a required server while " + action + ". " +
++			new FatalErrorDialog(RuneLiteProperties.getTitle() + " is unable to connect to a required server while " + action + ". " +
+ 				"Please check your internet connection")
+ 				.addHelpButtons()
+ 				.open();
+@@ -219,7 +219,7 @@ public class FatalErrorDialog extends JDialog
+ 
+ 		if (err instanceof UnknownHostException)
+ 		{
+-			new FatalErrorDialog("RuneLite is unable to resolve the address of a required server while " + action + ". " +
++			new FatalErrorDialog(RuneLiteProperties.getTitle() + " is unable to resolve the address of a required server while " + action + ". " +
+ 				"Your DNS resolver may be misconfigured, pointing to an inaccurate resolver, or your internet connection may " +
+ 				"be down. ")
+ 				.addHelpButtons()
+@@ -228,7 +228,7 @@ public class FatalErrorDialog extends JDialog
+ 			return;
+ 		}
+ 
+-		new FatalErrorDialog("RuneLite encountered a fatal error while " + action + ".")
++		new FatalErrorDialog(RuneLiteProperties.getTitle() + " encountered a fatal error while " + action + ".")
+ 			.addHelpButtons()
+ 			.open();
+ 	}
+diff --git a/runelite-client/src/main/java/net/runelite/client/ui/SplashScreen.java b/runelite-client/src/main/java/net/runelite/client/ui/SplashScreen.java
+index f53a62c..120a6fb 100644
+--- a/runelite-client/src/main/java/net/runelite/client/ui/SplashScreen.java
++++ b/runelite-client/src/main/java/net/runelite/client/ui/SplashScreen.java
+@@ -44,6 +44,7 @@ import javax.swing.UIManager;
+ import javax.swing.border.EmptyBorder;
+ import javax.swing.plaf.basic.BasicProgressBarUI;
+ import lombok.extern.slf4j.Slf4j;
++import net.runelite.client.RuneLiteProperties;
+ import net.runelite.client.ui.laf.RuneLiteLAF;
+ import net.runelite.client.util.ImageUtil;
+ 
+@@ -67,7 +68,7 @@ public class SplashScreen extends JFrame implements ActionListener
+ 
+ 	private SplashScreen()
+ 	{
+-		setTitle("RuneLite Launcher");
++		setTitle(RuneLiteProperties.getTitle());
+ 
+ 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+ 		setUndecorated(true);
+diff --git a/runelite-client/src/main/java/net/runelite/client/ui/components/colorpicker/RuneliteColorPicker.java b/runelite-client/src/main/java/net/runelite/client/ui/components/colorpicker/RuneliteColorPicker.java
+index 9f1bff8..3f83182 100644
+--- a/runelite-client/src/main/java/net/runelite/client/ui/components/colorpicker/RuneliteColorPicker.java
++++ b/runelite-client/src/main/java/net/runelite/client/ui/components/colorpicker/RuneliteColorPicker.java
+@@ -65,6 +65,7 @@ import javax.swing.text.Document;
+ import javax.swing.text.DocumentFilter;
+ import lombok.Getter;
+ import lombok.Setter;
++import net.runelite.client.RuneLiteProperties;
+ import net.runelite.client.config.ConfigManager;
+ import net.runelite.client.ui.ClientUI;
+ import net.runelite.client.ui.ColorScheme;
+@@ -105,7 +106,7 @@ public class RuneliteColorPicker extends JDialog
+ 	RuneliteColorPicker(Window parent, Color previousColor, String title, boolean alphaHidden,
+ 		final ConfigManager configManager, final ColorPickerManager colorPickerManager)
+ 	{
+-		super(parent, "RuneLite Color Picker - " + title, ModalityType.MODELESS);
++		super(parent, "Color Picker - " + title, ModalityType.MODELESS);
+ 
+ 		this.selectedColor = previousColor;
+ 		this.alphaHidden = alphaHidden;
+diff --git a/runelite-client/src/main/resources/net/runelite/client/plugins/info/patreon_icon.png b/runelite-client/src/main/resources/net/runelite/client/plugins/info/patreon_icon.png
+deleted file mode 100644
+index ff3cd42012941f3dceea25a5c4baa955fdfe8d18..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 619
+zcmV-x0+juUP)<h;3K|Lk000e1NJLTq0015U0015c1^@s6J20-I00009a7bBm000XU
+z000XU0RWnu7ytkQ9Z5t%R7i>CmOX0}Q51%sn?;NvYmwDzttHyzC#-3*r6M9Gp#Q=6
+zBVucpm|hn|P^`32bWPY!urP^*tW6pXR-%nO7JEZxc4wTK?1DuOOfl!<eb2e~%$Wlx
+zO+r~m^&)T$SOP8sjc7UmJ^`<QXCZ{o6Uj_%sqfUU>V0)dy`Y{}XVrPN9c^EtZ)+UF
+zX?0!gtIKMwL`*IE_G9dHRnj?iTYaIPJx0>?7`v^`l?|Fvd+Gyqsw!y$XDVX!)R{5?
+zn`%cb-FW}N3K46w$gvfhs6H-f0<#|PJip=8uDX(;S9M5NQ}3!f>MwOqUCnAjbw%yw
+zkuJo{vI0}Y@dzKAEl-B8DJI!h7Y=pF=D7}ZLI{6ykK{;}fm=DY8^E2UB4TzT$4FJL
+z)pizAM#XP)sy&qV85nK#O&0jR+AK-@qk#Bl21ZleKYULfbp!aGMLZ$-#?gG|xC7#2
+zf&D`fK$7?XI9HN*y}<r3Lw7!Mq@`kW1@%$R{XQN3oMKF>xsnxkfyIJK00<!n+y+*G
+zUEnvc2iya0M*FZVMvjq;N)M2#;^2po8X&_CrAKB(;{1^r9a=H7*+~&Q*i!oHl_JLt
+zC;waADC7Kp7J(SlhymlSK0UQj9FYz_V|v*utlrUOuUw@$U@dja!Dh1NV7+asr{dF$
+zx-|#u?N(tUQEj202d)Bb;1cPDeg}97JP#r4R<7<u$X~cE)F+BIa>@Vz002ovPDHLk
+FV1gKO4y6D9
+
+-- 
+2.43.0
+
