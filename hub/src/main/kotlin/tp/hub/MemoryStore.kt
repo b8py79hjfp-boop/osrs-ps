@@ -42,6 +42,11 @@ class MemoryStore : HubStore {
         byName[next.username] = next
     }
 
+    override fun setRights(id: Long, rights: Rights) =
+        update(id) {
+            AccountRow(it.id, it.username, it.displayName, it.passwordHash, rights, it.mutedUntil, it.bannedUntil)
+        }
+
     override fun setMuted(id: Long, until: Long) =
         update(id) {
             AccountRow(it.id, it.username, it.displayName, it.passwordHash, it.rights, until, it.bannedUntil)

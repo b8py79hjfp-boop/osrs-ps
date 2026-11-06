@@ -21,6 +21,7 @@ import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.buttons.If3Button
 import net.rsprot.protocol.game.incoming.locs.OpLocV2
 import net.rsprot.protocol.game.incoming.locs.OpLocV3
+import net.rsprot.protocol.game.incoming.messaging.MessagePrivate
 import net.rsprot.protocol.game.incoming.messaging.MessagePublic
 import net.rsprot.protocol.game.incoming.misc.client.MapBuildComplete
 import net.rsprot.protocol.game.incoming.misc.client.WindowStatus
@@ -34,6 +35,10 @@ import net.rsprot.protocol.game.incoming.objs.OpObjV2
 import net.rsprot.protocol.game.incoming.players.OpPlayer
 import net.rsprot.protocol.game.incoming.players.OpPlayerT
 import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
+import net.rsprot.protocol.game.incoming.social.FriendListAdd
+import net.rsprot.protocol.game.incoming.social.FriendListDel
+import net.rsprot.protocol.game.incoming.social.IgnoreListAdd
+import net.rsprot.protocol.game.incoming.social.IgnoreListDel
 import net.rsprot.protocol.game.outgoing.info.npcinfo.NpcAvatar
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
 import net.rsprot.protocol.loginprot.incoming.util.AuthenticationType
@@ -51,6 +56,7 @@ import tp.protocol.api.LoginDetails
 import tp.protocol.api.LoginGate
 import tp.protocol.api.LoginRejection
 import tp.protocol.api.LoginRequest
+import tp.protocol.api.SocialAction
 import tp.symbols.Seqs
 import java.io.IOException
 
@@ -241,6 +247,13 @@ class Osrs242Network(
         b.addListener(If3Button::class.java) { s, m -> s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj)) }
         b.addListener(MessagePublic::class.java) { s, m ->
             s.deliver(ClientCommand.PublicChat(m.message, m.colour, m.effect, m.type))
+        }
+        b.addListener(FriendListAdd::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.FRIEND_ADD, m.name)) }
+        b.addListener(FriendListDel::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.FRIEND_DEL, m.name)) }
+        b.addListener(IgnoreListAdd::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.IGNORE_ADD, m.name)) }
+        b.addListener(IgnoreListDel::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.IGNORE_DEL, m.name)) }
+        b.addListener(MessagePrivate::class.java) { s, m ->
+            s.deliver(ClientCommand.Social(SocialAction.PRIVATE_MESSAGE, m.name, m.message))
         }
         b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
         b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }

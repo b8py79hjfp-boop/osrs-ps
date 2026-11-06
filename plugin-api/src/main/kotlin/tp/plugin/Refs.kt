@@ -16,6 +16,16 @@ import tp.util.CoordGrid
 public class PlayerRef internal constructor(internal val p: Player) : EntityRef() {
     override val e: Entity get() = p
     public val username: String get() = p.username
+
+    /** Staff level from the account: 0 player, 1 moderator, 2 administrator. */
+    public val staffLevel: Int get() = p.staffLevel
+
+    /** Sends a staff command to the hub (moderation, broadcasts, system update); the reply arrives as a game message. */
+    public fun staffCommand(command: String, args: List<String>) {
+        val bridge = p.world.accounts
+        if (bridge == null) message("Staff commands need the hub.") else bridge.staff(p, command, args)
+    }
+
     public val slot: Int get() = p.slot
     public val worldId: Int get() = p.world.config.id
 

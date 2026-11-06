@@ -59,6 +59,7 @@ object CommandCodec {
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
             ClientCommand.CloseModal -> "closemodal"
             is ClientCommand.WindowStatus -> "window ${c.mode} ${c.width} ${c.height}"
+            is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)}"
         }
 
     @Suppress("CyclomaticComplexMethod", "MagicNumber") // one branch per command; indices are field positions
@@ -67,21 +68,74 @@ object CommandCodec {
 
         fun b(n: Int) = parts[n].toBooleanStrict()
         return when (parts[0]) {
-            "move" -> ClientCommand.MoveClick(i(1), i(2), b(3), b(4))
-            "cheat" -> ClientCommand.Cheat(unstr(parts[1]))
-            "mapbuilt" -> ClientCommand.MapBuildComplete
-            "oploc" -> ClientCommand.OpLoc(i(1), i(2), i(3), i(4), b(5))
-            "opnpc" -> ClientCommand.OpNpc(i(1), i(2), b(3))
-            "opplayer" -> ClientCommand.OpPlayer(i(1), i(2), b(3))
-            "opobj" -> ClientCommand.OpObj(i(1), i(2), i(3), i(4), b(5))
-            "opplayert" -> ClientCommand.OpPlayerT(i(1), i(2), i(3), i(4), b(5))
-            "opnpct" -> ClientCommand.OpNpcT(i(1), i(2), i(3), i(4), b(5))
-            "button" -> ClientCommand.Button(i(1), i(2), i(3), i(4))
-            "chat" -> ClientCommand.PublicChat(unstr(parts[1]), i(2), i(3), i(4))
-            "resume" -> ClientCommand.ResumePause(i(1), i(2))
-            "closemodal" -> ClientCommand.CloseModal
-            "window" -> ClientCommand.WindowStatus(i(1), i(2), i(3))
-            else -> error("unknown command '${parts[0]}'")
+            "move" -> {
+                ClientCommand.MoveClick(i(1), i(2), b(3), b(4))
+            }
+
+            "cheat" -> {
+                ClientCommand.Cheat(unstr(parts[1]))
+            }
+
+            "mapbuilt" -> {
+                ClientCommand.MapBuildComplete
+            }
+
+            "oploc" -> {
+                ClientCommand.OpLoc(i(1), i(2), i(3), i(4), b(5))
+            }
+
+            "opnpc" -> {
+                ClientCommand.OpNpc(i(1), i(2), b(3))
+            }
+
+            "opplayer" -> {
+                ClientCommand.OpPlayer(i(1), i(2), b(3))
+            }
+
+            "opobj" -> {
+                ClientCommand.OpObj(i(1), i(2), i(3), i(4), b(5))
+            }
+
+            "opplayert" -> {
+                ClientCommand.OpPlayerT(i(1), i(2), i(3), i(4), b(5))
+            }
+
+            "opnpct" -> {
+                ClientCommand.OpNpcT(i(1), i(2), i(3), i(4), b(5))
+            }
+
+            "button" -> {
+                ClientCommand.Button(i(1), i(2), i(3), i(4))
+            }
+
+            "chat" -> {
+                ClientCommand.PublicChat(unstr(parts[1]), i(2), i(3), i(4))
+            }
+
+            "resume" -> {
+                ClientCommand.ResumePause(i(1), i(2))
+            }
+
+            "closemodal" -> {
+                ClientCommand.CloseModal
+            }
+
+            "window" -> {
+                ClientCommand.WindowStatus(i(1), i(2), i(3))
+            }
+
+            "social" -> {
+                ClientCommand.Social(
+                    tp.protocol.api.SocialAction
+                        .valueOf(parts[1]),
+                    unstr(parts[2]),
+                    unstr(parts[3]),
+                )
+            }
+
+            else -> {
+                error("unknown command '${parts[0]}'")
+            }
         }
     }
 

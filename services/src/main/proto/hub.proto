@@ -122,7 +122,13 @@ message SocialEvent {
   oneof event {
     PrivateMessage private_message = 2;
     FriendStatus friend_status = 3;
+    Muted muted = 4;
   }
+}
+
+// Mute applied/lifted while online (epoch ms; 0 = unmuted, negative = permanent).
+message Muted {
+  int64 until = 1;
 }
 
 message PrivateMessage {

@@ -24,7 +24,8 @@ fun main(args: Array<String>) {
         }
     val store: HubStore =
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") } ?: MemoryStore()
-    val hub = Hub(store, HubConfig(autoRegister = "--auto-register" in options))
+    val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
+    val hub = Hub(store, HubConfig(autoRegister = "--auto-register" in options, admins = admins))
     val grpc = HubGrpcServer(hub, options["--grpc-port"]?.toIntOrNull() ?: DEFAULT_GRPC_PORT).start()
     val httpPort = options["--http-port"]?.toIntOrNull() ?: DEFAULT_HTTP_PORT
     val http =

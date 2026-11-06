@@ -42,7 +42,7 @@ interface AccountService {
      */
     suspend fun login(username: String, password: String, worldId: Int, ip: String): LoginGrant
 
-    /** Writes the final save durably, then releases the session lock (world hop / logout). */
+    /** Writes the final save durably (blank = nothing to write), then releases the session lock (world hop / logout). */
     suspend fun logout(accountId: Long, worldId: Int, save: String)
 
     /** Sign-up (hub HTTP endpoint). Returns null on success, else a reason. */
@@ -78,6 +78,9 @@ sealed interface SocialEvent {
 
     /** A friend logged in/out or hopped ([worldId] 0 = offline). */
     class FriendStatus(override val toAccount: Long, val name: String, val worldId: Int) : SocialEvent
+
+    /** Mute changed while online ([until] epoch ms; 0 = unmuted, negative = permanent). */
+    class Muted(override val toAccount: Long, val until: Long) : SocialEvent
 }
 
 interface SocialService {

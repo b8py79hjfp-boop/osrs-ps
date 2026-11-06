@@ -41,6 +41,8 @@ class HubConfig(
     val failureWindowMs: Long = 60_000,
     /** How long a login waits for the previous world's logout save before answering SAVE_PENDING. */
     val pendingSaveWaitMs: Long = 10_000,
+    /** Account names given administrator rights at login (bootstrap; permissions are data in the accounts table). */
+    val admins: Set<String> = emptySet(),
 )
 
 /**
@@ -82,6 +84,15 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 if (db { store.ipBanned(ip) }) return LoginGrant(LoginResult.BANNED)
                 var row = db { store.account(name) }
                 if (row == null && config.autoRegister) row = db { store.createAccount(name, Passwords.hash(password), Rights.PLAYER) }
+                val found = row
+                if (found != null && found.rights != Rights.ADMIN && config.admins.any { it.equals(name, ignoreCase = true) }) {
+                    row =
+                        db {
+                            store.setRights(found.id, Rights.ADMIN)
+                            store.audit("hub", "grant-admin", found.displayName, "config")
+                            store.account(found.id)
+                        }
+                }
                 if (row == null || !db { Passwords.verify(password, row.passwordHash) }) {
                     failures.add("ip:$ip")
                     failures.add("acct:${name.lowercase()}")
@@ -107,7 +118,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 val pending = CompletableDeferred<Unit>()
                 pendingLogout[accountId] = pending
                 try {
-                    db { store.writeSave(accountId, save) }
+                    // Blank: the world refused the login after the hub accepted it; only the lock is released.
+                    if (save.isNotBlank()) db { store.writeSave(accountId, save) }
                 } finally {
                     if (online.remove(accountId, worldId)) {
                         val row = db { store.account(accountId) }
@@ -248,6 +260,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     Sanction.IP_BAN -> db { store.lastIp(row.id)?.let { store.setIpBan(it, true) } }
                 }
                 db { store.audit(staff.displayName, sanction.name, row.displayName, "minutes=$minutes reason=$reason") }
+                if (sanction == Sanction.MUTE || sanction == Sanction.UNMUTE) {
+                    online[row.id]?.let { world -> deliver(world, SocialEvent.Muted(row.id, if (sanction == Sanction.MUTE) until else 0)) }
+                }
                 if (sanction == Sanction.KICK || sanction == Sanction.BAN || sanction == Sanction.IP_BAN) {
                     online[row.id]?.let { world -> kickSinks[world]?.forEach { runCatching { it(row.id) } } }
                 }

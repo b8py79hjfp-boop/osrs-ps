@@ -28,6 +28,7 @@ import tp.protocol.api.LoginGate
 import tp.protocol.api.LoginRejection
 import tp.protocol.api.LoginRequest
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.SocialAction
 import tp.util.CoordGrid
 import java.util.SplittableRandom
 import java.util.concurrent.CompletableFuture
@@ -304,7 +305,15 @@ class World(
 
             is ClientCommand.PublicChat -> {
                 if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
+                if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(MUTED_MESSAGE))
                 player.session.publicChat(command.text, command.colour, command.effect)
+            }
+
+            is ClientCommand.Social -> {
+                val textOk = command.action != SocialAction.PRIVATE_MESSAGE || command.text.length in 1..MAX_CHAT_LENGTH
+                if (command.name.length !in 1..MAX_NAME_LENGTH || !textOk) return invalid(player, command)
+                val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
+                bridge.social(player, command.action, command.name, command.text)
             }
 
             is ClientCommand.ResumePause -> {
@@ -598,6 +607,8 @@ class World(
         return true
     }
 
+    private fun Player.isMuted(): Boolean = mutedUntil < 0 || mutedUntil > System.currentTimeMillis()
+
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {
         player.session.send(ServerMessage.Logout)
@@ -681,15 +692,18 @@ class World(
                 request.accept(slot, LoginDetails(staffModLevel = profile?.staffLevel ?: 0))
             } catch (e: IllegalStateException) {
                 logger.warn(e) { "login accept failed for ${request.username}" }
+                profile?.let { accounts?.refused(it) }
                 return
             }
         val player = newPlayer(slot, profile?.displayName ?: request.username, session, config.spawn)
         if (profile != null) {
             player.accountId = profile.accountId
             player.staffLevel = profile.staffLevel
+            player.mutedUntil = profile.mutedUntil
             profile.save?.let { PlayerSave.apply(player, it) }
         }
         addPlayer(player)
+        accounts?.loggedIn(player)
     }
 
     /** Staggered autosaves (brief §7): each player every [AUTOSAVE_TICKS], offset by slot. */
@@ -839,6 +853,11 @@ class World(
 
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */
         private const val MAX_CHAT_LENGTH = 80
+
+        /** Display names are at most 12 characters (OSRS Wiki "Display name"). */
+        private const val MAX_NAME_LENGTH = 12
+        private const val MUTED_MESSAGE = "You are muted and cannot talk."
+        private const val NO_HUB_MESSAGE = "Friends and private messages need the hub."
 
         /** Player/NPC view distance in tiles (RSProt player/NPC info default view distance 15). */
         private const val VIEW_DISTANCE = 15

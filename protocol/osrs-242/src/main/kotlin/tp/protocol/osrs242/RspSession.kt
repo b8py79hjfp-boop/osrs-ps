@@ -26,6 +26,11 @@ import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
 import net.rsprot.protocol.game.outgoing.misc.player.SetPlayerOp
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateRunEnergy
 import net.rsprot.protocol.game.outgoing.misc.player.UpdateStatV2
+import net.rsprot.protocol.game.outgoing.social.FriendListLoaded
+import net.rsprot.protocol.game.outgoing.social.MessagePrivate
+import net.rsprot.protocol.game.outgoing.social.MessagePrivateEcho
+import net.rsprot.protocol.game.outgoing.social.UpdateFriendList
+import net.rsprot.protocol.game.outgoing.social.UpdateIgnoreList
 import net.rsprot.protocol.game.outgoing.util.OpFlags
 import net.rsprot.protocol.game.outgoing.varp.VarpLarge
 import net.rsprot.protocol.game.outgoing.varp.VarpReset
@@ -41,6 +46,7 @@ import tp.protocol.api.Appearance
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.ClientSession
+import tp.protocol.api.FriendRow
 import tp.protocol.api.ServerMessage
 import tp.protocol.api.Visual
 import tp.protocol.api.ZoneOp
@@ -322,6 +328,12 @@ internal class RspSession(
                     Logout
                 }
 
+                is ServerMessage.FriendList, is ServerMessage.IgnoreList, ServerMessage.FriendListLoaded,
+                is ServerMessage.PrivateMessage, is ServerMessage.PrivateMessageEcho,
+                -> {
+                    socialProt(message)
+                }
+
                 is ServerMessage.LogoutTransfer -> {
                     LogoutTransfer(message.host, message.worldId, message.flags)
                 }
@@ -346,3 +358,47 @@ internal class RspSession(
         }
     }
 }
+
+/** A friends-list row (rank 0, no notes, desktop platform 0, flags 0). */
+private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
+    if (row.worldId > 0) {
+        UpdateFriendList.OnlineFriend(row.added, row.name, null, row.worldId, 0, 0, "", "World ${row.worldId}", 0, 0)
+    } else {
+        UpdateFriendList.OfflineFriend(row.added, row.name, null, 0, 0, "")
+    }
+
+/** Friends/ignore lists and private messages. */
+private fun socialProt(message: ServerMessage): OutgoingGameMessage =
+    when (message) {
+        is ServerMessage.FriendList -> {
+            UpdateFriendList(message.friends.map(::friendRow))
+        }
+
+        is ServerMessage.IgnoreList -> {
+            UpdateIgnoreList(
+                message.names.map {
+                    if (message.removed) {
+                        UpdateIgnoreList.RemovedIgnoredEntry(it)
+                    } else {
+                        UpdateIgnoreList.AddedIgnoredEntry(it, null, "", added = true)
+                    }
+                },
+            )
+        }
+
+        ServerMessage.FriendListLoaded -> {
+            FriendListLoaded
+        }
+
+        is ServerMessage.PrivateMessage -> {
+            MessagePrivate(message.from, message.worldId, message.counter, message.crown, message.text)
+        }
+
+        is ServerMessage.PrivateMessageEcho -> {
+            MessagePrivateEcho(message.to, message.text)
+        }
+
+        else -> {
+            error("not a social message: $message")
+        }
+    }

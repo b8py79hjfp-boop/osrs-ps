@@ -226,6 +226,14 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                         .setWorldId(e.worldId),
                                 )
                             }
+
+                            is tp.services.SocialEvent.Muted -> {
+                                b.setMuted(
+                                    tp.services.grpc.Muted
+                                        .newBuilder()
+                                        .setUntil(e.until),
+                                )
+                            }
                         }
                         trySend(b.build())
                     }

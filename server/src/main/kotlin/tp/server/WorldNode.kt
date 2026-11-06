@@ -101,7 +101,7 @@ object WorldNode {
         val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
         val inspector = TickInspector(traceOut)
         world.tracer = if (recordOut == null) inspector else Tracers(inspector, ReplayRecorder(world, recordOut))
-        if (hub != null) world.accounts = HubAccountBridge(hub, worldId)
+        if (hub != null) world.accounts = HubAccountBridge(hub, worldId, world)
         world.start()
         return world
     }

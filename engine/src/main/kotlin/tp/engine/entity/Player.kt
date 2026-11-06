@@ -44,6 +44,9 @@ class Player internal constructor(
     var staffLevel: Int = 0
         internal set
 
+    /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
+    var mutedUntil: Long = 0
+
     override var hitpoints: Int
         get() = stats.level(PlayerStats.HITPOINTS)
         set(value) {

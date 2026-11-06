@@ -29,6 +29,7 @@ private const val DEFAULT_HTTP_PORT = 8080
  * hub, default 8080), `--public-host` (address advertised to clients, default 127.0.0.1),
  * `--hub host:port` (remote hub over gRPC; default: an embedded hub), `--db <jdbc url>` `--db-user` `--db-password`
  * (embedded hub's PostgreSQL; default in-memory), `--trace <file>` (tick inspector JSONL, first world),
+ * `--admins a,b` (embedded hub: these accounts get administrator rights),
  * `--record <file>` (replay log, first world), `--max-per-ip <n>` (default 10; raise for local bot swarms).
  */
 fun main(args: Array<String>) {
@@ -110,7 +111,8 @@ private fun embeddedHub(options: Map<String, String?>): Hub {
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") }
             ?: MemoryStore()
     // Dev: the first login with a new name creates the account with that password.
-    return Hub(store, HubConfig(autoRegister = true))
+    val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
+    return Hub(store, HubConfig(autoRegister = true, admins = admins))
 }
 
 private fun worldListServer(worlds: List<tp.engine.World>, hostOf: (Int) -> String, httpPort: Int, firstWorld: Int): ClientConfigServer =

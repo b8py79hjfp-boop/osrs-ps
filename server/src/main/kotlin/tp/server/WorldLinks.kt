@@ -4,9 +4,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.engine.World
 import tp.engine.WorldAddress
+import tp.protocol.api.FriendRow
 import tp.protocol.api.ServerMessage
 import tp.services.Broadcast
 import tp.services.HubServices
+import tp.services.SocialEvent
 import tp.services.WorldInfo
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -37,6 +39,7 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
         }, 1, HEARTBEAT_SECONDS, TimeUnit.SECONDS)
         subscriptions +=
             hub.moderation.subscribeKicks(id) { account -> world.execute { world.playerByAccount(account)?.let(world::requestLogout) } }
+        subscriptions += hub.social.subscribe(id) { e -> world.execute { onSocial(e) } }
         subscriptions +=
             hub.broadcasts.subscribe { b ->
                 world.execute {
@@ -48,6 +51,29 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
             }
         return this
     }
+
+    /** World thread: delivers a hub social event to its player. */
+    private fun onSocial(e: SocialEvent) {
+        val player = world.playerByAccount(e.toAccount) ?: return
+        when (e) {
+            is SocialEvent.PrivateMessage -> {
+                val crown = e.fromRights.ordinal // 0 none, 1 moderator crown, 2 administrator crown
+                player.session.send(ServerMessage.PrivateMessage(e.from, world.config.id, ++pmCounter, crown, e.text))
+            }
+
+            is SocialEvent.FriendStatus -> {
+                player.session.send(ServerMessage.FriendList(listOf(FriendRow(e.name, e.worldId, added = false))))
+            }
+
+            is SocialEvent.Muted -> {
+                player.mutedUntil = e.until
+                player.session.send(ServerMessage.GameMessage(if (e.until == 0L) "You have been unmuted." else "You have been muted."))
+            }
+        }
+    }
+
+    /** Per-world private-message counter (the client drops a repeated world + counter pair). World thread. */
+    private var pmCounter = 0
 
     override fun close() {
         subscriptions.forEach { it.close() }

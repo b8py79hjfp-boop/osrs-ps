@@ -80,6 +80,8 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             rights.name,
         )
 
+    override fun setRights(id: Long, rights: Rights) = exec("UPDATE accounts SET rights = ? WHERE id = ?", rights.name, id)
+
     override fun setMuted(id: Long, until: Long) = exec("UPDATE accounts SET muted_until = ? WHERE id = ?", until, id)
 
     override fun setBanned(id: Long, until: Long) = exec("UPDATE accounts SET banned_until = ? WHERE id = ?", until, id)

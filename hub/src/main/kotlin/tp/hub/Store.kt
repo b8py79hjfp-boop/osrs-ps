@@ -26,6 +26,8 @@ interface HubStore : AutoCloseable {
     /** Creates an account; null if the name is taken. */
     fun createAccount(username: String, passwordHash: String, rights: Rights): AccountRow?
 
+    fun setRights(id: Long, rights: Rights)
+
     fun setMuted(id: Long, until: Long)
 
     fun setBanned(id: Long, until: Long)

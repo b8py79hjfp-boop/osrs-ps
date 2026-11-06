@@ -6,11 +6,16 @@ import tp.engine.AccountBridge
 import tp.engine.AccountProfile
 import tp.engine.World
 import tp.engine.entity.Player
+import tp.engine.stat.PlayerStats
+import tp.protocol.api.FriendRow
 import tp.protocol.api.LoginRejection
 import tp.protocol.api.LoginRequest
+import tp.protocol.api.ServerMessage
+import tp.protocol.api.SocialAction
 import tp.services.HubServices
 import tp.services.LoginResult
 import tp.services.Rights
+import tp.services.Sanction
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -22,7 +27,7 @@ private val logger = KotlinLogging.logger {}
  * account are chained in order, so an autosave still in flight always lands before that account's logout save, which
  * the hub writes durably before releasing the session lock (brief §7 dupe prevention).
  */
-class HubAccountBridge(private val hub: HubServices, private val worldId: Int) : AccountBridge {
+class HubAccountBridge(private val hub: HubServices, private val worldId: Int, private val world: World) : AccountBridge {
     private val io = Executors.newVirtualThreadPerTaskExecutor()
     private val chains = ConcurrentHashMap<Long, CompletableFuture<Unit>>()
 
@@ -34,7 +39,10 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int) :
                     .getOrNull()
             when (grant?.result) {
                 LoginResult.OK -> {
-                    world.admitAuthorized(request, AccountProfile(grant.accountId, grant.displayName, staffLevel(grant.rights), grant.save))
+                    world.admitAuthorized(
+                        request,
+                        AccountProfile(grant.accountId, grant.displayName, staffLevel(grant.rights), grant.save, grant.mutedUntil),
+                    )
                 }
 
                 LoginResult.INVALID_CREDENTIALS -> {
@@ -78,7 +86,124 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int) :
                 SaveMetrics.record(System.nanoTime() - started)
             }, io)
         }
-        if (final) chains[account]?.whenComplete { _, _ -> chains.remove(account) }
+        if (final) {
+            chains[account]?.whenComplete { _, _ -> chains.remove(account) }
+            val xp = IntArray(PlayerStats.COUNT) { player.stats.xpTenths(it) }
+            val name = player.username
+            if (player.staffLevel < ADMIN_LEVEL) io.execute { call("hiscores") { hub.hiscores.submit(account, name, xp) } }
+        }
+    }
+
+    override fun refused(profile: AccountProfile) {
+        io.execute { call("release") { hub.accounts.logout(profile.accountId, worldId, "") } }
+    }
+
+    override fun loggedIn(player: Player) {
+        val account = player.accountId
+        if (account == 0L) return
+        io.execute {
+            val friends = call("friends") { hub.social.friends(account) } ?: emptyList()
+            val ignores = call("ignores") { hub.social.ignores(account) } ?: emptyList()
+            world.execute {
+                val p = world.playerByAccount(account) ?: return@execute
+                if (ignores.isNotEmpty()) p.session.send(ServerMessage.IgnoreList(ignores))
+                p.session.send(ServerMessage.FriendList(friends.map { FriendRow(it.name, it.worldId, added = false) }))
+                p.session.send(ServerMessage.FriendListLoaded)
+            }
+        }
+    }
+
+    override fun social(player: Player, action: SocialAction, name: String, text: String) {
+        val account = player.accountId
+        if (account == 0L) return
+        io.execute {
+            val reply: String? =
+                call("social") {
+                    when (action) {
+                        SocialAction.FRIEND_ADD -> hub.social.addFriend(account, name)
+                        SocialAction.FRIEND_DEL -> hub.social.removeFriend(account, name).let { null }
+                        SocialAction.IGNORE_ADD -> hub.social.addIgnore(account, name)
+                        SocialAction.IGNORE_DEL -> hub.social.removeIgnore(account, name).let { null }
+                        SocialAction.PRIVATE_MESSAGE -> hub.social.privateMessage(account, name, text)
+                    }
+                }
+            // Refresh the edited row with the friend's current world (the client already shows the edit locally).
+            val friend =
+                if (action == SocialAction.FRIEND_ADD && reply == null) {
+                    call("friends") { hub.social.friends(account) }?.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                } else {
+                    null
+                }
+            world.execute {
+                val p = world.playerByAccount(account) ?: return@execute
+                if (reply != null) return@execute p.session.send(ServerMessage.GameMessage(reply))
+                when (action) {
+                    SocialAction.PRIVATE_MESSAGE -> {
+                        p.session.send(ServerMessage.PrivateMessageEcho(name, text))
+                    }
+
+                    SocialAction.FRIEND_ADD -> {
+                        friend?.let {
+                            p.session.send(
+                                ServerMessage.FriendList(listOf(FriendRow(it.name, it.worldId, true))),
+                            )
+                        }
+                    }
+
+                    SocialAction.IGNORE_ADD -> {
+                        p.session.send(ServerMessage.IgnoreList(listOf(name)))
+                    }
+
+                    SocialAction.IGNORE_DEL -> {
+                        p.session.send(ServerMessage.IgnoreList(listOf(name), removed = true))
+                    }
+
+                    SocialAction.FRIEND_DEL -> {
+                        Unit
+                    }
+                }
+            }
+        }
+    }
+
+    override fun staff(player: Player, command: String, args: List<String>) {
+        val account = player.accountId
+        if (account == 0L) return
+        io.execute {
+            val reply =
+                call("staff") {
+                    when (command) {
+                        "broadcast" -> hub.broadcasts.broadcast(args.joinToString(" ")).let { "Broadcast sent." }
+                        "update" -> hub.broadcasts.systemUpdate(args[0].toIntOrNull() ?: 0).let { "System update scheduled." }
+                        else -> moderate(account, command, args)
+                    }
+                } ?: "The hub did not answer."
+            world.execute { world.playerByAccount(account)?.session?.send(ServerMessage.GameMessage(reply)) }
+        }
+    }
+
+    private suspend fun moderate(account: Long, command: String, args: List<String>): String {
+        val sanction = SANCTIONS[command] ?: return "Unknown command."
+        val minutes = args.getOrNull(1)?.toIntOrNull() ?: 0
+        val reason = args.drop(if (args.getOrNull(1)?.toIntOrNull() != null) 2 else 1).joinToString(" ")
+        return hub.moderation.apply(account, args[0].replace('_', ' '), sanction, minutes, reason) ?: "Done: $command ${args[0]}."
+    }
+
+    /** Runs a hub call on this (virtual) thread; failures are logged and give null. */
+    private fun <T> call(what: String, block: suspend () -> T): T? =
+        runCatching { runBlocking { block() } }.onFailure { logger.warn(it) { "hub $what call failed" } }.getOrNull()
+
+    private companion object {
+        const val ADMIN_LEVEL = 2
+        val SANCTIONS =
+            mapOf(
+                "kick" to Sanction.KICK,
+                "mute" to Sanction.MUTE,
+                "unmute" to Sanction.UNMUTE,
+                "ban" to Sanction.BAN,
+                "ipban" to Sanction.IP_BAN,
+                "unban" to Sanction.UNBAN,
+            )
     }
 
     private fun staffLevel(rights: Rights): Int =

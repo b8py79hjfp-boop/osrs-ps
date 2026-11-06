@@ -229,6 +229,10 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         e.hasFriendStatus() -> {
                             sink(SocialEvent.FriendStatus(e.toAccount, e.friendStatus.name, e.friendStatus.worldId))
                         }
+
+                        e.hasMuted() -> {
+                            sink(SocialEvent.Muted(e.toAccount, e.muted.until))
+                        }
                     }
                 }
         }

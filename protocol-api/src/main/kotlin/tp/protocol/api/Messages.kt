@@ -35,6 +35,9 @@ sealed interface ClientCommand {
     /** Public chat line (already Huffman-decoded). */
     data class PublicChat(val text: String, val colour: Int, val effect: Int, val type: Int) : ClientCommand
 
+    /** Friends/ignore list edits and private messages ([text] only for [SocialAction.PRIVATE_MESSAGE]). */
+    data class Social(val action: SocialAction, val name: String, val text: String = "") : ClientCommand
+
     /** "Click here to continue" / pause button. */
     data class ResumePause(val component: Int, val sub: Int) : ClientCommand
 
@@ -44,6 +47,11 @@ sealed interface ClientCommand {
     /** Client window mode changed (1 fixed, 2 resizable). */
     data class WindowStatus(val mode: Int, val width: Int, val height: Int) : ClientCommand
 }
+
+enum class SocialAction { FRIEND_ADD, FRIEND_DEL, IGNORE_ADD, IGNORE_DEL, PRIVATE_MESSAGE }
+
+/** A friends-list row: [worldId] 0 = offline. */
+data class FriendRow(val name: String, val worldId: Int, val added: Boolean)
 
 /** One operation inside a zone; coordinates are 0..7 within the zone. */
 sealed interface ZoneOp {
@@ -135,6 +143,21 @@ sealed interface ServerMessage {
     data class SystemUpdate(val ticks: Int) : ServerMessage
 
     data object Logout : ServerMessage
+
+    /** Friends list rows (full list at login, single rows on changes). */
+    data class FriendList(val friends: List<FriendRow>) : ServerMessage
+
+    /** Ignore list: [names] added (or, if [removed], taken off). */
+    data class IgnoreList(val names: List<String>, val removed: Boolean = false) : ServerMessage
+
+    /** Ends the friends tab's "Loading friend list" state. */
+    data object FriendListLoaded : ServerMessage
+
+    /** Incoming PM: [counter] makes each message unique per world (client dedup); [crown] 0 none, 1 mod, 2 admin. */
+    data class PrivateMessage(val from: String, val worldId: Int, val counter: Int, val crown: Int, val text: String) : ServerMessage
+
+    /** "To [to]: [text]" echo of a sent PM. */
+    data class PrivateMessageEcho(val to: String, val text: String) : ServerMessage
 
     /** World hop: the client logs out and connects to [host] as world [worldId] ([flags]: world-list properties). */
     data class LogoutTransfer(val host: String, val worldId: Int, val flags: Int) : ServerMessage
