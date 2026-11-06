@@ -322,7 +322,7 @@ class World(
     /** Phase 3: NPCs in index order (tick.md). */
     private fun npcPhase() {
         for (npc in npcs) {
-            if (npc == null) continue
+            if (npc == null || npc.hidden) continue
             npc.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(npc)) tracer?.onPhase(npc, "delay-end")
             npc.timer.process()
@@ -362,6 +362,7 @@ class World(
         }
         if (pidShuffleEnabled) shufflePids()
         ground.process(tick)
+        processRespawns()
     }
 
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
@@ -381,7 +382,7 @@ class World(
             }
         }
         ground.clearEvents()
-        for (npc in npcs) if (npc != null) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
+        for (npc in npcs) if (npc != null && !npc.hidden) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
         network.buildInfos()
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
@@ -496,6 +497,27 @@ class World(
         entity.coord = to
         entity.teleportedThisTick = true
         if (entity is Player) entity.interaction = null
+    }
+
+    private val respawns = ArrayList<Pair<Long, Npc>>()
+
+    /** Removes [npc] from view now and puts it back at its spawn, fully healed, after [delay] ticks. */
+    fun respawnNpc(npc: Npc, delay: Int) {
+        if (npc.hidden) return
+        npc.hidden = true
+        npc.route.clear()
+        network.npcRemoved(npc.index)
+        respawns += (tick + delay) to npc
+    }
+
+    private fun processRespawns() {
+        val due = respawns.filter { it.first <= tick }
+        if (due.isEmpty()) return
+        respawns.removeAll(due.toSet())
+        for ((_, npc) in due) {
+            npc.resetForRespawn()
+            network.npcAdded(npc.index, npc.type, npc.coord.level, npc.coord.x, npc.coord.z)
+        }
     }
 
     /** Adds an NPC of config [type] (size from its config). */

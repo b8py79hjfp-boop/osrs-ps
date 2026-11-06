@@ -44,6 +44,23 @@ class Npc internal constructor(
             .getValue(type)
             .stats[HITPOINTS]
 
+    /** Removed from the world until [World.respawnNpc] brings it back (dead NPCs). */
+    var hidden: Boolean = false
+        internal set
+
+    internal fun resetForRespawn() {
+        val type =
+            world.data.configs.npcs
+                .getValue(this.type)
+        type.stats.copyInto(levels)
+        coord = spawn
+        npcInteraction = null
+        attrs.clear()
+        queue.clear()
+        frozenUntil = 0
+        hidden = false
+    }
+
     /** The NPC's own interaction (NPCs attacking players: interactions.md I9). */
     internal var npcInteraction: NpcInteraction? = null
 

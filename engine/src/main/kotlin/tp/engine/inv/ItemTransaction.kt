@@ -83,6 +83,24 @@ class ItemTransaction internal constructor(
         return true
     }
 
+    /** Replaces [obj] in [slot] with [count] of [newObj] in the same slot (potion doses, charges). */
+    fun replaceAt(inv: Inventory, slot: Int, obj: Int, newObj: Int, count: Int = 1): Boolean {
+        if (failed) return false
+        val valid = slot in 0 until inv.size && inv.objs[slot] == obj
+        if (!valid || objTypes[newObj] == null || count <= 0) return fail()
+        write(inv, slot, newObj, count)
+        return true
+    }
+
+    /** Puts [count] of [obj] into the empty [slot] (equipment slots). */
+    fun setAt(inv: Inventory, slot: Int, obj: Int, count: Int): Boolean {
+        if (failed) return false
+        val valid = slot in 0 until inv.size && inv.objs[slot] == Inventory.EMPTY
+        if (!valid || objTypes[obj] == null || count <= 0) return fail()
+        write(inv, slot, obj, count)
+        return true
+    }
+
     /** Swaps two slots of one inventory (drag). */
     fun swap(inv: Inventory, from: Int, to: Int): Boolean {
         if (failed) return false

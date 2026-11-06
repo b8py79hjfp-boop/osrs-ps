@@ -3,6 +3,7 @@ package tp.plugin
 import tp.engine.World
 import tp.engine.entity.Entity
 import tp.engine.entity.Player
+import tp.engine.interact.clearInteraction
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
 import tp.engine.inv.ItemTransaction
@@ -61,6 +62,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
             }
         p.world.interact(p, t, op)
     }
+
+    /** Ends the current interaction (no other interruption effects). */
+    public fun stopInteraction() {
+        p.clearInteraction()
+    }
+
+    /** Whether the player has a route to walk. */
+    public val isMoving: Boolean get() = p.isRouting
 
     /** Whether the player has an interaction in progress. */
     public val isInteracting: Boolean get() = p.interactionTarget != null
@@ -233,6 +242,11 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     public fun swap(invId: Int, from: Int, to: Int): Boolean = tx.swap(of(invId), from, to)
 
     public fun move(fromInv: Int, slot: Int, obj: Int, count: Int, toInv: Int): Boolean = tx.move(of(fromInv), slot, obj, count, of(toInv))
+
+    public fun replaceAt(invId: Int, slot: Int, obj: Int, newObj: Int, count: Int = 1): Boolean =
+        tx.replaceAt(of(invId), slot, obj, newObj, count)
+
+    public fun setAt(invId: Int, slot: Int, obj: Int, count: Int = 1): Boolean = tx.setAt(of(invId), slot, obj, count)
 
     /** Drops [count] of [obj] from [slot] of [invId] under the player, private to them at first. */
     public fun drop(invId: Int, slot: Int, obj: Int, count: Int): Boolean =

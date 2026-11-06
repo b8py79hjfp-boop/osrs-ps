@@ -88,6 +88,9 @@ public sealed class EntityRef {
         }
     }
 
+    /** Uniform random int in [0, bound) from the world's only RNG (brief §5.2: deterministic). */
+    public fun random(bound: Int): Int = e.world.rng.nextInt(bound)
+
     /** Chebyshev distance between the two footprints, edge to edge (hit-delay distance, HD:3). */
     public fun distanceTo(other: EntityRef): Int {
         val a = coord
@@ -124,7 +127,12 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
             ?.params
             ?.int(id) ?: default
 
-    public val isInWorld: Boolean get() = n.hitpoints > 0 && n.world.npc(n.index) === n
+    public val isInWorld: Boolean get() = !n.hidden && n.world.npc(n.index) === n
+
+    /** Removes the NPC now and respawns it at its spawn point after [delay] ticks. */
+    public fun respawnAfter(delay: Int) {
+        n.world.respawnNpc(n, delay)
+    }
 
     /** Makes this NPC attack/follow [target], running [script] whenever it is in op range (I9). */
     public fun interact(target: EntityRef, script: suspend NpcScript.(EntityRef) -> Unit) {

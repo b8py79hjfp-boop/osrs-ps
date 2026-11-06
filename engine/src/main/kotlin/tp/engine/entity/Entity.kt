@@ -31,6 +31,9 @@ abstract class Entity internal constructor(
 
     internal val route = Route()
 
+    /** Whether there are route steps left. */
+    val isRouting: Boolean get() = !route.isEmpty
+
     /** Current entity interaction (op/ap), or null. */
     internal var interaction: Interaction? = null
 

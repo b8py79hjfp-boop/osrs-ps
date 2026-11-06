@@ -92,6 +92,14 @@ fun Npc.interactWith(interaction: NpcInteraction?) {
 
 val Npc.currentInteraction: NpcInteraction? get() = npcInteraction
 
+/** Current approach range of [this] player's interaction (I2), or null without one. */
+val Player.currentApRange: Int? get() = interaction?.apRange
+
+/** Ends [this] player's interaction without other interruption effects. */
+fun Player.clearInteraction() {
+    interaction = null
+}
+
 /** Called from a player's script: keep the current interaction after it runs (combat follow, OPEN-I3). */
 fun Player.keepInteraction() {
     interaction?.persistent = true
