@@ -17,7 +17,9 @@ import kotlin.system.exitProcess
 fun main(args: Array<String>) {
     val count = args.getOrNull(0)?.toIntOrNull()
     if (count == null) {
-        System.err.println("usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] [fight]")
+        System.err.println(
+            "usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] [walk|fight] [namePrefix=bot]",
+        )
         exitProcess(2)
     }
     val host = args.getOrNull(1) ?: "127.0.0.1"
@@ -25,20 +27,22 @@ fun main(args: Array<String>) {
     val centreX = args.getOrNull(CENTRE_X_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_X
     val centreZ = args.getOrNull(CENTRE_Z_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_Z
     val fight = args.getOrNull(MODE_ARG) == "fight"
+    // Account names are global across worlds (the hub refuses a second session), so each world's swarm needs its own.
+    val prefix = args.getOrNull(PREFIX_ARG) ?: "bot"
     val modulus = BigInteger(Files.readString(Path.of(".data", "rsa", "modulus.hex")).trim(), HEX)
 
     val master = BotClient(host, port, modulus, IntArray(0)).use { it.js5Fetch(listOf(MASTER to MASTER)).single() }
     val crcs = masterCrcs(master)
     val pool = Executors.newVirtualThreadPerTaskExecutor()
     repeat(count) { i ->
-        pool.submit {
+        pool.execute {
             BotClient(host, port, modulus, crcs).use { bot ->
-                val response = bot.login("bot${i + 1}", "bot")
+                val response = bot.login("$prefix${i + 1}", "bot")
                 if (response != LOGIN_OK) {
-                    System.err.println("bot${i + 1}: login response $response")
+                    System.err.println("$prefix${i + 1}: login response $response")
                     return@use
                 }
-                println("bot${i + 1}: logged in as index ${bot.playerIndex}")
+                println("$prefix${i + 1}: logged in as index ${bot.playerIndex}")
                 if (fight) fight(bot, count) else wander(bot, centreX, centreZ)
             }
         }
@@ -104,6 +108,7 @@ private const val DEFAULT_CENTRE_Z = 3218
 private const val CENTRE_X_ARG = 3
 private const val CENTRE_Z_ARG = 4
 private const val MODE_ARG = 5
+private const val PREFIX_ARG = 6
 private const val HEX = 16
 private const val MASTER = 255
 private const val MASTER_ENTRY = 8

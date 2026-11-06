@@ -1,0 +1,259 @@
+// Hub API (brief §7): schema-first, callable from world-nodes and from any language (website, admin panel).
+// World-nodes use it through tp.services.HubServices (GrpcHubClient); the hub serves it (HubGrpcServer).
+syntax = "proto3";
+
+package tp.hub.v1;
+
+option java_multiple_files = true;
+option java_package = "tp.services.grpc";
+
+message Empty {}
+
+// ---- accounts and saves
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+  int32 world_id = 3;
+  string ip = 4;
+}
+
+message LoginReply {
+  string result = 1; // tp.services.LoginResult name
+  int64 account_id = 2;
+  string display_name = 3;
+  string rights = 4; // tp.services.Rights name
+  string save = 5;   // versioned save JSON, empty = new character
+  bool has_save = 6;
+  int64 muted_until = 7;
+}
+
+message LogoutRequest {
+  int64 account_id = 1;
+  int32 world_id = 2;
+  string save = 3;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  string ip = 3;
+}
+
+message ErrorReply {
+  string error = 1; // empty = success
+}
+
+message SaveRequest {
+  int64 account_id = 1;
+  int32 world_id = 2;
+  string save = 3;
+}
+
+service Accounts {
+  rpc Login(LoginRequest) returns (LoginReply);
+  rpc Logout(LogoutRequest) returns (Empty);
+  rpc Register(RegisterRequest) returns (ErrorReply);
+  rpc Save(SaveRequest) returns (Empty);
+}
+
+// ---- worlds
+
+message World {
+  int32 id = 1;
+  string host = 2;
+  int32 port = 3;
+  string activity = 4;
+  int32 flags = 5;
+  int32 population = 6;
+}
+
+message Heartbeat {
+  int32 world_id = 1;
+  int32 population = 2;
+}
+
+message WorldList {
+  repeated World worlds = 1;
+}
+
+service Worlds {
+  rpc Register(World) returns (Empty);
+  rpc Beat(Heartbeat) returns (Empty);
+  rpc List(Empty) returns (WorldList);
+}
+
+// ---- social
+
+message AccountRef {
+  int64 account_id = 1;
+}
+
+message NameRequest {
+  int64 account_id = 1;
+  string name = 2;
+}
+
+message Friend {
+  string name = 1;
+  int32 world_id = 2;
+}
+
+message FriendList {
+  repeated Friend friends = 1;
+}
+
+message NameList {
+  repeated string names = 1;
+}
+
+message PrivateMessageRequest {
+  int64 from_account = 1;
+  string to_name = 2;
+  string text = 3;
+}
+
+message WorldRef {
+  int32 world_id = 1;
+}
+
+message SocialEvent {
+  int64 to_account = 1;
+  oneof event {
+    PrivateMessage private_message = 2;
+    FriendStatus friend_status = 3;
+  }
+}
+
+message PrivateMessage {
+  string from = 1;
+  string from_rights = 2;
+  string text = 3;
+}
+
+message FriendStatus {
+  string name = 1;
+  int32 world_id = 2;
+}
+
+service Social {
+  rpc Friends(AccountRef) returns (FriendList);
+  rpc Ignores(AccountRef) returns (NameList);
+  rpc AddFriend(NameRequest) returns (ErrorReply);
+  rpc RemoveFriend(NameRequest) returns (Empty);
+  rpc AddIgnore(NameRequest) returns (ErrorReply);
+  rpc RemoveIgnore(NameRequest) returns (Empty);
+  rpc SendPrivateMessage(PrivateMessageRequest) returns (ErrorReply);
+  rpc Subscribe(WorldRef) returns (stream SocialEvent);
+}
+
+// ---- Grand Exchange skeleton
+
+message GeOffer {
+  int64 id = 1;
+  int64 account_id = 2;
+  int32 slot = 3;
+  bool buy = 4;
+  int32 obj = 5;
+  int32 quantity = 6;
+  int32 price = 7;
+  int32 completed = 8;
+  int64 collect_coins = 9;
+  int32 collect_items = 10;
+}
+
+message PlaceOfferRequest {
+  int64 account_id = 1;
+  int32 slot = 2;
+  bool buy = 3;
+  int32 obj = 4;
+  int32 quantity = 5;
+  int32 price = 6;
+}
+
+message SlotRequest {
+  int64 account_id = 1;
+  int32 slot = 2;
+}
+
+message GeOffers {
+  repeated GeOffer offers = 1;
+}
+
+message MaybeOffer {
+  bool present = 1;
+  GeOffer offer = 2;
+}
+
+service Exchange {
+  rpc Place(PlaceOfferRequest) returns (GeOffer);
+  rpc Offers(AccountRef) returns (GeOffers);
+  rpc Collect(SlotRequest) returns (MaybeOffer);
+  rpc Abort(SlotRequest) returns (MaybeOffer);
+}
+
+// ---- hiscores, moderation, broadcasts
+
+message HiscoreSubmit {
+  int64 account_id = 1;
+  string name = 2;
+  repeated int32 xp_tenths = 3;
+}
+
+message HiscoreQuery {
+  int32 stat = 1;
+  int32 count = 2;
+}
+
+message HiscoreEntry {
+  string name = 1;
+  int32 level = 2;
+  int64 xp = 3;
+}
+
+message HiscoreTable {
+  repeated HiscoreEntry entries = 1;
+}
+
+service Hiscores {
+  rpc Submit(HiscoreSubmit) returns (Empty);
+  rpc Top(HiscoreQuery) returns (HiscoreTable);
+}
+
+message SanctionRequest {
+  int64 staff_account = 1;
+  string target = 2;
+  string sanction = 3; // tp.services.Sanction name
+  int32 minutes = 4;
+  string reason = 5;
+}
+
+message Kick {
+  int64 account_id = 1;
+}
+
+service Moderation {
+  rpc Apply(SanctionRequest) returns (ErrorReply);
+  rpc SubscribeKicks(WorldRef) returns (stream Kick);
+}
+
+message BroadcastRequest {
+  string text = 1;
+}
+
+message SystemUpdateRequest {
+  int32 seconds = 1;
+}
+
+message BroadcastEvent {
+  oneof event {
+    string message = 1;
+    int32 system_update_seconds = 2;
+  }
+}
+
+service Broadcasts {
+  rpc Broadcast(BroadcastRequest) returns (Empty);
+  rpc SystemUpdate(SystemUpdateRequest) returns (Empty);
+  rpc Subscribe(Empty) returns (stream BroadcastEvent);
+}

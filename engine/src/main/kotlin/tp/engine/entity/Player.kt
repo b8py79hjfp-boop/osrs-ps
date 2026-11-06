@@ -36,6 +36,14 @@ class Player internal constructor(
 
     internal val zoneSync = ZoneSync()
 
+    /** Hub account id (0 without an account authority). */
+    var accountId: Long = 0
+        internal set
+
+    /** Staff level (0 player, 1 moderator, 2 admin): permissions as data (brief §12). */
+    var staffLevel: Int = 0
+        internal set
+
     override var hitpoints: Int
         get() = stats.level(PlayerStats.HITPOINTS)
         set(value) {

@@ -41,6 +41,14 @@ class PlayerStats internal constructor() {
         return gained
     }
 
+    /** Restores a saved stat (persistence): xp in tenths and the current level; base comes from xp. */
+    internal fun restore(stat: Int, xpTenths: Int, currentLevel: Int) {
+        xp[stat] = xpTenths.coerceIn(0, MAX_XP_TENTHS)
+        base[stat] = Xp.levelFor(xp[stat] / XP_SCALE)
+        current[stat] = currentLevel.coerceIn(0, MAX_BOOSTED)
+        dirty[stat] = true
+    }
+
     internal fun flush(session: ClientSession) {
         for (stat in 0 until COUNT) {
             if (!dirty[stat]) continue

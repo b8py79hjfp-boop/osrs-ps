@@ -59,17 +59,38 @@ private val logger = KotlinLogging.logger {}
 /** RSProt `DefaultInetAddressValidator` default: 10 connections per IP. */
 private const val DEFAULT_MAX_PER_IP = 10
 
+/**
+ * Data every world in a JVM shares: the pre-encoded JS5 responses (~200 MiB) and the Huffman codec (brief §7: the
+ * immutable cache is shared across worlds). Build once per world-node.
+ */
+class Osrs242Shared(cache: Js5Cache) {
+    internal val js5: Js5Responses = Js5Responses.build(cache)
+    internal val huffman: HuffmanCodecProvider = Osrs242Network.loadHuffman(cache)
+    private var networks = 0
+
+    /**
+     * RSProt's thread guard is process-wide (one world per JVM). With one network it pins the world thread; once a
+     * second world starts in this JVM it is cleared, since each network is only ever driven by its own world thread
+     * (DECISIONS D-026).
+     */
+    @Synchronized
+    internal fun guardThread(service: NetworkService<*>) {
+        networks++
+        service.setCommunicationThread(if (networks == 1) Thread.currentThread() else null)
+    }
+}
+
 /** Revision-242 [GameNetwork] on RSProt (D-005). Listens on [port] for game + JS5 (they share it). */
 @OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
 class Osrs242Network(
-    cache: Js5Cache,
+    private val shared: Osrs242Shared,
     private val rsa: RsaKeyPair,
     private val port: Int,
     /** Game and JS5 connections allowed per IP address (RSProt default 10); raise for local bot swarms. */
     private val maxConnectionsPerIp: Int = DEFAULT_MAX_PER_IP,
 ) : GameNetwork {
-    private val js5 = Js5Responses.build(cache)
-    private val huffman = loadHuffman(cache)
+    private val js5 = shared.js5
+    private val huffman = shared.huffman
     private var service: NetworkService<RspSession>? = null
 
     val js5Summary: String get() = "${js5.groupCount} groups, ${js5.totalBytes / BYTES_PER_MIB} MiB pre-encoded"
@@ -78,7 +99,7 @@ class Osrs242Network(
         val factory = Factory(loginGate)
         val built = factory.build()
         factory.service = built
-        built.setCommunicationThread(Thread.currentThread())
+        shared.guardThread(built)
         built.start()
         service = built
         logger.info { "rev 242 network listening on :$port (js5: $js5Summary)" }
@@ -235,6 +256,11 @@ class Osrs242Network(
     ) : LoginRequest {
         override val username: String = block.username
 
+        // Copied once: RSProt clears the login block's password after the response is written.
+        override val password: String = (block.authentication as? AuthenticationType.PasswordAuthentication)?.password?.asString().orEmpty()
+
+        override val address: String = ClientAddress.of(handler.ctx.channel())
+
         override fun accept(slot: Int, details: LoginDetails): ClientSession {
             val response =
                 LoginResponse.Ok(
@@ -265,6 +291,9 @@ class Osrs242Network(
                     LoginRejection.LOGIN_LIMIT_EXCEEDED -> LoginResponse.IPLimit
                     LoginRejection.UPDATE_IN_PROGRESS -> LoginResponse.UpdateInProgress
                     LoginRejection.SERVER_ERROR -> LoginResponse.LoginServerLoadError
+                    LoginRejection.BANNED -> LoginResponse.Banned
+                    LoginRejection.TOO_MANY_ATTEMPTS -> LoginResponse.TooManyAttempts
+                    LoginRejection.HOP_BLOCKED -> LoginResponse.HopBlocked
                 },
             )
         }
@@ -277,7 +306,7 @@ class Osrs242Network(
         private const val BINARY_ARCHIVE = 10
 
         /** Huffman table: binary archive group named "huffman", file 0 (RS Mod `HuffmanProvider`). */
-        private fun loadHuffman(cache: Js5Cache): HuffmanCodecProvider {
+        internal fun loadHuffman(cache: Js5Cache): HuffmanCodecProvider {
             val index = cache.index(BINARY_ARCHIVE)
             val group = index.groupIdByName("huffman")
             if (group < 0) throw IOException("No huffman group in archive $BINARY_ARCHIVE")

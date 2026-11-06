@@ -46,6 +46,12 @@ interface LoginRequest {
     /** Archive CRCs matched our master index (client up to date). Checked by the protocol layer. */
     val crcValid: Boolean
 
+    /** The password from the login block (empty for token logins). Never logged. */
+    val password: String
+
+    /** Client IP address (the real one behind a PROXY-protocol proxy). */
+    val address: String
+
     /** Called on the world thread. Returns the session bound to player slot [slot] (1..2047). */
     fun accept(slot: Int, details: LoginDetails): ClientSession
 
@@ -62,6 +68,11 @@ enum class LoginRejection {
     LOGIN_LIMIT_EXCEEDED,
     UPDATE_IN_PROGRESS,
     SERVER_ERROR,
+    BANNED,
+    TOO_MANY_ATTEMPTS,
+
+    /** The previous world's logout save isn't durable yet (world hop too fast). */
+    HOP_BLOCKED,
 }
 
 /** Per-player connection. All calls on the world thread. */

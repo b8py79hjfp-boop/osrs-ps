@@ -263,3 +263,16 @@ Wilderness levels/brackets, single-way PJ timers, skulls, the logout lock, Tele 
 through plugin-api events (`AttackCheck`, `AttackEvent`, `HitEvent`, `DeathEvent`, `AppearanceChanged`) and
 `SharedAttrs`. Hits are queued with `EntityRef.queueHit` (strong queue on players, NPC queue on NPCs); queue delays
 count the defender's own turns (scripts.md Q13), which yields the processing-order +1 for every hit delay.
+
+## D-026 — Phase 5 topology, versions and multi-world JVMs
+
+- Hub and world-node talk only through `tp.services.HubServices`. The world node embeds a `Hub` (memory or PostgreSQL)
+  by default; `--hub host:port` uses the gRPC client instead. The schema is `services/src/main/proto/hub.proto`.
+- Pinned versions: grpc-java 1.85.1, grpc-kotlin 1.5.0, protobuf 4.36.2 (Gradle plugin 0.10.1), PostgreSQL JDBC
+  42.7.14, HikariCP 7.1.0, Argon2id from BouncyCastle (m=19 MiB, t=2, p=1; OWASP minimum).
+- One JVM can run N worlds, each with its own thread and game port (base + i). The OSRS client always connects to
+  43594, so in production each world gets its own address (proxy/DNS) in the world list; bots use the ports directly.
+- RSProt's thread guard is process-wide. It pins the world thread when the JVM runs one world and is cleared once a
+  second world starts; every `Osrs242Network` is still only driven by its own world thread.
+- Saves are versioned JSON (`PlayerSave.VERSION` + forward migrations) stored as jsonb. A logout save is final and the
+  hub holds the account's session lock until it lands, so a world hop cannot load a stale save.

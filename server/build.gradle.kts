@@ -16,6 +16,7 @@ dependencies {
     runtimeOnly(project(":content:dev"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
+    implementation(project(":hub"))
     implementation(project(":protocol:osrs-242"))
     implementation(project(":symbols"))
     implementation(project(":routefinder"))

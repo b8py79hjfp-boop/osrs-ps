@@ -8,5 +8,6 @@ dependencies {
     api(project(":routefinder"))
     api(project(":cache"))
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlin.logging)
 }

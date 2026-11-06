@@ -24,6 +24,12 @@ rsprot = "1.0.0-ALPHA-20261014"
 inline-logger = "1.0.6"
 commons-pool2 = "2.13.1"
 fastutil = "8.5.19"
+grpcJava = "1.85.1"
+grpcKotlin = "1.5.0"
+protobufJava = "4.36.2"
+protobufGradle = "0.10.1"
+postgresql = "42.7.14"
+hikari = "7.1.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -53,6 +59,13 @@ ktoml-core = { module = "com.akuleshov7:ktoml-core", version.ref = "ktoml" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpcJava" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcJava" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcJava" }
+grpc-kotlin-stub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKotlin" }
+protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufJava" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
@@ -64,4 +77,5 @@ spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradl
 detekt-gradle-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 
 [plugins]
+protobuf = { id = "com.google.protobuf", version.ref = "protobufGradle" }
 foojay-resolver = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "foojay" }

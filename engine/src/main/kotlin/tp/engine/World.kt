@@ -15,6 +15,7 @@ import tp.engine.inv.ItemJournal
 import tp.engine.inv.ItemTransaction
 import tp.engine.move.Movement
 import tp.engine.npc.NpcAi
+import tp.engine.save.PlayerSave
 import tp.engine.script.Script
 import tp.engine.script.ScriptRunner
 import tp.engine.ui.Interfaces
@@ -63,6 +64,7 @@ data class WorldConfig(
  * One game world on its own platform thread, running the tick pipeline of docs/mechanics/tick.md.
  * Everything below runs on the world thread except [onLogin] (network threads enqueue).
  */
+@Suppress("LargeClass") // the tick pipeline and its world-scoped state; split along phases when it grows further
 class World(
     val config: WorldConfig,
     val data: WorldData,
@@ -125,7 +127,27 @@ class World(
 
     /** Called from network threads; admitted in post-tick on the world thread. */
     override fun onLogin(request: LoginRequest) {
-        loginInbox.add(request)
+        val bridge = accounts
+        if (bridge == null) loginInbox.add(request) else bridge.authorize(request, this)
+    }
+
+    /** Account authority (hub); null = admit by username (dev, tests). Set before [start]. */
+    var accounts: AccountBridge? = null
+
+    private val authorizedInbox = ConcurrentLinkedQueue<Pair<LoginRequest, AccountProfile>>()
+    private val tasks = ConcurrentLinkedQueue<() -> Unit>()
+
+    /** Runs [task] on the world thread at the start of the next tick (hub events: kicks, broadcasts, messages). */
+    fun execute(task: () -> Unit) {
+        tasks.add(task)
+    }
+
+    /** The online player with hub account [accountId], or null. World thread. */
+    fun playerByAccount(accountId: Long): Player? = players.firstOrNull { it != null && it.accountId == accountId }
+
+    /** Called by the [AccountBridge] from any thread: admit this login in the next post-tick with its profile. */
+    fun admitAuthorized(request: LoginRequest, profile: AccountProfile) {
+        authorizedInbox.add(request to profile)
     }
 
     // ---------------------------------------------------------------- lifecycle
@@ -190,6 +212,7 @@ class World(
         }
         tick++
         tracer?.onTickStart(tick)
+        while (true) (tasks.poll() ?: break).invoke()
         inputPhase()
         npcPhase()
         playerPhase()
@@ -368,13 +391,19 @@ class World(
         while (pendingAdds.isNotEmpty()) addPlayer(pendingAdds.removeFirst())
         var admitted = 0
         while (admitted < config.maxLoginsPerTick) {
-            val request = loginInbox.poll() ?: break
-            admit(request)
+            val authorized = authorizedInbox.poll()
+            if (authorized != null) {
+                admit(authorized.first, authorized.second)
+            } else {
+                admit(loginInbox.poll() ?: break, null)
+            }
             admitted++
         }
+        autosave()
         if (pidShuffleEnabled) shufflePids()
         ground.process(tick)
         processRespawns()
+        checkSystemUpdate()
     }
 
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
@@ -535,6 +564,25 @@ class World(
         ground.transient(c, op)
     }
 
+    /** Tick at which a scheduled system update stops the world (-1 = none). */
+    var systemUpdateAt: Long = -1
+        private set
+
+    /**
+     * System update (brief §12): every client shows the countdown; new logins are refused; when it reaches zero every
+     * player is logged out with a final save (durable at the hub before their accounts free up).
+     */
+    fun systemUpdate(seconds: Int) {
+        val ticks = (seconds * MS_PER_SECOND / TICK_MS).toInt()
+        systemUpdateAt = tick + ticks
+        forEachPlayer { it.session.send(ServerMessage.SystemUpdate(ticks)) }
+    }
+
+    private fun checkSystemUpdate() {
+        if (systemUpdateAt < 0 || tick < systemUpdateAt) return
+        forEachPlayer { requestLogout(it) }
+    }
+
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {
         player.session.send(ServerMessage.Logout)
@@ -607,19 +655,41 @@ class World(
 
     // ---------------------------------------------------------------- login / logout / PID
 
-    private fun admit(request: LoginRequest) {
+    private fun admit(request: LoginRequest, profile: AccountProfile?) {
         if (!request.crcValid) return request.reject(LoginRejection.OUT_OF_DATE)
+        if (systemUpdateAt >= 0) return request.reject(LoginRejection.UPDATE_IN_PROGRESS)
         if (request.username.isBlank()) return request.reject(LoginRejection.INVALID_CREDENTIALS)
         if (players.any { it?.username.equals(request.username, ignoreCase = true) }) return request.reject(LoginRejection.ALREADY_ONLINE)
         val slot = (1 until MAX_PLAYERS).firstOrNull { players[it] == null } ?: return request.reject(LoginRejection.WORLD_FULL)
         val session =
             try {
-                request.accept(slot, LoginDetails())
+                request.accept(slot, LoginDetails(staffModLevel = profile?.staffLevel ?: 0))
             } catch (e: IllegalStateException) {
                 logger.warn(e) { "login accept failed for ${request.username}" }
                 return
             }
-        addPlayer(newPlayer(slot, request.username, session, config.spawn))
+        val player = newPlayer(slot, profile?.displayName ?: request.username, session, config.spawn)
+        if (profile != null) {
+            player.accountId = profile.accountId
+            player.staffLevel = profile.staffLevel
+            profile.save?.let { PlayerSave.apply(player, it) }
+        }
+        addPlayer(player)
+    }
+
+    /** Staggered autosaves (brief §7): each player every [AUTOSAVE_TICKS], offset by slot. */
+    private fun autosave() {
+        val bridge = accounts ?: return
+        for (slot in 1 until MAX_PLAYERS) {
+            val player = players[slot] ?: continue
+            if ((tick + slot) % AUTOSAVE_TICKS == 0L) bridge.saved(player, PlayerSave.snapshot(player), final = false)
+        }
+    }
+
+    /** Saves every player now (graceful shutdown / system update); final saves release their accounts. */
+    fun saveAll(final: Boolean) {
+        val bridge = accounts ?: return
+        for (slot in 1 until MAX_PLAYERS) players[slot]?.let { bridge.saved(it, PlayerSave.snapshot(it), final) }
     }
 
     /** Scenario runner / replay: admit [player] in the next post-tick, exactly where a network login would be. */
@@ -649,6 +719,7 @@ class World(
         tracer?.onLogout(player)
         player.queue.onLogout()
         content.onLogout(player)
+        accounts?.saved(player, PlayerSave.snapshot(player), final = true)
         players[player.slot] = null
         interfaces.forget(player)
         player.session.close()
@@ -727,6 +798,12 @@ class World(
         private const val RUN_STEPS = 2
 
         private const val ZONE_MASK = 7
+
+        private const val MS_PER_SECOND = 1000L
+        private const val TICK_MS = 600L
+
+        /** Autosave interval per player (5 minutes), staggered by slot. */
+        const val AUTOSAVE_TICKS = 500L
 
         /** Appearance wear positions 0..11. */
         private const val APPEARANCE_SLOTS = 12

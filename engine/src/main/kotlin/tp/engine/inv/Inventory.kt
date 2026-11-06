@@ -54,6 +54,11 @@ class Inventory internal constructor(val invId: Int, val size: Int, val stack: I
         }
     }
 
+    /** Persistence: puts a saved slot back (no transaction: the account is being loaded, nothing moves). */
+    internal fun restore(slot: Int, obj: Int, count: Int) {
+        if (slot in 0 until size) write(slot, obj, count)
+    }
+
     /** Next send is a full update (login, start of transmit). */
     internal fun refreshAll() {
         fullRefresh = true

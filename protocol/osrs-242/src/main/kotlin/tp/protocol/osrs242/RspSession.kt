@@ -18,6 +18,7 @@ import net.rsprot.protocol.game.outgoing.inv.UpdateInvPartial
 import net.rsprot.protocol.game.outgoing.logout.Logout
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
+import net.rsprot.protocol.game.outgoing.misc.client.UpdateRebootTimerV2
 import net.rsprot.protocol.game.outgoing.misc.player.ChatFilterSettings
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
 import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
@@ -310,6 +311,10 @@ internal class RspSession(
 
                 is ServerMessage.ZoneOps -> {
                     error("zone ops need the network's enclosed-buffer cache; handled in send()")
+                }
+
+                is ServerMessage.SystemUpdate -> {
+                    UpdateRebootTimerV2(message.ticks, UpdateRebootTimerV2.IgnoreUpdateMessage)
                 }
 
                 ServerMessage.Logout -> {

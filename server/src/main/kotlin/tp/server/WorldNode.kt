@@ -18,6 +18,8 @@ import tp.engine.tick.ReplayRecorder
 import tp.engine.tick.TickInspector
 import tp.plugin.PluginContent
 import tp.protocol.osrs242.Osrs242Network
+import tp.protocol.osrs242.Osrs242Shared
+import tp.services.HubServices
 import tp.util.CoordGrid
 import tp.util.Revision
 import java.io.Writer
@@ -27,7 +29,10 @@ import java.util.Locale
 private val logger = KotlinLogging.logger {}
 
 /** Immutable data shared by every world in this JVM (brief §7 topology). */
-class BootData(val cache: Js5Cache, val configs: Configs, val world: WorldData)
+class BootData(val cache: Js5Cache, val configs: Configs, val world: WorldData) {
+    /** JS5 responses and Huffman, shared by every world in this JVM (built on first use). */
+    val net: Osrs242Shared by lazy { Osrs242Shared(cache) }
+}
 
 /** Composition root pieces for a world-node; used by `main` and by test 2. */
 object WorldNode {
@@ -87,13 +92,15 @@ object WorldNode {
         traceOut: Writer? = null,
         recordOut: Writer? = null,
         maxPerIp: Int = DEFAULT_MAX_PER_IP,
+        hub: HubServices? = null,
     ): World {
-        val network = Osrs242Network(data.cache, rsa, gamePort, maxPerIp)
+        val network = Osrs242Network(data.net, rsa, gamePort, maxPerIp)
         val content = PluginContent.load()
         logger.info { "content: ${content.summary}" }
         val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
         val inspector = TickInspector(traceOut)
         world.tracer = if (recordOut == null) inspector else Tracers(inspector, ReplayRecorder(world, recordOut))
+        if (hub != null) world.accounts = HubAccountBridge(hub, worldId)
         world.start()
         return world
     }

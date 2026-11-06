@@ -133,8 +133,15 @@ class BotClient(
         val salt = readJstr()
         val base = Integer.toHexString(version) + Integer.toHexString(difficulty) + salt
         val sha = MessageDigest.getInstance("SHA-256")
-        var nonce = 0L
-        while (leadingZeroBits(sha.digest((base + java.lang.Long.toHexString(nonce)).toByteArray(Charsets.UTF_8))) < difficulty) nonce++
+        // Solved on one platform thread: on virtual threads the hashing pins every carrier and starves the bots that are
+        // already in game (they stop reading and the server drops them as idle).
+        val nonce =
+            POW_SOLVER
+                .submit<Long> {
+                    var n = 0L
+                    while (leadingZeroBits(sha.digest((base + java.lang.Long.toHexString(n)).toByteArray(Charsets.UTF_8))) < difficulty) n++
+                    n
+                }.get()
         output.writeByte(POW_REPLY)
         output.writeShort(Long.SIZE_BYTES)
         output.writeLong(nonce)
@@ -373,6 +380,10 @@ class BotClient(
         private const val OPPLAYER2 = 8
         private const val OPPLAYER_BYTES = 3
         private const val SOCKET_TIMEOUT_MS = 30_000
+
+        private val POW_SOLVER =
+            java.util.concurrent.Executors
+                .newSingleThreadExecutor { r -> Thread(r, "pow").apply { isDaemon = true } }
         private const val MOVE_CLICK_BYTES = 5
         private val RSA_PUBLIC_EXPONENT: BigInteger = BigInteger.valueOf(65537)
 

@@ -1,8 +1,21 @@
 plugins {
-    id("tp.kotlin-library")
+    id("tp.kotlin-app")
 }
 
-// Phase 5: hub main (login authority, social, GE, hiscores, world directory) behind gRPC.
+application {
+    mainClass = "tp.hub.HubMainKt"
+    applicationName = "hub"
+}
+
+// Hub (brief §7): login authority, persistence, social, GE, hiscores, moderation, broadcasts; gRPC + HTTP.
 dependencies {
-    implementation(project(":services"))
+    api(project(":services"))
+    implementation(libs.kotlin.logging)
+    implementation(libs.bouncycastle)
+    implementation(libs.postgresql)
+    implementation(libs.hikari)
+    implementation(libs.grpc.netty.shaded)
+    implementation(platform(libs.netty.bom))
+    implementation(project(":net"))
+    runtimeOnly(libs.logback.classic)
 }

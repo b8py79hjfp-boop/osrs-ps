@@ -40,6 +40,15 @@ class PlayerVars internal constructor(varpCount: Int, private val varbits: TypeL
         set(type.baseVar, (base and (mask shl type.startBit).inv()) or (value shl type.startBit))
     }
 
+    internal fun forEachNonZero(action: (Int, Int) -> Unit) {
+        for (i in values.indices) if (values[i] != 0) action(i, values[i])
+    }
+
+    /** Persistence: sets a varp without marking it dirty (sent with the login VarpReset + full send). */
+    internal fun restore(varp: Int, value: Int) {
+        if (varp in values.indices) values[varp] = value
+    }
+
     internal fun hash(): Long = values.contentHashCode().toLong()
 
     /** Login: every non-zero varp, after the client was told to reset (VarpReset). */

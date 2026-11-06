@@ -131,5 +131,8 @@ sealed interface ServerMessage {
     /** A batch of [ops] for the zone at ([dx], [dz]) from the build-area origin (one enclosed zone packet). */
     class ZoneOps(val dx: Int, val dz: Int, val level: Int, val ops: List<ZoneOp>) : ServerMessage
 
+    /** System update countdown in ticks (0 clears it): the client shows "System update in: m:ss". */
+    data class SystemUpdate(val ticks: Int) : ServerMessage
+
     data object Logout : ServerMessage
 }

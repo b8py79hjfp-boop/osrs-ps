@@ -36,6 +36,8 @@ class ClientConfigServer(
     private val javConfigTemplate: Path,
     private val worlds: () -> List<WorldEntry>,
     private val initialWorld: Int,
+    /** More routes (hub: `/register`, `/health`). */
+    private val extraRoutes: Map<String, (HttpExchange) -> Unit> = emptyMap(),
 ) : AutoCloseable {
     private var server: HttpServer? = null
 
@@ -45,6 +47,7 @@ class ClientConfigServer(
         http.executor = Executors.newVirtualThreadPerTaskExecutor()
         http.createContext("/jav_config.ws") { ex -> respond(ex, "text/plain", javConfig(template).toByteArray(Charsets.ISO_8859_1)) }
         http.createContext("/worldlist.ws") { ex -> respond(ex, "application/octet-stream", worldList(worlds())) }
+        for ((path, handler) in extraRoutes) http.createContext(path) { ex -> handler(ex) }
         http.start()
         server = http
         logger.info { "client config HTTP on :$port (jav_config.ws, worldlist.ws)" }
