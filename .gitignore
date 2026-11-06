@@ -19,3 +19,4 @@ out/
 # Local Claude settings
 .claude/settings.local.json
 __pycache__/
+.claude/worktrees/
