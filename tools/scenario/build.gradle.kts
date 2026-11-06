@@ -17,3 +17,6 @@ dependencies {
     testImplementation(project(":symbols"))
     testRuntimeOnly(libs.logback.classic)
 }
+
+// The golden scenarios use the dev spawns (content/dev DevSpawns) rather than the world's Wiki spawns.
+tasks.withType<Test>().configureEach { systemProperty("tp.devSpawns", "true") }

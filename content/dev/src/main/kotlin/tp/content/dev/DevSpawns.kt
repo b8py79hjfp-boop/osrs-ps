@@ -14,20 +14,21 @@ import tp.util.CoordGrid
 public class DevSpawns : ContentPlugin {
     override fun ContentScope.register() {
         onWorldStart {
+            // Test fixture only: the golden scenarios rely on these; the live world uses content/world spawns.
+            if (System.getProperty(PROPERTY) != "true") return@onWorldStart
             spawnNpc(Npcs.HANS, CoordGrid(3221, 3221), wanderRange = 5)
             spawnNpc(Npcs.MAN, CoordGrid(3226, 3216), wanderRange = 4)
             spawnNpc(Npcs.WOMAN, CoordGrid(3218, 3214), wanderRange = 4)
             spawnNpc(Npcs.LUMBRIDGE_GUIDE, CoordGrid(3238, 3220), wanderRange = 0)
             for (i in 0 until GOBLINS) spawnNpc(Npcs.GOBLIN, CoordGrid(3245 + i * 2, 3245), wanderRange = 6)
             for (i in 0 until COWS) spawnNpc(Npcs.COW, CoordGrid(3256 + i * 2, 3266), wanderRange = 6)
-            // NPC combat checks (npc-combat.md): melee-only, magic-only, and melee + ranged + magic.
-            spawnNpc(Npcs.GIANT, CoordGrid(3256, 3276), wanderRange = 2)
-            spawnNpc(Npcs.YOUNG_DARK_WIZARD, CoordGrid(3262, 3276), wanderRange = 1)
-            spawnNpc(Npcs.WILD_CAVE_GOBLIN, CoordGrid(3259, 3278), wanderRange = 1)
         }
     }
 
     private companion object {
+        /** JVM system property that enables these spawns (set by the scenario tests). */
+        const val PROPERTY = "tp.devSpawns"
+
         const val GOBLINS = 3
         const val COWS = 4
     }

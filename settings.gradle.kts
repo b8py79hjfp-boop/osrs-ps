@@ -39,6 +39,7 @@ include(
     ":content:dev",
     ":content:combat",
     ":content:pvp",
+    ":content:world",
     ":services",
     ":server",
     ":hub",

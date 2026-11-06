@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.rsprot.crypto)
     implementation(project(":content:combat"))
     implementation(project(":content:pvp"))
+    implementation(project(":content:world"))
     implementation(libs.kotlin.logging)
     runtimeOnly(libs.logback.classic)
 }
