@@ -6,9 +6,20 @@ import tp.protocol.api.ClientSession
 import tp.protocol.api.GameNetwork
 import tp.protocol.api.LoginGate
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.Visual
 
 /** A network with no sockets: the world's info pass runs, nothing is encoded. */
 class HeadlessNetwork : GameNetwork {
+    /** Tick source for [npcVisuals] (set by the scenario). */
+    var clock: () -> Long = { 0L }
+
+    /** Every NPC visual with the tick it happened on: (tick, npc index, visual). */
+    val npcVisuals: MutableList<Triple<Long, Int, Visual>> = ArrayList()
+
+    override fun npcVisual(index: Int, visual: Visual) {
+        npcVisuals += Triple(clock(), index, visual)
+    }
+
     override fun start(loginGate: LoginGate) = Unit
 
     override fun buildInfos() = Unit
@@ -26,6 +37,16 @@ class HeadlessSession : ClientSession {
     private var closeAfterInput = false
 
     val sent: MutableList<ServerMessage> = ArrayList()
+
+    /** Tick source for [visuals] (set by the scenario). */
+    var clock: () -> Long = { 0L }
+
+    /** Visuals on this player's avatar with the tick they happened on. */
+    val visuals: MutableList<Pair<Long, Visual>> = ArrayList()
+
+    override fun visual(visual: Visual) {
+        visuals += clock() to visual
+    }
 
     /** Last avatar state pushed in the info pass. */
     var avatar: AvatarState? = null

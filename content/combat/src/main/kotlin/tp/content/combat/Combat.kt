@@ -234,6 +234,7 @@ internal object CombatSystem {
         }
 
     fun announceAttack(attacker: EntityRef, target: EntityRef, style: CombatStyle) {
+        attacker.trace("attack ${style.name.lowercase()}")
         bus.publish(AttackEvent(attacker, target, hitStyle(style)))
     }
 

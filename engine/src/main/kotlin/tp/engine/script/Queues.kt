@@ -29,9 +29,9 @@ class PlayerQueue internal constructor(private val player: Player) {
     fun hasStrong(): Boolean = entries.any { it.type == QueueType.STRONG }
 
     fun add(type: QueueType, delayTicks: Int, logout: LogoutBehaviour? = null, script: Script<Player>) {
-        val now = player.world.tick
-        // Q6: queued from inside a queue script => no earlier than next tick.
-        val earliest = now + delayTicks + if (processing && delayTicks == 0) 1 else 0
+        // Q6/Q13: the delay counts the player's own turns; if its turn already started this tick (including queue
+        // processing), the first one is next tick.
+        val earliest = player.firstQueueTick() + delayTicks
         entries += QueueEntry(type, earliest, logout, script)
     }
 
@@ -84,8 +84,7 @@ class NpcQueue internal constructor(private val npc: Npc) {
     private var processing = false
 
     fun add(delayTicks: Int, script: Script<Npc>) {
-        val now = npc.world.tick
-        entries += QueueEntry(QueueType.NORMAL, now + delayTicks + if (processing && delayTicks == 0) 1 else 0, null, script)
+        entries += QueueEntry(QueueType.NORMAL, npc.firstQueueTick() + delayTicks, null, script)
     }
 
     internal fun process() {

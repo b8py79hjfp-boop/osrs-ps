@@ -162,6 +162,17 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     // ---- appearance and objs
 
+    /** Combat level from base levels (OSRS Wiki "Combat level"). */
+    public val combatLevel: Int
+        get() {
+            val st = p.stats
+            val base = (st.baseLevel(DEF) + st.baseLevel(HP) + st.baseLevel(PRAY) / 2) / 4.0
+            val melee = MULT * (st.baseLevel(ATT) + st.baseLevel(STR))
+            val range = MULT * (st.baseLevel(RNG) * 3 / 2)
+            val mage = MULT * (st.baseLevel(MAG) * 3 / 2)
+            return kotlin.math.floor(base + maxOf(melee, range, mage)).toInt()
+        }
+
     /** Sends this player's look: worn obj per wear position 0..11 (-1 empty). */
     public fun appearance(worn: IntArray, combatLevel: Int, skullIcon: Int = -1, prayerIcon: Int = -1) {
         p.world.refreshAppearance(p, worn, combatLevel, skullIcon, prayerIcon)
@@ -213,6 +224,16 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     private companion object {
         const val XP_TENTHS = 10
+        const val ATT = 0
+        const val DEF = 1
+        const val STR = 2
+        const val HP = 3
+        const val RNG = 4
+        const val PRAY = 5
+        const val MAG = 6
+
+        /** 13/40 (Combat level formula, CL:37-57). */
+        const val MULT = 0.325
     }
 }
 

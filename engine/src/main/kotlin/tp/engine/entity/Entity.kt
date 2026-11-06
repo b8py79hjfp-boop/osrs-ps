@@ -31,6 +31,12 @@ abstract class Entity internal constructor(
 
     internal val route = Route()
 
+    /** Tick of this entity's latest turn (NPC/player phase); queue delays count from its next turn (scripts.md Q6/Q13). */
+    internal var turnTick: Long = -1
+
+    /** First tick on which a script queued now can run: this tick if the entity's turn is still to come, else the next. */
+    internal fun firstQueueTick(): Long = if (turnTick >= world.tick) world.tick + 1 else world.tick
+
     /** Whether there are route steps left. */
     val isRouting: Boolean get() = !route.isEmpty
 

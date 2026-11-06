@@ -3,7 +3,7 @@ plugins {
 }
 
 // Scenario runner: drives the real engine headlessly (no network) with scripted per-tick input, forced PID and a fixed
-// seed. Phase 4's golden tests (brief §9 test 3) are written on it; tools/replay reuses its headless session.
+// seed. Brief §9 test 3 (golden PvP scenarios) lives in src/test; tools/replay reuses the headless session.
 dependencies {
     api(project(":engine"))
     api(project(":protocol-api"))
@@ -14,4 +14,6 @@ dependencies {
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:combat"))
     runtimeOnly(project(":content:pvp"))
+    testImplementation(project(":symbols"))
+    testRuntimeOnly(libs.logback.classic)
 }

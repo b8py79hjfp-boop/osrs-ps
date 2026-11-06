@@ -323,6 +323,7 @@ class World(
     private fun npcPhase() {
         for (npc in npcs) {
             if (npc == null || npc.hidden) continue
+            npc.turnTick = tick
             npc.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(npc)) tracer?.onPhase(npc, "delay-end")
             npc.timer.process()
@@ -336,6 +337,7 @@ class World(
     private fun playerPhase() {
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
+            player.turnTick = tick
             player.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(player)) tracer?.onPhase(player, "delay-end")
             if (player.queue.hasStrong()) player.closeModal() // Q3

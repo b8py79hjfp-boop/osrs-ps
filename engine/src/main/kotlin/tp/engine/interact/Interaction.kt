@@ -274,6 +274,11 @@ class InteractionProcessor internal constructor(
     /** Re-route toward a mobile target when out of reach (OPEN-I1); toward a static target once. */
     private fun updateRoute(entity: Entity, i: Interaction) {
         if (inOpRange(entity, i)) return
+        // An approachable interaction already in approach range doesn't move the entity (I2: ranged/magic attacks).
+        if (i.apScript != null && inApRange(entity, i)) {
+            entity.route.clear()
+            return
+        }
         if (!entity.route.isEmpty && !i.isMobileTarget) return
         val t = i.target
         if (t is InteractionTarget.Loc) {

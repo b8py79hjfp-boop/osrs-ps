@@ -88,6 +88,11 @@ public sealed class EntityRef {
         }
     }
 
+    /** Records [label] for this entity in the tick inspector (no-op unless tracing). */
+    public fun trace(label: String) {
+        e.world.tracer?.onPhase(e, label)
+    }
+
     /** Uniform random int in [0, bound) from the world's only RNG (brief §5.2: deterministic). */
     public fun random(bound: Int): Int = e.world.rng.nextInt(bound)
 

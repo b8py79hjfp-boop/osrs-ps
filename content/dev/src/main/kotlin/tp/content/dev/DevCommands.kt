@@ -16,6 +16,12 @@ public class DevCommands : ContentPlugin {
             message("Run: $runMode")
         }
         onCommand("tele") { args -> tele(args) }
+        onCommand("hp") { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
+        onCommand("setlevel") { args ->
+            val stat = args.getOrNull(0)?.toIntOrNull()
+            val level = args.getOrNull(1)?.toIntOrNull()
+            if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
+        }
         onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
         onCommand("item") { args -> item(args) }
         onCommand("empty") {

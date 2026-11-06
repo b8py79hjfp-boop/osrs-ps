@@ -31,13 +31,19 @@ class Scenario(
     content: ContentHandlers = PluginContent.load(),
     worldId: Int = 1,
 ) {
-    val world: World = World(WorldConfig(id = worldId, spawn = spawn, seed = seed), data, HeadlessNetwork(), content)
+    val network: HeadlessNetwork = HeadlessNetwork()
+    val world: World = World(WorldConfig(id = worldId, spawn = spawn, seed = seed), data, network, content)
+
+    init {
+        network.clock = { world.tick }
+    }
 
     private var nextSlot = 1
 
     /** Queues a player for admission in the next tick's post-tick (as a network login would be). */
     fun player(username: String, at: CoordGrid = world.config.spawn): ScenarioPlayer {
         val session = HeadlessSession()
+        session.clock = { world.tick }
         val player = world.newPlayer(nextSlot++, username, session, at)
         world.queueAdmission(player)
         return ScenarioPlayer(player, session)
