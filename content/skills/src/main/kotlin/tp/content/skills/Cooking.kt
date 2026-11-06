@@ -12,10 +12,10 @@ import tp.symbols.Objs
 import tp.symbols.Seqs
 
 /**
- * Cooking (docs/mechanics/cooking.md): raw food used on a fire or range, or the "Cook" op of a range, cooks every raw
- * item of that kind in the backpack, one every [COOK_TICKS] ticks, the first on arrival (CK1). The make-X dialogue is
- * not implemented: the Wiki's default, "cook all", is always used (OPEN-CK3). Like woodcutting it is an op script that
- * keeps its interaction, so walking away ends it.
+ * Cooking (docs/mechanics/cooking.md): raw food used on a fire or range, or the "Cook" op of a range. With more than one raw item of
+ * that kind the make-X menu ([SkillMulti]) asks how many to cook (CK1); with one it is cooked at once. Either way the first item is
+ * cooked on arrival (or when the quantity is chosen), then one every [COOK_TICKS] ticks. A single item is an op script that keeps its
+ * interaction like woodcutting, so walking away ends it; a menu choice is a [Production] batch, which any click ends.
  */
 public class Cooking : ContentPlugin {
     override fun ContentScope.register() {
@@ -29,9 +29,19 @@ public class Cooking : ContentPlugin {
     private fun PlayerScript.cook(loc: LocRef, rawUsed: Int, usedSlot: Int) {
         val p = player
         if (p.locAt(loc.coord, loc.shape)?.id != loc.id) return Skilling.stop(p)
-        val clock = Skilling.clock(p, Skilling.locKey(loc.id, loc.coord.packed))
+        val key = Skilling.locKey(loc.id, loc.coord.packed)
+        val clock = Skilling.clock(p, key)
         val fire = p.locName(loc.id).equals(FIRE_NAME, ignoreCase = true)
-        if (clock.fresh && !begin(p, rawUsed, usedSlot, fire)) return Skilling.stop(p)
+        if (clock.fresh) {
+            p[JOB] = null
+            val food = check(p, rawUsed, fire) ?: return Skilling.stop(p)
+            val count = p.inv(Invs.INV).total(food.raw).toInt()
+            if (count > 1) {
+                Skilling.stop(p)
+                return openMenu(p, loc, key, food, fire)
+            }
+            p[JOB] = Job(food, usedSlot, count)
+        }
         val job = p[JOB] ?: return Skilling.stop(p)
         keepInteraction()
         val tick = p.tick
@@ -44,25 +54,22 @@ public class Cooking : ContentPlugin {
         }
     }
 
-    /** Validates a fresh click and sets [JOB]; false (after the message) if nothing can be cooked. */
-    private fun begin(p: PlayerRef, rawUsed: Int, usedSlot: Int, fire: Boolean): Boolean {
-        p[JOB] = null
+    /** Validates a fresh click and returns the food to cook; null (after the message) if nothing can be cooked. */
+    private fun check(p: PlayerRef, rawUsed: Int, fire: Boolean): Food? {
         val raw = if (rawUsed == ANY_OBJ) firstCookable(p) else rawUsed
         val food = FOODS[raw]
         val problem =
             when {
                 food == null -> if (rawUsed == ANY_OBJ) NOTHING_TO_COOK else NOTHING_INTERESTING
-                p.level(Stats.COOKING) < food.level -> "You need a Cooking level of ${food.level} to cook this."
+                p.level(Stats.COOKING) < food.level -> levelMessage(food)
                 fire && food.rangeOnly -> NEEDS_RANGE
                 else -> null
             }
-        if (problem != null || food == null) {
-            problem?.let { p.message(it) }
-            return false
-        }
-        p[JOB] = Job(food, usedSlot, p.inv(Invs.INV).total(food.raw).toInt())
-        return true
+        problem?.let { p.message(it) }
+        return if (problem == null) food else null
     }
+
+    private fun levelMessage(food: Food): String = "You need a Cooking level of ${food.level} to cook this."
 
     private fun firstCookable(p: PlayerRef): Int {
         val inv = p.inv(Invs.INV)
@@ -70,6 +77,34 @@ public class Cooking : ContentPlugin {
             if (FOODS.containsKey(inv.obj(slot))) return inv.obj(slot)
         }
         return ANY_OBJ
+    }
+
+    /** Asks how many [food] to cook (CK1); the choice starts a batch. */
+    private fun openMenu(p: PlayerRef, loc: LocRef, key: Long, food: Food, fire: Boolean) {
+        SkillMulti.open(
+            p,
+            SkillMulti.COOK,
+            MENU_TITLE,
+            intArrayOf(food.raw),
+        ) { _, quantity -> startBatch(this, loc, key, food, fire, quantity) }
+    }
+
+    /**
+     * The menu callback (hostile input, validated again): the first item is cooked now, or after the rest of the player's cooking
+     * clock if they cooked within the last [COOK_TICKS] ticks; the others follow every [COOK_TICKS] ticks as a weak-queue batch.
+     */
+    private fun startBatch(p: PlayerRef, loc: LocRef, key: Long, food: Food, fire: Boolean, quantity: Int) {
+        if (p.locAt(loc.coord, loc.shape)?.id != loc.id) return
+        if (p.level(Stats.COOKING) < food.level) return p.message(levelMessage(food))
+        val clock = Skilling.clock(p, key)
+        val job = Job(food, NO_SLOT, quantity)
+        val action: PlayerRef.() -> Boolean = {
+            clock.actionDelay = tick + COOK_TICKS
+            cookOne(this, job, fire)
+        }
+        val wait = (clock.actionDelay - p.tick).coerceAtLeast(0).toInt()
+        if (wait > 0) return Production.start(p, Batch(quantity, NO_ANIM, COOK_TICKS, action), wait)
+        if (p.action() && quantity > 1) Production.start(p, Batch(quantity - 1, NO_ANIM, COOK_TICKS, action), COOK_TICKS)
     }
 
     /** Cooks one item of [job]; false if none is left. */
@@ -125,6 +160,9 @@ public class Cooking : ContentPlugin {
         const val ANY_OBJ = -1
         const val NO_SLOT = -1
 
+        /** [Batch] animation meaning none: each cook plays its own animation. */
+        const val NO_ANIM = -1
+
         /** Cooking takes four game ticks per item (Wiki "Pay-to-play Cooking training": "Cooking most foods takes four game ticks"). */
         const val COOK_TICKS = 4
 
@@ -134,6 +172,9 @@ public class Cooking : ContentPlugin {
 
         /** Cache loc name of every fire. */
         const val FIRE_NAME = "Fire"
+
+        /** Title of the make-X menu: OPEN-CK8, wording not sourced. */
+        const val MENU_TITLE = "How many would you like to cook?"
 
         /** The engine's default line for a use that does nothing (interactions.md I10). */
         const val NOTHING_INTERESTING = "Nothing interesting happens."

@@ -25,8 +25,8 @@ Shared rules for every non-combat skill (`content/skills/.../Skilling.kt`, `Play
 
 ## Make-X menu (MU) and production batches (PR)
 
-Code: `content/skills/.../SkillMulti.kt`, `Production.kt`, `Recipes.kt`. Used by smithing.md and crafting.md; cooking,
-fletching and herblore reuse the same two helpers.
+Code: `content/skills/.../SkillMulti.kt`, `Production.kt`, `Recipes.kt`. Used by smithing.md, crafting.md, fletching.md, herblore.md
+and cooking.md.
 
 - **MU1: the interface.** `skillmulti` (270) opens in the chatbox modal (`chatbox:chatmodal`, unclamped like every chat
   interface: varbit `chatmodal_unclamp` 1 and client script 2379 first). Client script 2046 (`skillmulti_setup`) fills it
@@ -68,7 +68,7 @@ SkillMulti.open(player, SkillMulti.SMELT, "What would you like to smelt?", intAr
 }
 ```
 
-`SkillMulti.MAKE / SMELT / SMITH / SPIN / CUT / STRING / FIRE` are the type keys; `Production.award(p, stat, xp)` adds xp and
+`SkillMulti.MAKE / SMELT / SMITH / SPIN / CUT / STRING / FIRE / COOK / MAKE_SETS` are the type keys (fletching.md, herblore.md, cooking.md CK1); `Production.award(p, stat, xp)` adds xp and
 returns false on a level-up; `Production.shortfall(p, recipe)` returns the message for a missing level, tool or material;
 `RecipeTable.load()` reads `recipes.tsv` (tools/wiki-import/recipes.py). `SkillMultiMenus` registers the 18 product buttons once.
 

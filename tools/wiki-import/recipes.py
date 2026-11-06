@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-Smithing (furnace) and Crafting production recipes from the OSRS Wiki (docs/mechanics/smithing.md, crafting.md).
+Smithing (furnace), Crafting, Fletching and Herblore production recipes from the OSRS Wiki (docs/mechanics/smithing.md,
+crafting.md, fletching.md, herblore.md).
 
 Each product page named in PAGES is read and every top-level {{Recipe}} on it whose first output is that product and
-whose first skill is Smithing or Crafting is kept (the Wiki's Recipe template, Module:Recipe). Recipes of other skills,
+whose first skill is Smithing or Crafting is kept (the Wiki's Recipe template, Module:Recipe). The pages in
+ANY_OUTPUT_PAGES (Fletching and Herblore; a potion page's output is the dose-suffixed item, "Attack potion(3)") keep every
+recipe of those skills on the page with at most MAX_ANY_MATERIALS consumed materials (three-material variants such as the
+coconut milk antidotes are not modelled). Recipes of other skills,
 Blast Furnace and Superheat Item variants, costume-needle variants (no thread) and sailing/quest-only variants are
 dropped by the filters below. From the template parameters:
 
@@ -57,7 +61,47 @@ PAGES = (
     + ["Gold amulet", "Sapphire amulet", "Emerald amulet", "Ruby amulet", "Diamond amulet", "Dragonstone amulet", "Onyx amulet"]
     + ["Unblessed symbol"]
 )
-SKILLS = {"smithing", "crafting"}
+WOODS = ["Oak", "Willow", "Maple", "Yew", "Magic"]
+METALS = ["Bronze", "Iron", "Steel", "Mithril", "Adamant", "Rune"]
+GEM_TIPS = ["Opal", "Jade", "Pearl", "Topaz", "Sapphire", "Emerald", "Ruby", "Diamond", "Dragonstone", "Onyx"]
+HERBS = ["Guam leaf", "Marrentill", "Tarromin", "Harralander", "Ranarr weed", "Toadflax", "Irit leaf", "Avantoe", "Kwuarm",
+         "Snapdragon", "Cadantine", "Lantadyme", "Dwarf weed", "Torstol"]
+UNFINISHED = ["Guam", "Marrentill", "Tarromin", "Harralander", "Ranarr", "Toadflax", "Irit", "Avantoe", "Kwuarm", "Snapdragon",
+              "Cadantine", "Lantadyme", "Dwarf weed", "Torstol"]
+POTIONS = ["Attack potion", "Antipoison", "Strength potion", "Restore potion", "Energy potion", "Defence potion",
+           "Agility potion", "Combat potion", "Prayer potion", "Super attack", "Superantipoison", "Fishing potion",
+           "Super energy", "Hunter potion", "Super strength", "Weapon poison", "Super restore", "Super defence",
+           "Antidote+", "Antifire potion", "Ranging potion", "Magic potion", "Zamorak brew", "Saradomin brew",
+           "Antidote++", "Bastion potion", "Battlemage potion", "Extended antifire", "Super antifire potion",
+           "Extended super antifire", "Stamina potion", "Weapon poison+", "Weapon poison++",
+           "Anti-venom", "Anti-venom+", "Prayer regeneration potion", "Goading potion",
+           "Divine super attack potion", "Divine super strength potion", "Divine super defence potion",
+           "Divine ranging potion", "Divine magic potion", "Divine bastion potion", "Divine battlemage potion",
+           "Menaphite remedy"]
+ANY_OUTPUT_PAGES = (
+    ["Arrow shaft", "Javelin shaft", "Headless arrow", "Shortbow (u)", "Longbow (u)", "Shortbow", "Longbow"]
+    + [f"{w} {b}" for w in WOODS for b in ("shortbow (u)", "longbow (u)", "shortbow", "longbow")]
+    + [f"{w} stock" for w in ["Wooden", "Oak", "Willow", "Teak", "Maple", "Mahogany", "Yew", "Magic"]]
+    + [f"{m} crossbow (u)" for m in ["Bronze", "Blurite", "Iron", "Steel", "Mithril", "Adamant", "Runite", "Dragon"]]
+    + [f"{m} crossbow" for m in ["Bronze", "Blurite", "Iron", "Steel", "Mithril", "Adamant", "Rune", "Dragon"]]
+    + [f"{m} arrow" for m in METALS + ["Amethyst", "Dragon"]]
+    + [f"{m} dart" for m in ["Bronze", "Iron", "Steel", "Black", "Mithril", "Adamant", "Rune", "Amethyst", "Dragon"]]
+    + [f"{m} javelin" for m in METALS + ["Amethyst", "Dragon"]]
+    + [f"{m} bolts" for m in ["Bronze", "Blurite", "Iron", "Silver", "Steel", "Mithril", "Adamant", "Rune", "Dragon"]]
+    + [f"{g} bolt tips" for g in GEM_TIPS]
+    + [f"{g} bolts" for g in GEM_TIPS]
+    + [f"{g} dragon bolts" for g in GEM_TIPS]
+    + HERBS
+    + [f"{h} potion (unf)" for h in UNFINISHED]
+    + POTIONS
+)
+# Secondaries made by crushing with the pestle and mortar (Herblore, no level or xp).
+GRIND_PAGES = ["Unicorn horn dust", "Chocolate dust", "Dragon scale dust", "Crushed nest", "Kebbit teeth dust", "Goat horn dust"]
+# Wiki item names that the cache calls by another name (the empty bird's nest is the tradeable "Bird nest").
+NAME_ALIASES = {"bird nest (empty)": "bird nest"}
+# Recipes of these skills on ANY_OUTPUT_PAGES are kept with at most this many consumed materials.
+MAX_ANY_MATERIALS = 2
+SKILLS = {"smithing", "crafting", "fletching", "herblore"}
 # Facilities and tools of variants this server does not model as ordinary recipes.
 DROP_FACILITIES = {"blast furnace", "ancient furnace", "lovakite furnace"}
 DROP_TOOLS = {"costume needle", "jeweller's chisel"}
@@ -219,10 +263,10 @@ def main():
     objs = load_objs(objs_path)
 
     def oid(name):
-        ids = objs.get(name.lower())
+        ids = objs.get(NAME_ALIASES.get(name.lower(), name.lower()))
         return ids[0] if ids else None
 
-    pages = [e.split("=") for e in PAGES]
+    pages = [e.split("=") for e in PAGES] + [[t, "*"] for t in ANY_OUTPUT_PAGES] + [[t, "grind"] for t in GRIND_PAGES]
     texts = wikitexts([e[0] for e in pages])
     rows, seen = [], set()
     for entry in pages:
@@ -235,13 +279,22 @@ def main():
         kept = 0
         for body in recipes_in(text):
             p = params_of(body)
-            if p.get("skill1", "").lower() not in SKILLS or p.get("skill2"):
-                continue
             tools = [t.strip() for t in p.get("tools", "").split(",") if t.strip()]
+            grind = product == "grind"
+            if grind:
+                # Grinding a secondary with the pestle and mortar has no skill in the template: no level, no xp.
+                if p.get("skill1") or [t.lower() for t in tools] != ["pestle and mortar"] or p.get("output1", "").lower() != title.lower():
+                    continue
+                p["skill1"], p["skill1lvl"], p["skill1exp"] = "Herblore", "1", "0"
+            elif p.get("skill1", "").lower() not in SKILLS or p.get("skill2"):
+                continue
             facilities = [f.strip() for f in p.get("facilities", "").split(",") if f.strip()]
             if any(f.lower() in DROP_FACILITIES for f in facilities) or any(t.lower() in DROP_TOOLS for t in tools):
                 continue
-            if p.get("output1", "").lower() != product.lower():
+            any_output = product == "*"
+            if any_output and p["skill1"].lower() not in ("fletching", "herblore"):
+                continue
+            if not any_output and not grind and p.get("output1", "").lower() != product.lower():
                 continue
             if re.search(DROP_SUBTEXT, p.get("output1subtxt", ""), re.I):
                 continue
@@ -250,6 +303,8 @@ def main():
             while f"mat{n}" in p:
                 mats.append((p[f"mat{n}"], num(p.get(f"mat{n}quantity"), 1)))
                 n += 1
+            if any_output and len(mats) > MAX_ANY_MATERIALS:
+                continue
             ticks, first, single = ticks_of(p)
             out_id = oid(p["output1"])
             ids = [oid(m) for m, _ in mats]

@@ -11,7 +11,7 @@ internal class Ingredient(val obj: Int, val count: Int)
  * [count] for [level] in [stat] and [xp], one action per [ticks] ticks. [tools] must be in the backpack and are not
  * used up; [facility] is the lower-case Wiki facility ("furnace", "spinning wheel", ...) or empty; [inputs] are used up.
  * [thread] is set when the recipe also needs thread, which is used up one spool per 5 actions rather than per action
- * (it is not in [inputs]; Wiki "Thread").
+ * (it is not in [inputs]; Wiki "Thread"). [firstTicks] is the first action's delay when the Wiki gives one ("Make-X is 2, then 3").
  */
 internal class Recipe(
     val output: Int,
@@ -25,11 +25,21 @@ internal class Recipe(
     val inputs: List<Ingredient>,
     val thread: Boolean,
     val name: String,
+    val firstTicks: Int = ticks,
 )
 
 internal object RecipeTable {
     /** The columns of `recipes.tsv`; the file's header names them. */
     private const val COLUMNS = 13
+
+    /** The `skill` column of `recipes.tsv` (lower-case Wiki skill names) to stat ids. */
+    private val STATS =
+        mapOf(
+            "smithing" to Stats.SMITHING,
+            "crafting" to Stats.CRAFTING,
+            "fletching" to Stats.FLETCHING,
+            "herblore" to Stats.HERBLORE,
+        )
 
     /** Reads `recipes.tsv`. */
     fun load(): List<Recipe> {
@@ -44,7 +54,7 @@ internal object RecipeTable {
 
     private fun parse(cols: List<String>): Recipe {
         require(cols.size == COLUMNS) { "recipes.tsv row has ${cols.size} columns: $cols" }
-        val stat = if (cols[2] == "smithing") Stats.SMITHING else Stats.CRAFTING
+        val stat = STATS[cols[2]] ?: error("recipes.tsv: unknown skill ${cols[2]}")
         val inputs =
             cols[11].split(',').filter { it.isNotEmpty() }.map {
                 val (obj, count) = it.split(':')
@@ -62,6 +72,7 @@ internal object RecipeTable {
             inputs = inputs.filter { it.obj != Objs.THREAD },
             thread = stat == Stats.CRAFTING && inputs.any { it.obj == Objs.THREAD },
             name = cols[12],
+            firstTicks = cols[6].toInt(),
         )
     }
 }

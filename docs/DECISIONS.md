@@ -537,3 +537,26 @@ Smithing and Crafting live in `content/skills` (D-034) over three shared pieces 
   in `content/combat`), the stun hit is applied inline and cannot kill (OPEN-TH2).
 - **Forced movement.** No exact-move message exists in plugin-api or protocol-api; obstacles animate, delay and teleport (OPEN-AG1). Failing obstacles are not
   implemented because the Wiki gives no chance (OPEN-AG2).
+
+## D-040: Fletching, Herblore and the Cooking make-X menu on the shared recipe table (fletching/herblore/cooking agent)
+
+Fletching and Herblore live in `content/skills` over the pieces of D-038 (`SkillMulti`, `Production`, `recipes.tsv`); no engine or
+plugin-api change.
+- **Recipes.** `tools/wiki-import/recipes.py` also reads the Fletching and Herblore `{{Recipe}}` templates (lists `ANY_OUTPUT_PAGES`,
+  `GRIND_PAGES`): `recipes.tsv` grew from 108 to 469 rows and the first 108 are byte-identical to before. A potion page's output is the
+  dose-suffixed item, so those pages are read for every Fletching / Herblore recipe with at most two materials (`MAX_ANY_MATERIALS`);
+  the pestle-and-mortar pages have no skill in the template and are imported as level 1, 0 xp Herblore rows. `Recipe` gained
+  `firstTicks` (the Wiki's "Make-X is 2, then 3"); the skill column maps to a stat in `RecipeTable`.
+- **Starting a recipe** is an item-on-item use: the pair is the two materials, or the tool and the only material (knife on logs, chisel on
+  a gem). Rows with the same pair share one menu.
+- **Darts and bolts are instant** (Wiki `ticks` 0: "two clicks per set"); the account setting that turns their make-X menu on is not
+  modelled (fletching.md OPEN-FL1). Sets of arrows, javelins and tipped bolts use the "Make sets:" menu type (cache enum 1809 key 2) at 2
+  ticks; javelins are forced to 2 because their Recipe ticks disagree by tier.
+- **Animations** are looked up by the Wiki product name in `FletchingData` (the cache's `human_fletching_add_*`, `xbows_*`, `stringing_*`
+  seqs). Javelins and chisel bolt tips have none (OPEN-FL3).
+- **Cooking make-X** (closes OPEN-CK3, found on the Wiki "Cooking" page): two or more raw items of a kind open `SkillMulti` (type 6, the
+  raw food as the product); one item is cooked at once as before. A menu choice is a weak-queue batch (first cook at the choice, then
+  every 4 ticks, waiting for the player's cooking clock if they cooked in the last 4), a single item stays the op script that keeps its
+  interaction. Burn logic and tick timing of the cook are unchanged. `SkillMulti` gained the `COOK` and `MAKE_SETS` type keys.
+- **Herblore** "Clean" is an item op (`onItemOp`) that auto-continues over the other herbs of the kind, one per tick (unsourced timing:
+  herblore.md OPEN-HB2); the pestle crushes every item of a kind, first at once, then after 2 ticks, then every 3.

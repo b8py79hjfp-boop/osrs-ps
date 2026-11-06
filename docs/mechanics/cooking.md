@@ -14,7 +14,7 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
 
 | # | Rule | Source |
 |---|---|---|
-| CK1 | Raw food used on a fire or range, or the "Cook" op of a range, cooks every raw item of that kind in the backpack (the Wiki's default "cook all"). The first is cooked on arrival, the next every 4 ticks (the player's action clock, SK3); the interaction is kept, so moving away ends it. | C, P, M |
+| CK1 | Raw food used on a fire or range, or the "Cook" op of a range. With **one** raw item of that kind it is cooked at once on arrival. With **more than one** the make-X menu (skilling.md MU, type 6 "Cook", the raw food as the product) opens and the chosen quantity (1, 5, 10, X, All; 1..28) is cooked: the first when the quantity is chosen, the next every 4 ticks (the player's action clock, SK3). The single item is an op script that keeps its interaction, so moving away ends it; a menu choice is a production batch (skilling.md PR2), so any click ends it. A level-up popup also ends the batch (PR2). | C (menu, "All" default, skipped for one item), P, M |
 | CK2 | Food level, xp, cooked and burnt items: see the table. Too low: "You need a Cooking level of N to cook this." Baked goods (bread, pitta, pies, pizza, cake) need a range; on a fire: "You can't cook that on a fire." | C, B, N |
 | CK3 | Success is the skilling roll (SK1, current level) with the food's `low` / `high` for the heat source; a failure turns the item into its burnt item and gives no xp. | B, S |
 | CK4 | Heat and modifiers: the chart's "Fire" or "Range" line ("Fire or Range" for both). Worn cooking gauntlets use the "Gauntlets" line (lobster, swordfish, monkfish, shark, anglerfish) on either heat source. The Cooking cape (untrimmed or trimmed) never burns anything. | B, G, K |
@@ -59,8 +59,9 @@ dark crab, anglerfish, cave eel, bread, pitta, pie, pizza and cake.
 
 ### Tick timeline
 
-- Tick T (arrived at the loc, nothing cooked in the last 4 ticks): first item cooked: roll, animation, item replaced in its slot, xp.
-- T+4, T+8, ...: the next item. The action clock belongs to the player: clicking again within the 4 ticks waits for it.
+- Tick T (arrived at the loc, nothing cooked in the last 4 ticks; or, with the menu, the tick the quantity is chosen): first item
+  cooked: roll, animation, item replaced in its slot, xp.
+- T+4, T+8, ...: the next item (menu: weak-queue scripts, PR1; checked at T in `Cooking.kt`: first item at T, second at T+4). The action clock belongs to the player: clicking again within the 4 ticks waits for it.
 - The slot the click used is cooked last: a use-on script only runs while that slot still holds the clicked item (interactions.md I10).
 
 ## OPEN
@@ -68,9 +69,14 @@ dark crab, anglerfish, cave eel, bread, pitta, pie, pizza and cake.
 - **OPEN-CK2:** not applied: Hosidius Kitchen (needs the Kourend and Kebos diary state: +5% / +10% on the roll), the
   Lumbridge Castle range (needs Cook's Assistant: the charts' "Lumbridge range" line) and Hosidius kitchen ("Hosidius +5%/+10%" lines), Cooking cape effects of the max cape and other
   items that include it, cooking-gauntlet foods outside the five listed (cooked kyatt), and the boosts of invisible levels (SK OPEN-SK2).
-- **OPEN-CK3:** the make-X skill dialogue (interface 270, "How many would you like to cook?") is not implemented: its
-  client script and arguments are not in any source we have, and the cache tooling cannot decode client scripts. The
-  Wiki's default, "cook all", is always used; there is no way to pick 1, 5, 10 or X. The 1-tick karambwan trick depends on the dialogue.
+- **OPEN-CK3 (closed):** the make-X menu is implemented (CK1) over the shared `SkillMulti` helper (D-038, D-040). Sourced by the Wiki
+  "Cooking" page: with more than one food of the same kind "a picture of the food item will appear in the dialogue box", ranges
+  left-clicked bring it up, "All" is the default, and "the cooking interface is skipped when only one raw food item is in the
+  inventory" ("2-tick cooking"). Not sourced: the menu type (6, not the equivalent 7) and the title: OPEN-CK8. The 1-tick
+  karambwan trick is not modelled.
+- **OPEN-CK8:** the menu's title ("How many would you like to cook?"), its type (cache enum 1809 has "Cook" at 6, 7 and 8) and whether
+  the picture is the raw food (used here) are not sourced. A quantity chosen while the player's cooking clock still runs (they
+  cooked within the last 4 ticks) waits for the clock.
 - **OPEN-CK4:** message wording is not sourced for: success ("You successfully cook the shrimps." follows RuneLite's
   chat matching, not a Wiki page), nothing to cook ("You have nothing to cook."), a baked good on a fire ("You can't cook
   that on a fire.") and the level requirement ("You need a Cooking level of N to cook this.").

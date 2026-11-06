@@ -36,6 +36,10 @@ internal object SkillMulti {
     const val STRING = 10
     const val FIRE = 9
 
+    /** "Cook" (types 6 and 7 both say Cook; 8 has no quantity buttons: enums 1809, 1810) and "Make sets:" (type 2; 3 has no buttons). */
+    const val COOK = 6
+    const val MAKE_SETS = 2
+
     /** Client script `skillmulti_setup`: (type, max quantity, 18 products or -1, suggested quantity, title). */
     private const val CS_SETUP = 2046
 
