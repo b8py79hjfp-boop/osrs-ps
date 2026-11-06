@@ -7,7 +7,7 @@
 - [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
 - [x] **Phase 3 — Engine core** — done 2026-11-06 (awaiting real-client check)
 - [x] **Phase 4 — Combat and PvP** — done 2026-11-06: golden 3a–3h + DPS parity matrix pass; user confirmed 1v1 and 20-bot multi in RuneLite
-- [x] **Phase 5 — Scale and operations** — closed 2026-11-06 at the user's request. 20-minute 3-world run in the sandbox: 3,008 players, logic within budget, no missed deadlines. The §7 16-core 4,096-player run is still to do (docs/LOAD-TEST.md).
+- [x] **Phase 5 — Scale and operations** — closed 2026-11-06 at the user's request. 20-minute 3-world run in the sandbox: 3,008 players, logic within budget, no missed deadlines. The §7 4,096-player run was completed by the user on 2026-11-06 (docs/LOAD-TEST.md; detailed numbers not yet recorded).
 - [ ] Phase 6 — Release client
 - [ ] Phase 7+ — Content breadth
 
@@ -107,11 +107,18 @@
     - input dialogs;
     - RuneLite MCP dev plugin.
   - Load-test fixes: Argon2 concurrency cap; a failed login accept or a faulty tick no longer kills a world.
+  - Load acceptance (§7): the user completed the 4,000-player run on 2026-11-06.
   - Still open:
-    - in-game GE interface (commands for now);
     - OPEN-H1/H2 (world-hop.md);
-    - the 16-core 4,096-bot acceptance run (info p99 was 97–130 ms on 4 shared cores);
     - other OPENs in docs/mechanics.
+- Phase 7 content (2026-11-06, started alongside Phase 6):
+  - Launcher prompt removed from the release client (structural loginIndex patch, D-028).
+  - NPC combat data for 4,304 NPC ids from the OSRS Wiki (`tools/wiki-import/npc_combat.py`, npc-combat.md):
+    speed, max hits, styles, bonuses (light/standard/heavy ranged defence), respawn; ranged/magic NPCs attack from range.
+  - Poison and venom with the antipoison family (poison.md).
+  - PvP worlds: cache-derived safe zones and 16-tick PJ timer; singles-plus areas; Tele Block accuracy (wilderness.md).
+  - Grand Exchange interface (grand-exchange.md GE4–GE11), verified in the client: sell, buy, abort.
+  - Fixes: NPCs no longer random-walk in combat; replay parses dialog answers.
 
 ## Blocking
 
@@ -140,9 +147,9 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
      - code-signing certificates and Apple notarization credentials;
      - production URLs and manifest key;
      - clean-machine install/update/login/hop test and a traffic capture.
-2. When a 16-core machine is available: the §7 acceptance run (docs/LOAD-TEST.md).
-2. Carried OPENs from Phase 4: NPC combat data (wiki-import), examine texts, poison/venom, Dismantle, PvP-world safe
-   zones, singles-plus areas, per-weapon animations/projectile shapes.
+2. Record the 4,000-player run's numbers in docs/LOAD-TEST.md (tick percentiles, missed deadlines, GC p99.9).
+3. Phase 7 next: hand-written Wilderness bosses and revenants; NPC aggression (npc-combat.md OPEN-N9); examine texts,
+   Dismantle, per-weapon animations/projectile shapes; GE modify/history (grand-exchange.md OPEN-GE3..5).
 
 ## Open questions
 

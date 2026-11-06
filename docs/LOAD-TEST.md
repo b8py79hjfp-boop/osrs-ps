@@ -90,5 +90,6 @@ Command: 3 worlds, one `mixed` swarm of 300 bots per world, 175 s, with JFR.
 - A login whose client had already gone made RSProt throw from `accept()`, which killed the world thread. `admit` now
   refuses such logins, and the tick loop survives any escaped exception.
 
-**Acceptance:** the §7 numbers (4,096+ players, info p99 ≤ 80 ms, GC p99.9 < 2 ms) still need the 16-core run above,
-with the bots on another machine.
+**Acceptance:** the user ran the full test (about 4,000 players) on 2026-11-06 and reported it complete. The
+detailed numbers listed under "Record for the acceptance report" (tick percentiles per world, missed deadlines, GC
+p99.9, allocation sites) haven't been recorded here yet.
