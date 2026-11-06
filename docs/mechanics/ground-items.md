@@ -1,27 +1,35 @@
-# Ground items
+# Ground items (player drops)
 
 Code: `engine/src/main/kotlin/tp/engine/zone/*`, `engine/.../inv/ItemTransaction.kt` (`dropToGround`, `takeFromGround`).
-Source (W): OSRS Wiki "Drops", https://oldschool.runescape.wiki/w/Drops (quoted 2026-11-05): "Tradeable drops will
-remain on the ground for 200 game ticks ... Untradeable drops will disappear after 300 game ticks ... Drops are
-invisible to other players for the first 100 game ticks ... after which time, anyone will be able to see (and take)
-the item if it is tradeable. The only exception is that if a player manually drops a non-food item in the Wilderness,
-it will become visible to other players immediately."
+
+Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
+- (D) OSRS Wiki "Drop" (player dropping), https://oldschool.runescape.wiki/w/Drop: "Tradeable items appear to other
+  players 60 seconds (one minute) after being dropped, and disappear after another 120 seconds (two minutes) if not
+  picked up." / "Items dropped in the Wilderness become visible to other players immediately, except for consumables
+  (e.g., food, potions) and raw food. Consumables dropped in the Wilderness despawn after 15 seconds." / "Untradeable
+  items disappear after 180 seconds (three minutes). This timer pauses if logged out. Untradeable items dropped on the
+  ground will also follow the player between worlds."
+- (M) OSRS Wiki "Drops" (monster drops), https://oldschool.runescape.wiki/w/Drops: tradeable drops remain 200 ticks,
+  untradeable 300, invisible to others for the first 100. This covers **monster loot** (Phase 4), not player drops.
+  (`Dropped_items` redirects here, which is how the first draft of this doc came to cite it for player drops.)
 
 ## Rules
 
 | # | Rule | Source |
 |---|---|---|
-| G1 | A dropped obj is visible only to its owner for 100 ticks. | W |
-| G2 | Tradeable: it then turns public; it despawns 200 ticks after the drop. | W |
-| G3 | Untradeable: never turns public; despawns after 300 ticks. | W |
-| G4 | Wilderness: a manually dropped non-food item is public immediately. **Not implemented yet** (needs the wilderness area check, Phase 4). | W |
+| G1 | A dropped tradeable obj is visible only to its owner for 60 s = 100 ticks, then to everyone. | D |
+| G2 | It disappears 120 s = 200 ticks after turning public: 300 ticks after the drop. | D |
+| G3 | Untradeable: never visible to others ("tradeable items appear to other players"); disappears after 300 ticks. | D |
+| G4 | Wilderness: non-consumables are public immediately; consumables despawn after 15 s = 25 ticks. **Not implemented** (needs the wilderness area check, Phase 4). | D |
 | G5 | Every drop and pick-up is an item transaction (atomic, journaled; brief §12). | brief |
+
+Not modelled yet (D): the untradeable timer pauses while logged out and the obj follows the player between worlds;
+a dropped item becomes visible only to players who were logged in before it was dropped and stayed logged in.
 
 ## OPEN
 
-- **OPEN-G1:** whether G2's 200 ticks count from the drop (Wiki wording, implemented) or from turning public. Behind
-  `WorldConfig.groundTiming` (`GroundTiming.tradeableDespawn`).
 - **OPEN-G2:** where in the tick obj timers run. We run them in post-tick, after players; not documented.
+- Seconds-to-ticks: 60 s / 0.6 = 100 ticks exactly; same for 120 s and 180 s.
 
 ## Zone updates
 

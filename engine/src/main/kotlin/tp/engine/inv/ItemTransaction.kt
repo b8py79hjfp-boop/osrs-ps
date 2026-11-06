@@ -174,12 +174,12 @@ fun interface ItemJournal {
     }
 }
 
-/** Ground obj lifetimes in ticks (docs/mechanics/ground-items.md). */
+/** Player-drop lifetimes in ticks (docs/mechanics/ground-items.md, OSRS Wiki "Drop"). */
 data class GroundTiming(
-    /** Invisible to others for the first 100 ticks (G1). */
+    /** Tradeable drops appear to other players after 60 s = 100 ticks (G1). */
     val privateTicks: Int = 100,
-    /** Tradeable drops: gone 200 ticks after the drop (G2; OPEN-G1: whether counted from the drop or from going public). */
-    val tradeableDespawn: Int = 200,
-    /** Untradeable drops: never public, gone after 300 ticks (G3). */
+    /** ...and disappear 120 s = 200 ticks after that: 300 ticks after the drop (G2). */
+    val tradeableDespawn: Int = 300,
+    /** Untradeable drops: never public, gone after 180 s = 300 ticks (G3). */
     val untradeableDespawn: Int = 300,
 )
