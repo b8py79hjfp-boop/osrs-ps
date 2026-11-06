@@ -33,6 +33,7 @@ and conflict groups aren't in the cache: OSRS Wiki "Prayer" table (prayers.md).
 
 ## Not in the cache (OPEN)
 
-- **OPEN-N1:** NPC attack speed, max hit, attack style and equipment bonuses (wiki-import, Phase 7 data work).
-- **OPEN-N2:** NPC death length and respawn time.
+- **N1 (resolved):** NPC attack speed, max hit, attack style, bonuses and respawn time come from the OSRS Wiki
+  (npc-combat.md).
+- **OPEN-N2:** NPC death length (the Wiki infobox has no field for it).
 - **OPEN-V1:** per-weapon attack animations (visual only).

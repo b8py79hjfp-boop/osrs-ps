@@ -27,6 +27,8 @@ import tp.util.CoordGrid
 public class Combat : ContentPlugin {
     override fun ContentScope.register() {
         CombatSystem.bus = events
+        // Parse the Wiki NPC table at boot, not on the first NPC hit (no tick-time allocation spike).
+        onWorldStart { check(NpcCombatTable.size > 0) { "npc-combat.tsv is empty" } }
         onLogin {
             if (varp(Varps.SA_ENERGY) == 0 && this[Attr.ATTACK_CLOCK] == null) setVarp(Varps.SA_ENERGY, Specials.FULL_ENERGY)
             Specials.startRegen(this)
@@ -73,8 +75,10 @@ internal object CombatSystem {
     private const val DEATH_ANIM_DELAY = 2
     private const val DEATH_RESPAWN_DELAY = 6
 
-    /** OPEN-N2: NPC death length and respawn time aren't in the cache; dev defaults. */
+    /** OPEN-N2: NPC death length isn't in the cache or the Wiki infobox; dev default. */
     private const val NPC_DEATH_DELAY = 4
+
+    /** Respawn ticks for NPCs the Wiki table has no respawn time for (npc-combat.md N6). */
     private const val NPC_RESPAWN_DELAY = 25
 
     /** Respawn point: Lumbridge (RS Mod `PlayerDeath` default). */
@@ -170,7 +174,7 @@ internal object CombatSystem {
             is NpcRef -> {
                 if (target.target != null) return
                 target.setAttackClock(maxOf(target.attackClock(), now + npcSpeed(target) / 2))
-                target.interact(source) { victim -> NpcCombat.attack(this, victim) }
+                NpcCombat.engage(target, source)
             }
         }
     }
@@ -184,7 +188,9 @@ internal object CombatSystem {
 
     private const val NPC_OPS = 5
 
-    fun npcSpeed(npc: NpcRef): Int = npc[Attr.NPC_ATTACK_SPEED] ?: DEFAULT_SPEED
+    /** Attack speed: content override, else the Wiki table (npc-combat.md N1), else the default. */
+    fun npcSpeed(npc: NpcRef): Int =
+        npc[Attr.NPC_ATTACK_SPEED] ?: NpcCombatTable.of(npc.type)?.speed?.takeIf { it > 0 } ?: DEFAULT_SPEED
 
     // ---- death
 
@@ -202,7 +208,7 @@ internal object CombatSystem {
                 target.stopInteraction()
                 target.queueHit(NPC_DEATH_DELAY) {
                     bus.publish(DeathEvent(target, killer))
-                    target.respawnAfter(NPC_RESPAWN_DELAY)
+                    target.respawnAfter(NpcCombatTable.of(target.type)?.respawn?.takeIf { it > 0 } ?: NPC_RESPAWN_DELAY)
                 }
             }
         }
@@ -248,10 +254,33 @@ internal object CombatSystem {
     }
 }
 
-/** NPC attacks (melee only for now). */
+/**
+ * NPC attacks (docs/mechanics/npc-combat.md): style, accuracy, max hit and speed from the Wiki table. A melee NPC
+ * walks into reach; one with ranged or magic attacks from [DISTANCE_RANGE] tiles, and also closes in if it has a melee
+ * style (it melees once in reach).
+ */
 internal object NpcCombat {
-    /** OPEN-N1: NPC attack style/bonuses/max hit aren't in the cache; crush, bonus 0, max from strength. */
-    fun attack(script: NpcScript, victim: EntityRef) {
+    /** OPEN-N5: NPC ranged/magic attack distance isn't in the cache or the infobox; named default. */
+    const val DISTANCE_RANGE = 7
+
+    /** Starts [npc]'s attack interaction on [victim]. */
+    fun engage(npc: NpcRef, victim: EntityRef) {
+        val def = NpcCombatTable.of(npc.type)
+        if (def == null || (!def.hasRanged && !def.hasMagic)) {
+            npc.interact(victim) { v -> attack(this, v, distance = false) }
+            return
+        }
+        val melee = def.meleeTypes.isNotEmpty()
+        npc.interactAtRange(
+            victim,
+            DISTANCE_RANGE,
+            closeIn = melee,
+            inReach = if (melee) ({ v -> attack(this, v, distance = false) }) else null,
+        ) { v -> attack(this, v, distance = true) }
+    }
+
+    /** One attack if the clock allows; [distance] = not in melee reach (ranged/magic only). */
+    fun attack(script: NpcScript, victim: EntityRef, distance: Boolean) {
         val npc = script.npc
         if (!npc.isInWorld || npc.isDying || victim.isDying) {
             npc.stopInteraction()
@@ -261,15 +290,48 @@ internal object NpcCombat {
         val now = npc.tick
         if (npc.attackClock() > now) return
         npc.setAttackClock(now + CombatSystem.npcSpeed(npc))
-        val attackRoll = Formulas.npcDefenceRoll(npc.level(NpcStat.ATTACK), 0)
-        val defenceRoll = Attacks.defenceRoll(victim, AttackType.CRUSH)
-        val max = Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
+        val def = NpcCombatTable.of(npc.type)
+        val type = chooseType(npc, def, distance)
+        val style = type.style
+        val attackRoll =
+            when (style) {
+                CombatStyle.MELEE -> Formulas.npcDefenceRoll(npc.level(NpcStat.ATTACK), def?.meleeAttack ?: 0)
+                CombatStyle.RANGED -> Formulas.npcDefenceRoll(npc.level(NpcStat.RANGED), def?.rangedAttack ?: 0)
+                CombatStyle.MAGIC -> Formulas.npcDefenceRoll(npc.level(NpcStat.MAGIC), def?.magicAttack ?: 0)
+            }
+        val defenceRoll = Attacks.defenceRoll(victim, type)
+        val max = def?.maxFor(style) ?: Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
         // P5: protection prayers block NPC attacks fully.
-        val protected = victim is PlayerRef && victim.protects(CombatStyle.MELEE)
+        val protected = victim is PlayerRef && victim.protects(style)
         val hit = !protected && Formulas.hits(attackRoll, defenceRoll, npc::random)
         val damage = if (hit) Formulas.damage(max, npc::random) else 0
-        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
-        CombatSystem.queueHit(victim, npc, damage, HitStyle.MELEE, delay = 0)
+        val delay =
+            when (style) {
+                CombatStyle.MELEE -> 0
+
+                // OPEN-N8: NPC projectile hit delays use the player formulas (C1).
+                CombatStyle.RANGED -> Formulas.bowDelay(npc.distanceTo(victim))
+
+                CombatStyle.MAGIC -> Formulas.magicDelay(npc.distanceTo(victim))
+            }
+        CombatSystem.announceAttack(npc, victim, style)
+        CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(style), delay)
+    }
+
+    /**
+     * N2: melee (first listed melee type) when in reach and the NPC has one; at a distance, or without melee, ranged or
+     * magic; with both, a uniform pick per attack (OPEN-N3). Unknown NPCs: crush.
+     */
+    private fun chooseType(npc: NpcRef, def: NpcCombatDef?, distance: Boolean): AttackType {
+        if (def == null) return AttackType.CRUSH
+        val melee = def.meleeTypes.firstOrNull()
+        if (!distance && melee != null) return melee
+        return when {
+            def.hasRanged && def.hasMagic -> if (npc.random(2) == 0) AttackType.RANGED else AttackType.MAGIC
+            def.hasRanged -> AttackType.RANGED
+            def.hasMagic -> AttackType.MAGIC
+            else -> melee ?: AttackType.CRUSH
+        }
     }
 
     private const val EFFECTIVE_BASE = 8

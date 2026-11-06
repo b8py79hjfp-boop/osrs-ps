@@ -176,14 +176,34 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
 
     /** Makes this NPC attack/follow [target], running [script] whenever it is in op range (I9). */
     public fun interact(target: EntityRef, script: suspend NpcScript.(EntityRef) -> Unit) {
-        val t =
-            when (target) {
-                is PlayerRef -> InteractionTarget.OfPlayer(target.p)
-                is NpcRef -> InteractionTarget.OfNpc(target.n)
-            }
         val s: Script<Npc> = { runNpc(NpcScript(this), target, script) }
-        n.interactWith(NpcInteraction(t, s, null))
+        n.interactWith(NpcInteraction(interactionTarget(target), s, null))
     }
+
+    /**
+     * Makes this NPC attack [target] from up to [range] tiles (with line of sight): [atRange] runs when in approach
+     * range but not op range, [inReach] (if any) in op range. With [closeIn] the NPC keeps walking toward op range while
+     * attacking from range; without it, it stops once in range.
+     */
+    public fun interactAtRange(
+        target: EntityRef,
+        range: Int,
+        closeIn: Boolean,
+        inReach: (suspend NpcScript.(EntityRef) -> Unit)?,
+        atRange: suspend NpcScript.(EntityRef) -> Unit,
+    ) {
+        val op: Script<Npc>? = inReach?.let { s -> { runNpc(NpcScript(this), target, s) } }
+        val ap: Script<Npc> = { runNpc(NpcScript(this), target, atRange) }
+        val i = NpcInteraction(interactionTarget(target), op, ap, closeIn)
+        i.apRange = range
+        n.interactWith(i)
+    }
+
+    private fun interactionTarget(target: EntityRef): InteractionTarget =
+        when (target) {
+            is PlayerRef -> InteractionTarget.OfPlayer(target.p)
+            is NpcRef -> InteractionTarget.OfNpc(target.n)
+        }
 
     /** Stops the NPC's interaction. */
     public fun stopInteraction() {

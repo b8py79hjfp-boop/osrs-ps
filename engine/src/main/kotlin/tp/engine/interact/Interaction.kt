@@ -62,6 +62,8 @@ class NpcInteraction(
     val target: InteractionTarget,
     internal val opScript: Script<Npc>?,
     internal val apScript: Script<Npc>?,
+    /** False: an NPC in approach range stays put (ranged/magic attackers); true: it keeps closing to op range. */
+    internal val closeIn: Boolean = true,
 ) {
     internal var apRangeCalled: Boolean = false
 
@@ -219,7 +221,8 @@ class InteractionProcessor internal constructor(
         if (ran && !keep && npc.npcInteraction === start) npc.npcInteraction = null
     }
 
-    private fun needsToFollow(npc: Npc, i: NpcInteraction): Boolean = !npc.isDelayed && !npc.isFrozen && !inOpRange(npc, i.view)
+    private fun needsToFollow(npc: Npc, i: NpcInteraction): Boolean =
+        !npc.isDelayed && !npc.isFrozen && !inOpRange(npc, i.view) && (i.closeIn || i.apScript == null || !inApRange(npc, i.view))
 
     /** One attempt block for an NPC: op script in op range, else ap script in approach range. */
     private fun npcAttempt(npc: Npc, i: NpcInteraction, block: Int): Boolean {

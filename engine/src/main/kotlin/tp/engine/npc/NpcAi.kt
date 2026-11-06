@@ -12,7 +12,8 @@ internal class NpcAi(private val world: World) {
     var randomWalkChance: Int = DEFAULT_RANDOM_WALK_CHANCE
 
     fun process(npc: Npc) {
-        if (npc.wanderRange <= 0 || npc.interaction != null || npc.isDelayed) return // RW1
+        val occupied = npc.npcInteraction != null || npc.interaction != null || npc.isDelayed
+        if (npc.wanderRange <= 0 || occupied) return // RW1
         if (world.rng.nextInt(CHANCE_SCALE) >= randomWalkChance) return
         // RW2: may re-roll while still walking. RW3: random tile within the wander range of the spawn point.
         val dx = world.rng.nextInt(-npc.wanderRange, npc.wanderRange + 1)

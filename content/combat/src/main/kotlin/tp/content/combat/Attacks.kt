@@ -22,7 +22,7 @@ internal object Attacks {
         }
         val defenceType = spec?.defenceType ?: type
         val attackRoll = attackRoll(player, stance, type) * (spec?.accuracyPercent ?: PERCENT) / PERCENT
-        val defenceRoll = defenceRoll(target, defenceType)
+        val defenceRoll = defenceRoll(target, defenceType, rangedDefenceOf(category))
         var max = maxHit(player, stance, type) * (spec?.damagePermille ?: PERMILLE) / PERMILLE
         if (target is PlayerRef && target.protects(type.style)) max = Formulas.protectedMaxHit(max)
         val distance = player.distanceTo(target)
@@ -42,6 +42,17 @@ internal object Attacks {
             if (hit) grantXp(player, stance, type.style, damage)
         }
     }
+
+    /**
+     * NPC ranged defence column for a weapon (Wiki "Ranged weapons": bows standard, crossbows and chinchompas heavy,
+     * thrown weapons light; npc-combat.md N4).
+     */
+    fun rangedDefenceOf(category: WeaponCategory): Int =
+        when (category) {
+            Weapons.THROWN -> NpcCombatDef.DEF_LIGHT
+            Weapons.CROSSBOW -> NpcCombatDef.DEF_HEAVY
+            else -> NpcCombatDef.DEF_STANDARD
+        }
 
     private fun WeaponCategory.usesAmmo(): Boolean = this === Weapons.BOW || this === Weapons.CROSSBOW
 
@@ -63,12 +74,23 @@ internal object Attacks {
             }
         }
 
-    /** F6/F7/F15/F16 defence roll of [target] against [type]. NPC defence bonuses: OPEN-N1 (0 until wiki-import). */
-    fun defenceRoll(target: EntityRef, type: AttackType): Int =
+    /**
+     * F6/F7/F15/F16 defence roll of [target] against [type]. NPC defence bonuses come from the Wiki table
+     * (npc-combat.md N3); [rangedDefence] picks the light/standard/heavy column for ranged attacks.
+     */
+    fun defenceRoll(target: EntityRef, type: AttackType, rangedDefence: Int = NpcCombatDef.DEF_STANDARD): Int =
         when (target) {
             is NpcRef -> {
                 val level = if (type.style == CombatStyle.MAGIC) target.level(NpcStat.MAGIC) else target.level(NpcStat.DEFENCE)
-                Formulas.npcDefenceRoll(level, 0)
+                val column =
+                    when (type) {
+                        AttackType.STAB -> NpcCombatDef.DEF_STAB
+                        AttackType.SLASH -> NpcCombatDef.DEF_SLASH
+                        AttackType.CRUSH -> NpcCombatDef.DEF_CRUSH
+                        AttackType.MAGIC -> NpcCombatDef.DEF_MAGIC
+                        AttackType.RANGED -> rangedDefence
+                    }
+                Formulas.npcDefenceRoll(level, NpcCombatTable.of(target.type)?.defence?.get(column) ?: 0)
             }
 
             is PlayerRef -> {
