@@ -11,6 +11,7 @@ import tp.engine.inv.ItemTransaction
 import tp.engine.tick.TickInspector
 import tp.engine.zone.GroundObj
 import tp.protocol.api.ServerMessage
+import tp.symbols.Varps
 import tp.util.CoordGrid
 
 /** Content's view of a player. Every change goes through the engine (interfaces, vars, item transactions). */
@@ -55,9 +56,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public val windowMode: Int get() = p.windowMode
     public val isDelayed: Boolean get() = p.isDelayed
 
+    /** Run toggle; setting it also updates varp `option_run` (what the run orb displays; RS Mod `toggleRun`). */
     public var runMode: Boolean
         get() = p.runMode
-        set(value) = p.world.setRunMode(p, value)
+        set(value) {
+            p.world.setRunMode(p, value)
+            p.vars[Varps.OPTION_RUN] = if (value) 1 else 0
+        }
 
     public var runEnergy: Int
         get() = p.runEnergy
@@ -347,6 +352,12 @@ public class WorldRef internal constructor(internal val w: World) {
     public fun enumInts(id: Int): Map<Int, Int> =
         w.data.configs.enums[id]
             ?.intValues
+            .orEmpty()
+
+    /** String values of cache enum [id] (key → value); empty if absent. */
+    public fun enumStrings(id: Int): Map<Int, String> =
+        w.data.configs.enums[id]
+            ?.stringValues
             .orEmpty()
 
     public fun objParamInt(obj: Int, param: Int): Int? = w.objType(obj)?.params?.int(param)

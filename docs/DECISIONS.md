@@ -276,3 +276,12 @@ count the defender's own turns (scripts.md Q13), which yields the processing-ord
   second world starts; every `Osrs242Network` is still only driven by its own world thread.
 - Saves are versioned JSON (`PlayerSave.VERSION` + forward migrations) stored as jsonb. A logout save is final and the
   hub holds the account's session lock until it lands, so a world hop cannot load a stale save.
+
+## D-027 — Gameframe buttons ported from RS Mod
+
+`content/gameframe` handles orbs, settings, emotes, equipment-tab buttons and the side journal sub-tabs
+(docs/mechanics/gameframe-buttons.md). The behaviour and the emote/skill-cape seq and spotanim tables come from RS Mod
+v2 (ISC, github.com/rsmod/rsmod `content/interfaces/{settings,emotes,equipment,journal-tab,prayer-tab}`, read 2026-11-06).
+No source was copied: it was re-expressed against `plugin-api` with gameval symbols, so no ISC header is kept in the
+files; each KDoc names the RS Mod script it follows. Plugin-api gained `WorldRef.enumStrings` and `PlayerRef.runMode`
+now also writes varp `option_run` (the run orb reads it). The quick-prayer toggle stays with content/combat (OPEN-O3).

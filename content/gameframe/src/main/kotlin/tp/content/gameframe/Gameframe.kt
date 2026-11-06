@@ -6,6 +6,7 @@ import tp.plugin.IfEvents
 import tp.plugin.PlayerRef
 import tp.symbols.Components
 import tp.symbols.Interfaces
+import tp.symbols.Varbits
 
 /**
  * Fixed-mode gameframe (toplevel 548) with every standard overlay and side tab. Overlay list and targets: RS Mod
@@ -30,9 +31,37 @@ public class Gameframe : ContentPlugin {
         for ((iface, target) in OVERLAYS) openOverlay(target, iface)
         // Inventory tab item ops (RS Mod `InvOpenScript`).
         ifEvents(Components.Inventory.ITEMS, 0..INV_LAST_SLOT, INV_ITEM_EVENTS)
+        // Run orb shows varp option_run, which the saved run mode must set (the engine does not).
+        runMode = runMode
+        enableSettingsEvents()
+        EmoteTab.enableEvents(this)
+        // The side journal opens empty; fill its active sub-tab (RS Mod `JournalTabScript.onIfOpen`).
+        with(JournalTab) { open(varbit(Varbits.SIDE_JOURNAL_TAB)) }
+    }
+
+    /** Slider and button grids of the settings panel send op 1 per slot (RS Mod `SettingsSideScript.updateIfEvents`). */
+    private fun PlayerRef.enableSettingsEvents() {
+        val op1 = IfEvents.op(1)
+        for (slider in SETTINGS_SLIDERS) ifEvents(slider, 0..SLIDER_LAST_SLOT, op1)
+        ifEvents(Components.Settings_Side.ATTACK_PRIORITY_PLAYER_BUTTONS, 1..PLAYER_PRIORITY_LAST, op1)
+        ifEvents(Components.Settings_Side.ATTACK_PRIORITY_NPC_BUTTONS, 1..NPC_PRIORITY_LAST, op1)
     }
 
     private companion object {
+        /** Volume and brightness sliders have bobble slots 0..21. */
+        const val SLIDER_LAST_SLOT = 21
+        const val PLAYER_PRIORITY_LAST = 5
+        const val NPC_PRIORITY_LAST = 4
+
+        val SETTINGS_SLIDERS: List<Int> =
+            listOf(
+                Components.Settings_Side.MASTER_BOBBLE_CONTAINER,
+                Components.Settings_Side.MUSIC_BOBBLE_CONTAINER,
+                Components.Settings_Side.SOUND_BOBBLE_CONTAINER,
+                Components.Settings_Side.AREASOUNDS_BOBBLE_CONTAINER,
+                Components.Settings_Side.BRIGHTNESS_BOBBLE_CONTAINER,
+            )
+
         /** Highest world id the switcher can send (world ids are u16 in LOGOUT_TRANSFER; OSRS uses up to ~600). */
         const val MAX_WORLD_ID = 2047
 

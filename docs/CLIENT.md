@@ -61,6 +61,14 @@ there are no accounts until Phase 5 (D-018).
    run; `::tele x z [level]` teleports; `::pos` prints your position.
 4. Bots: in another terminal, `./gradlew :tools:botswarm:run --args="20"` logs in 20 bots that wander near spawn.
 
+## Driving the client from Claude Code (optional dev tool)
+
+`tools/runelite-mcp/` is a RuneLite plugin that runs a local MCP server (127.0.0.1 only), so a Claude Code session on
+the tester's PC can read game state, widgets, varps and chat, click interface buttons, run `::commands`, and read a
+ring buffer of client events (what the client sent, what the server changed). RSProx already starts RuneLite with
+`--developer-mode`, so the jar only needs to be copied to `~/.runelite/sideloaded-plugins/`. Build, install and
+`claude mcp add` steps: `tools/runelite-mcp/README.md`. It is a standalone Gradle build and never part of `./gradlew build`.
+
 ## Troubleshooting
 
 | Symptom | Likely cause |
