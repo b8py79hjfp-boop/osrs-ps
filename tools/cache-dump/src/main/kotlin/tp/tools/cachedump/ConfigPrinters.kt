@@ -36,6 +36,7 @@ internal fun configPrinters(c: Configs): Map<String, ConfigPrinter<*>> {
     registry.mapelement(c)
     registry.area(c)
     registry.hunt(c)
+    registry.worldentity(c)
     return registry.printers
 }
 
@@ -377,6 +378,31 @@ private fun ConfigPrinters.hunt(c: Configs) {
             )
         },
         { t -> listOf("type" to t.type, "rate" to t.rate) },
+    )
+}
+
+private fun ConfigPrinters.worldentity(c: Configs) {
+    add(
+        "worldentity",
+        c.worldEntities,
+        { t ->
+            listOf(
+                "name" to t.name,
+                "category" to t.category,
+                "bounds" to listOf(t.boundsX, t.boundsY, t.boundsWidth, t.boundsHeight),
+                "ops" to t.ops.toList(),
+                "flag14" to t.flag14,
+                "op2" to t.op2,
+                "op4" to t.op4,
+                "op5" to t.op5,
+                "op23" to t.op23,
+                "op24" to t.op24,
+                "op25" to t.op25,
+                "op26" to t.op26,
+                "op27" to t.op27,
+            )
+        },
+        { t -> listOf("name" to t.name, "bounds" to listOf(t.boundsX, t.boundsY, t.boundsWidth, t.boundsHeight), "op2" to t.op2) },
     )
 }
 

@@ -45,6 +45,8 @@ import tp.cache.config.varbit.VarbitType
 import tp.cache.config.varbit.VarbitTypeDecoder
 import tp.cache.config.varp.VarpType
 import tp.cache.config.varp.VarpTypeDecoder
+import tp.cache.config.worldentity.WorldEntityType
+import tp.cache.config.worldentity.WorldEntityTypeDecoder
 import tp.cache.js5.Js5Cache
 
 /**
@@ -77,6 +79,8 @@ class Configs private constructor(
     val areas: TypeList<AreaType>,
     val hunts: TypeList<HuntType>,
     val dbTableIndexes: List<DbTableIndex>,
+    /** World entity configs (boats), group 72 (D-046). */
+    val worldEntities: TypeList<WorldEntityType>,
 ) {
     /** (name, decoded count) per config, for boot logs and the cache-dump tool. */
     fun summary(): List<Pair<String, Int>> =
@@ -102,6 +106,7 @@ class Configs private constructor(
             "mapelement" to mapElements.count,
             "area" to areas.count,
             "hunt" to hunts.count,
+            "worldentity" to worldEntities.count,
             DbTableIndexLoader.NAME to dbTableIndexes.size,
         )
 
@@ -129,6 +134,7 @@ class Configs private constructor(
             val areas = ConfigLoader.load(cache, ConfigGroup.AREA, AreaTypeDecoder)
             val hunts = ConfigLoader.load(cache, ConfigGroup.HUNT, HuntTypeDecoder)
             val dbTableIndexes = DbTableIndexLoader.load(cache)
+            val worldEntities = ConfigLoader.load(cache, ConfigGroup.WORLDENTITY, WorldEntityTypeDecoder)
             return Configs(
                 objs,
                 locs,
@@ -152,6 +158,7 @@ class Configs private constructor(
                 areas,
                 hunts,
                 dbTableIndexes,
+                worldEntities,
             )
         }
     }

@@ -634,3 +634,11 @@ already keyed on coordinates (collision, zone sync, ground items, NPCs, the info
 build-area rebuild differs (REBUILD_REGION with the template zone table). Collision is rebuilt from the template's tile
 settings and rotated locs rather than by rotating flag bits, and copied locs are a silent base layer under the dynamic
 loc changes. See docs/mechanics/instances.md.
+
+## D-046: World entity configs decoded from the rev-242 client
+
+Boats are world entities whose configs live in archive 2 group 72, which no reference decoder (RuneLite 1.13.6, RS
+Mod, RSProt, RSProx) covers. The opcode table comes from the rev-242 client: the class RuneLite maps to
+`net.runelite.api.WorldEntityConfig` is constructed from the config buffer, and each `case` of its opcode switch was
+matched to the buffer read it performs (byte, signed/unsigned short, string, 2-or-4-byte smart). Field meanings beyond
+the RuneLite API names (id, category, bounds) are kept as neutral `opN` names until content needs them, OPEN.

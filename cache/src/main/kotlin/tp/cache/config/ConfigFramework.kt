@@ -36,11 +36,14 @@ object ConfigGroup {
     const val DBTABLE = 39
     const val GAMELOGEVENT = 70
 
+    /** World entity configs (boats); decoder from the rev-242 client (D-046). */
+    const val WORLDENTITY = 72
+
     /** Named groups with no reference decoder in RuneLite 1.13.6 or RS Mod: left undecoded, OPEN (see Phase 1 report). */
     val UNDECODED: Set<Int> = setOf(VARCLIENTSTRING, VARCLIENT, VAROBJ, GAMELOGEVENT)
 
     /** Present in cache 2757, unnamed by RS Mod / RuneLite / RSProx / RSProt at time of writing. */
-    val OPAQUE: Set<Int> = setOf(7, 22, 24, 25, 26, 27, 28, 29, 30, 31, 37, 47, 54, 71, 72, 73)
+    val OPAQUE: Set<Int> = setOf(7, 22, 24, 25, 26, 27, 28, 29, 30, 31, 37, 47, 54, 71, 73)
 }
 
 /** Archive ids (RuneLite `IndexType`, RS Mod `Js5Archives`). */
