@@ -63,6 +63,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.interact(p, t, op)
     }
 
+    /** Runs [action] through the area queue (area-triggered scripts: scripts.md Q11). */
+    public fun areaQueue(action: PlayerRef.() -> Unit) {
+        p.areaQueue.add { action() }
+    }
+
     /** Logs the player out at the end of the tick. */
     public fun logout() {
         p.world.requestLogout(p)

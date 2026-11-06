@@ -9,4 +9,5 @@ dependencies {
     api(project(":symbols"))
     implementation(project(":engine"))
     implementation(project(":protocol-api"))
+    implementation(libs.kotlinx.serialization.json)
 }

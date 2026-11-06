@@ -47,6 +47,7 @@ public class PvpCombat : ContentPlugin {
     private fun singleWay(check: AttackCheck) {
         val attacker = check.attacker as? PlayerRef ?: return
         val target = check.target as? PlayerRef ?: return
+        if (target.coord in Wilderness.MULTI) return // multi-combat: no PJ protection
         val now = attacker.tick
         val targetFoe = target[FIGHTING]
         if (targetFoe != null && targetFoe != attacker && (target[FIGHTING_UNTIL] ?: 0L) > now) {
