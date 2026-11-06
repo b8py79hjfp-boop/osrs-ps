@@ -560,3 +560,18 @@ plugin-api change.
   interaction. Burn logic and tick timing of the cook are unchanged. `SkillMulti` gained the `COOK` and `MAKE_SETS` type keys.
 - **Herblore** "Clean" is an item op (`onItemOp`) that auto-continues over the other herbs of the kind, one per tick (unsourced timing:
   herblore.md OPEN-HB2); the pestle crushes every item of a kind, first at once, then after 2 ticks, then every 3.
+
+## D-041: Runecraft and Prayer training (rune crafting at 13 altars, bury / scatter, Chaos Temple altar)
+
+- **Sources.** Rune levels, xp, multiple-rune levels, tiara xp and ruin tiles are the Wiki's "Runecraft", "Mysterious ruins", "Runic altar" and altar pages, copied by
+  hand into `RunecraftData.kt`; loc ids, ops, the `rc_no_tally_required_*` varbits and the altar and exit-portal placements are read from the cache. Bone and ash levels and
+  xp are the `{{Prayer info}}` templates, imported by `tools/wiki-import/prayer_remains.py` into `remains.tsv`. No RS Mod code was used. Rules and OPEN items:
+  `docs/mechanics/{runecraft,prayer-training}.md`.
+- **Mysterious ruins are multi-locs.** The map holds the parent (e.g. 34813); the client shows child 0 (no op) or child 1 ("Enter") by a varbit. The plugin registers the
+  parent and both children, and sets each varbit from the worn head and cape slots with a soft timer every 3 ticks, because plugin-api has no equipment-changed event and
+  `content/combat` owns equipment (OPEN-RC4). The "Enter" op is re-checked on the server.
+- **Arrival and exit tiles are derived.** No source gives them; the plugin picks the walkable tile beside the exit portal nearest the altar, and the walkable tile around the ruins
+  nearest the middle of the south side (OPEN-RC1).
+- **Per-obj item ops.** "Bury" and "Scatter" are registered per obj with `onItemOp(obj, text)` (one handler per bone), leaving the global op texts free.
+- **The 1-tick hold after burying** is the brief's figure, not a sourced one (OPEN-PT1); it is a named constant.
+- **plugin-api.** No change.
