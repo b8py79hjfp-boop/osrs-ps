@@ -119,6 +119,20 @@
   - PvP worlds: cache-derived safe zones and 16-tick PJ timer; singles-plus areas; Tele Block accuracy (wilderness.md).
   - Grand Exchange interface (grand-exchange.md GE4–GE11), verified in the client: sell, buy, abort.
   - Fixes: NPCs no longer random-walk in combat; replay parses dialog answers.
+  - GE completed: modify offer, history, custom %, 2 % tax (5M cap, exempt list), collection box, repeat/buy-from-
+    history (GE1–GE15). Verified in the client.
+  - NPC aggression and tolerance (aggression.md): hunt, 21×21 tolerance regions, max range, retreat, single-way rule.
+  - Bank (bank.md, D-029): tabs, drag (IF_BUTTOND end to end), placeholders, deposit-all, always-stacking bank inv.
+  - World spawns: 19.6k NPC spawns from the Wiki in `content/world` (npc-spawns.md); dev spawns only under
+    `-Dtp.devSpawns=true`.
+  - Login nag skip in the release client.
+  - Uncommitted, in progress:
+    - dynamic locs (add/delete/revert per world, copy-on-write collision, LOC_ADD_CHANGE/LOC_DEL/MAP_ANIM);
+    - NPC transform;
+    - Wilderness boss lairs (fee, discount, Escape Caves, singles-plus exits; boss-lairs.md);
+    - boss framework and scripts: Callisto/Artio, Vet'ion/Calvar'ion, Venenatis/Spindel are written, the rest are
+      being written;
+    - teleports (spells, tablets, jewellery, home teleport; teleports.md) merged from an agent.
 
 ## Blocking
 
@@ -148,8 +162,24 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
      - production URLs and manifest key;
      - clean-machine install/update/login/hop test and a traffic capture.
 2. Record the 4,000-player run's numbers in docs/LOAD-TEST.md (tick percentiles, missed deadlines, GC p99.9).
-3. Phase 7 next: hand-written Wilderness bosses and revenants; NPC aggression (npc-combat.md OPEN-N9); examine texts,
-   Dismantle, per-weapon animations/projectile shapes; GE modify/history (grand-exchange.md OPEN-GE3..5).
+3. Phase 7 order (the user's list):
+   1. finish the Wilderness bosses and revenants (Chaos Elemental, Scorpia, Chaos Fanatic, Crazy archaeologist, KBD
+      with antifire, revenants and maledictus, Revenant Caves fee);
+   2. Emir's Arena;
+   3. doors, gates, ladders and stairs;
+   4. teleport leftovers (IF_SUBOP for Rub, persisted home cooldown, Tele Group);
+   5. drop tables;
+   6. trade;
+   7. shops;
+   8. dialogue;
+   9. item-on-item, item-on-loc and item-on-NPC;
+   10. equip requirements and examine texts;
+   11. non-combat skills;
+   12. full magic;
+   13. gravestones;
+   14. clans, quests, diaries, collection log;
+   15. generic dragonfire, ammo recovery, multi-target specials;
+   16. bank leftovers, destroy confirmation (OPEN-DS1), venom from magic (OPEN-PO3).
 
 ## Open questions
 
