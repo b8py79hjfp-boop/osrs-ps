@@ -7,7 +7,7 @@
 - [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
 - [x] **Phase 3 — Engine core** — done 2026-11-06 (awaiting real-client check)
 - [x] **Phase 4 — Combat and PvP** — done 2026-11-06: golden 3a–3h + DPS parity matrix pass; user confirmed 1v1 and 20-bot multi in RuneLite
-- [ ] Phase 5 — Scale and operations
+- [ ] Phase 5 — Scale and operations — implemented 2026-11-06; awaiting user test + the 16-core 30-minute run (docs/LOAD-TEST.md)
 - [ ] Phase 6 — Release client
 - [ ] Phase 7+ — Content breadth
 
@@ -87,6 +87,21 @@
 - Deferred from the Phase 3 plan (tracked for Phase 4 start): dynamic locs (zone loc add/del), inventory drag
   (IF_BUTTOND), examine ops, resizable gameframes, wilderness drop rule (ground-items G4), RSProx `.bin` recording.
 
+- Phase 5 (2026-11-06, implemented; user test pending):
+  - Hub (separate JVM or embedded): Argon2id accounts, `/register`, login throttling, session locks held until the
+    logout save is durable, PostgreSQL store (versioned jsonb saves, audit log) or in-memory, gRPC services.
+  - World node: N worlds per JVM; staggered autosave, save-all on shutdown, system-update countdown; world hopping
+    through the World Switcher (LOGOUT_TRANSFER) and `--loopback-hosts` for local hops.
+  - Social: friends, ignores, PMs, live mutes. Staff `::kick ::mute ::unmute ::ban ::ipban ::unban ::broadcast
+    ::update` (`--admins`). GE skeleton commands. `/hiscores`.
+  - Ops: tick histograms, `:9090/health` + `/metrics`, ALERT logs, PROXY v2 (`--proxy-protocol`),
+    `upgradeRevision`, docs/OPERATIONS.md (PITR), docs/REVISION-UPGRADE.md.
+  - Checks: 300 bots over 3 worlds clean, 179 bot hops with saves carried, PostgreSQL saves survive restart, scaled
+    load 417 players / 3 worlds with 0 missed deadlines (docs/LOAD-TEST.md). Fixed: logout lock overflow (logout was
+    always refused), bot PoW starving carriers, ZoneSync boxing.
+  - Not done: friends chat (channels); in-game GE interface; OPEN-H1/H2 (world-hop.md); the 16-core 4,096-bot
+    30-minute acceptance run.
+
 ## Blocking
 
 - Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
@@ -100,8 +115,7 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 5 plan: scale and operations (hub, multi-world node, world hopping, social, GE skeleton, persistence,
-   accounts, moderation, ops, DDoS setup, revision-upgrade pipeline; §7 load acceptance for 30 minutes).
+1. Phase 5 close-out: user test in RuneLite; friends chat; the 16-core 30-minute acceptance run (docs/LOAD-TEST.md).
 2. Carried OPENs from Phase 4: NPC combat data (wiki-import), examine texts, poison/venom, Dismantle, PvP-world safe
    zones, singles-plus areas, per-weapon animations/projectile shapes.
 

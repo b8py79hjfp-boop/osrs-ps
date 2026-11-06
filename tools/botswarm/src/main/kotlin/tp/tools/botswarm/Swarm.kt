@@ -18,7 +18,8 @@ fun main(args: Array<String>) {
     val count = args.getOrNull(0)?.toIntOrNull()
     if (count == null) {
         System.err.println(
-            "usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] [walk|fight] [namePrefix=bot]",
+            "usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] " +
+                "[walk|fight|gear|hop|mixed] [namePrefix=bot]",
         )
         exitProcess(2)
     }
@@ -44,9 +45,13 @@ fun main(args: Array<String>) {
                     return@use
                 }
                 println("$prefix${i + 1}: logged in as index ${bot.playerIndex}")
-                when (mode) {
+                // mixed: a quarter each of walkers, clumped multi-combat fighters, gear switchers and (with
+                // --loopback-hosts on the server) world hoppers.
+                val behaviour = if (mode == "mixed") MIXED[i % MIXED.size] else mode
+                when (behaviour) {
                     "fight" -> fight(bot, count)
                     "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
+                    "gear" -> gear(bot)
                     else -> wander(bot, centreX, centreZ)
                 }
             }
@@ -109,6 +114,37 @@ private fun hop(first: BotClient, name: String, modulus: BigInteger, crcs: IntAr
         println("$name: hop $hops -> world $world")
     }
 }
+
+/**
+ * Gear-switch spam: whip in slot 0 and DDS in slot 1, then wield one every tick or two. Each wield swaps the other weapon
+ * back into slot 1 (the item's old slot), so the bot alternates obj ids on slot 1.
+ */
+private fun gear(bot: BotClient) {
+    bot.cheat("empty")
+    bot.cheat("item $WHIP")
+    bot.cheat("item $DDS")
+    bot.button(INVENTORY_ITEMS, WIELD_OP, sub = 0, obj = WHIP)
+    var next = DDS
+    var nextSwitch = System.nanoTime() + MIN_WALK_INTERVAL_NANOS
+    while (true) {
+        bot.readPacket()
+        val now = System.nanoTime()
+        if (now >= nextSwitch) {
+            bot.button(INVENTORY_ITEMS, WIELD_OP, sub = 1, obj = next)
+            next = if (next == DDS) WHIP else DDS
+            nextSwitch = now + ThreadLocalRandom.current().nextLong(SWITCH_MIN_NANOS, SWITCH_MAX_NANOS)
+        }
+    }
+}
+
+/** Backpack items component (cache interface 149 comp 0); Wield/Wear is button op 3 (iop index 1). */
+private const val INVENTORY_ITEMS = 149 shl 16
+private const val WIELD_OP = 3
+private const val WHIP = 4151
+private const val DDS = 1215
+private const val SWITCH_MIN_NANOS = 600_000_000L
+private const val SWITCH_MAX_NANOS = 1_200_000_000L
+private val MIXED = listOf("walk", "fight", "gear", "walk")
 
 /** Logout tab "World Switcher" and the switcher's world list (cache interface 182 comp 3, interface 69 comp 18). */
 private const val LOGOUT_WORLD_SWITCHER = 182 shl 16 or 3

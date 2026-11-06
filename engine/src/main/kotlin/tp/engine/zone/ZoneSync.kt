@@ -11,35 +11,46 @@ import tp.protocol.api.ZoneOp
  * reset and gets its full state; an already observed zone gets this tick's events.
  */
 internal class ZoneSync {
-    private var observed = HashSet<Int>()
+    // Observed zones as packed keys in two ping-pong arrays: no boxing or allocation per tick (hot loop, brief §11).
+    private var observed = IntArray(MAX_ZONES)
+    private var observedCount = 0
+    private var scratch = IntArray(MAX_ZONES)
     private var lastZone = -1
 
     /** The client cleared every zone (rebuild / login). */
     fun reset() {
-        observed.clear()
+        observedCount = 0
         lastZone = -1
     }
 
     fun process(player: Player, objs: GroundObjs) {
         val zone = ZoneKey.of(player.coord)
         if (zone.packed == lastZone) {
-            for (z in observed) sendEvents(player, ZoneKey(z), objs)
+            for (i in 0 until observedCount) sendEvents(player, ZoneKey(observed[i]), objs)
             return
         }
-        val now = HashSet<Int>()
+        val now = scratch
+        var nowCount = 0
         for (dx in -VIEW_RADIUS..VIEW_RADIUS) {
             for (dz in -VIEW_RADIUS..VIEW_RADIUS) {
                 val key = ZoneKey.of(zone.level, zone.zoneX + dx, zone.zoneZ + dz)
-                if (inBuildArea(player, key)) now += key.packed
+                if (inBuildArea(player, key)) now[nowCount++] = key.packed
             }
         }
-        for (z in now) {
-            val key = ZoneKey(z)
+        for (i in 0 until nowCount) {
+            val key = ZoneKey(now[i])
             // A zone seen for the first time gets its full state, not this tick's events (they're already in it).
-            if (z in observed) sendEvents(player, key, objs) else sendFull(player, key, objs)
+            if (wasObserved(now[i])) sendEvents(player, key, objs) else sendFull(player, key, objs)
         }
+        scratch = observed
         observed = now
+        observedCount = nowCount
         lastZone = zone.packed
+    }
+
+    private fun wasObserved(packed: Int): Boolean {
+        for (i in 0 until observedCount) if (observed[i] == packed) return true
+        return false
     }
 
     private fun inBuildArea(player: Player, key: ZoneKey): Boolean {
@@ -83,5 +94,6 @@ internal class ZoneSync {
         /** Zones observed around the player's zone (RS Mod `ZONE_VIEW_RADIUS` = 3: a 7x7 zone square). */
         const val VIEW_RADIUS = 3
         const val IN_ZONE = 7
+        const val MAX_ZONES = (2 * VIEW_RADIUS + 1) * (2 * VIEW_RADIUS + 1)
     }
 }

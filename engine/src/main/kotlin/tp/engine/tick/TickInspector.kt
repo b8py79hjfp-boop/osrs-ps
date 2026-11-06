@@ -22,7 +22,7 @@ class TickInspector(private val out: Writer? = null) : TickTracer {
 
     override fun onTickStart(tick: Long) {
         this.tick = tick
-        watchers.removeIf { !it.session.isOpen }
+        if (watchers.isNotEmpty()) watchers.removeIf { !it.session.isOpen } // the predicate lambda allocates per call
     }
 
     override fun onTickEnd(tick: Long) {
