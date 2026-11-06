@@ -101,10 +101,23 @@ internal object Teleports {
         player.interrupt()
         HomeTeleports.cancel(player) // any other teleport ends a running home cast (teleports.md H4)
         player[BUSY] = true
-        play(player, stages[0])
+        val delayed = inRevenantCaves(player.coord) && fightingNpc(player)
+        if (!delayed) play(player, stages[0])
         player.startScript {
             val self = this.player
             try {
+                // TP14 (Wiki "Revenant Caves"): "a delay of 2 ticks ... before it is activated, provided the player is
+                // in combat with an NPC ... interrupted by another incoming attack from an NPC, resulting in the
+                // teleport delay timer having to be run down anew." OPEN-TP14: the hard Wilderness Diary exemption
+                // waits for diaries.
+                if (delayed) {
+                    var since = self.tick
+                    while (self.tick - since < REVENANT_DELAY) {
+                        delay(1)
+                        if ((self[SharedAttrs.LAST_COMBAT_TICK] ?: 0L) > since) since = self.tick
+                    }
+                    play(self, stages[0])
+                }
                 var elapsed = 0
                 for (stage in stages.drop(1)) {
                     delay(stage.at - elapsed)
@@ -123,6 +136,18 @@ internal object Teleports {
     fun start(player: PlayerRef, style: CastStyle, destination: CoordGrid) {
         start(player, style.stages, style.ticks, destination)
     }
+
+    /** Revenant Caves bounds (the caves' revenant spawns; same as content/pvp `RevenantCaves.inCaves`). */
+    @Suppress("MagicNumber") // map bounds
+    private fun inRevenantCaves(c: CoordGrid): Boolean = c.level == 0 && c.x in 3136..3265 && c.z in 10048..10239
+
+    /** In combat with an NPC: an NPC is fighting the player (the single-way engagement record). */
+    private fun fightingNpc(player: PlayerRef): Boolean {
+        val npc = player[SharedAttrs.ENGAGED_BY] ?: return false
+        return npc.isInWorld && npc.target == player
+    }
+
+    private const val REVENANT_DELAY = 2
 
     private fun play(player: PlayerRef, stage: CastStage) {
         player.anim(stage.seq)

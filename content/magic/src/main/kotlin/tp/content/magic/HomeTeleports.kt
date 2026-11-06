@@ -10,6 +10,7 @@ import tp.symbols.Components
 import tp.symbols.Seqs
 import tp.symbols.SpotAnims
 import tp.symbols.Varbits
+import tp.symbols.Varps
 import tp.util.CoordGrid
 
 /** A home teleport of one spellbook (OSRS Wiki "Home teleport"): free, 24 ticks, once per 30 minutes. */
@@ -34,13 +35,11 @@ public class HomeTeleports : ContentPlugin {
         if (now - (this[SharedAttrs.LAST_COMBAT_TICK] ?: Long.MIN_VALUE / 2) < COMBAT_LOCK) {
             return message("You can't cast this spell while in combat.")
         }
-        val ready = this[READY_AT] ?: 0L
-        if (ready >
-            now
-        ) {
-            return message(
-                "You need to wait another ${(ready - now + TICKS_PER_MINUTE - 1) / TICKS_PER_MINUTE} minutes to cast this spell.",
-            )
+        // TP9: the last cast is varp `aide_tele_timer` in minutes since the epoch (RuneLite `LAST_HOME_TELEPORT`), so the
+        // cooldown is real time, saved with the account and shown by the client.
+        val left = varp(Varps.AIDE_TELE_TIMER) + COOLDOWN_MINUTES - epochMinutes
+        if (varp(Varps.AIDE_TELE_TIMER) > 0 && left > 0) {
+            return message("You need to wait another $left minutes to cast this spell.")
         }
         val denial = Teleports.denial(this, Teleports.WILDERNESS_LIMIT)
         if (denial != null) return message(denial)
@@ -62,7 +61,7 @@ public class HomeTeleports : ContentPlugin {
         if (elapsed >= CAST_TICKS) {
             this[CAST] = null
             stopTimer(WATCH)
-            this[READY_AT] = tick + COOLDOWN
+            setVarp(Varps.AIDE_TELE_TIMER, epochMinutes.toInt())
             teleport(cast.destination)
             anim(RESET_ANIM)
             return
@@ -78,8 +77,6 @@ public class HomeTeleports : ContentPlugin {
     internal companion object {
         private val CAST = AttrKey<HomeCast>("home_teleport_cast")
 
-        /** Tick the home teleport is ready again (not saved: OPEN-TP9). */
-        private val READY_AT = AttrKey<Long>("home_teleport_ready_at")
         private val WATCH = TimerId("home_teleport")
 
         /** Stops a running home cast, if any (another teleport or an interruption). */
@@ -93,11 +90,8 @@ public class HomeTeleports : ContentPlugin {
         /** Wiki "Home Teleport": "24 ticks (default)". */
         private const val CAST_TICKS = 24
 
-        /** Wiki "Lumbridge Home Teleport": cooldown 3,000 ticks (30 minutes). */
-        private const val COOLDOWN = 3000
-
-        /** 3,000 ticks are 30 minutes (Wiki infobox), so 100 ticks a minute. */
-        private const val TICKS_PER_MINUTE = 100L
+        /** Wiki "Lumbridge Home Teleport": a 30-minute cooldown. */
+        private const val COOLDOWN_MINUTES = 30
 
         /** Wiki "Home teleport": cast only "10 seconds or more after combat has ended (similar to logging out)": wilderness.md W7. */
         private const val COMBAT_LOCK = 16

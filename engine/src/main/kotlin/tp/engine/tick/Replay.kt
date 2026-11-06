@@ -43,6 +43,9 @@ class ReplayRecorder(private val world: World, private val out: Writer) : TickTr
 
 /** Text form of [ClientCommand]s for replay logs. Strings are percent-encoded so they never contain spaces. */
 object CommandCodec {
+    /** Field index of a button's optional sub-op (recordings made before IF_SUBOP have four fields). */
+    private const val SUBOP_FIELD = 5
+
     fun encode(c: ClientCommand): String =
         when (c) {
             is ClientCommand.MoveClick -> "move ${c.x} ${c.z} ${c.ctrl} ${c.minimap}"
@@ -54,7 +57,7 @@ object CommandCodec {
             is ClientCommand.OpObj -> "opobj ${c.option} ${c.id} ${c.x} ${c.z} ${c.ctrl}"
             is ClientCommand.OpPlayerT -> "opplayert ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.OpNpcT -> "opnpct ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
-            is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj}"
+            is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj} ${c.subop}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
             is ClientCommand.ResumeString -> "resumestring ${str(c.text)}"
@@ -109,7 +112,7 @@ object CommandCodec {
             }
 
             "button" -> {
-                ClientCommand.Button(i(1), i(2), i(3), i(4))
+                ClientCommand.Button(i(1), i(2), i(3), i(4), if (parts.size > SUBOP_FIELD) i(SUBOP_FIELD) else -1)
             }
 
             "chat" -> {

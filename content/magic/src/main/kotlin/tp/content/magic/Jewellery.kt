@@ -73,6 +73,12 @@ public class Jewellery : ContentPlugin {
         if (held.charges == 0) return message("Your ${held.jewel.itemName} has no charges.")
         val place = Place(Invs.INV, click.slot)
         val jewel = held.jewel
+        // Right-click "Rub" sub-options (IF_SUBOP) name the destination; the plain op asks in the chatbox.
+        if (click.subop >= 0) {
+            val text = objSubOp(click.obj, click.op, click.subop)
+            val destination = jewel.destinations.firstOrNull { text != null && it.name.contains(text, ignoreCase = true) }
+            if (destination != null) return use(place, click.obj, destination, bus)
+        }
         choiceDialog(MENU_TITLE, jewel.destinations.map { it.name }) { pick -> use(place, click.obj, jewel.destinations[pick - 1], bus) }
     }
 

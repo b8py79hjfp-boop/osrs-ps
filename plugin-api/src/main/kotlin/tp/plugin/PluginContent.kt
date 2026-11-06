@@ -25,7 +25,7 @@ private const val LOC_OPS = 5
  * Op3, Op4, Op6, Op7; same mapping as content/combat `Equipment`). Returns the 0-based iop index, -1 for any other op.
  */
 @Suppress("MagicNumber") // button op numbers are the client's
-private fun backpackIopIndex(op: Int): Int =
+internal fun backpackIopIndex(op: Int): Int =
     when (op) {
         in 2..4 -> op - 2
         6 -> 3
@@ -157,9 +157,9 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     override fun opObj(objId: Int, option: Int): Script<Player>? =
         (h.opObj[key(objId, option)] ?: h.opObj[key(ContentScope.DEFAULT_ID, option)])?.let(::objScript)
 
-    override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {
+    override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int, subop: Int) {
         if (component == Components.Chatmenu.OPTIONS) return answerChoice(player, slot)
-        if (component == Components.Inventory.ITEMS && h.itemOps.isNotEmpty() && itemOp(player, option, slot, obj)) return
+        if (component == Components.Inventory.ITEMS && h.itemOps.isNotEmpty() && itemOp(player, option, slot, obj, subop)) return
         val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
         val handler = h.buttons[base or option.toLong()] ?: h.buttons[base]
         if (handler == null) {
@@ -169,16 +169,16 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             }
             return
         }
-        ref(player).handler(ButtonClick(component, option, slot, obj))
+        ref(player).handler(ButtonClick(component, option, slot, obj, subop))
     }
 
     /** Runs the [ContentScope.onItemOp] handler of the iop text behind backpack button op [option]; false if none. */
-    private fun itemOp(player: Player, option: Int, slot: Int, obj: Int): Boolean {
+    private fun itemOp(player: Player, option: Int, slot: Int, obj: Int, subop: Int): Boolean {
         val ref = ref(player)
         val index = backpackIopIndex(option)
         val text = (if (index >= 0) ref.objIop(obj, index) else null) ?: return false
         val handler = h.itemOps[text.lowercase()] ?: return false
-        ref.handler(ButtonClick(Components.Inventory.ITEMS, option, slot, obj))
+        ref.handler(ButtonClick(Components.Inventory.ITEMS, option, slot, obj, subop))
         return true
     }
 

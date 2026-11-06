@@ -280,6 +280,9 @@ class Osrs242Network(
         }
         b.addListener(OpObjV2::class.java) { s, m -> s.deliver(ClientCommand.OpObj(m.op, m.id, m.x, m.z, m.controlKey)) }
         b.addListener(If3Button::class.java) { s, m -> s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj)) }
+        b.addListener(net.rsprot.protocol.game.incoming.buttons.IfSubOp::class.java) { s, m ->
+            s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj, m.subop))
+        }
         b.addListener(IfButtonD::class.java) { s, m ->
             fun opt(v: Int) = if (v == NONE_U16) -1 else v
             s.deliver(

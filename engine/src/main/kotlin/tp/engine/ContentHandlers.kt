@@ -45,7 +45,7 @@ interface ContentHandlers {
     fun apObj(objId: Int, option: Int): Script<Player>? = null
 
     /** IF button on an open, validated component. */
-    fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int) {}
+    fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int, subop: Int = -1) {}
 
     /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
     fun onDialogAnswer(player: Player, value: Any) {}

@@ -180,6 +180,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Whether the player has an interaction in progress. */
     public val isInteracting: Boolean get() = p.interactionTarget != null
 
+    /** Real time in whole minutes since the Unix epoch (cooldowns the client shows as real time, e.g. home teleport). */
+    public val epochMinutes: Long get() = System.currentTimeMillis() / MILLIS_PER_MINUTE
+
     /** Persisted content value [key] (saved with the account), or null. */
     public fun saved(key: String): Long? = p.saved[key]
 
@@ -414,6 +417,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Obj category (cache `category`), -1 if none. */
     public fun objCategory(obj: Int): Int = p.world.objType(obj)?.category ?: -1
 
+    /** The text of right-click sub-option [subop] under backpack button op [buttonOp] of [obj] (cache iop sub-ops). */
+    public fun objSubOp(obj: Int, buttonOp: Int, subop: Int): String? =
+        p.world
+            .objType(obj)
+            ?.iopSubOps
+            ?.get(backpackIopIndex(buttonOp))
+            ?.get(subop)
+
     /** Inventory op text of [obj] for iop [index] (0-based: button op = index + 2), or null. */
     public fun objIop(obj: Int, index: Int): String? =
         p.world
@@ -619,6 +630,8 @@ public class DbRowRef internal constructor(private val row: tp.cache.config.dbro
 }
 
 /** A map loc an interaction targets. */
+private const val MILLIS_PER_MINUTE = 60_000L
+
 public class LocRef internal constructor(public val id: Int, public val coord: CoordGrid, public val shape: Int, public val angle: Int)
 
 /** Identifies a player timer. Define as a top-level `val`. */

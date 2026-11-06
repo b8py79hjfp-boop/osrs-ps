@@ -338,7 +338,8 @@ class World(
                 if (command.option !in BUTTON_OP_RANGE || !interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) {
                     return invalid(player, command)
                 }
-                content.onButton(player, command.component, command.option, command.sub, command.obj)
+                if (command.subop < -1 || command.subop > MAX_SUBOP) return invalid(player, command)
+                content.onButton(player, command.component, command.option, command.sub, command.obj, command.subop)
             }
 
             is ClientCommand.ButtonDrag -> {
@@ -953,6 +954,9 @@ class World(
 
         /** IF3 button ops 1..32 (IF_SETEVENTS op bits). */
         private val BUTTON_OP_RANGE = 1..32
+
+        /** Highest IF_SUBOP sub-option index accepted from the client (0-based sub-options, hostile input). */
+        private const val MAX_SUBOP = 31
         private const val COMPONENT_SHIFT = 16
 
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */

@@ -31,4 +31,6 @@ public class ButtonClick internal constructor(
     public val slot: Int,
     /** Obj in that slot, -1 if none. */
     public val obj: Int,
+    /** Right-click sub-option (IF_SUBOP), -1 for the plain op. */
+    public val subop: Int = -1,
 )

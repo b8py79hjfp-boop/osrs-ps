@@ -115,9 +115,13 @@ Item ids are resolved at world start from the cache names `Amulet of glory(n)`, 
   Ghorrock name). Verify with a real client.
 - **OPEN-TP8:** the Tele Group spells, Arceuus spellbook teleports, Minigame Teleport and the Teleport to Target
   spell are not implemented; the home-teleport animation override (op 10) and the league home teleports neither.
-- **OPEN-TP9:** the home teleport cooldown is an in-memory attribute: it resets on logout (the account save is
-  persistence, outside this module). It starts when the teleport happens; an interrupted cast does not start it (Wiki
-  silent).
+- **TP9 (resolved):** the home teleport cooldown is varp `aide_tele_timer` (892) in minutes since the epoch, as
+  RuneLite's `LAST_HOME_TELEPORT`. It is real time, saved with the account and shown by the client. It starts when the
+  teleport happens; an interrupted cast does not start it (Wiki silent).
+- **TP14:** Revenant Caves: "a delay of 2 ticks (1.2 seconds) upon selecting any method of teleportation before it is
+  activated, provided the player is in combat with an NPC ... This delay can be interrupted by another incoming
+  attack from an NPC, resulting in the teleport delay timer having to be run down anew." OPEN-TP14: "removed if the
+  player has completed the hard Wilderness Diary" waits for diaries.
 - **OPEN-TP10:** home stage ticks. The Wiki gives only the 24-tick total. Start ticks 0, 5, 7, 9, 14 are each earlier
   seq's length without its trailing hold frame (cycles 149, 43, 58, 150 at 30 cycles per tick, rounded up); the 1:1
   pairing of spotanims 800..804 with seqs 4847/4850/4853/4855/4857 follows the cache names.
@@ -128,7 +132,7 @@ Item ids are resolved at world start from the cache names `Amulet of glory(n)`, 
 - **OPEN-TP12:** the worn-tab op mapping (op 1 Remove, ops 2.. the destinations in the order of cache obj params
   451..456, which equal the Wiki's worn options) is inferred from the cache; the Ring of wealth's Boss Log and Coin
   Collection ops (5, 6) answer `That option isn't available yet.` Inventory "Rub" also has right-click sub-ops (cache
-  `iopSubOps`); the protocol adapter does not deliver IF_SUBOP (RSProt `IfSubOp`), so only the plain "Rub" menu works.
-  Adding that packet is a protocol change.
+  `iopSubOps`). IF_SUBOP is now delivered: a right-click sub-option teleports to the destination whose name contains
+  the sub-op text, and the plain "Rub" still opens the menu.
 - **OPEN-TP13:** the chatbox menu allows 2..6 options (RS Mod stops at 5); the Skills necklace needs 6 and its layout is
   unverified against a real client.

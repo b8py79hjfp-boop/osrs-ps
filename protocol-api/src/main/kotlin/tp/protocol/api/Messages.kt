@@ -29,8 +29,11 @@ sealed interface ClientCommand {
     /** Ground item op. */
     data class OpObj(val option: Int, val id: Int, val x: Int, val z: Int, val ctrl: Boolean) : ClientCommand
 
-    /** IF3 button / inventory slot op. [component] is packed `iface << 16 | comp`; [sub] the slot, [obj] the item. */
-    data class Button(val component: Int, val option: Int, val sub: Int, val obj: Int) : ClientCommand
+    /**
+     * IF3 button / inventory slot op. [component] is packed `iface << 16 | comp`; [sub] the slot, [obj] the item;
+     * [subop] the right-click sub-option (IF_SUBOP, e.g. a jewellery "Rub" destination), -1 for a plain op.
+     */
+    data class Button(val component: Int, val option: Int, val sub: Int, val obj: Int, val subop: Int = -1) : ClientCommand
 
     /** An item dragged from one component slot onto another (IF_BUTTOND); subs/objs are -1 when absent. */
     data class ButtonDrag(
