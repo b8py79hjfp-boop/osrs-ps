@@ -9,7 +9,7 @@ import tp.util.CoordGrid
 /** Developer `::commands` (Phase 3 stand-ins; an admin rights check arrives with accounts in Phase 5). */
 public class DevCommands : ContentPlugin {
     override fun ContentScope.register() {
-        onLogin { message("Dev commands: ::pos ::run ::tele x z [level] ::item id [count] ::empty ::xp stat amount ::trace") }
+        onLogin { message("Dev: ::pos ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace") }
         onCommand("pos") { message("$coord tick $tick pid $pid") }
         onCommand("run") {
             runMode = !runMode
@@ -22,6 +22,15 @@ public class DevCommands : ContentPlugin {
             val level = args.getOrNull(1)?.toIntOrNull()
             if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
         }
+        onCommand("max") {
+            for (stat in 0..6) addXp(stat, MAX_XP)
+            message("Combat stats set to 99.")
+        }
+        onCommand("kit") {
+            transaction("dev ::kit") { KIT.all { (obj, count) -> add(Invs.INV, obj, count) } }
+            message("Kit: whip, dds, AGS, claws, rune crossbow + bolts, sharks, karambwans, brews, barrage + veng runes.")
+        }
+        onCommand("wild") { teleport(CoordGrid(WILD_X, WILD_Z)) }
         onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
         onCommand("item") { args -> item(args) }
         onCommand("empty") {
@@ -64,5 +73,29 @@ public class DevCommands : ContentPlugin {
 
     private companion object {
         const val STAT_COUNT = 24
+        const val MAX_XP = 13_034_431.0
+
+        /** Main Wilderness, level 36, multi-combat (wilderness.md). */
+        const val WILD_X = 3300
+        const val WILD_Z = 3800
+
+        @Suppress("MagicNumber") // obj ids and counts of a dev PvP kit
+        val KIT: List<Pair<Int, Int>> =
+            listOf(
+                4151 to 1,
+                1215 to 1,
+                11802 to 1,
+                13652 to 1,
+                9185 to 1,
+                9144 to 200,
+                385 to 6,
+                3144 to 4,
+                6685 to 2,
+                560 to 500,
+                565 to 500,
+                555 to 500,
+                9075 to 100,
+                557 to 500,
+            )
     }
 }
