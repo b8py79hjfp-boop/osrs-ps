@@ -51,17 +51,127 @@ internal class Axe(val anim: Int, val tier: Int)
 
 /** Success rates per axe tier, packed `low shl 16 or high` (RS Mod `WoodcuttingRates`). */
 internal enum class AxeRates(vararg val packed: Int) {
-    REGULAR(r(64, 200), r(96, 300), r(128, 400), r(144, 450), r(160, 500), r(192, 600), r(224, 700), r(240, 750), r(250, 800)),
-    OAK(r(32, 100), r(48, 150), r(64, 200), r(72, 225), r(80, 250), r(96, 300), r(112, 350), r(120, 375), r(120, 375)),
-    WILLOW(r(16, 50), r(24, 75), r(32, 100), r(36, 112), r(40, 125), r(48, 150), r(56, 175), r(60, 187), r(60, 187)),
-    TEAK(r(15, 46), r(23, 70), r(31, 93), r(35, 102), r(39, 117), r(47, 140), r(55, 164), r(60, 190), r(60, 200)),
-    MAPLE(r(8, 25), r(12, 37), r(16, 50), r(18, 56), r(20, 62), r(24, 75), r(28, 87), r(30, 93), r(30, 93)),
-    ARCTIC(r(6, 30), r(8, 44), r(11, 60), r(13, 67), r(14, 74), r(17, 90), r(20, 104), r(21, 112), r(21, 112)),
-    MAHOGANY(r(8, 25), r(12, 38), r(16, 50), r(18, 54), r(20, 63), r(25, 75), r(29, 88), r(34, 94), r(36, 97)),
-    YEW(r(4, 12), r(6, 19), r(8, 25), r(9, 28), r(10, 31), r(12, 37), r(14, 44), r(15, 47), r(15, 47)),
-    MAGIC(r(2, 6), r(3, 9), r(4, 12), r(5, 13), r(5, 15), r(6, 18), r(7, 21), r(7, 22), r(7, 22)),
-    REDWOOD(r(2, 6), r(3, 9), r(4, 12), r(4, 14), r(5, 15), r(6, 18), r(7, 21), r(7, 30), r(8, 35)),
-    HOLLOW(r(18, 26), r(28, 40), r(36, 54), r(42, 57), r(46, 68), r(59, 81), r(64, 94), r(67, 101), r(67, 101)),
+    REGULAR(
+        AxeRatePack.r(64, 200),
+        AxeRatePack.r(96, 300),
+        AxeRatePack.r(128, 400),
+        AxeRatePack.r(144, 450),
+        AxeRatePack.r(160, 500),
+        AxeRatePack.r(192, 600),
+        AxeRatePack.r(224, 700),
+        AxeRatePack.r(240, 750),
+        AxeRatePack.r(250, 800),
+    ),
+    OAK(
+        AxeRatePack.r(32, 100),
+        AxeRatePack.r(48, 150),
+        AxeRatePack.r(64, 200),
+        AxeRatePack.r(72, 225),
+        AxeRatePack.r(80, 250),
+        AxeRatePack.r(96, 300),
+        AxeRatePack.r(112, 350),
+        AxeRatePack.r(120, 375),
+        AxeRatePack.r(120, 375),
+    ),
+    WILLOW(
+        AxeRatePack.r(16, 50),
+        AxeRatePack.r(24, 75),
+        AxeRatePack.r(32, 100),
+        AxeRatePack.r(36, 112),
+        AxeRatePack.r(40, 125),
+        AxeRatePack.r(48, 150),
+        AxeRatePack.r(56, 175),
+        AxeRatePack.r(60, 187),
+        AxeRatePack.r(60, 187),
+    ),
+    TEAK(
+        AxeRatePack.r(15, 46),
+        AxeRatePack.r(23, 70),
+        AxeRatePack.r(31, 93),
+        AxeRatePack.r(35, 102),
+        AxeRatePack.r(39, 117),
+        AxeRatePack.r(47, 140),
+        AxeRatePack.r(55, 164),
+        AxeRatePack.r(60, 190),
+        AxeRatePack.r(60, 200),
+    ),
+    MAPLE(
+        AxeRatePack.r(8, 25),
+        AxeRatePack.r(12, 37),
+        AxeRatePack.r(16, 50),
+        AxeRatePack.r(18, 56),
+        AxeRatePack.r(20, 62),
+        AxeRatePack.r(24, 75),
+        AxeRatePack.r(28, 87),
+        AxeRatePack.r(30, 93),
+        AxeRatePack.r(30, 93),
+    ),
+    ARCTIC(
+        AxeRatePack.r(6, 30),
+        AxeRatePack.r(8, 44),
+        AxeRatePack.r(11, 60),
+        AxeRatePack.r(13, 67),
+        AxeRatePack.r(14, 74),
+        AxeRatePack.r(17, 90),
+        AxeRatePack.r(20, 104),
+        AxeRatePack.r(21, 112),
+        AxeRatePack.r(21, 112),
+    ),
+    MAHOGANY(
+        AxeRatePack.r(8, 25),
+        AxeRatePack.r(12, 38),
+        AxeRatePack.r(16, 50),
+        AxeRatePack.r(18, 54),
+        AxeRatePack.r(20, 63),
+        AxeRatePack.r(25, 75),
+        AxeRatePack.r(29, 88),
+        AxeRatePack.r(34, 94),
+        AxeRatePack.r(36, 97),
+    ),
+    YEW(
+        AxeRatePack.r(4, 12),
+        AxeRatePack.r(6, 19),
+        AxeRatePack.r(8, 25),
+        AxeRatePack.r(9, 28),
+        AxeRatePack.r(10, 31),
+        AxeRatePack.r(12, 37),
+        AxeRatePack.r(14, 44),
+        AxeRatePack.r(15, 47),
+        AxeRatePack.r(15, 47),
+    ),
+    MAGIC(
+        AxeRatePack.r(2, 6),
+        AxeRatePack.r(3, 9),
+        AxeRatePack.r(4, 12),
+        AxeRatePack.r(5, 13),
+        AxeRatePack.r(5, 15),
+        AxeRatePack.r(6, 18),
+        AxeRatePack.r(7, 21),
+        AxeRatePack.r(7, 22),
+        AxeRatePack.r(7, 22),
+    ),
+    REDWOOD(
+        AxeRatePack.r(2, 6),
+        AxeRatePack.r(3, 9),
+        AxeRatePack.r(4, 12),
+        AxeRatePack.r(4, 14),
+        AxeRatePack.r(5, 15),
+        AxeRatePack.r(6, 18),
+        AxeRatePack.r(7, 21),
+        AxeRatePack.r(7, 30),
+        AxeRatePack.r(8, 35),
+    ),
+    HOLLOW(
+        AxeRatePack.r(18, 26),
+        AxeRatePack.r(28, 40),
+        AxeRatePack.r(36, 54),
+        AxeRatePack.r(42, 57),
+        AxeRatePack.r(46, 68),
+        AxeRatePack.r(59, 81),
+        AxeRatePack.r(64, 94),
+        AxeRatePack.r(67, 101),
+        AxeRatePack.r(67, 101),
+    ),
     ;
 
     fun low(tier: Int): Int = packed[tier] ushr 16
@@ -69,7 +179,13 @@ internal enum class AxeRates(vararg val packed: Int) {
     fun high(tier: Int): Int = packed[tier] and 0xFFFF
 }
 
-private fun r(low: Int, high: Int): Int = (low shl 16) or high
+/**
+ * Packs a (low, high) rate. In its own object so [AxeRates] initialisation does not run this file's class initialiser
+ * (which builds [TREES] from [TreeKind], itself still initialising when it first touches [AxeRates]).
+ */
+private object AxeRatePack {
+    fun r(low: Int, high: Int): Int = (low shl 16) or high
+}
 
 /** Axe tiers: bronze, iron, steel, black, mithril, adamant, rune (and gilded), dragon (and 3rd age, infernal), crystal. */
 private const val BRONZE = 0
