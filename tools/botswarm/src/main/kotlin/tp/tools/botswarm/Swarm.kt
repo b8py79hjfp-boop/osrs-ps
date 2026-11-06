@@ -55,6 +55,7 @@ fun main(args: Array<String>) {
                 when (behaviour) {
                     "fight" -> fight(bot, count)
                     "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
+                    "clienthop" -> clientHop(bot, "$prefix${i + 1}", modulus, crcs)
                     "gear" -> gear(bot)
                     "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
                     else -> wander(bot, centreX, centreZ)
@@ -161,6 +162,32 @@ private const val DDS = 1215
 private const val SWITCH_MIN_NANOS = 600_000_000L
 private const val SWITCH_MAX_NANOS = 1_200_000_000L
 private val MIXED = listOf("walk", "fight", "gear", "walk")
+
+/**
+ * Client-side hop, like RuneLite's world hopper: no server involvement, the client drops its connection and logs in
+ * to the next world's address (server started with `--loopback-hosts`: world n = 127.0.0.n).
+ */
+private fun clientHop(first: BotClient, name: String, modulus: BigInteger, crcs: IntArray) {
+    var bot = first
+    var world = 1
+    var hops = 0
+    while (true) {
+        Thread.sleep(ThreadLocalRandom.current().nextLong(MIN_WALK_INTERVAL_NANOS, MAX_WALK_INTERVAL_NANOS) / NANOS_PER_MS)
+        val target = world % HOP_WORLDS + 1
+        bot.close()
+        bot = BotClient("127.0.0.$target", DEFAULT_PORT, modulus, crcs)
+        val started = System.nanoTime()
+        val response = bot.login(name, "bot")
+        val ms = (System.nanoTime() - started) / NANOS_PER_MS
+        if (response != LOGIN_OK) {
+            System.err.println("$name: client hop to $target refused: $response after $ms ms")
+            return
+        }
+        world = target
+        hops++
+        println("$name: client hop $hops -> world $world ($ms ms)")
+    }
+}
 
 /** Logout tab "World Switcher" and the switcher's world list (cache interface 182 comp 3, interface 69 comp 18). */
 private const val LOGOUT_WORLD_SWITCHER = 182 shl 16 or 3
