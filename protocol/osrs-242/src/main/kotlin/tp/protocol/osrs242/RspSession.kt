@@ -385,6 +385,7 @@ internal class RspSession(
                 }
 
                 is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+                is ServerMessage.IfNpcHead, is ServerMessage.IfPlayerHead, is ServerMessage.IfAnim,
                 is ServerMessage.Jingle,
                 is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
                 ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
@@ -432,7 +433,8 @@ private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
 /** Friends/ignore lists, private messages, friends chat (and interface/music updates, via [uiProt]). */
 private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
-        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack, is ServerMessage.Jingle,
+        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+        is ServerMessage.IfNpcHead, is ServerMessage.IfPlayerHead, is ServerMessage.IfAnim, is ServerMessage.Jingle,
         is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong,
         -> {
             uiProt(message)
@@ -524,6 +526,23 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
 
         is ServerMessage.IfObject -> {
             IfSetObject(message.component ushr COMPONENT_BITS, message.component and COMPONENT_MASK, message.obj, message.count)
+        }
+
+        is ServerMessage.IfNpcHead -> {
+            net.rsprot.protocol.game.outgoing.interfaces
+                .IfSetNpcHead(message.component, message.npc)
+        }
+
+        is ServerMessage.IfPlayerHead -> {
+            net.rsprot.protocol.game.outgoing.interfaces.IfSetPlayerHead(
+                message.component ushr COMPONENT_BITS,
+                message.component and COMPONENT_MASK,
+            )
+        }
+
+        is ServerMessage.IfAnim -> {
+            net.rsprot.protocol.game.outgoing.interfaces
+                .IfSetAnim(message.component, message.seq)
         }
 
         is ServerMessage.MusicTrack -> {

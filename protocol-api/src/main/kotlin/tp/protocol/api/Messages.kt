@@ -212,6 +212,15 @@ sealed interface ServerMessage {
     /** IF_SETOBJECT: shows [obj] x[count] in packed [component]. */
     data class IfObject(val component: Int, val obj: Int, val count: Int) : ServerMessage
 
+    /** Chat head model of NPC type [npc] on [component] (IF_SETNPCHEAD). */
+    data class IfNpcHead(val component: Int, val npc: Int) : ServerMessage
+
+    /** The player's own chat head on [component] (IF_SETPLAYERHEAD). */
+    data class IfPlayerHead(val component: Int) : ServerMessage
+
+    /** Animation [seq] (-1 none) on a model component (IF_SETANIM): chat head expressions. */
+    data class IfAnim(val component: Int, val seq: Int) : ServerMessage
+
     /** Plays music track [id] (MIDI_SONG; fades in client cycles, 0 = cut). */
     data class MusicTrack(val id: Int, val fadeOut: Int = 0, val fadeIn: Int = 0) : ServerMessage
 

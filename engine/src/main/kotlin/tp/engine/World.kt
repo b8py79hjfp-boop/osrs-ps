@@ -371,7 +371,9 @@ class World(
             is ClientCommand.ResumePause -> {
                 if (!interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) return invalid(player, command)
                 // A waiting dialogue script takes it; otherwise it is a pause-button click on an open panel (op 1).
-                if (!player.resumeInput(Unit)) content.onButton(player, command.component, PAUSE_BUTTON_OP, command.sub, -1)
+                if (!player.resumeInput(PauseInput(command.component, command.sub))) {
+                    content.onButton(player, command.component, PAUSE_BUTTON_OP, command.sub, -1)
+                }
             }
 
             is ClientCommand.ResumeString -> {
@@ -993,6 +995,9 @@ class World(
 
 /** The chatbox item search's answer (RESUME_P_OBJDIALOG); obj -1 = cancelled. Passed to content as a dialog answer. */
 data class ObjDialogAnswer(val obj: Int)
+
+/** A pause-button click (RESUME_PAUSEBUTTON) a waiting dialogue script receives: [sub] is the chosen option slot. */
+data class PauseInput(val component: Int, val sub: Int)
 
 /** Tick inspector / scenario hooks (brief §5.5). Implementations must not block. */
 interface TickTracer {

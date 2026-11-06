@@ -432,3 +432,9 @@ loc-links` derives both:
 The door, double-door and gate movement adapts RS Mod `generic-locs` (ISC; licence header kept in
 `content/world/.../Doors.kt`). These are fallback handlers, so content-specific door and ladder code always wins
 (docs/mechanics/doors-and-climbing.md).
+
+## D-032: Dialogue steps adapted from RS Mod
+
+The chatbox dialogue functions follow RS Mod (ISC) `ProtectedAccess` and `PlayerInterfaceExtensions`: which
+interfaces, client scripts, line heights and page widths. Text wraps on the cache's real `q8_full` glyph advances.
+Dialogues are suspending `PlayerScript` extensions, so content scripts read top to bottom (docs/mechanics/dialogue.md).

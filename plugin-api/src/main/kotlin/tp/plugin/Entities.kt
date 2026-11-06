@@ -229,6 +229,11 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
         n.levels[stat] = value.coerceAtLeast(0)
     }
 
+    /** The NPC's name as players see it (cache name). */
+    public val displayName: String get() =
+        n.world.data.configs.npcs[n.type]
+            ?.name ?: "null"
+
     /** The NPC config's op text for [op] (1-based), or null. */
     public fun opName(op: Int): String? =
         n.world.data.configs.npcs[n.type]
