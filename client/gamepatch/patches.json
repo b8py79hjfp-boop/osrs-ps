@@ -1,0 +1,19 @@
+{
+  "comment": "Game-client URL rewrites (brief §4.2 change set 2). Found by exact value; 'count' is how many constant sites must match (LDC operands + field values). {site} = our website/hub base URL.",
+  "urls": [
+    { "name": "support-home", "from": "https://support.runescape.com/hc/en-gb", "to": "{site}/support", "count": 5 },
+    { "name": "support-article-ja", "from": "https://support.runescape.com/hc/articles/34153372787857", "to": "{site}/support", "count": 1 },
+    { "name": "support-article-login", "from": "https://support.runescape.com/hc/en-gb/articles/360001552065", "to": "{site}/support", "count": 1 },
+    { "name": "support-unpaid-balance", "from": "https://support.runescape.com/hc/en-gb/articles/207256855-Settle-an-Unpaid-Balance", "to": "{site}/support", "count": 5 },
+    { "name": "legal-privacy", "from": "https://legal.jagex.com/docs/policies/privacy", "to": "{site}/legal/privacy", "count": 10 },
+    { "name": "legal-terms", "from": "https://legal.jagex.com/docs/terms", "to": "{site}/legal/terms", "count": 5 },
+    { "name": "legal-eula", "from": "https://legal.jagex.com/docs/terms/eula", "to": "{site}/legal/eula", "count": 5 },
+    { "name": "offence-appeal", "from": "https://secure.runescape.com/m=offence-appeal/account-history", "to": "{site}/support", "count": 5 },
+    { "name": "password-recovery", "from": "https://secure.runescape.com/m=accountappeal/passwordrecovery", "to": "{site}/support", "count": 5 },
+    { "name": "jagex-account-date", "from": "https://osrs.game/ja-date", "to": "{site}", "count": 1 },
+    { "name": "play-page", "from": "https://oldschool.runescape.com/play?utm_source=osrs_java&utm_medium=game_client", "to": "{site}", "count": 1 },
+    { "name": "displaynames-wtqa", "from": "https://secure-wtqa.runescape.com/m=displaynames", "to": "{site}/m=displaynames", "count": 4 },
+    { "name": "secure-prefix", "from": "https://secure", "to": "{site}", "count": 5 },
+    { "name": "runescape-domain", "from": ".runescape.com", "to": "", "count": 9 }
+  ]
+}

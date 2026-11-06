@@ -293,3 +293,21 @@ RS Mod's `sidemodal`, because plugin-api cannot close a sub-interface; the close
 value before `setVarbit`) and `WorldRef.dbRows` / `DbRowRef` (cache db rows, used for the music table). Items kept on death
 sends display-only inventory updates for 584/468 (`PlayerRef.showInv`). No server inventory changes, so nothing goes
 through a transaction or the item journal. Display copies must never be real items (brief §12).
+
+## D-028 — Release client: by-value game-client patching and a patch-series fork
+
+- **Game client** (`client/gamepatch`, Kotlin + ASM): RuneLite's `injected-client` jar, mirrored by `setupClient`
+  and checked against the pinned bootstrap's sha256. It is patched by rewriting string constants (LDC operands and
+  field values) found by value:
+  - the RSA modulus (the jar's only 256-hex-digit constant);
+  - Jagex URLs, from `client/gamepatch/patches.json`.
+
+  Every rule declares how many sites it must match, and any difference fails the build (test 5). The display-name URL
+  is concatenated at runtime (`"https://secure"` + `".runescape.com"` + path), so its two parts are rewritten to
+  `{site}` and `""`. RSProx's patcher techniques were the model (MIT, read only, nothing copied).
+- **RuneLite fork** (`client/runelite`): a patch series applied to tag `runelite-parent-1.13.6`. RuneLite's full
+  source is not vendored, so a revision bump is a rebase of a few small patches. The tag builds from source in the
+  sandbox; Gradle 8, JDK 11 target.
+- **Artifact integrity:** the RuneLite client itself checks only the external-plugin manifest signature
+  (`externalplugins.crt`), which goes away with the plugin hub. Launcher-side bootstrap verification is replaced by
+  our launcher's Ed25519-signed manifest.

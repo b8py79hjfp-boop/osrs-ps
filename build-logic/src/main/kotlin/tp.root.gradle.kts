@@ -1,5 +1,6 @@
 import tp.build.GenerateRsaTask
 import tp.build.SetupCacheTask
+import tp.build.SetupClientTask
 import tp.build.UpgradeRevisionTask
 
 val revisionProp = providers.gradleProperty("osrs.revision")
@@ -27,4 +28,11 @@ tasks.register<UpgradeRevisionTask>("upgradeRevision") {
     targetRevision = providers.gradleProperty("rev")
     cacheId = providers.gradleProperty("cacheId")
     projectDir = layout.projectDirectory
+}
+
+tasks.register<SetupClientTask>("setupClient") {
+    group = "tickperfect"
+    description = "Downloads the pinned RuneLite bootstrap's artifacts into .data/client/ and verifies their sha256."
+    bootstrapCommit = providers.gradleProperty("osrs.runeliteBootstrap")
+    outputDir = layout.projectDirectory.dir(".data/client")
 }
