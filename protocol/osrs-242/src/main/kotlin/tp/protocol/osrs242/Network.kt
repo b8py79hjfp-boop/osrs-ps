@@ -115,6 +115,11 @@ class Osrs242Network(
         last[2] = z
     }
 
+    override fun npcVisual(index: Int, visual: tp.protocol.api.Visual) {
+        val avatar = npcAvatars[index] ?: return
+        Visuals.apply(avatar.extendedInfo, visual)
+    }
+
     override fun shutdown() {
         service?.shutdown()
     }

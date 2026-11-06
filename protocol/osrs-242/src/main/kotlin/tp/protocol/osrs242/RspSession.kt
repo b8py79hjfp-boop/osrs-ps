@@ -34,10 +34,12 @@ import net.rsprot.protocol.game.outgoing.zone.payload.ObjAdd
 import net.rsprot.protocol.game.outgoing.zone.payload.ObjDel
 import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.message.ZoneProt
+import tp.protocol.api.Appearance
 import tp.protocol.api.AvatarState
 import tp.protocol.api.ClientCommand
 import tp.protocol.api.ClientSession
 import tp.protocol.api.ServerMessage
+import tp.protocol.api.Visual
 import tp.protocol.api.ZoneOp
 
 /**
@@ -118,6 +120,24 @@ internal class RspSession(
         infos.updateRootCoord(coord.level, coord.x, coord.z)
     }
 
+    override fun visual(visual: Visual) {
+        Visuals.apply(infos.playerInfo.avatar.extendedInfo, visual)
+    }
+
+    override fun appearance(appearance: Appearance) {
+        val ext = infos.playerInfo.avatar.extendedInfo
+        for (pos in 0 until WORN_SLOTS) {
+            val obj = appearance.worn.getOrElse(pos) { -1 }
+            ext.setWornObj(pos, obj, wornSecondary(appearance, pos, 0), wornSecondary(appearance, pos, 1))
+        }
+        ext.setCombatLevel(appearance.combatLevel)
+        ext.setSkullIcon(appearance.skullIcon)
+        ext.setOverheadIcon(appearance.prayerIcon)
+    }
+
+    private fun wornSecondary(appearance: Appearance, pos: Int, which: Int): Int =
+        appearance.hidden.getOrNull(pos * 2 + which) ?: -1
+
     override fun publicChat(text: String, colour: Int, effects: Int) {
         infos.playerInfo.avatar.extendedInfo
             .setChat(colour, effects, 0, false, text, null)
@@ -150,6 +170,9 @@ internal class RspSession(
 
     companion object {
         private const val ZONE_SHIFT = 3
+
+        /** Appearance wear positions 0..11 (RSProt `setWornObj`). */
+        private const val WORN_SLOTS = 12
 
         /** Root world id for rebuilds (RS Mod `RspCycle.worldId`). */
         private const val ROOT_WORLD = -1

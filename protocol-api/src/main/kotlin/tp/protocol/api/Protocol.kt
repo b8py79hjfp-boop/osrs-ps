@@ -25,6 +25,9 @@ interface GameNetwork {
     /** Info pass: the NPC's tile this tick. A one-tile change is a walk step; anything else a teleport. */
     fun npcSync(index: Int, level: Int, x: Int, z: Int) {}
 
+    /** A visual on NPC [index] this tick. */
+    fun npcVisual(index: Int, visual: Visual) {}
+
     /** End of the info pass, after every session flushed (release per-tick shared buffers). */
     fun afterFlush() {}
 
@@ -84,6 +87,12 @@ interface ClientSession {
 
     /** Public chat from this player's avatar this tick (player info extended info). */
     fun publicChat(text: String, colour: Int, effects: Int) {}
+
+    /** A visual on this player's avatar this tick (seen by everyone who sees the avatar). */
+    fun visual(visual: Visual) {}
+
+    /** This player's look changed (equipment, icons, combat level). */
+    fun appearance(appearance: Appearance) {}
 
     /** Info pass, step 2: queue this player's info packets (after [GameNetwork.buildInfos]) and flush the session. */
     fun flushInfos()
