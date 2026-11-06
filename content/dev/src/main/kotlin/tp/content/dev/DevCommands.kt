@@ -23,7 +23,7 @@ public class DevCommands : ContentPlugin {
             if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
         }
         onCommand("max") {
-            for (stat in 0..6) addXp(stat, MAX_XP)
+            for (stat in 0..LAST_COMBAT_STAT) addXp(stat, MAX_XP)
             message("Combat stats set to 99.")
         }
         onCommand("kit") {
@@ -74,6 +74,9 @@ public class DevCommands : ContentPlugin {
     private companion object {
         const val STAT_COUNT = 24
         const val MAX_XP = 13_034_431.0
+
+        /** Attack..Magic are stats 0..6. */
+        const val LAST_COMBAT_STAT = 6
 
         /** Main Wilderness, level 36, multi-combat (wilderness.md). */
         const val WILD_X = 3300
