@@ -5,7 +5,7 @@
 - [x] **Phase 0 — Scaffold** — done 2026-11-05; CI green on Temurin 25.0.5
 - [x] **Phase 1 — Cache and world data** — done 2026-11-05 (pending CI confirmation on JDK 25)
 - [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
-- [ ] Phase 3 — Engine core
+- [x] **Phase 3 — Engine core** — done 2026-11-06 (awaiting real-client check)
 - [ ] Phase 4 — Combat and PvP
 - [ ] Phase 5 — Scale and operations
 - [ ] Phase 6 — Release client
@@ -57,6 +57,24 @@
     (RSProx `findCodebaseReplacementWorld`); rev-242 login without a jxSessionId section (vendored-decoder patch,
     D-005 OPEN-B).
 
+- Phase 3 (2026-11-06):
+  - Tick pipeline per docs/mechanics/tick.md: PID-ordered input (≤ 10), NPCs then players, post-tick (logouts,
+    bounded logins, per-player PID re-randomisation, ground obj timers), info pass. D-020, D-021.
+  - Script runtime (suspend, stdlib intrinsics, no dispatcher), queues (weak/normal/strong/soft, long queue),
+    timers (normal/soft), delays (normal/arrive), protected access; interactions (osrs-docs op/ap pseudocode,
+    two blocks around movement) for locs, NPCs, players, ground objs. Verifier pass on tick/scripts/interactions.
+  - Vars (dirty, end-of-tick), stats (24 incl. Sailing), run energy, inventories and the single atomic, journaled
+    item transaction API (inventories and ground). Ground items with zone updates (docs/mechanics/ground-items.md).
+  - Input validation: op ranges, loc at clicked tile (`StaticLocs`), NPC/player in view, button on an open
+    interface, chat length; invalid input counted with a rate-based disconnect (D-022).
+  - plugin-api (facades, `@RestrictsSuspension` scripts, typed handlers, event bus) with KSP-generated registries
+    (D-023). Content modules: `content/gameframe` (fixed toplevel + all tabs, login sequence, drop/take) and
+    `content/dev` (`::pos ::run ::tele ::item ::empty ::xp ::trace`, a few Lumbridge NPCs).
+  - Tick inspector (`--trace file.jsonl`, `::trace` to chatbox), replay (`--record file`, `tools/replay`), scenario
+    runner (`tools/scenario`, headless). Live 5-bot recording replayed headlessly: all 149 tick hashes match.
+- Deferred from the Phase 3 plan (tracked for Phase 4 start): dynamic locs (zone loc add/del), inventory drag
+  (IF_BUTTOND), examine ops, resizable gameframes, wilderness drop rule (ground-items G4), RSProx `.bin` recording.
+
 ## Blocking
 
 - Repo: github.com/b8py79hjfp-boop/osrs-ps. CI (JDK 25) runs setup → build → boot check. The dev sandbox still
@@ -70,11 +88,8 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 3 plan: full tick pipeline, scripts/queues/timers/delays/interactions,
-   plugin-api, varps/inventories/interfaces, tick inspector, replay, packet validation, item transactions.
-   Also: RSProx-compatible `.bin` recording behind a dev flag (brief §4.3); display-name packet (client says
-   "You must set a name before you can chat"); side-panel tabs, stats, run energy/orb.
-2. Ask for osrs-docs.com and oldschool.runescape.wiki to be reachable: brief §2's primary mechanics sources.
+1. User check of Phase 3 with the real client (gameframe tabs, chat, stats, `::item` + drop/take, NPCs, `::trace`).
+2. Phase 4 plan: combat and PvP (brief §8), golden scenarios on tools/scenario (test 3), plus the deferred items above.
 
 ## Open questions
 

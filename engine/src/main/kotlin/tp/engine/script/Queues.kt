@@ -68,7 +68,7 @@ class PlayerQueue internal constructor(private val player: Player) {
             val canRun = (e.type == QueueType.SOFT || !player.isDelayed) && !player.hasModal && e.notBefore <= now
             if (canRun) {
                 entries.removeAt(i)
-                ScriptRunner.start(player, e.script)
+                ScriptRunner.start(player, e.script, "queue ${e.type}")
                 processed++
             } else {
                 i++
@@ -98,7 +98,7 @@ class NpcQueue internal constructor(private val npc: Npc) {
                 val e = entries[i]
                 if (e.notBefore <= now) {
                     entries.removeAt(i)
-                    ScriptRunner.start(npc, e.script)
+                    ScriptRunner.start(npc, e.script, "queue")
                 } else {
                     i++
                 }
@@ -125,7 +125,7 @@ class AreaQueue internal constructor(private val player: Player) {
 
     internal fun process() {
         while (entries.isNotEmpty() && !player.isDelayed && !player.hasModal) {
-            ScriptRunner.start(player, entries.removeFirst())
+            ScriptRunner.start(player, entries.removeFirst(), "area queue")
         }
     }
 }

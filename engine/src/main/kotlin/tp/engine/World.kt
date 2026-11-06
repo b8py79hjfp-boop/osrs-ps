@@ -92,7 +92,11 @@ class World(
 
     private val loginInbox = ConcurrentLinkedQueue<LoginRequest>()
 
+    /** Players added without a network login (scenario runner, replay); admitted in post-tick like logins. */
+    private val pendingAdds = ArrayDeque<Player>()
+
     @Volatile private var running = false
+    private var booted = false
     private var thread: Thread? = null
 
     /** Hooks for the tick inspector / scenario runner (null in production unless tracing is on). */
@@ -129,7 +133,6 @@ class World(
         thread =
             Thread.ofPlatform().name("world-${config.id}").start {
                 try {
-                    content.onWorldStart(this)
                     network.start(this)
                     started.complete(Unit)
                 } catch (e: Exception) {
@@ -171,6 +174,11 @@ class World(
 
     /** One full tick. Public so the scenario runner and replay can drive a world without the clock or network. */
     fun runTick() {
+        if (!booted) {
+            // World-start content (spawns) runs once before the first tick, however the world is driven.
+            booted = true
+            content.onWorldStart(this)
+        }
         tick++
         tracer?.onTickStart(tick)
         inputPhase()
@@ -326,6 +334,7 @@ class World(
             val player = players[slot] ?: continue
             if (!player.session.isOpen) logout(player)
         }
+        while (pendingAdds.isNotEmpty()) addPlayer(pendingAdds.removeFirst())
         var admitted = 0
         while (admitted < config.maxLoginsPerTick) {
             val request = loginInbox.poll() ?: break
@@ -471,6 +480,11 @@ class World(
         addPlayer(newPlayer(slot, request.username, session, config.spawn))
     }
 
+    /** Scenario runner / replay: admit [player] in the next post-tick, exactly where a network login would be. */
+    fun queueAdmission(player: Player) {
+        pendingAdds += player
+    }
+
     /** Registers a player whose session is already accepted (login, scenario runner, replay). */
     fun addPlayer(player: Player) {
         check(players[player.slot] == null) { "slot ${player.slot} taken" }
@@ -481,6 +495,7 @@ class World(
         player.session.syncAvatar(player.avatarState())
         player.vars.sendAll(player.session)
         content.onLogin(player)
+        tracer?.onLogin(player)
         logger.info { "login: $player ($playerCount online)" }
     }
 
@@ -489,6 +504,7 @@ class World(
         Player(this, slot, username, session, at, PlayerVars(data.configs.varps.size, data.configs.varbits))
 
     private fun logout(player: Player) {
+        tracer?.onLogout(player)
         player.queue.onLogout()
         content.onLogout(player)
         players[player.slot] = null
@@ -520,6 +536,40 @@ class World(
         pidShuffleEnabled = false
     }
 
+    /**
+     * Hash of the logic state replay compares tick by tick: every player's slot, coord, run mode, delay, inventories,
+     * varps and stats, and every NPC's coord. Not on a hot path (replay/scenario only).
+     */
+    @Suppress("MagicNumber") // bit shifts that pack two values into one hash input
+    fun stateHash(): Long {
+        var h = tick
+
+        fun mix(v: Long) {
+            h = (h xor v) * HASH_PRIME
+        }
+        for (slot in pidOrder) {
+            val p = players[slot] ?: continue
+            mix(slot.toLong())
+            mix(p.coord.packed.toLong())
+            mix(if (p.runMode) 1 else 0)
+            mix(p.delayedUntil)
+            mix(p.runEnergy.toLong())
+            for (inv in p.invs.values.sortedBy { it.invId }) {
+                for (i in 0 until inv.size) {
+                    mix(inv.obj(i).toLong() shl 32 or inv.count(i).toLong())
+                }
+            }
+            mix(p.vars.hash())
+            for (stat in 0 until tp.engine.stat.PlayerStats.COUNT) {
+                mix(
+                    p.stats.xpTenths(stat).toLong() shl 8 or p.stats.level(stat).toLong(),
+                )
+            }
+        }
+        for (npc in npcs) if (npc != null) mix(npc.coord.packed.toLong())
+        return h
+    }
+
     /** PID (0-based processing position) of a player slot. */
     fun pidOf(slot: Int): Int = pidOrder.indexOf(slot)
 
@@ -533,6 +583,9 @@ class World(
         private const val MISSED_LOG_SAMPLE = 100L
         private const val WALK_STEPS = 1
         private const val RUN_STEPS = 2
+
+        /** FNV-1a 64-bit prime, for [stateHash]. */
+        private const val HASH_PRIME = 0x100000001b3L
         private val WHITESPACE = Regex("\\s+")
 
         /** Loc/NPC/obj ops 1..5 (op6 = examine, handled separately). */
@@ -568,4 +621,25 @@ interface TickTracer {
     fun onPhase(entity: Entity, phase: String) {}
 
     fun onInvalid(player: Player, command: ClientCommand) {}
+
+    fun onLogin(player: Player) {}
+
+    fun onLogout(player: Player) {}
+}
+
+/** Several tracers at once (inspector + replay recorder). */
+class Tracers(private vararg val all: TickTracer) : TickTracer {
+    override fun onTickStart(tick: Long) = all.forEach { it.onTickStart(tick) }
+
+    override fun onTickEnd(tick: Long) = all.forEach { it.onTickEnd(tick) }
+
+    override fun onCommand(player: Player, command: ClientCommand) = all.forEach { it.onCommand(player, command) }
+
+    override fun onPhase(entity: Entity, phase: String) = all.forEach { it.onPhase(entity, phase) }
+
+    override fun onInvalid(player: Player, command: ClientCommand) = all.forEach { it.onInvalid(player, command) }
+
+    override fun onLogin(player: Player) = all.forEach { it.onLogin(player) }
+
+    override fun onLogout(player: Player) = all.forEach { it.onLogout(player) }
 }

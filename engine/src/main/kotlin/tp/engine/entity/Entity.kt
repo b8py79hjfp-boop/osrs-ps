@@ -18,7 +18,8 @@ abstract class Entity internal constructor(
     abstract val size: Int
 
     /** Tick the current delay ends (exclusive): delayed while `world.tick < delayedUntil` (docs scripts.md D1–D3). */
-    private var delayedUntil: Long = 0
+    internal var delayedUntil: Long = 0
+        private set
 
     /** `tick + 1` whenever the entity moves (osrs-docs interaction pseudocode); read by arrive delay. */
     internal var lastMovementClock: Long = -1

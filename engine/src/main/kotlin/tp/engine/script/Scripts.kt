@@ -51,7 +51,8 @@ class ProtectedAccess internal constructor(val player: Player)
 
 internal object ScriptRunner {
     /** Starts [script] on [entity] now. Runs until it finishes or first suspends. */
-    fun <E : Entity> start(entity: E, script: Script<E>) {
+    fun <E : Entity> start(entity: E, script: Script<E>, label: String) {
+        entity.world.tracer?.onPhase(entity, label)
         val scope = ScriptScope(entity)
         script.createCoroutine(scope, Completion(entity)).resume(Unit)
     }

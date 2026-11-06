@@ -9,13 +9,14 @@ import tp.util.CoordGrid
 /** Developer `::commands` (Phase 3 stand-ins; an admin rights check arrives with accounts in Phase 5). */
 public class DevCommands : ContentPlugin {
     override fun ContentScope.register() {
-        onLogin { message("Dev commands: ::pos ::run ::tele x z [level] ::item id [count] ::empty ::xp stat amount") }
+        onLogin { message("Dev commands: ::pos ::run ::tele x z [level] ::item id [count] ::empty ::xp stat amount ::trace") }
         onCommand("pos") { message("$coord tick $tick pid $pid") }
         onCommand("run") {
             runMode = !runMode
             message("Run: $runMode")
         }
         onCommand("tele") { args -> tele(args) }
+        onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
         onCommand("item") { args -> item(args) }
         onCommand("empty") {
             val inv = inv(Invs.INV)

@@ -83,12 +83,12 @@ class InteractionProcessor internal constructor(
             updateRoute(player, interaction)
             when {
                 interaction.opScript != null && inOpRange(player, interaction) && interaction.isMobileTarget -> {
-                    run(player, interaction.opScript)
+                    run(player, interaction.opScript, "op (block 1)")
                     interacted = true
                 }
 
                 interaction.apScript != null && inApRange(player, interaction) -> {
-                    run(player, interaction.apScript)
+                    run(player, interaction.apScript, "ap (block 1)")
                     interacted = true
                 }
 
@@ -107,20 +107,23 @@ class InteractionProcessor internal constructor(
         val before = player.coord
         player.stepsThisTick = movement.step(player, maxSteps)
         val moved = player.coord != before
-        if (moved) player.lastMovementClock = player.world.tick + 1
+        if (moved) {
+            player.lastMovementClock = player.world.tick + 1
+            player.world.tracer?.onPhase(player, "move ${player.coord}")
+        }
 
         val current = player.interaction ?: return
         if (current !== interaction) return // replaced by a script during this turn
         if (!blocked(player) && (!interacted || current.apRangeCalled)) {
             when {
                 current.opScript != null && inOpRange(player, current) && (current.isMobileTarget || !moved) -> {
-                    run(player, current.opScript)
+                    run(player, current.opScript, "op (block 2)")
                     interacted = true
                 }
 
                 current.apScript != null && inApRange(player, current) -> {
                     current.apRangeCalled = false
-                    run(player, current.apScript)
+                    run(player, current.apScript, "ap (block 2)")
                     interacted = true
                 }
 
@@ -153,9 +156,10 @@ class InteractionProcessor internal constructor(
 
     private fun blocked(player: Player): Boolean = player.isDelayed || player.hasModal
 
-    private fun run(player: Player, script: Script<Player>) = ScriptRunner.start(player, script)
+    private fun run(player: Player, script: Script<Player>, label: String) = ScriptRunner.start(player, script, label)
 
     private fun nothingInteresting(player: Player) {
+        player.world.tracer?.onPhase(player, "engine interaction")
         player.session.send(ServerMessage.GameMessage(NOTHING_INTERESTING))
     }
 

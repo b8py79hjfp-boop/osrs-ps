@@ -47,7 +47,7 @@ class PlayerTimers internal constructor(private val player: Player) {
                 if (t.remaining > 0) continue
                 if (!t.soft && (player.isDelayed || player.hasModal)) continue // halt at 0, retry next tick
                 t.remaining = t.interval
-                ScriptRunner.start(player, t.script)
+                ScriptRunner.start(player, t.script, "timer ${t.key.name}")
             }
         }
         for (k in removed) active.remove(k)
@@ -79,7 +79,7 @@ class NpcTimer internal constructor(private val npc: Npc) {
             if (t.remaining > 0) t.remaining--
             if (t.remaining == 0) {
                 t.remaining = t.interval
-                ScriptRunner.start(npc, t.script)
+                ScriptRunner.start(npc, t.script, "timer")
             }
         }
         pending?.let {

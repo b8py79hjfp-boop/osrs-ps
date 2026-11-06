@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import tp.net.http.ClientConfigServer
 import tp.net.http.WorldEntry
 import tp.util.Revision
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.system.exitProcess
 
@@ -17,7 +18,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  *
  * Args: `--cache-dir <path>` (default `.data/cache/<rev>/disk`), `--boot-check` (verify data and exit; CI),
  * `--port` (game + JS5, default 43594), `--http-port` (jav_config/worldlist, default 8080),
- * `--public-host` (address advertised to clients, default 127.0.0.1), `--world` (id, default 1).
+ * `--public-host` (address advertised to clients, default 127.0.0.1), `--world` (id, default 1),
+ * `--trace <file>` (tick inspector JSONL), `--record <file>` (replay log for tools/replay).
  */
 fun main(args: Array<String>) {
     val options = parseArgs(args)
@@ -38,7 +40,9 @@ fun main(args: Array<String>) {
     val host = options["--public-host"] ?: "127.0.0.1"
     val worldId = options["--world"]?.toIntOrNull() ?: 1
     val rsa = RsaKeys.load(Path.of(".data", "rsa", "private.pem"))
-    val world = WorldNode.startWorld(data, rsa, gamePort, worldId, seed = System.nanoTime())
+    val traceOut = options["--trace"]?.let { Files.newBufferedWriter(Path.of(it)) }
+    val recordOut = options["--record"]?.let { Files.newBufferedWriter(Path.of(it)) }
+    val world = WorldNode.startWorld(data, rsa, gamePort, worldId, seed = System.nanoTime(), traceOut, recordOut)
     val http =
         ClientConfigServer(
             port = httpPort,
@@ -55,6 +59,8 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(
         Thread {
             world.stop()
+            traceOut?.close()
+            recordOut?.close()
             http.close()
             data.cache.close()
         },

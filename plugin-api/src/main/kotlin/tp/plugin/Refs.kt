@@ -6,6 +6,7 @@ import tp.engine.entity.Player
 import tp.engine.inv.InvStack
 import tp.engine.inv.Inventory
 import tp.engine.inv.ItemTransaction
+import tp.engine.tick.TickInspector
 import tp.engine.zone.GroundObj
 import tp.protocol.api.ServerMessage
 import tp.util.CoordGrid
@@ -40,6 +41,9 @@ public class PlayerRef internal constructor(internal val p: Player) {
     public fun interrupt() {
         p.world.interrupt(p)
     }
+
+    /** Toggles streaming this player's tick trace to their chatbox (`::trace`); false if no inspector is installed. */
+    public fun toggleTrace(): Boolean = (p.world.tracer as? TickInspector)?.toggle(p) ?: false
 
     public fun teleport(to: CoordGrid) {
         p.world.teleport(p, to)

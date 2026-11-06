@@ -40,6 +40,8 @@ class PlayerVars internal constructor(varpCount: Int, private val varbits: TypeL
         set(type.baseVar, (base and (mask shl type.startBit).inv()) or (value shl type.startBit))
     }
 
+    internal fun hash(): Long = values.contentHashCode().toLong()
+
     /** Login: every non-zero varp, after the client was told to reset (VarpReset). */
     internal fun sendAll(session: ClientSession) {
         session.send(ServerMessage.VarpReset)

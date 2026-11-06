@@ -9,14 +9,18 @@ import tp.cache.js5.Js5Cache
 import tp.cache.map.CollisionBuilder
 import tp.cache.map.GameMap
 import tp.cache.map.MapKeysLoader
+import tp.engine.Tracers
 import tp.engine.World
 import tp.engine.WorldConfig
 import tp.engine.WorldData
 import tp.engine.map.StaticLocs
+import tp.engine.tick.ReplayRecorder
+import tp.engine.tick.TickInspector
 import tp.plugin.PluginContent
 import tp.protocol.osrs242.Osrs242Network
 import tp.util.CoordGrid
 import tp.util.Revision
+import java.io.Writer
 import java.nio.file.Path
 import java.util.Locale
 
@@ -70,12 +74,25 @@ object WorldNode {
         return BootData(cache, configs, WorldData(configs, collision, StaticLocs.build(map, configs.locs)))
     }
 
-    /** Creates and starts one world with its rev-242 network on [gamePort]. */
-    fun startWorld(data: BootData, rsa: RsaKeyPair, gamePort: Int, worldId: Int, seed: Long): World {
+    /**
+     * Creates and starts one world. A tick inspector is always installed (for `::trace`); [traceOut] also writes its
+     * JSONL trace, [recordOut] a replay log (`tools/replay`).
+     */
+    fun startWorld(
+        data: BootData,
+        rsa: RsaKeyPair,
+        gamePort: Int,
+        worldId: Int,
+        seed: Long,
+        traceOut: Writer? = null,
+        recordOut: Writer? = null,
+    ): World {
         val network = Osrs242Network(data.cache, rsa, gamePort)
         val content = PluginContent.load()
         logger.info { "content: ${content.summary}" }
         val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
+        val inspector = TickInspector(traceOut)
+        world.tracer = if (recordOut == null) inspector else Tracers(inspector, ReplayRecorder(world, recordOut))
         world.start()
         return world
     }
