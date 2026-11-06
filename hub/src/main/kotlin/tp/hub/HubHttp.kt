@@ -11,7 +11,50 @@ object HubHttp {
             "/register" to { ex -> register(hub, ex) },
             "/health" to { ex -> health(hub, ex) },
             "/hiscores" to { ex -> hiscores(hub, ex) },
+            "/runelite" to { ex -> runelite(hub, ex) },
         )
+
+    /**
+     * The release client's RuneLite API base (`runelite.api.base` = `<site>/runelite`; client/runelite/ENDPOINTS.md).
+     * - `worlds.js`: the world hopper's list, RuneLite `WorldResult` JSON built from the hub's world directory.
+     * - `item/prices.js`: RuneLite `ItemPrice[]` from GE guide prices (grand-exchange.md GE2).
+     * - `config.json`: RuneLite's static runtime config; empty, so the client keeps its defaults.
+     * Anything else answers 404, so a client feature we haven't served fails closed instead of reaching RuneLite.
+     */
+    private fun runelite(hub: Hub, ex: HttpExchange) {
+        val path = ex.requestURI.path.removePrefix("/runelite")
+        when (path) {
+            "/worlds.js" -> json(ex, worlds(hub))
+            "/item/prices.js" -> json(ex, prices(hub))
+            "/config.json" -> json(ex, "{}")
+            else -> reply(ex, HTTP_NOT_FOUND, "not served")
+        }
+    }
+
+    private fun worlds(hub: Hub): String {
+        val worlds = runBlocking { hub.worlds.list() }
+        return worlds.joinToString(",", prefix = "{\"worlds\":[", postfix = "]}") { w ->
+            val types = if (w.flags and MEMBERS_FLAG != 0) "[\"MEMBERS\"]" else "[]"
+            "{\"id\":${w.id},\"types\":$types,\"address\":${quote(w.host)},\"activity\":${quote(w.activity)}," +
+                "\"region\":\"UNITED_STATES_OF_AMERICA\",\"players\":${w.population}}"
+        }
+    }
+
+    private fun prices(hub: Hub): String {
+        val prices = runBlocking { hub.exchange.guidePrices() }
+        return prices.entries.joinToString(",", prefix = "[", postfix = "]") { (obj, price) ->
+            "{\"id\":$obj,\"name\":\"\",\"price\":$price,\"wikiPrice\":$price}"
+        }
+    }
+
+    private fun quote(s: String): String = "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+    private fun json(ex: HttpExchange, body: String) {
+        val bytes = body.toByteArray()
+        ex.responseHeaders.add("Content-Type", "application/json")
+        ex.sendResponseHeaders(HTTP_OK, bytes.size.toLong())
+        ex.responseBody.use { it.write(bytes) }
+    }
 
     /** `POST /register` with form fields `username`, `password` (the release client's "New user" link: brief §4.2, §12). */
     private fun register(hub: Hub, ex: HttpExchange) {
@@ -59,4 +102,8 @@ object HubHttp {
     private const val OVERALL = -1
     private const val DEFAULT_COUNT = 25
     private const val MAX_COUNT = 100
+    private const val HTTP_NOT_FOUND = 404
+
+    /** World-list members flag (ClientConfigServer.FLAG_MEMBERS / LogoutTransfer properties 0x1). */
+    private const val MEMBERS_FLAG = 1
 }
