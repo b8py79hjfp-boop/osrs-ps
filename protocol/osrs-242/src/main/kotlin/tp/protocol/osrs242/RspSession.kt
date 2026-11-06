@@ -113,8 +113,23 @@ internal class RspSession(
             return
         }
         if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
+        val held = beforeFirstInfo
+        if (held != null && message.isChat()) {
+            held += toRsprot(message)
+            return
+        }
         session.queue(toRsprot(message))
     }
+
+    /**
+     * Chat-type messages queued before the session's first player info. The client creates its local player from the
+     * first player info, and RuneLite's chat handlers (e.g. Loot Tracker) assume it exists, so login messages wait
+     * until just after that packet; OSRS orders them the same way. Null once the first infos went out.
+     */
+    private var beforeFirstInfo: MutableList<OutgoingGameMessage>? = ArrayList()
+
+    private fun ServerMessage.isChat(): Boolean =
+        this is ServerMessage.GameMessage || this is ServerMessage.PrivateMessage || this is ServerMessage.ChannelMessage
 
     override fun syncAvatar(coord: AvatarState) {
         val ext = infos.playerInfo.avatar.extendedInfo
@@ -173,6 +188,10 @@ internal class RspSession(
             root.npcInfo.onSuccess(session::queue).onFailure { throw it }
         }
         session.queue(root.activeWorld)
+        beforeFirstInfo?.let { held ->
+            held.forEach(session::queue)
+            beforeFirstInfo = null
+        }
         session.flush()
     }
 
