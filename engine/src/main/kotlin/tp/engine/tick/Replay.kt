@@ -59,7 +59,7 @@ object CommandCodec {
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
             ClientCommand.CloseModal -> "closemodal"
             is ClientCommand.WindowStatus -> "window ${c.mode} ${c.width} ${c.height}"
-            is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)}"
+            is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)} ${c.rank}"
         }
 
     @Suppress("CyclomaticComplexMethod", "MagicNumber") // one branch per command; indices are field positions
@@ -130,6 +130,7 @@ object CommandCodec {
                         .valueOf(parts[1]),
                     unstr(parts[2]),
                     unstr(parts[3]),
+                    parts.getOrNull(4)?.toInt() ?: 0,
                 )
             }
 

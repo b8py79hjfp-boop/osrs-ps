@@ -145,6 +145,27 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             }
         }
 
+    override fun channelRanks(id: Long): Map<String, Int> =
+        sql { c ->
+            c.prepareStatement("SELECT name, rank FROM channel_ranks WHERE owner_id = ?").use { ps ->
+                ps.setLong(1, id)
+                ps.executeQuery().use { rs -> buildMap { while (rs.next()) put(rs.getString(1), rs.getInt(2)) } }
+            }
+        }
+
+    override fun setChannelRank(id: Long, name: String, rank: Int) =
+        if (rank >= 0) {
+            exec(
+                "INSERT INTO channel_ranks (owner_id, name, rank) VALUES (?, ?, ?) " +
+                    "ON CONFLICT (owner_id, name) DO UPDATE SET rank = EXCLUDED.rank",
+                id,
+                name.lowercase(),
+                rank,
+            )
+        } else {
+            exec("DELETE FROM channel_ranks WHERE owner_id = ? AND name = ?", id, name.lowercase())
+        }
+
     override fun offers(id: Long): List<GeOffer> = offers("SELECT * FROM ge_offers WHERE account_id = ? ORDER BY slot", id)
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =
@@ -227,6 +248,8 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 "CREATE TABLE IF NOT EXISTS friends (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ignores (account_id bigint REFERENCES accounts(id), name text, PRIMARY KEY (account_id, name))",
                 "CREATE TABLE IF NOT EXISTS ip_bans (ip text PRIMARY KEY)",
+                """CREATE TABLE IF NOT EXISTS channel_ranks (
+                    owner_id bigint REFERENCES accounts(id), name text, rank int NOT NULL, PRIMARY KEY (owner_id, name))""",
                 """CREATE TABLE IF NOT EXISTS ge_offers (
                     id bigserial PRIMARY KEY, account_id bigint REFERENCES accounts(id), slot int NOT NULL, buy boolean NOT NULL,
                     obj int NOT NULL, quantity int NOT NULL, price int NOT NULL, completed int NOT NULL,

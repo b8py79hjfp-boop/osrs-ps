@@ -4,6 +4,10 @@ import net.rsprot.protocol.api.Session
 import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.game.outgoing.inv.InventoryObject
+import net.rsprot.protocol.game.outgoing.friendchat.MessageFriendChannel
+import net.rsprot.protocol.game.outgoing.friendchat.UpdateFriendChatChannelFull
+import net.rsprot.protocol.game.outgoing.friendchat.UpdateFriendChatChannelFullV2
+import net.rsprot.protocol.game.outgoing.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprot.protocol.game.outgoing.info.Infos
 import net.rsprot.protocol.game.outgoing.info.util.isEmpty
 import net.rsprot.protocol.game.outgoing.info.util.onFailure
@@ -332,12 +336,10 @@ internal class RspSession(
                     Logout
                 }
 
-                is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack -> {
-                    uiProt(message)
-                }
-
-                is ServerMessage.FriendList, is ServerMessage.IgnoreList, ServerMessage.FriendListLoaded,
-                is ServerMessage.PrivateMessage, is ServerMessage.PrivateMessageEcho,
+                is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+                is ServerMessage.FriendList, is ServerMessage.IgnoreList, ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
+                is ServerMessage.PrivateMessageEcho, is ServerMessage.ChannelJoined, ServerMessage.ChannelLeft,
+                is ServerMessage.ChannelMember, is ServerMessage.ChannelMessage,
                 -> {
                     socialProt(message)
                 }
@@ -375,9 +377,13 @@ private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
         UpdateFriendList.OfflineFriend(row.added, row.name, null, 0, 0, "")
     }
 
-/** Friends/ignore lists and private messages. */
+/** Friends/ignore lists, private messages, friends chat (and interface/music updates, via [uiProt]). */
 private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
+        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack -> {
+            uiProt(message)
+        }
+
         is ServerMessage.FriendList -> {
             UpdateFriendList(message.friends.map(::friendRow))
         }
@@ -404,6 +410,43 @@ private fun socialProt(message: ServerMessage): OutgoingGameMessage =
 
         is ServerMessage.PrivateMessageEcho -> {
             MessagePrivateEcho(message.to, message.text)
+        }
+
+        is ServerMessage.ChannelJoined -> {
+            UpdateFriendChatChannelFullV2(
+                UpdateFriendChatChannelFullV2.JoinUpdate(
+                    message.owner,
+                    message.channelName,
+                    message.kickRank,
+                    message.members.map {
+                        UpdateFriendChatChannelFull.FriendChatEntry(
+                            it.name,
+                            it.worldId,
+                            it.rank,
+                            "World ${it.worldId}",
+                        )
+                    },
+                ),
+            )
+        }
+
+        ServerMessage.ChannelLeft -> {
+            UpdateFriendChatChannelFullV2(UpdateFriendChatChannelFullV2.LeaveUpdate)
+        }
+
+        is ServerMessage.ChannelMember -> {
+            val m = message.member
+            UpdateFriendChatChannelSingleUser(
+                if (message.removed) {
+                    UpdateFriendChatChannelSingleUser.RemovedFriendChatUser(m.name, m.worldId)
+                } else {
+                    UpdateFriendChatChannelSingleUser.AddedFriendChatUser(m.name, m.worldId, m.rank, "World ${m.worldId}")
+                },
+            )
+        }
+
+        is ServerMessage.ChannelMessage -> {
+            MessageFriendChannel(message.from, message.channelName, message.worldId, message.counter, message.crown, message.text)
         }
 
         else -> {

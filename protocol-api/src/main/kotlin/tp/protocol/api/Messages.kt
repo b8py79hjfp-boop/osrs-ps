@@ -36,7 +36,7 @@ sealed interface ClientCommand {
     data class PublicChat(val text: String, val colour: Int, val effect: Int, val type: Int) : ClientCommand
 
     /** Friends/ignore list edits and private messages ([text] only for [SocialAction.PRIVATE_MESSAGE]). */
-    data class Social(val action: SocialAction, val name: String, val text: String = "") : ClientCommand
+    data class Social(val action: SocialAction, val name: String, val text: String = "", val rank: Int = 0) : ClientCommand
 
     /** "Click here to continue" / pause button. */
     data class ResumePause(val component: Int, val sub: Int) : ClientCommand
@@ -48,7 +48,27 @@ sealed interface ClientCommand {
     data class WindowStatus(val mode: Int, val width: Int, val height: Int) : ClientCommand
 }
 
-enum class SocialAction { FRIEND_ADD, FRIEND_DEL, IGNORE_ADD, IGNORE_DEL, PRIVATE_MESSAGE }
+enum class SocialAction {
+    FRIEND_ADD,
+    FRIEND_DEL,
+    IGNORE_ADD,
+    IGNORE_DEL,
+    PRIVATE_MESSAGE,
+
+    /** Friends chat: join [ClientCommand.Social.name]'s channel. */
+    CHANNEL_JOIN,
+    CHANNEL_LEAVE,
+
+    /** Friends chat line ([ClientCommand.Social.text]; public chat type 2). */
+    CHANNEL_MESSAGE,
+    CHANNEL_KICK,
+
+    /** Owner ranks a friend ([ClientCommand.Social.rank]). */
+    CHANNEL_RANK,
+}
+
+/** A friends chat member row ([rank]: -1 guest, 0 friend, 1..6 recruit..general, 7 owner, 127 Jagex moderator). */
+data class ChannelRow(val name: String, val worldId: Int, val rank: Int)
 
 /** A friends-list row: [worldId] 0 = offline. */
 data class FriendRow(val name: String, val worldId: Int, val added: Boolean)
@@ -170,6 +190,27 @@ sealed interface ServerMessage {
 
     /** "To [to]: [text]" echo of a sent PM. */
     data class PrivateMessageEcho(val to: String, val text: String) : ServerMessage
+
+    /** Friends chat: joined [channelName] (owned by [owner]) with its full member list. */
+    data class ChannelJoined(val owner: String, val channelName: String, val kickRank: Int, val members: List<ChannelRow>) :
+        ServerMessage
+
+    /** Friends chat: left the channel (the client clears it). */
+    data object ChannelLeft : ServerMessage
+
+    /** Friends chat: one member joined/changed rank, or left ([removed]). */
+    data class ChannelMember(val member: ChannelRow, val removed: Boolean) : ServerMessage
+
+    /** Friends chat line from [from] in [channelName] ([crown] 0 none, 1 mod, 2 admin). */
+    data class ChannelMessage(
+        val from: String,
+        val channelName: String,
+        val worldId: Int,
+        val counter: Int,
+        val crown: Int,
+        val text: String,
+    ) :
+        ServerMessage
 
     /** World hop: the client logs out and connects to [host] as world [worldId] ([flags]: world-list properties). */
     data class LogoutTransfer(val host: String, val worldId: Int, val flags: Int) : ServerMessage

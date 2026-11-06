@@ -116,20 +116,12 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
-    override fun social(player: Player, action: SocialAction, name: String, text: String) {
+    override fun social(player: Player, action: SocialAction, name: String, text: String, rank: Int) {
         val account = player.accountId
         if (account == 0L) return
+        if (action >= SocialAction.CHANNEL_JOIN) return channel(account, action, name, text, rank)
         io.execute {
-            val reply: String? =
-                call("social") {
-                    when (action) {
-                        SocialAction.FRIEND_ADD -> hub.social.addFriend(account, name)
-                        SocialAction.FRIEND_DEL -> hub.social.removeFriend(account, name).let { null }
-                        SocialAction.IGNORE_ADD -> hub.social.addIgnore(account, name)
-                        SocialAction.IGNORE_DEL -> hub.social.removeIgnore(account, name).let { null }
-                        SocialAction.PRIVATE_MESSAGE -> hub.social.privateMessage(account, name, text)
-                    }
-                }
+            val reply: String? = call("social") { listEdit(account, action, name, text) }
             // Refresh the edited row with the friend's current world (the client already shows the edit locally).
             val friend =
                 if (action == SocialAction.FRIEND_ADD && reply == null) {
@@ -161,10 +153,63 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                         p.session.send(ServerMessage.IgnoreList(listOf(name), removed = true))
                     }
 
-                    SocialAction.FRIEND_DEL -> {
+                    else -> {
                         Unit
                     }
                 }
+            }
+        }
+    }
+
+    private suspend fun listEdit(account: Long, action: SocialAction, name: String, text: String): String? =
+        when (action) {
+            SocialAction.FRIEND_ADD -> hub.social.addFriend(account, name)
+            SocialAction.FRIEND_DEL -> hub.social.removeFriend(account, name).let { null }
+            SocialAction.IGNORE_ADD -> hub.social.addIgnore(account, name)
+            SocialAction.IGNORE_DEL -> hub.social.removeIgnore(account, name).let { null }
+            SocialAction.PRIVATE_MESSAGE -> hub.social.privateMessage(account, name, text)
+            else -> null
+        }
+
+    /** Friends chat actions; the hub sends the channel updates through the social stream (WorldLinks). */
+    private fun channel(account: Long, action: SocialAction, name: String, text: String, rank: Int) {
+        io.execute {
+            val reply =
+                call("channel") {
+                    when (action) {
+                        SocialAction.CHANNEL_JOIN -> hub.social.joinChannel(account, name)
+                        SocialAction.CHANNEL_LEAVE -> hub.social.leaveChannel(account).let { null }
+                        SocialAction.CHANNEL_MESSAGE -> hub.social.channelMessage(account, text)
+                        SocialAction.CHANNEL_KICK -> hub.social.channelKick(account, name)
+                        SocialAction.CHANNEL_RANK -> hub.social.setChannelRank(account, name, rank)
+                        else -> null
+                    }
+                }
+            val messages =
+                when {
+                    reply != null -> {
+                        listOf(reply)
+                    }
+
+                    action == SocialAction.CHANNEL_JOIN -> {
+                        listOf(
+                            "Now talking in chat-channel $name.",
+                            "To talk, start each line of chat with the / symbol.",
+                        )
+                    }
+
+                    action == SocialAction.CHANNEL_LEAVE -> {
+                        listOf("You have left the channel.")
+                    }
+
+                    else -> {
+                        emptyList()
+                    }
+                }
+            if (messages.isEmpty()) return@execute
+            world.execute {
+                val p = world.playerByAccount(account) ?: return@execute
+                messages.forEach { p.session.send(ServerMessage.GameMessage(it)) }
             }
         }
     }

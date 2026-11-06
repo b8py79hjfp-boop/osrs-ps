@@ -53,6 +53,12 @@ interface HubStore : AutoCloseable {
 
     fun setIgnore(id: Long, name: String, present: Boolean)
 
+    /** Friends chat ranks the owner [id] gave (lower-cased name -> rank 0..6). */
+    fun channelRanks(id: Long): Map<String, Int>
+
+    /** Sets (rank >= 0) or removes (rank < 0) a friends chat rank. */
+    fun setChannelRank(id: Long, name: String, rank: Int)
+
     fun offers(id: Long): List<GeOffer>
 
     fun openOffers(obj: Int, buy: Boolean): List<GeOffer>

@@ -316,14 +316,20 @@ class World(
             is ClientCommand.PublicChat -> {
                 if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
                 if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(MUTED_MESSAGE))
+                if (command.type == CHAT_TYPE_FRIENDS_CHANNEL) {
+                    // "/" lines go to the friends chat (RSProt MessagePublic chat types: 2 = friend channel).
+                    val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
+                    return bridge.social(player, SocialAction.CHANNEL_MESSAGE, "", command.text)
+                }
                 player.session.publicChat(command.text, command.colour, command.effect)
             }
 
             is ClientCommand.Social -> {
                 val textOk = command.action != SocialAction.PRIVATE_MESSAGE || command.text.length in 1..MAX_CHAT_LENGTH
-                if (command.name.length !in 1..MAX_NAME_LENGTH || !textOk) return invalid(player, command)
+                val nameOk = command.action == SocialAction.CHANNEL_LEAVE || command.name.length in 1..MAX_NAME_LENGTH
+                if (!nameOk || !textOk || command.rank !in CHANNEL_RANKS) return invalid(player, command)
                 val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
-                bridge.social(player, command.action, command.name, command.text)
+                bridge.social(player, command.action, command.name, command.text, command.rank)
             }
 
             is ClientCommand.ResumePause -> {
@@ -866,6 +872,12 @@ class World(
 
         /** Display names are at most 12 characters (OSRS Wiki "Display name"). */
         private const val MAX_NAME_LENGTH = 12
+
+        /** Public chat type for friends-chat lines (RSProt `MessagePublic` chat types). */
+        private const val CHAT_TYPE_FRIENDS_CHANNEL = 2
+
+        /** Friends chat ranks a client may set: -1 (unranked) .. 6 (general); others carry 0. */
+        private val CHANNEL_RANKS = -1..6
         private const val MUTED_MESSAGE = "You are muted and cannot talk."
         private const val NO_HUB_MESSAGE = "Friends and private messages need the hub."
 

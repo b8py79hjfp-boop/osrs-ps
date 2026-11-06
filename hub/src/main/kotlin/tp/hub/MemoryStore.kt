@@ -89,6 +89,15 @@ class MemoryStore : HubStore {
         if (present) set += name else set.removeIf { it.equals(name, ignoreCase = true) }
     }
 
+    private val channelRanks = ConcurrentHashMap<Long, ConcurrentHashMap<String, Int>>()
+
+    override fun channelRanks(id: Long): Map<String, Int> = channelRanks[id]?.toMap().orEmpty()
+
+    override fun setChannelRank(id: Long, name: String, rank: Int) {
+        val map = channelRanks.getOrPut(id) { ConcurrentHashMap() }
+        if (rank >= 0) map[name.lowercase()] = rank else map.remove(name.lowercase())
+    }
+
     override fun offers(id: Long): List<GeOffer> = geOffers.values.filter { it.accountId == id }.sortedBy { it.slot }
 
     override fun openOffers(obj: Int, buy: Boolean): List<GeOffer> =

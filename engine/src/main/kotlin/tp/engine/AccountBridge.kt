@@ -65,7 +65,7 @@ interface AccountBridge {
     fun loggedIn(player: Player) {}
 
     /** A validated friends/ignore/PM action from [player]. World thread; the hub call runs elsewhere. */
-    fun social(player: Player, action: SocialAction, name: String, text: String) {}
+    fun social(player: Player, action: SocialAction, name: String, text: String, rank: Int = 0) {}
 
     /**
      * Staff command from [player] (`kick|mute|ban|ipban|unmute|unban <name> [minutes] [reason]`, `broadcast <text>`,

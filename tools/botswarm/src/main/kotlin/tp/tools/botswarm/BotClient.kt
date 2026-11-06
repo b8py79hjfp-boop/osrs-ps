@@ -294,6 +294,11 @@ class BotClient(
         sendFixedPacket(IF_BUTTONX, ByteBufUtil.getBytes(buf))
     }
 
+    /** FRIENDCHAT_JOIN_LEAVE (opcode 54, var-byte): jstr channel owner (RSProt `FriendChatJoinLeaveDecoder`). */
+    fun joinChannel(owner: String) {
+        sendClientPacket(FRIENDCHAT_JOIN_LEAVE, bytes { writeJstr(owner) })
+    }
+
     /** Reads packets until LOGOUT_TRANSFER (opcode 91: pjstr host, g2 world, g4 flags); null if [maxPackets] pass first. */
     fun awaitTransfer(maxPackets: Int = TRANSFER_WAIT_PACKETS): Pair<String, Int>? {
         repeat(maxPackets) {
@@ -413,6 +418,8 @@ class BotClient(
         private const val IF_BUTTONX = 71
         private const val IF_BUTTONX_BYTES = 9
         private const val NONE = 0xFFFF
+
+        private const val FRIENDCHAT_JOIN_LEAVE = 54
 
         /** LOGOUT_TRANSFER server opcode (RSProt `GameServerProtId`). */
         private const val LOGOUT_TRANSFER = 91

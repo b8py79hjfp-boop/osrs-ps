@@ -121,6 +121,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     // Blank: the world refused the login after the hub accepted it; only the lock is released.
                     if (save.isNotBlank()) db { store.writeSave(accountId, save) }
                 } finally {
+                    friendChats.leave(accountId)
                     if (online.remove(accountId, worldId)) {
                         val row = db { store.account(accountId) }
                         if (row != null) {
@@ -182,8 +183,22 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         socialSinks[worldId]?.forEach { runCatching { it(event) } }
     }
 
+    private val friendChats = FriendChats(store, online, ::deliver)
+
     override val social: SocialService =
         object : SocialService {
+            override suspend fun joinChannel(accountId: Long, owner: String): String? = db { friendChats.join(accountId, owner) }
+
+            override suspend fun leaveChannel(accountId: Long) = db { friendChats.leave(accountId) }
+
+            override suspend fun channelMessage(accountId: Long, text: String): String? =
+                db { friendChats.message(accountId, text.take(MAX_MESSAGE)) }
+
+            override suspend fun channelKick(accountId: Long, name: String): String? = db { friendChats.kick(accountId, name) }
+
+            override suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String? =
+                db { friendChats.setRank(accountId, name, rank) }
+
             override suspend fun friends(accountId: Long): List<FriendEntry> =
                 db { store.friends(accountId) }.map { name -> FriendEntry(name, onlineNames[name.lowercase()]?.let { online[it] } ?: 0) }
 

@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
     if (count == null) {
         System.err.println(
             "usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] " +
-                "[walk|fight|gear|hop|mixed] [namePrefix=bot]",
+                "[walk|fight|gear|hop|channel|mixed] [namePrefix=bot]",
         )
         exitProcess(2)
     }
@@ -52,6 +52,7 @@ fun main(args: Array<String>) {
                     "fight" -> fight(bot, count)
                     "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
                     "gear" -> gear(bot)
+                    "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
                     else -> wander(bot, centreX, centreZ)
                 }
             }
@@ -136,6 +137,17 @@ private fun gear(bot: BotClient) {
         }
     }
 }
+
+/** Joins [owner]'s friends chat and reports each full channel update (UPDATE_FRIENDCHAT_CHANNEL_FULL_V2, opcode 71). */
+private fun channel(bot: BotClient, name: String, owner: String) {
+    bot.joinChannel(owner)
+    while (true) {
+        val packet = bot.readPacket()
+        if (packet.opcode == FRIENDCHAT_FULL) println("$name: channel update (${packet.payload.size} bytes)")
+    }
+}
+
+private const val FRIENDCHAT_FULL = 71
 
 /** Backpack items component (cache interface 149 comp 0); Wield/Wear is button op 3 (iop index 1). */
 private const val INVENTORY_ITEMS = 149 shl 16

@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.engine.World
 import tp.engine.WorldAddress
+import tp.protocol.api.ChannelRow
 import tp.protocol.api.FriendRow
 import tp.protocol.api.ServerMessage
 import tp.services.Broadcast
@@ -65,12 +66,33 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 player.session.send(ServerMessage.FriendList(listOf(FriendRow(e.name, e.worldId, added = false))))
             }
 
+            is SocialEvent.ChannelJoined -> {
+                player.session.send(ServerMessage.ChannelJoined(e.owner, e.channelName, e.kickRank, e.members.map { it.row() }))
+            }
+
+            is SocialEvent.ChannelLeft -> {
+                player.session.send(ServerMessage.ChannelLeft)
+                if (e.kicked) player.session.send(ServerMessage.GameMessage("You have been kicked from the channel."))
+            }
+
+            is SocialEvent.ChannelMemberUpdate -> {
+                player.session.send(ServerMessage.ChannelMember(e.member.row(), e.removed))
+            }
+
+            is SocialEvent.ChannelMessage -> {
+                player.session.send(
+                    ServerMessage.ChannelMessage(e.from, e.channelName, e.worldId, ++pmCounter, e.fromRights.ordinal, e.text),
+                )
+            }
+
             is SocialEvent.Muted -> {
                 player.mutedUntil = e.until
                 player.session.send(ServerMessage.GameMessage(if (e.until == 0L) "You have been unmuted." else "You have been muted."))
             }
         }
     }
+
+    private fun tp.services.ChannelMember.row() = ChannelRow(name, worldId, rank)
 
     /** Per-world private-message counter (the client drops a repeated world + counter pair). World thread. */
     private var pmCounter = 0

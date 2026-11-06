@@ -25,6 +25,7 @@ import tp.services.grpc.ModerationGrpcKt
 import tp.services.grpc.NameRequest
 import tp.services.grpc.PlaceOfferRequest
 import tp.services.grpc.PrivateMessageRequest
+import tp.services.grpc.RankRequest
 import tp.services.grpc.RegisterRequest
 import tp.services.grpc.SanctionRequest
 import tp.services.grpc.SaveRequest
@@ -34,6 +35,7 @@ import tp.services.grpc.SystemUpdateRequest
 import tp.services.grpc.WorldRef
 import tp.services.grpc.WorldsGrpcKt
 import java.util.concurrent.TimeUnit
+import tp.services.grpc.ChannelMember as PbMember
 import tp.services.grpc.Empty as PbEmpty
 import tp.services.grpc.GeOffer as PbOffer
 import tp.services.grpc.LoginRequest as PbLogin
@@ -212,6 +214,36 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         ).error,
                 )
 
+            override suspend fun joinChannel(accountId: Long, owner: String): String? =
+                err(
+                    socialStub.joinChannel(name(accountId, owner)).error,
+                )
+
+            override suspend fun leaveChannel(accountId: Long) {
+                socialStub.leaveChannel(AccountRef.newBuilder().setAccountId(accountId).build())
+            }
+
+            override suspend fun channelMessage(accountId: Long, text: String): String? =
+                err(socialStub.channelMessage(name(accountId, text)).error)
+
+            override suspend fun channelKick(accountId: Long, name: String): String? =
+                err(
+                    socialStub.channelKick(name(accountId, name)).error,
+                )
+
+            override suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String? =
+                err(
+                    socialStub
+                        .setChannelRank(
+                            RankRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setName(name)
+                                .setRank(rank)
+                                .build(),
+                        ).error,
+                )
+
             override fun subscribe(worldId: Int, sink: (SocialEvent) -> Unit): AutoCloseable =
                 stream({ socialStub.subscribe(WorldRef.newBuilder().setWorldId(worldId).build()) }) { e ->
                     when {
@@ -233,9 +265,46 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         e.hasMuted() -> {
                             sink(SocialEvent.Muted(e.toAccount, e.muted.until))
                         }
+
+                        e.hasChannelJoined() -> {
+                            val j = e.channelJoined
+                            sink(
+                                SocialEvent.ChannelJoined(
+                                    e.toAccount,
+                                    j.owner,
+                                    j.channelName,
+                                    j.kickRank,
+                                    j.membersList.map { it.toModel() },
+                                ),
+                            )
+                        }
+
+                        e.hasChannelLeft() -> {
+                            sink(SocialEvent.ChannelLeft(e.toAccount, e.channelLeft.kicked))
+                        }
+
+                        e.hasChannelMember() -> {
+                            sink(SocialEvent.ChannelMemberUpdate(e.toAccount, e.channelMember.member.toModel(), e.channelMember.removed))
+                        }
+
+                        e.hasChannelMessage() -> {
+                            val m = e.channelMessage
+                            sink(
+                                SocialEvent.ChannelMessage(
+                                    e.toAccount,
+                                    m.from,
+                                    Rights.valueOf(m.fromRights),
+                                    m.channelName,
+                                    m.worldId,
+                                    m.text,
+                                ),
+                            )
+                        }
                     }
                 }
         }
+
+    private fun PbMember.toModel(): ChannelMember = ChannelMember(name, worldId, rank)
 
     private fun PbOffer.toModel(): GeOffer = GeOffer(id, accountId, slot, buy, obj, quantity, price, completed, collectCoins, collectItems)
 

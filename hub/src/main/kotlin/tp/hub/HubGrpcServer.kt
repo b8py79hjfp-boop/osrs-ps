@@ -33,6 +33,7 @@ import tp.services.grpc.NameList
 import tp.services.grpc.NameRequest
 import tp.services.grpc.PlaceOfferRequest
 import tp.services.grpc.PrivateMessageRequest
+import tp.services.grpc.RankRequest
 import tp.services.grpc.RegisterRequest
 import tp.services.grpc.SanctionRequest
 import tp.services.grpc.SaveRequest
@@ -49,6 +50,14 @@ import tp.services.grpc.SocialEvent as PbSocialEvent
 import tp.services.grpc.World as PbWorld
 
 private val EMPTY: PbEmpty = PbEmpty.getDefaultInstance()
+
+private fun tp.services.ChannelMember.toPb(): tp.services.grpc.ChannelMember =
+    tp.services.grpc.ChannelMember
+        .newBuilder()
+        .setName(name)
+        .setWorldId(worldId)
+        .setRank(rank)
+        .build()
 
 private fun error(message: String?): ErrorReply = ErrorReply.newBuilder().setError(message.orEmpty()).build()
 
@@ -198,6 +207,23 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             return EMPTY
         }
 
+        override suspend fun joinChannel(request: NameRequest): ErrorReply = error(hub.social.joinChannel(request.accountId, request.name))
+
+        override suspend fun leaveChannel(request: AccountRef): PbEmpty {
+            hub.social.leaveChannel(request.accountId)
+            return EMPTY
+        }
+
+        override suspend fun channelMessage(request: NameRequest): ErrorReply =
+            error(
+                hub.social.channelMessage(request.accountId, request.name),
+            )
+
+        override suspend fun channelKick(request: NameRequest): ErrorReply = error(hub.social.channelKick(request.accountId, request.name))
+
+        override suspend fun setChannelRank(request: RankRequest): ErrorReply =
+            error(hub.social.setChannelRank(request.accountId, request.name, request.rank))
+
         override suspend fun sendPrivateMessage(request: PrivateMessageRequest): ErrorReply =
             error(hub.social.privateMessage(request.fromAccount, request.toName, request.text))
 
@@ -224,6 +250,46 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                         .newBuilder()
                                         .setName(e.name)
                                         .setWorldId(e.worldId),
+                                )
+                            }
+
+                            is tp.services.SocialEvent.ChannelJoined -> {
+                                b.setChannelJoined(
+                                    tp.services.grpc.ChannelJoined
+                                        .newBuilder()
+                                        .setOwner(e.owner)
+                                        .setChannelName(e.channelName)
+                                        .setKickRank(e.kickRank)
+                                        .addAllMembers(e.members.map { it.toPb() }),
+                                )
+                            }
+
+                            is tp.services.SocialEvent.ChannelLeft -> {
+                                b.setChannelLeft(
+                                    tp.services.grpc.ChannelLeft
+                                        .newBuilder()
+                                        .setKicked(e.kicked),
+                                )
+                            }
+
+                            is tp.services.SocialEvent.ChannelMemberUpdate -> {
+                                b.setChannelMember(
+                                    tp.services.grpc.ChannelMemberUpdate
+                                        .newBuilder()
+                                        .setMember(e.member.toPb())
+                                        .setRemoved(e.removed),
+                                )
+                            }
+
+                            is tp.services.SocialEvent.ChannelMessage -> {
+                                b.setChannelMessage(
+                                    tp.services.grpc.ChannelMessage
+                                        .newBuilder()
+                                        .setFrom(e.from)
+                                        .setFromRights(e.fromRights.name)
+                                        .setChannelName(e.channelName)
+                                        .setWorldId(e.worldId)
+                                        .setText(e.text),
                                 )
                             }
 

@@ -123,7 +123,47 @@ message SocialEvent {
     PrivateMessage private_message = 2;
     FriendStatus friend_status = 3;
     Muted muted = 4;
+    ChannelJoined channel_joined = 5;
+    ChannelLeft channel_left = 6;
+    ChannelMemberUpdate channel_member = 7;
+    ChannelMessage channel_message = 8;
   }
+}
+
+message ChannelLeft {
+  bool kicked = 1;
+}
+
+message ChannelMember {
+  string name = 1;
+  int32 world_id = 2;
+  sint32 rank = 3;
+}
+
+message ChannelJoined {
+  string owner = 1;
+  string channel_name = 2;
+  sint32 kick_rank = 3;
+  repeated ChannelMember members = 4;
+}
+
+message ChannelMemberUpdate {
+  ChannelMember member = 1;
+  bool removed = 2;
+}
+
+message ChannelMessage {
+  string from = 1;
+  string from_rights = 2;
+  string channel_name = 3;
+  int32 world_id = 4;
+  string text = 5;
+}
+
+message RankRequest {
+  int64 account_id = 1;
+  string name = 2;
+  sint32 rank = 3;
 }
 
 // Mute applied/lifted while online (epoch ms; 0 = unmuted, negative = permanent).
@@ -150,6 +190,11 @@ service Social {
   rpc AddIgnore(NameRequest) returns (ErrorReply);
   rpc RemoveIgnore(NameRequest) returns (Empty);
   rpc SendPrivateMessage(PrivateMessageRequest) returns (ErrorReply);
+  rpc JoinChannel(NameRequest) returns (ErrorReply);
+  rpc LeaveChannel(AccountRef) returns (Empty);
+  rpc ChannelMessage(NameRequest) returns (ErrorReply); // name = message text
+  rpc ChannelKick(NameRequest) returns (ErrorReply);
+  rpc SetChannelRank(RankRequest) returns (ErrorReply);
   rpc Subscribe(WorldRef) returns (stream SocialEvent);
 }
 

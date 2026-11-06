@@ -19,6 +19,9 @@ import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.buttons.If3Button
+import net.rsprot.protocol.game.incoming.friendchat.FriendChatJoinLeave
+import net.rsprot.protocol.game.incoming.friendchat.FriendChatKick
+import net.rsprot.protocol.game.incoming.friendchat.FriendChatSetRank
 import net.rsprot.protocol.game.incoming.locs.OpLocV2
 import net.rsprot.protocol.game.incoming.locs.OpLocV3
 import net.rsprot.protocol.game.incoming.messaging.MessagePrivate
@@ -263,6 +266,23 @@ class Osrs242Network(
         b.addListener(FriendListDel::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.FRIEND_DEL, m.name)) }
         b.addListener(IgnoreListAdd::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.IGNORE_ADD, m.name)) }
         b.addListener(IgnoreListDel::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.IGNORE_DEL, m.name)) }
+        b.addListener(FriendChatJoinLeave::class.java) { s, m ->
+            val name = m.name
+            s.deliver(
+                if (name ==
+                    null
+                ) {
+                    ClientCommand.Social(SocialAction.CHANNEL_LEAVE, "")
+                } else {
+                    ClientCommand.Social(SocialAction.CHANNEL_JOIN, name)
+                },
+            )
+        }
+        b.addListener(FriendChatKick::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.CHANNEL_KICK, m.name)) }
+        b.addListener(FriendChatSetRank::class.java) { s, m ->
+            // Client rank byte: 0 = friend .. 6 = general; "not ranked" arrives as 255 (-1 as a signed byte).
+            s.deliver(ClientCommand.Social(SocialAction.CHANNEL_RANK, m.name, rank = m.rank.toByte().toInt()))
+        }
         b.addListener(MessagePrivate::class.java) { s, m ->
             s.deliver(ClientCommand.Social(SocialAction.PRIVATE_MESSAGE, m.name, m.message))
         }

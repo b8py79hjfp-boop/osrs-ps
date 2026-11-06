@@ -81,7 +81,37 @@ sealed interface SocialEvent {
 
     /** Mute changed while online ([until] epoch ms; 0 = unmuted, negative = permanent). */
     class Muted(override val toAccount: Long, val until: Long) : SocialEvent
+
+    /** Joined a friends chat channel: the full member list. */
+    class ChannelJoined(
+        override val toAccount: Long,
+        val owner: String,
+        val channelName: String,
+        val kickRank: Int,
+        val members: List<ChannelMember>,
+    ) : SocialEvent
+
+    /** Left the channel, or was [kicked] from it. */
+    class ChannelLeft(override val toAccount: Long, val kicked: Boolean = false) : SocialEvent
+
+    /** One member joined, left ([removed]) or changed rank. */
+    class ChannelMemberUpdate(override val toAccount: Long, val member: ChannelMember, val removed: Boolean) : SocialEvent
+
+    class ChannelMessage(
+        override val toAccount: Long,
+        val from: String,
+        val fromRights: Rights,
+        val channelName: String,
+        val worldId: Int,
+        val text: String,
+    ) : SocialEvent
 }
+
+/**
+ * A friends chat member. Ranks follow the client's values: -1 unranked guest, 0 friend, 1 recruit .. 6 general,
+ * 7 owner, 127 Jagex moderator.
+ */
+class ChannelMember(val name: String, val worldId: Int, val rank: Int)
 
 interface SocialService {
     suspend fun friends(accountId: Long): List<FriendEntry>
@@ -99,6 +129,19 @@ interface SocialService {
 
     /** Null on success, else the game message to show ("That player is currently offline."). */
     suspend fun privateMessage(fromAccount: Long, toName: String, text: String): String?
+
+    // Friends chat (docs/mechanics/friends-chat.md). Each returns null on success, else the game message to show.
+
+    suspend fun joinChannel(accountId: Long, owner: String): String?
+
+    suspend fun leaveChannel(accountId: Long)
+
+    suspend fun channelMessage(accountId: Long, text: String): String?
+
+    suspend fun channelKick(accountId: Long, name: String): String?
+
+    /** The channel owner ranks a friend ([rank] -1 removes the rank). */
+    suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String?
 
     /** Events for players on [worldId] (stream). */
     fun subscribe(worldId: Int, sink: (SocialEvent) -> Unit): AutoCloseable
