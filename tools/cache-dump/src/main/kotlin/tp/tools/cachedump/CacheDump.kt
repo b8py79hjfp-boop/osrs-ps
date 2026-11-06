@@ -83,6 +83,47 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
             )
         }
 
+        "op-verbs" -> {
+            val c =
+                tp.cache.config.Configs
+                    .load(cache)
+
+            fun top(name: String, texts: Sequence<String>) {
+                val counts =
+                    texts
+                        .groupingBy { it }
+                        .eachCount()
+                        .entries
+                        .sortedByDescending { it.value }
+                println("$name (${counts.size} distinct): " + counts.take(VERB_PREVIEW).joinToString { "${it.key}=${it.value}" })
+            }
+            top("obj iops", c.objs.asSequence().flatMap { it.iops.asSequence().filterNotNull() })
+            top(
+                "obj ground ops",
+                c.objs.asSequence().flatMap {
+                    it.groundOps.ops
+                        .asSequence()
+                        .filterNotNull()
+                },
+            )
+            top(
+                "npc ops",
+                c.npcs.asSequence().flatMap {
+                    it.ops.ops
+                        .asSequence()
+                        .filterNotNull()
+                },
+            )
+            top(
+                "loc ops",
+                c.locs.asSequence().flatMap {
+                    it.ops.ops
+                        .asSequence()
+                        .filterNotNull()
+                },
+            )
+        }
+
         "enums-with-keys" -> {
             val keys = args.map { it.toIntOrNull() ?: throw UsageException("keys must be integers") }.toSet()
             val enums =
@@ -110,6 +151,9 @@ private fun intArg(args: List<String>, index: Int, name: String): Int {
     val text = args.getOrNull(index) ?: throw UsageException("missing $name")
     return text.toIntOrNull() ?: throw UsageException("$name must be an integer, got '$text'")
 }
+
+/** Verbs printed per kind by `op-verbs`. */
+private const val VERB_PREVIEW = 30
 
 /** Entries printed per enum by `enums-with-keys`. */
 private const val ENUM_PREVIEW = 40
