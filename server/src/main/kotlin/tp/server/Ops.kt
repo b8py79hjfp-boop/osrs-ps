@@ -32,6 +32,14 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
         http.executor = Executors.newVirtualThreadPerTaskExecutor()
         http.createContext("/health") { ex -> health(ex) }
         http.createContext("/metrics") { ex -> metrics(ex) }
+        // Load tests: start a fresh measurement window (e.g. after the login ramp). Monitoring-only; racy by design.
+        http.createContext("/reset") { ex ->
+            worlds.forEach {
+                it.metrics.logic.reset()
+                it.metrics.info.reset()
+            }
+            reply(ex, HTTP_OK, "reset\n")
+        }
         http.start()
         scheduler.scheduleAtFixedRate({ runCatching { check() } }, ALERT_WINDOW_SECONDS, ALERT_WINDOW_SECONDS, TimeUnit.SECONDS)
         logger.info { "ops: /health and /metrics on :${http.address.port}" }
