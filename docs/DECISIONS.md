@@ -519,3 +519,21 @@ Smithing and Crafting live in `content/skills` (D-034) over three shared pieces 
   quantity from the make-X menu (OPEN-SM2). No RS Mod code or data was adapted.
 - A menu opened from an op script calls `stopInteraction()`: the engine otherwise runs the interaction again when the modal closes.
 
+
+## D-039: Thieving (pickpocketing, stalls) and Agility (four courses) from the Wiki and the cache
+
+- **Sources.** Pickpocket levels, xp, stun damage, success `low` / `high` (including gloves of silence) and loot are each NPC page's `{{Thieving info}}`,
+  `{{Skilling success chart}}` and `{{DropsLineSkill}}` rows, imported by `tools/wiki-import/thieving_pickpocket.py` into `pickpocket.tsv`. Stall levels, xp,
+  respawn, loc ids and loot are the stall pages and "Stall/Thievable" (`thieving_stalls.py` -> `stalls.tsv`). Agility course order, loc ids, xp and levels
+  are the course and obstacle pages, with loc placements from the cache (`agility_courses.py`). No RS Mod code was used (it has no thieving or agility).
+  Rules and OPEN items: `docs/mechanics/{thieving,agility}.md`.
+- **Coin pouches.** The Wiki loot tables say "Coins"; in game the loot is a coin pouch (cache objs 22521..22538, 24703). The importer replaces the coin row by
+  the NPC's pouch with the contents from the "Coin pouch" page; "Open" / "Open-all" are `onItemOp` handlers (one owner per op text).
+- **One attempt per click.** Pickpocket, steal and obstacle scripts end with `stopInteraction()` before they `delay`: a delayed player is "blocked", so the engine
+  does not clear the interaction and would otherwise run the op again every time the delay ends.
+- **NPC matching.** `onOpNpcOption("Pickpocket")` looks the NPC up by cache name (id ranges for the elves, the vyres and the Bandit Camp bandits), so one handler
+  covers every spawn; NPCs without a sourced success chart are left out (OPEN-TH1).
+- **plugin-api.** Added `DamageRequest` (CombatEvents.kt): content asks the combat module to deal a plain hit. Until combat subscribes (a main-session change
+  in `content/combat`), the stun hit is applied inline and cannot kill (OPEN-TH2).
+- **Forced movement.** No exact-move message exists in plugin-api or protocol-api; obstacles animate, delay and teleport (OPEN-AG1). Failing obstacles are not
+  implemented because the Wiki gives no chance (OPEN-AG2).

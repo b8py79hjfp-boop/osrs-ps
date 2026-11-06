@@ -32,6 +32,12 @@ public class Combat : ContentPlugin {
             Specials.startRegen(this)
             Poison.onLogin(this)
         }
+        // Content damage (a failed pickpocket, a rooftop fall): a regular hit that can kill. No source, so it does not
+        // trigger auto-retaliate against the NPC that dealt it.
+        events.on<tp.plugin.DamageRequest> { req ->
+            if (!req.handled) CombatSystem.applyHit(req.target, null, req.damage, req.style)
+            req.handled = true
+        }
         events.on<tp.plugin.SpellAccuracyRoll> { roll ->
             val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC)
             roll.hit = Formulas.hits(attack, Attacks.defenceRoll(roll.target, AttackType.MAGIC), roll.caster::random)

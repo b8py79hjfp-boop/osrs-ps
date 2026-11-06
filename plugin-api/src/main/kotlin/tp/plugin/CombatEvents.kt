@@ -40,6 +40,20 @@ public class HitEvent(
 ) : Event
 
 /**
+ * Asks the combat module to apply [damage] to [target] as one regular hit from [source] (a failed pickpocket's strike,
+ * a rooftop fall): hitsplat, hitpoints, death. The combat module sets [handled] when it did; content that publishes
+ * this applies its own non-lethal fallback otherwise.
+ */
+public class DamageRequest(
+    public val target: EntityRef,
+    public val source: EntityRef?,
+    public val damage: Int,
+    public val style: HitStyle = HitStyle.TYPELESS,
+) : Event {
+    public var handled: Boolean = false
+}
+
+/**
  * Asks the combat module to roll a spell's accuracy: [caster]'s magic attack roll against [target]'s magic defence roll
  * (combat-formulas.md F14-F16). [hit] stays true if no combat module answers.
  */

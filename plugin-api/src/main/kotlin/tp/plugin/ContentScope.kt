@@ -203,6 +203,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.itemOps, text.lowercase(), handler, "item op '$text'")
     }
 
+    /**
+     * Backpack item action [text] of obj [obj] only (e.g. "Open" on a coin pouch). Wins over [onItemOp] for the same
+     * text, so common texts ("Open", "Check") can have one owner per obj. Same rules as [onItemOp] otherwise.
+     */
+    public fun onItemOp(obj: Int, text: String, handler: PlayerRef.(ButtonClick) -> Unit) {
+        handlers.put(handlers.objItemOps, Handlers.namedKey(obj.toString(), text), handler, "item op '$text' of obj $obj")
+    }
+
     private fun key(id: Int, op: Int): Int = (id shl OP_BITS) or op
 
     private fun namedKey(name: String, text: String): String = Handlers.namedKey(name, text)
@@ -252,6 +260,7 @@ internal class Handlers {
     val buttons = HashMap<Long, PlayerRef.(ButtonClick) -> Unit>()
     val drags = HashMap<Int, PlayerRef.(ButtonDrag) -> Unit>()
     val itemOps = HashMap<String, PlayerRef.(ButtonClick) -> Unit>()
+    val objItemOps = HashMap<String, PlayerRef.(ButtonClick) -> Unit>()
 
     companion object {
         /** Key of a name + op text handler. */

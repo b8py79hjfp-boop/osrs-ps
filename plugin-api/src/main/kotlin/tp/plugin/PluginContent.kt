@@ -230,7 +230,9 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int, subop: Int) {
         if (component == Components.Chatmenu.OPTIONS) return answerChoice(player, slot)
-        if (component == Components.Inventory.ITEMS && h.itemOps.isNotEmpty() && itemOp(player, option, slot, obj, subop)) return
+        if (component == Components.Inventory.ITEMS && itemOp(player, option, slot, obj, subop)) {
+            return
+        }
         val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
         val handler = h.buttons[base or option.toLong()] ?: h.buttons[base]
         if (handler == null) {
@@ -245,10 +247,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     /** Runs the [ContentScope.onItemOp] handler of the iop text behind backpack button op [option]; false if none. */
     private fun itemOp(player: Player, option: Int, slot: Int, obj: Int, subop: Int): Boolean {
+        if (h.itemOps.isEmpty() && h.objItemOps.isEmpty()) return false
         val ref = ref(player)
         val index = backpackIopIndex(option)
         val text = (if (index >= 0) ref.objIop(obj, index) else null) ?: return false
-        val handler = h.itemOps[text.lowercase()] ?: return false
+        val handler = h.objItemOps[Handlers.namedKey(obj.toString(), text)] ?: h.itemOps[text.lowercase()] ?: return false
         ref.handler(ButtonClick(Components.Inventory.ITEMS, option, slot, obj, subop))
         return true
     }
