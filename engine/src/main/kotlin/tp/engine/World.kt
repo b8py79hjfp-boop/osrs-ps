@@ -98,6 +98,10 @@ class World(
     /** Players added without a network login (scenario runner, replay); admitted in post-tick like logins. */
     private val pendingAdds = ArrayDeque<Player>()
 
+    /** The entity whose turn (NPC/player phase) is running, else null (queue timing, scripts.md Q13). */
+    internal var currentTurn: Entity? = null
+        private set
+
     @Volatile private var running = false
     private var booted = false
     private var thread: Thread? = null
@@ -326,6 +330,7 @@ class World(
         for (npc in npcs) {
             if (npc == null || npc.hidden) continue
             npc.turnTick = tick
+            currentTurn = npc
             npc.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(npc)) tracer?.onPhase(npc, "delay-end")
             npc.timer.process()
@@ -333,6 +338,7 @@ class World(
             npcAi.process(npc)
             interactions.processNpc(npc)
         }
+        currentTurn = null
     }
 
     /** Phase 4: players in PID order (tick.md). */
@@ -340,6 +346,7 @@ class World(
         for (slot in pidOrder) {
             val player = players[slot] ?: continue
             player.turnTick = tick
+            currentTurn = player
             player.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(player)) tracer?.onPhase(player, "delay-end")
             if (player.queue.hasStrong()) player.closeModal() // Q3
@@ -349,6 +356,7 @@ class World(
             interactions.processPlayer(player, if (player.isRunningNow) RUN_STEPS else WALK_STEPS)
             if (player.route.isEmpty) player.routeCtrl = false
         }
+        currentTurn = null
     }
 
     /** Phase 5: logouts, bounded logins, PID shuffle. */

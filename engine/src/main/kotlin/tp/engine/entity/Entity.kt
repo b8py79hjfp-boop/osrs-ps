@@ -35,10 +35,21 @@ abstract class Entity internal constructor(
     internal var turnTick: Long = -1
 
     /** Ticks from now until a script queued now with [delay] runs (Q13). */
-    fun ticksUntilQueued(delay: Int): Int = (firstQueueTick() - world.tick).toInt() + delay
+    fun ticksUntilQueued(delay: Int): Int = (queueTick(delay) - world.tick).toInt()
 
-    /** First tick on which a script queued now can run: this tick if the entity's turn is still to come, else the next. */
-    internal fun firstQueueTick(): Long = if (turnTick >= world.tick) world.tick + 1 else world.tick
+    /**
+     * Tick on which a script queued now with [delay] becomes eligible (scripts.md Q6/Q13): queued by the entity itself
+     * during its own turn, [delay] ticks from now but never this tick (osrs-docs: "three server ticks from the moment it
+     * was queued"); queued by someone else after the entity's turn this tick, one tick later (Hit delay HD:6).
+     */
+    internal fun queueTick(delay: Int): Long {
+        val now = world.tick
+        return when {
+            world.currentTurn === this -> now + maxOf(delay, 1)
+            turnTick >= now -> now + delay + 1
+            else -> now + delay
+        }
+    }
 
     /** Whether there are route steps left. */
     val isRouting: Boolean get() = !route.isEmpty

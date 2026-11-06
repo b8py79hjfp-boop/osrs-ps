@@ -44,7 +44,7 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 |---|---|---|
 | F12 | Spell base max hits: Fire Strike 8, Fire Bolt 12, Fire Blast 16, Fire Wave 20, Fire Surge 24 (Wind/Water/Earth scale with Magic level, MA:30, MA:42); Ice Rush 16, Ice Burst 22, Ice Blitz 26, Ice Barrage 30. | MA:48-165 |
 | F13 | Damage = ⌊BaseMax × (1 + MagicDamage% + Void 5% + Prayer)⌋ (+ the other gear terms in MA:19-25). Prayer: Mystic Lore +1%, Mystic Might +2%, Mystic Vigour +3%, Augury +4%. | MA:19, MA:187-197 |
-| F14 | Effective magic = ⌊Mag × Prayer⌋ × (1.45 void) + Style + 8 (accurate powered staff +3, longrange +1). Prayers: Mystic Will 1.05, Mystic Lore 1.10, Mystic Might 1.15, Mystic Vigour 1.18, Augury 1.25. Attack roll = ⌊EffMag × (MagicAtk + 64)⌋. | DA:20-64 |
+| F14 | Effective magic = ⌊Mag × Prayer⌋ + Style + 8 (+9 for plain casts: SOURCE-CONFLICT below; void: OPEN-F4) (accurate powered staff +3, longrange +1). Prayers: Mystic Will 1.05, Mystic Lore 1.10, Mystic Might 1.15, Mystic Vigour 1.18, Augury 1.25. Attack roll = ⌊EffMag × (MagicAtk + 64)⌋. | DA:20-64 |
 | F15 | NPC magic defence roll = (9 + MagicLevel) × (MagicDef + 64). | DA:68 |
 | F16 | Player magic defence uses "70% of the opponent's Magic level, and 30% of the opponent's Defence level". **OPEN-F1:** everything else (rounding, prayers, style, +8, × (MagicDef + 64)) is ours; implemented as ⌊0.7 × ⌊Mag × MagPrayer⌋⌋ + ⌊0.3 × ⌊Def × DefPrayer⌋⌋ + Style + 8, × (MagicDef + 64). | AT:37 |
 
@@ -72,11 +72,16 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 
 ## SOURCE-CONFLICT (decided)
 
-- Magic accuracy: DA:20-25 gives ⌊Mag × Prayer⌋ + 8 (+3 accurate staff, +1 longrange); the Wiki DPS calculator uses
-  +9 (+2 more on accurate). Brief §8 validates against the calculator, so spells use +9 (D-024; DPS parity matrix).
-- 5% strength prayers: at least +1 level (MM:42; calculator: +1 at level ≤ 20).
+- Magic accuracy for plain spell casts (no stance bonus): DA:20-25 gives ⌊Mag × Prayer⌋ + 8; the Wiki DPS calculator
+  uses + 9. Accurate (8+3 vs 9+2) and longrange (8+1 vs 9) agree. Brief §8 validates against the calculator, so plain
+  casts use +9 (D-024; DPS parity matrix).
+- Magic void: DA:22 applies ×1.45 before the stance/+8 terms; the calculator applies ⌊× 29/20⌋ after them. Void isn't
+  modelled yet (OPEN-F4); when it is, follow the calculator.
 
 ## Notes
+
+- 5% strength prayers give at least +1 level (MM:43 "Always boost ... by at least 1"; the calculator adds 1 at level
+  ≤ 20 for Burst of Strength and Sharp Eye). Not a conflict.
 
 - Elite ranged void: 1.125 for strength (MR:23), 1.1 for the attack roll (DR:17, DR:38). Not a conflict.
 - Slayer/salve: DM floors before the target bonus (DM:61-62); MM floors then multiplies — equivalent.

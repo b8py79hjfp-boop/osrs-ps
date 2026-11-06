@@ -112,7 +112,7 @@ public class PvpCombat : ContentPlugin {
         if (target[VENGEANCE] == true) {
             target[VENGEANCE] = null
             target.say("Taste vengeance!")
-            val reflected = e.damage * VENG_PERCENT / PERCENT
+            val reflected = maxOf(1, e.damage * VENG_PERCENT / PERCENT) // "rounded down ... minimum of 1" (VG:27)
             source.queueHit(0, strong = false) { applyTypeless(source, target, reflected) }
         }
         // Ring of recoil: ⌊10% + 1⌋ of damage received, 40 damage per ring (Ring of recoil page), normal queue (brief §8).

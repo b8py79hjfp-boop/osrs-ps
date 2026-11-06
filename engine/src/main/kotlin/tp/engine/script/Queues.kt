@@ -31,7 +31,7 @@ class PlayerQueue internal constructor(private val player: Player) {
     fun add(type: QueueType, delayTicks: Int, logout: LogoutBehaviour? = null, script: Script<Player>) {
         // Q6/Q13: the delay counts the player's own turns; if its turn already started this tick (including queue
         // processing), the first one is next tick.
-        val earliest = player.firstQueueTick() + delayTicks
+        val earliest = player.queueTick(delayTicks)
         entries += QueueEntry(type, earliest, logout, script)
     }
 
@@ -84,7 +84,7 @@ class NpcQueue internal constructor(private val npc: Npc) {
     private var processing = false
 
     fun add(delayTicks: Int, script: Script<Npc>) {
-        entries += QueueEntry(QueueType.NORMAL, npc.firstQueueTick() + delayTicks, null, script)
+        entries += QueueEntry(QueueType.NORMAL, npc.queueTick(delayTicks), null, script)
     }
 
     internal fun process() {
