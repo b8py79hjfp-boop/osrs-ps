@@ -84,6 +84,81 @@ ring buffer of client events (what the client sent, what the server changed). RS
 
 Phase 6 extends this document with the release client's build, signing and update process (see below).
 
+## Test the release client locally (dev settings, no branding or signing)
+
+Everything defaults to `127.0.0.1`, so the release client can be tested on one machine before any branding,
+certificates, URLs or keys exist. Requirements:
+- a JDK 21 with `bin/` on `PATH` (the build uses `java` and `jar`);
+- git;
+- internet access;
+- on Windows, run the `bash` lines in **Git Bash**.
+
+**A. The client on its own (no launcher):**
+
+```bash
+git pull
+```
+
+```bash
+./gradlew setupClient
+```
+
+```bash
+bash client/runelite/build.sh
+```
+
+This last step takes a few minutes. It clones RuneLite 1.13.6, applies our patches and patches the game client with
+**your** `.data/rsa` key, writing the result to `.data/client/fork/`.
+
+Start the server, using a second terminal:
+
+```bash
+./gradlew :server:run --args="--worlds 2 --loopback-hosts"
+```
+
+Then start the client:
+
+```bash
+java -XX:+DisableAttachMechanism -Xmx768m -Xss2m --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED -jar .data/client/fork/client-1.13.6-shaded.jar
+```
+
+What should happen:
+1. The first start downloads the cache from your server, which takes a while.
+2. The game's terms screen appears; accept it.
+3. Log in with any name and password (the dev hub auto-registers).
+4. The RuneLite world hopper lists your worlds (127.0.0.1 and 127.0.0.2), and hopping works.
+
+The client keeps its own data in `~/.tickperfect`, so your normal RuneLite is untouched.
+
+**B. Through the launcher** (signed update, the way players would get it). Do this after A.
+
+Create your own manifest key pair (once; it stays in `.data/`):
+
+```bash
+./gradlew :client:launcher:release --args="keygen .data/manifest"
+```
+
+Assemble the client jars:
+
+```bash
+bash client/dist/assemble-artifacts.sh .data/client/release-artifacts
+```
+
+Sign them into the hub's update directory:
+
+```bash
+./gradlew :client:launcher:release --args="publish .data/client/release-artifacts .data/update 1.0.0-dev 242 .data/manifest/manifest-private.key"
+```
+
+With the server still running, start the launcher:
+
+```bash
+./gradlew :client:launcher:run
+```
+
+The launcher downloads and verifies the jars into `~/.tickperfect/repository`, then starts the client. A dev launcher
+build trusts `.data/manifest/manifest-public.key` automatically.
+
 ## Release client: the RuneLite fork (Phase 6)
 
 The release client is a rebranded, patched RuneLite (brief §4.2). The RuneLite side is a patch series applied to the

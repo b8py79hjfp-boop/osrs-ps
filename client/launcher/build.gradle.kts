@@ -34,3 +34,15 @@ tasks.register<JavaExec>("release") {
 java {
     disableAutoTargetJvm()
 }
+
+// Dev builds trust the developer's own manifest key: if `.data/manifest/manifest-public.key` exists (from
+// `release keygen .data/manifest`), it replaces the committed `publicKey` in launcher.properties. Release builds
+// (CI) use the committed value.
+val devPublicKey = providers.fileContents(rootProject.layout.projectDirectory.file(".data/manifest/manifest-public.key")).asText
+tasks.named<ProcessResources>("processResources") {
+    val key = devPublicKey.orNull?.trim()
+    inputs.property("devPublicKey", key ?: "")
+    filesMatching("**/launcher.properties") {
+        if (!key.isNullOrEmpty()) filter { line -> if (line.startsWith("publicKey=")) "publicKey=$key" else line }
+    }
+}
