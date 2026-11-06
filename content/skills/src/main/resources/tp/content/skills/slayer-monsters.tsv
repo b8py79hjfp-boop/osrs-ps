@@ -1,0 +1,2218 @@
+id	group	slayer	xp	name
+1	molanisk	39	52	Molanisk
+2	aberrantspectre	60	90	Aberrant spectre
+3	aberrantspectre	60	90	Aberrant spectre
+4	aberrantspectre	60	90	Aberrant spectre
+5	aberrantspectre	60	90	Aberrant spectre
+6	aberrantspectre	60	90	Aberrant spectre
+7	aberrantspectre	60	90	Aberrant spectre
+8	nechryael	80	105	Nechryael
+11	nechryael	80	105	Nechryael
+26	zombie	1	22	Zombie
+27	zombie	1	22	Zombie
+28	zombie	1	22	Zombie
+29	zombie	1	22	Zombie
+30	zombie	1	22	Zombie
+31	zombie	1	22	Zombie
+32	zombie	1	22	Zombie
+34	zombie	1	22	Zombie
+37	zombie	1	22	Zombie
+38	zombie	1	22	Zombie
+39	zombie	1	22	Zombie
+40	zombie	1	22	Zombie
+41	zombie	1	22	Zombie
+42	zombie	1	24	Zombie
+43	zombie	1	24	Zombie
+44	zombie	1	24	Zombie
+45	zombie	1	24	Zombie
+46	zombie	1	24	Zombie
+47	zombie	1	24	Zombie
+48	zombie	1	24	Zombie
+49	zombie	1	30	Zombie
+50	zombie	1	30	Zombie
+51	zombie	1	30	Zombie
+52	zombie	1	30	Zombie
+54	zombie	1	30	Zombie
+55	zombie	1	30	Zombie
+56	zombie	1	30	Zombie
+57	zombie	1	30	Zombie
+58	zombie	1	30	Zombie
+59	zombie	1	30	Zombie
+60	zombie	1	30	Zombie
+61	zombie	1	30	Zombie
+62	zombie	1	30	Zombie
+63	zombie	1	30	Zombie
+64	zombie	1	30	Zombie
+65	zombie	1	30	Zombie
+66	zombie	1	30	Zombie
+67	zombie	1	30	Zombie
+68	zombie	1	30	Zombie
+69	zombie	1	22	Summoned Zombie
+70	skeleton	1	29	Skeleton
+71	skeleton	1	29	Skeleton
+72	skeleton	1	29	Skeleton
+73	skeleton	1	29	Skeleton
+74	skeleton	1	24	Skeleton
+75	skeleton	1	24	Skeleton
+76	skeleton	1	24	Skeleton
+77	skeleton	1	17	Skeleton
+78	skeleton	1	17	Skeleton
+79	skeleton	1	17	Skeleton
+80	skeleton	1	17	Skeleton
+81	skeleton	1	17	Skeleton
+82	skeleton	1	59	Skeleton
+83	skeleton	1	59	Skeleton
+84	skeleton	1	17	Skeleton Mage
+85	ghost	1	25	Ghost
+86	ghost	1	25	Ghost
+87	ghost	1	25	Ghost
+88	ghost	1	25	Ghost
+89	ghost	1	25	Ghost
+90	ghost	1	25	Ghost
+91	ghost	1	25	Ghost
+92	ghost	1	25	Ghost
+93	ghost	1	25	Ghost
+95	ghost	1	25	Ghost
+97	ghost	1	25	Ghost
+99	ghost	1	25	Ghost
+100	crab	1	50	Rock Crab
+101	crab	1	50	Rocks
+102	crab	1	50	Rock Crab
+103	crab	1	50	Rocks
+104	hellhound	1	116	Hellhound
+105	hellhound	1	116	Hellhound
+106	wolve	1	69	Wolf
+107	wolve	1	34	White wolf
+108	wolve	1	44	White wolf
+109	wolve	1	74	Big Wolf
+110	wolve	1	34	Wolf
+112	dog	1	62	Wild dog
+113	dog	1	62	Wild dog
+114	dog	1	49	Guard dog
+115	wolve	1	74	Big Wolf
+136	ogre	1	60	Ogre
+232	wolve	1	70	Jungle Wolf
+239	blackdragon	1	258	King Black Dragon
+239	bosse	1	258	King Black Dragon
+240	blackdemon	1	157	Black demon
+241	bluedragon	1	50	Baby blue dragon
+242	bluedragon	1	50	Baby blue dragon
+243	bluedragon	1	50	Baby blue dragon
+244	reddragon	1	50	Baby red dragon
+245	reddragon	1	50	Baby red dragon
+246	reddragon	1	50	Baby red dragon
+247	reddragon	1	143.4	Red dragon
+248	reddragon	1	143.4	Red dragon
+249	reddragon	1	143.4	Red dragon
+250	reddragon	1	143.4	Red dragon
+251	reddragon	1	143.4	Red dragon
+252	blackdragon	1	194.7	Black dragon
+253	blackdragon	1	194.7	Black dragon
+254	blackdragon	1	194.7	Black dragon
+255	blackdragon	1	194.7	Black dragon
+256	blackdragon	1	194.7	Black dragon
+257	blackdragon	1	194.7	Black dragon
+258	blackdragon	1	194.7	Black dragon
+259	blackdragon	1	194.7	Black dragon
+260	greendragon	1	75	Green dragon
+261	greendragon	1	75	Green dragon
+262	greendragon	1	75	Green dragon
+263	greendragon	1	75	Green dragon
+264	greendragon	1	75	Green dragon
+265	bluedragon	1	105	Blue dragon
+266	bluedragon	1	105	Blue dragon
+267	bluedragon	1	105	Blue dragon
+268	bluedragon	1	105	Blue dragon
+269	bluedragon	1	105	Blue dragon
+270	metaldragon	1	125	Bronze dragon
+271	metaldragon	1	125	Bronze dragon
+272	metaldragon	1	169.1	Iron dragon
+273	metaldragon	1	169.1	Iron dragon
+274	metaldragon	1	215.2	Steel dragon
+275	metaldragon	1	215.2	Steel dragon
+289	ghoul	1	50	Ghoul
+290	dwarve	1	16	Dwarf
+291	dwarve	1	61	Chaos dwarf
+292	dwarve	1	26	Dwarf
+294	dwarve	1	16	Dwarf
+295	dwarve	1	16	Dwarf
+296	dwarve	1	12	Dwarf
+301	bandit	1	37	Black Heather
+302	bandit	1	37	Donny the lad
+303	bandit	1	37	Speedy Keith
+304	chaosdruid	1	70	Salarin the twisted
+406	cavecrawler	10	22	Cave crawler
+407	cavecrawler	10	22	Cave crawler
+408	cavecrawler	10	22	Cave crawler
+409	cavecrawler	10	22	Cave crawler
+410	kurask	70	97	Kurask
+411	kurask	70	97	Kurask
+412	gargoyle	75	105	Gargoyle
+413	gargoyle	75	105	Gargoyle
+414	banshee	15	22	Banshee
+415	abyssaldemon	85	150	Abyssal demon
+416	abyssaldemon	85	150	Abyssal demon
+417	basilisk	40	75	Basilisk
+418	basilisk	40	75	Basilisk
+419	cockatrice	25	37	Cockatrice
+420	cockatrice	25	37	Cockatrice
+421	rockslug	20	27	Rockslug
+422	rockslug	20	27	Rockslug
+423	dustdevil	65	105	Dust devil
+427	turoth	55	81	Turoth
+428	turoth	55	79	Turoth
+429	turoth	55	77	Turoth
+430	turoth	55	76	Turoth
+433	pyrefiend	30	45	Pyrefiend
+434	pyrefiend	30	45	Pyrefiend
+435	pyrefiend	30	45	Pyrefiend
+436	pyrefiend	30	45	Pyrefiend
+437	jellie	52	75	Jelly
+438	jellie	52	75	Jelly
+439	jellie	52	75	Jelly
+440	jellie	52	75	Jelly
+441	jellie	52	75	Jelly
+442	jellie	52	75	Jelly
+443	infernalmage	45	60	Infernal Mage
+444	infernalmage	45	60	Infernal Mage
+445	infernalmage	45	60	Infernal Mage
+446	infernalmage	45	60	Infernal Mage
+447	infernalmage	45	60	Infernal Mage
+448	crawlinghand	5	16	Crawling Hand
+449	crawlinghand	5	16	Crawling Hand
+450	crawlinghand	5	12	Crawling Hand
+451	crawlinghand	5	16	Crawling Hand
+452	crawlinghand	5	16	Crawling Hand
+453	crawlinghand	5	19	Crawling Hand
+454	crawlinghand	5	19	Crawling Hand
+455	crawlinghand	5	0	Crawling Hand
+456	crawlinghand	5	19	Crawling Hand
+457	crawlinghand	5	19	Crawling Hand
+458	lizard	22	40	Lizard
+459	lizard	22	25	Desert Lizard
+460	lizard	22	25	Desert Lizard
+461	lizard	22	25	Desert Lizard
+462	lizard	22	15	Small Lizard
+463	lizard	22	15	Small Lizard
+464	harpiebugswarm	33	25	Harpie Bug Swarm
+465	skeletalwyvern	72	210	Skeletal Wyvern
+466	skeletalwyvern	72	210	Skeletal Wyvern
+467	skeletalwyvern	72	210	Skeletal Wyvern
+468	skeletalwyvern	72	210	Skeletal Wyvern
+469	killerwatt	37	51	Killerwatt
+470	killerwatt	37	51	Killerwatt
+472	ghost	1	25	Ghost
+473	ghost	1	25	Ghost
+474	ghost	1	25	Ghost
+475	wallbeast	35	105	Hole in the wall
+476	wallbeast	35	105	Wall beast
+480	caveslime	17	25	Cave slime
+481	cavebug	7	5	Cave bug
+483	cavebug	7	93	Cave bug
+484	bloodveld	50	120	Bloodveld
+485	bloodveld	50	120	Bloodveld
+486	bloodveld	50	120	Bloodveld
+487	bloodveld	50	120	Bloodveld
+492	cavekraken	87	125	Cave kraken
+493	cavekraken	87	125	Whirlpool
+494	cavekraken	87	255	Kraken
+494	bosse	87	255	Kraken
+496	cavekraken	87	255	Whirlpool
+496	bosse	87	255	Whirlpool
+498	smokedevil	93	185	Smoke devil
+499	bosse	93	240	Thermonuclear smoke devil
+499	smokedevil	93	240	Thermonuclear smoke devil
+505	ghost	1	25	Ghost
+506	ghost	1	25	Ghost
+507	ghost	1	25	Ghost
+509	bat	1	80	Death wing
+509	ghost	1	80	Death wing
+516	blackknight	1	42	Black Knight
+517	blackknight	1	42	Black Knight
+520	chaosdruid	1	20	Chaos druid
+521	pirate	1	20	Pirate
+522	pirate	1	20	Pirate
+523	pirate	1	20	Pirate
+524	pirate	1	20	Pirate
+526	rogue	1	17	Rogue
+531	darkwarrior	1	17	Dark warrior
+532	chaosdruid	1	40	Chaos druid warrior
+537	mutatedzygomite	57	65	Zygomite
+561	zombie	1	22	Sorebones
+562	zombie	1	22	Sorebones
+563	zombie	1	52	Zombie pirate
+564	zombie	1	52	Zombie pirate
+565	zombie	1	52	Zombie pirate
+566	zombie	1	52	Zombie pirate
+567	zombie	1	52	Zombie pirate
+568	zombie	1	52	Zombie pirate
+569	zombie	1	52	Zombie pirate
+570	zombie	1	52	Zombie pirate
+571	zombie	1	52	Zombie pirate
+572	zombie	1	52	Zombie pirate
+573	zombie	1	52	Zombie pirate
+574	zombie	1	52	Zombie pirate
+575	zombie	1	52	Zombie pirate
+576	zombie	1	52	Zombie pirate
+577	zombie	1	52	Zombie pirate
+578	zombie	1	52	Zombie pirate
+579	zombie	1	52	Zombie pirate
+580	zombie	1	52	Zombie pirate
+581	zombie	1	52	Zombie pirate
+582	zombie	1	52	Zombie pirate
+583	zombie	1	52	Zombie pirate
+584	zombie	1	52	Zombie pirate
+585	zombie	1	52	Zombie pirate
+586	zombie	1	52	Zombie pirate
+587	zombie	1	52	Zombie pirate
+588	zombie	1	52	Zombie pirate
+589	zombie	1	52	Zombie pirate
+590	zombie	1	52	Zombie pirate
+591	zombie	1	52	Zombie pirate
+592	zombie	1	52	Zombie pirate
+593	zombie	1	52	Zombie pirate
+594	zombie	1	52	Zombie pirate
+595	zombie	1	52	Zombie pirate
+596	zombie	1	52	Zombie pirate
+597	zombie	1	52	Zombie pirate
+598	zombie	1	52	Zombie pirate
+599	zombie	1	52	Zombie pirate
+613	zombie	1	52	Zombie pirate
+614	zombie	1	52	Zombie pirate
+615	zombie	1	52	Zombie pirate
+616	zombie	1	52	Zombie pirate
+617	zombie	1	52	Zombie pirate
+618	zombie	1	52	Zombie pirate
+619	zombie	1	50	Zombie swab
+620	zombie	1	50	Zombie swab
+621	zombie	1	50	Zombie swab
+622	zombie	1	50	Zombie swab
+623	zombie	1	50	Zombie swab
+624	zombie	1	50	Zombie swab
+626	feverspider	42	40	Fever spider
+642	troll	1	150.5	Arrg
+643	troll	1	150.5	Arrg
+645	wolve	1	70	Ice wolf
+646	wolve	1	70	Ice wolf
+647	wolve	1	70	Ice wolf
+648	troll	1	86	Ice troll
+649	troll	1	86	Ice troll
+650	troll	1	129	Ice troll
+651	troll	1	97	Ice troll
+652	troll	1	129	Ice troll
+653	troll	1	129	Ice troll
+654	troll	1	97	Ice troll
+655	goblin	1	12	Goblin
+656	goblin	1	12	Goblin
+657	goblin	1	12	Goblin
+658	goblin	1	12	Goblin
+659	goblin	1	12	Goblin
+660	goblin	1	12	Goblin
+661	goblin	1	12	Goblin
+662	goblin	1	12	Goblin
+663	goblin	1	12	Goblin
+664	goblin	1	12	Goblin
+665	goblin	1	12	Goblin
+666	goblin	1	12	Goblin
+667	goblin	1	12	Goblin
+668	goblin	1	12	Goblin
+677	goblin	1	12	Goblin
+678	goblin	1	12	Goblin
+680	skeleton	1	70	Giant skeleton
+681	skeleton	1	70	Giant skeleton
+699	troll	1	86	Ice troll
+700	troll	1	86	Ice troll
+701	troll	1	129	Ice troll
+702	troll	1	97	Ice troll
+703	troll	1	129	Ice troll
+704	troll	1	129	Ice troll
+705	troll	1	97	Ice troll
+710	wolve	1	70	Ice wolf
+711	wolve	1	70	Ice wolf
+712	wolve	1	70	Ice wolf
+713	wolve	1	70	Ice wolf
+714	wolve	1	70	Ice wolf
+715	wolve	1	70	Ice wolf
+729	scabarite	1	1	Scarabs
+762	bird	1	50	Baby Roc
+763	bird	1	250	Giant Roc
+787	suqah	1	107.6	Suqah
+788	suqah	1	107.6	Suqah
+789	suqah	1	107.6	Suqah
+790	suqah	1	107.6	Suqah
+791	suqah	1	107.6	Suqah
+792	suqah	1	107.6	Suqah
+793	suqah	1	107.6	Suqah
+794	scabarite	1	51.2	Scarab Mage
+795	scabarite	1	92.5	Locust rider
+796	scabarite	1	92.5	Locust rider
+797	scabarite	1	137	Giant Scarab
+798	scabarite	1	137	Giant Scarab
+799	scabarite	1	51.2	Scarab Mage
+800	scabarite	1	92.5	Locust rider
+801	scabarite	1	92.5	Locust rider
+817	greendragon	1	80	Elvarg
+820	goblin	1	5	Wormbrain
+852	icewarrior	1	60	Icelord
+853	icewarrior	1	60	Icelord
+854	icewarrior	1	60	Icelord
+855	icewarrior	1	60	Icelord
+866	ogre	1	71	Zogre
+866	zombie	1	71	Zogre
+867	ogre	1	71	Zogre
+867	zombie	1	71	Zogre
+868	ogre	1	71	Zogre
+868	zombie	1	71	Zogre
+869	ogre	1	71	Zogre
+869	zombie	1	71	Zogre
+870	ogre	1	71	Zogre
+870	zombie	1	71	Zogre
+871	ogre	1	71	Zogre
+871	zombie	1	71	Zogre
+872	ogre	1	71	Skogre
+872	skeleton	1	71	Skogre
+873	ogre	1	71	Zogre
+873	zombie	1	71	Zogre
+874	ogre	1	71	Zogre
+874	zombie	1	71	Zogre
+875	ogre	1	71	Zogre
+875	zombie	1	71	Zogre
+876	ogre	1	71	Zogre
+876	zombie	1	71	Zogre
+877	ogre	1	71	Zogre
+877	zombie	1	71	Zogre
+878	ogre	1	71	Skogre
+878	zombie	1	71	Skogre
+879	ogre	1	71	Skogre
+879	skeleton	1	71	Skogre
+880	zombie	1	50	Zombie
+882	zombie	1	100	Slash Bash
+924	skeleton	1	0.5	Skeleton
+925	troll	1	150.5	Rock
+926	troll	1	141.5	Stick
+927	troll	1	126	Pee Hat
+928	troll	1	126	Kraka
+931	troll	1	95	Thrower Troll
+932	troll	1	95	Thrower Troll
+933	troll	1	95	Thrower Troll
+934	troll	1	95	Thrower Troll
+935	troll	1	95	Thrower Troll
+936	troll	1	90	Mountain troll
+937	troll	1	90	Mountain troll
+938	troll	1	90	Mountain troll
+939	troll	1	90	Mountain troll
+940	troll	1	90	Mountain troll
+941	troll	1	90	Mountain troll
+942	troll	1	90	Mountain troll
+955	kalphite	1	40	Kalphite Worker
+956	kalphite	1	40	Kalphite Worker
+957	kalphite	1	90	Kalphite Soldier
+958	kalphite	1	90	Kalphite Soldier
+959	kalphite	1	170	Kalphite Guardian
+960	kalphite	1	170	Kalphite Guardian
+961	kalphite	1	40	Kalphite Worker
+962	kalphite	1	170	Kalphite Guardian
+963	kalphite	1	535.4	Kalphite Queen
+963	bosse	1	535.4	Kalphite Queen
+965	kalphite	1	535.4	Kalphite Queen
+965	bosse	1	535.4	Kalphite Queen
+970	dagannoth	1	70	Dagannoth
+971	dagannoth	1	70	Dagannoth
+972	dagannoth	1	70	Dagannoth
+973	dagannoth	1	120	Dagannoth
+974	dagannoth	1	120	Dagannoth
+975	dagannoth	1	120	Dagannoth
+980	dagannoth	1	126	Dagannoth mother
+981	dagannoth	1	126	Dagannoth mother
+982	dagannoth	1	126	Dagannoth mother
+983	dagannoth	1	126	Dagannoth mother
+984	dagannoth	1	126	Dagannoth mother
+985	dagannoth	1	126	Dagannoth mother
+986	dagannoth	1	126	Dagannoth mother
+987	dagannoth	1	126	Dagannoth mother
+988	dagannoth	1	126	Dagannoth mother
+1024	mutatedzygomite	57	75	Zygomite
+1026	bandit	1	27	Bandit
+1027	bandit	1	29	Guard Bandit
+1038	monkey	1	6	Monkey
+1039	bat	1	33	Albino bat
+1042	junglehorror	1	45	Jungle horror
+1043	junglehorror	1	45	Jungle horror
+1044	junglehorror	1	45	Jungle horror
+1045	junglehorror	1	45	Jungle horror
+1046	junglehorror	1	45	Jungle horror
+1047	cavehorror	58	55	Cave horror
+1048	cavehorror	58	55	Cave horror
+1049	cavehorror	58	55	Cave horror
+1050	cavehorror	58	55	Cave horror
+1051	cavehorror	58	55	Cave horror
+1097	seasnake	1	85	Sea Snake Young
+1098	seasnake	1	50	Sea Snake Hatchling
+1101	seasnake	40	0	Giant Sea Snake
+1127	scabarite	1	280.5	Giant Scarab (hard)
+1128	vampyre	1	299.6	Dessous (hard)
+1129	icewarrior	1	312	Kamil (hard)
+1153	ogre	1	60	Ogre
+1163	ghost	1	85	Tree spirit
+1173	bird	1	3	Chicken
+1174	bird	1	3	Chicken
+1175	bird	1	7	Rooster
+1224	hellhound	1	116	Bouncer
+1267	bird	1	10	Vulture
+1268	bird	1	10	Vulture
+1276	shade	1	38	Loar Shadow
+1277	shade	1	38	Loar Shade
+1279	shade	1	56	Phrin Shadow
+1280	shade	1	56	Phrin Shade
+1281	shade	1	76	Riyl Shadow
+1282	shade	1	76	Riyl Shade
+1283	shade	1	90	Asyn Shadow
+1284	shade	1	90	Asyn Shade
+1285	shade	1	110	Fiyr Shadow
+1286	shade	1	110	Fiyr Shade
+1338	bird	1	6	Seagull
+1339	bird	1	10	Seagull
+1354	dwarve	1	40	Dwarf gang member
+1355	dwarve	1	25	Dwarf gang member
+1356	dwarve	1	25	Dwarf gang member
+1401	dwarve	1	16	Dwarf
+1402	dwarve	1	16	Dwarf
+1403	dwarve	1	16	Dwarf
+1404	dwarve	1	16	Dwarf
+1405	dwarve	1	12	Dwarf
+1406	dwarve	1	16	Dwarf
+1407	dwarve	1	13	Dwarf
+1408	dwarve	1	10	Dwarf
+1409	dwarve	1	30	Black Guard
+1410	dwarve	1	30	Black Guard
+1411	dwarve	1	30	Black Guard
+1412	dwarve	1	30	Black Guard
+1432	blackdemon	1	157	Black demon
+1447	pirate	1	20	Pirate
+1475	bird	1	10	Chompy bird
+1537	skeleton	1	124	Skeleton hero
+1538	skeleton	1	124	Skeleton brute
+1539	skeleton	1	124	Skeleton warlord
+1540	skeleton	1	124	Skeleton heavy
+1541	skeleton	1	124	Skeleton thug
+1543	gargoyle	75	105	Gargoyle
+1609	blackdemon	1	107	Kolodion
+1672	bosse	1	102.5	Ahrim the Blighted
+1673	bosse	1	115	Dharok the Wretched
+1674	bosse	1	115	Guthan the Infested
+1675	bosse	1	100	Karil the Tainted
+1676	bosse	1	112.5	Torag the Corrupted
+1677	bosse	1	112.5	Verac the Defiled
+1679	rat	1	35	Crypt rat
+1680	rat	1	70	Giant crypt rat
+1681	rat	1	70	Giant crypt rat
+1682	rat	1	70	Giant crypt rat
+1683	spider	1	45	Crypt spider
+1684	spider	1	80	Giant crypt spider
+1685	skeleton	1	51	Skeleton
+1686	skeleton	1	51	Skeleton
+1687	skeleton	1	51	Skeleton
+1688	skeleton	1	51	Skeleton
+1782	scabarite	1	1	Scarab Swarm
+1838	bird	1	3	Duck
+1839	bird	1	3	Duck
+1870	bird	1	3	Evil Chicken
+1871	blackdragon	1	80	Baby black dragon
+1872	blackdragon	1	80	Baby black dragon
+1874	troll	1	63	Ice troll runt
+1875	troll	1	84	Ice troll male
+1876	troll	1	84	Ice troll female
+1877	troll	1	84	Ice troll grunt
+2001	bird	1	3	Duckling
+2005	lesserdemon	1	79	Lesser demon
+2006	lesserdemon	1	79	Lesser demon
+2007	lesserdemon	1	79	Lesser demon
+2008	lesserdemon	1	79	Lesser demon
+2018	lesserdemon	1	79	Lesser demon
+2025	greaterdemon	1	87	Greater demon
+2026	greaterdemon	1	87	Greater demon
+2027	greaterdemon	1	87	Greater demon
+2028	greaterdemon	1	87	Greater demon
+2029	greaterdemon	1	87	Greater demon
+2030	greaterdemon	1	87	Greater demon
+2031	greaterdemon	1	87	Greater demon
+2032	greaterdemon	1	87	Greater demon
+2042	bosse	1	500	Zulrah
+2043	bosse	1	500	Zulrah
+2044	bosse	1	500	Zulrah
+2048	blackdemon	1	157	Black demon
+2049	blackdemon	1	157	Black demon
+2050	blackdemon	1	157	Black demon
+2051	blackdemon	1	157	Black demon
+2052	blackdemon	1	157	Black demon
+2054	bosse	1	268.75	Chaos Elemental
+2062	bird	1	40	Oomlie bird
+2063	bird	1	4	Penguin
+2064	bird	1	34	Terrorbird
+2065	bird	1	34	Terrorbird
+2066	bird	1	34	Terrorbird
+2067	bird	1	36	Mounted terrorbird gnome
+2068	bird	1	55	Mounted terrorbird gnome
+2075	firegiant	1	111	Fire giant
+2076	firegiant	1	111	Fire giant
+2077	firegiant	1	111	Fire giant
+2078	firegiant	1	111	Fire giant
+2079	firegiant	1	111	Fire giant
+2080	firegiant	1	111	Fire giant
+2081	firegiant	1	111	Fire giant
+2082	firegiant	1	111	Fire giant
+2083	firegiant	1	111	Fire giant
+2084	firegiant	1	111	Fire giant
+2085	icegiant	1	70	Ice giant
+2086	icegiant	1	70	Ice giant
+2087	icegiant	1	70	Ice giant
+2088	icegiant	1	70	Ice giant
+2089	icegiant	1	70	Ice giant
+2090	mossgiant	1	60	Moss giant
+2091	mossgiant	1	60	Moss giant
+2092	mossgiant	1	60	Moss giant
+2093	mossgiant	1	60	Moss giant
+2095	ogre	1	60	Ogre
+2096	ogre	1	60	Ogre
+2097	hillgiant	1	55	Cyclops
+2098	hillgiant	1	35	Hill Giant
+2099	hillgiant	1	35	Hill Giant
+2100	hillgiant	1	35	Hill Giant
+2101	hillgiant	1	35	Hill Giant
+2102	hillgiant	1	35	Hill Giant
+2103	hillgiant	1	35	Hill Giant
+2137	hillgiant	1	150	Cyclops
+2138	hillgiant	1	150	Cyclops
+2139	hillgiant	1	150	Cyclops
+2140	hillgiant	1	150	Cyclops
+2141	hillgiant	1	150	Cyclops
+2142	hillgiant	1	150	Cyclops
+2145	zombie	1	147	Undead Druid
+2154	tzhaar	1	100	TzHaar-Mej
+2155	tzhaar	1	100	TzHaar-Mej
+2156	tzhaar	1	100	TzHaar-Mej
+2157	tzhaar	1	100	TzHaar-Mej
+2158	tzhaar	1	100	TzHaar-Mej
+2159	tzhaar	1	100	TzHaar-Mej
+2160	tzhaar	1	100	TzHaar-Mej
+2161	tzhaar	1	80	TzHaar-Hur
+2162	tzhaar	1	80	TzHaar-Hur
+2163	tzhaar	1	80	TzHaar-Hur
+2164	tzhaar	1	80	TzHaar-Hur
+2165	tzhaar	1	80	TzHaar-Hur
+2166	tzhaar	1	80	TzHaar-Hur
+2167	tzhaar	1	120	TzHaar-Xil
+2168	tzhaar	1	120	TzHaar-Xil
+2169	tzhaar	1	120	TzHaar-Xil
+2170	tzhaar	1	120	TzHaar-Xil
+2171	tzhaar	1	120	TzHaar-Xil
+2172	tzhaar	1	120	TzHaar-Xil
+2173	tzhaar	1	140	TzHaar-Ket
+2174	tzhaar	1	140	TzHaar-Ket
+2175	tzhaar	1	140	TzHaar-Ket
+2176	tzhaar	1	140	TzHaar-Ket
+2177	tzhaar	1	140	TzHaar-Ket
+2178	tzhaar	1	140	TzHaar-Ket
+2179	tzhaar	1	140	TzHaar-Ket
+2189	tzhaar	1	10	Tz-Kih
+2190	tzhaar	1	10	Tz-Kih
+2191	tzhaar	1	20	Tz-Kek
+2192	tzhaar	1	20	Tz-Kek
+2193	tzhaar	1	40	Tok-Xil
+2194	tzhaar	1	40	Tok-Xil
+2205	bosse	1	350	Commander Zilyana
+2210	spiritualcreature	68	110	Spiritual warrior
+2211	spiritualcreature	63	106	Spiritual ranger
+2212	spiritualcreature	83	85	Spiritual mage
+2215	bosse	1	338	General Graardor
+2216	goblin	1	128	Sergeant Strongstack
+2217	goblin	1	127	Sergeant Steelwill
+2218	goblin	1	146	Sergeant Grimspike
+2232	dwarve	1	50	Black Guard Berserker
+2233	ogre	1	60	Ogre
+2235	hillgiant	1	110	Cyclops
+2236	hillgiant	1	110	Cyclops
+2241	hobgoblin	1	52	Hobgoblin
+2242	spiritualcreature	63	131	Spiritual ranger
+2243	spiritualcreature	68	135	Spiritual warrior
+2244	spiritualcreature	83	106	Spiritual mage
+2245	goblin	1	18	Goblin
+2246	goblin	1	15	Goblin
+2247	goblin	1	3	Goblin
+2248	goblin	1	16	Goblin
+2249	goblin	1	13	Goblin
+2259	dagannoth	1	85	Dagannoth
+2261	crab	1	198	Giant Rock Crab
+2264	dagannoth	1	0	Dagannoth fledgeling
+2265	bosse	1	255	Dagannoth Supreme
+2265	dagannoth	1	255	Dagannoth Supreme
+2266	bosse	1	331.4	Dagannoth Prime
+2266	dagannoth	1	331.4	Dagannoth Prime
+2267	bosse	1	331.4	Dagannoth Rex
+2267	dagannoth	1	331.4	Dagannoth Rex
+2316	goblin	1	26	Guard
+2317	goblin	1	26	Guard
+2463	hillgiant	1	75	Cyclops
+2464	hillgiant	1	100	Cyclops
+2465	hillgiant	1	75	Cyclops
+2466	hillgiant	1	100	Cyclops
+2467	hillgiant	1	75	Cyclops
+2468	hillgiant	1	100	Cyclops
+2474	catablepon	1	40	Catablepon
+2475	catablepon	1	70	Catablepon
+2476	catablepon	1	50	Catablepon
+2477	spider	1	50	Giant spider
+2478	spider	1	22	Spider
+2479	scorpion	1	55	Scorpion
+2480	scorpion	1	37	Scorpion
+2481	minotaur	1	10	Minotaur
+2482	minotaur	1	13	Minotaur
+2483	minotaur	1	22	Minotaur
+2484	goblin	1	5	Goblin
+2485	goblin	1	16	Goblin
+2486	goblin	1	7	Goblin
+2487	goblin	1	22	Goblin
+2488	goblin	1	26	Goblin
+2489	goblin	1	22	Goblin
+2490	wolve	1	15	Wolf
+2491	wolve	1	10	Wolf
+2492	rat	1	2	Rat
+2498	fleshcrawler	1	25	Flesh Crawler
+2499	fleshcrawler	1	25	Flesh Crawler
+2500	fleshcrawler	1	25	Flesh Crawler
+2501	zombie	1	30	Zombie
+2502	zombie	1	30	Zombie
+2503	zombie	1	30	Zombie
+2504	zombie	1	40	Zombie
+2505	zombie	1	40	Zombie
+2506	zombie	1	40	Zombie
+2507	zombie	1	50	Zombie
+2508	zombie	1	50	Zombie
+2509	zombie	1	50	Zombie
+2510	rat	1	25	Giant rat
+2511	rat	1	25	Giant rat
+2512	rat	1	25	Giant rat
+2513	rat	1	2	Rat
+2514	ankou	1	60	Ankou
+2515	ankou	1	65	Ankou
+2516	ankou	1	70	Ankou
+2517	ankou	1	60	Ankou
+2518	ankou	1	65	Ankou
+2519	ankou	1	70	Ankou
+2520	skeleton	1	70	Skeleton
+2521	skeleton	1	70	Skeleton
+2522	skeleton	1	70	Skeleton
+2523	skeleton	1	70	Skeleton
+2524	skeleton	1	77	Skeleton
+2525	skeleton	1	77	Skeleton
+2526	skeleton	1	77	Skeleton
+2527	ghost	1	80	Ghost
+2528	ghost	1	80	Ghost
+2529	ghost	1	80	Ghost
+2530	ghost	1	80	Ghost
+2531	ghost	1	75	Ghost
+2532	ghost	1	75	Ghost
+2533	ghost	1	75	Ghost
+2534	ghost	1	75	Ghost
+2592	mogre	32	48	Mogre
+2592	ogre	32	48	Mogre
+2593	werewolve	1	100	Werewolf
+2594	werewolve	1	100	Werewolf
+2595	werewolve	1	100	Werewolf
+2596	werewolve	1	100	Werewolf
+2597	werewolve	1	100	Werewolf
+2598	werewolve	1	100	Werewolf
+2599	werewolve	1	100	Werewolf
+2600	werewolve	1	100	Werewolf
+2601	werewolve	1	100	Werewolf
+2602	werewolve	1	100	Werewolf
+2603	werewolve	1	100	Werewolf
+2604	werewolve	1	100	Werewolf
+2605	werewolve	1	100	Werewolf
+2606	werewolve	1	100	Werewolf
+2607	werewolve	1	100	Werewolf
+2608	werewolve	1	100	Werewolf
+2609	werewolve	1	100	Werewolf
+2610	werewolve	1	100	Werewolf
+2611	werewolve	1	100	Werewolf
+2612	werewolve	1	100	Werewolf
+2642	blackdragon	1	258	King Black Dragon
+2642	bosse	1	258	King Black Dragon
+2790	cow	1	8	Cow
+2791	cow	1	8	Cow
+2792	cow	1	6	Cow calf
+2793	cow	1	8	Cow
+2794	cow	1	6	Cow calf
+2795	cow	1	8	Cow
+2801	cow	1	6	Cow calf
+2804	bird	1	3	Chicken
+2805	bird	1	3	Chicken
+2806	bird	1	3	Chicken
+2827	bat	1	8	Bat
+2834	bat	1	32	Giant bat
+2838	bear	1	27	Grizzly bear
+2839	bear	1	25	Black bear
+2840	earthwarrior	1	54	Earth warrior
+2841	icewarrior	1	59	Ice warrior
+2842	icewarrior	1	59	Ice warrior
+2843	otherworldlybeing	1	66	Otherworldly being
+2844	magicaxe	1	44	Magic axe
+2848	monkey	1	6	Monkey
+2851	icewarrior	1	59	Ice warrior
+2853	shadowwarrior	1	67	Shadow warrior
+2854	rat	1	2	Rat
+2855	rat	1	2	Rat
+2856	rat	1	5	Giant rat
+2857	rat	1	5	Giant rat
+2858	rat	1	5	Giant rat
+2859	rat	1	5	Giant rat
+2860	rat	1	5	Giant rat
+2861	rat	1	5	Giant rat
+2862	rat	1	10	Giant rat
+2863	rat	1	10	Giant rat
+2864	rat	1	10	Giant rat
+2865	rat	1	12	Dungeon rat
+2866	rat	1	12	Dungeon rat
+2867	rat	1	12	Dungeon rat
+2916	waterfiend	1	128	Waterfiend
+2917	waterfiend	1	128	Waterfiend
+2919	metaldragon	1	266.5	Mithril dragon
+2992	cow	1	8	Undead cow
+2992	zombie	1	8	Undead cow
+2993	bird	1	3	Undead chicken
+2993	zombie	1	3	Undead chicken
+2994	scorpion	1	32	Giant lobster
+2999	ghost	1	51	Tortured soul
+3016	spider	1	55	Shadow spider
+3017	spider	1	5	Giant spider
+3018	spider	1	33	Giant spider
+3019	spider	1	2	Spider
+3020	spider	1	50	Jungle spider
+3021	spider	1	35	Deadly red spider
+3022	spider	1	65	Ice spider
+3023	spider	1	64	Poison spider
+3024	scorpion	1	17	Scorpion
+3025	scorpion	1	23	Poison Scorpion
+3026	scorpion	1	32	Pit Scorpion
+3027	scorpion	1	30	King Scorpion
+3028	goblin	1	5	Goblin
+3029	goblin	1	5	Goblin
+3030	goblin	1	5	Goblin
+3031	goblin	1	5	Goblin
+3032	goblin	1	5	Goblin
+3033	goblin	1	5	Goblin
+3034	goblin	1	5	Goblin
+3035	goblin	1	5	Goblin
+3036	goblin	1	5	Goblin
+3037	goblin	1	5	Goblin
+3038	goblin	1	5	Goblin
+3039	goblin	1	5	Goblin
+3040	goblin	1	5	Goblin
+3041	goblin	1	5	Goblin
+3042	goblin	1	5	Goblin
+3043	goblin	1	5	Goblin
+3044	goblin	1	5	Goblin
+3045	goblin	1	12	Goblin
+3046	goblin	1	16	Goblin
+3047	goblin	1	12	Goblin
+3048	goblin	1	12	Goblin
+3049	hobgoblin	1	29	Hobgoblin
+3050	hobgoblin	1	49	Hobgoblin
+3051	goblin	1	5	Goblin
+3052	goblin	1	5	Goblin
+3053	goblin	1	5	Goblin
+3054	goblin	1	5	Goblin
+3073	goblin	1	12	Goblin
+3074	goblin	1	12	Goblin
+3075	goblin	1	12	Goblin
+3076	goblin	1	12	Goblin
+3116	tzhaar	1	10	Tz-Kih
+3117	tzhaar	1	10	Tz-Kih
+3118	tzhaar	1	20	Tz-Kek
+3119	tzhaar	1	20	Tz-Kek
+3120	tzhaar	1	10	Tz-Kek
+3121	tzhaar	1	40	Tok-Xil
+3122	tzhaar	1	40	Tok-Xil
+3123	tzhaar	1	80	Yt-MejKot
+3124	tzhaar	1	80	Yt-MejKot
+3125	tzhaar	1	160	Ket-Zek
+3126	tzhaar	1	160	Ket-Zek
+3127	tzhaar	1	25250	TzTok-Jad
+3128	tzhaar	1	60	Yt-HurKot
+3129	bosse	1	350.5	K'ril Tsutsaroth
+3129	greaterdemon	1	350.5	K'ril Tsutsaroth
+3130	greaterdemon	1	142	Tstanon Karlak
+3131	lesserdemon	1	150	Zakl'n Gritch
+3132	blackdemon	1	161	Balfrug Kreeyath
+3133	hellhound	1	116	Hellhound
+3135	werewolve	1	100	Werewolf
+3136	werewolve	1	100	Werewolf
+3137	vampyre	1	60	Feral Vampyre
+3138	bloodveld	50	134	Bloodveld
+3139	pyrefiend	30	45	Pyrefiend
+3140	icefiend	1	20	Icefiend
+3159	spiritualcreature	68	110	Spiritual warrior
+3160	spiritualcreature	63	106	Spiritual ranger
+3161	spiritualcreature	83	75	Spiritual mage
+3162	aviansie	1	357	Kree'arra
+3162	bosse	1	357	Kree'arra
+3163	aviansie	1	124	Wingman Skree
+3164	aviansie	1	132.5	Flockleader Geerin
+3165	aviansie	1	132.5	Flight Kilisa
+3166	spiritualcreature	68	98	Spiritual warrior
+3167	spiritualcreature	63	120	Spiritual ranger
+3168	spiritualcreature	83	75	Spiritual mage
+3169	aviansie	1	70	Aviansie
+3170	aviansie	1	83	Aviansie
+3171	aviansie	1	86	Aviansie
+3172	aviansie	1	86	Aviansie
+3173	aviansie	1	95	Aviansie
+3174	aviansie	1	98	Aviansie
+3175	aviansie	1	124	Aviansie
+3176	aviansie	1	139	Aviansie
+3177	aviansie	1	63	Aviansie
+3178	aviansie	1	67	Aviansie
+3179	aviansie	1	77	Aviansie
+3180	aviansie	1	69	Aviansie
+3181	aviansie	1	75	Aviansie
+3182	aviansie	1	79	Aviansie
+3183	aviansie	1	115	Aviansie
+3184	dagannoth	1	35	Dagannoth spawn
+3185	dagannoth	1	99.6	Dagannoth
+3234	vampyre	1	50	Feral Vampyre
+3237	vampyre	1	40	Feral Vampyre
+3286	hobgoblin	1	29	Hobgoblin
+3287	hobgoblin	1	29	Hobgoblin
+3288	hobgoblin	1	29	Hobgoblin
+3289	hobgoblin	1	29	Hobgoblin
+3423	bear	1	35	Grizzly bear
+3424	bear	1	35	Grizzly bear cub
+3425	bear	1	35	Grizzly bear cub
+3426	wolve	1	85	Dire Wolf
+3428	elve	1	105	Iorwerth Archer
+3429	elve	1	107.5	Iorwerth Warrior
+3449	dog	1	62	Shadow Hound
+3458	icewarrior	1	146	Kamil
+3459	vampyre	1	220	Dessous
+3460	vampyre	1	220	Dessous
+3481	vampyre	1	0.8	Count Draynor
+3482	vampyre	1	0.8	Count Draynor
+3565	skeleton	1	29	Skeleton
+3607	rat	1	12	Dungeon rat
+3608	rat	1	12	Dungeon rat
+3609	rat	1	12	Dungeon rat
+3615	skeleton	1	39	Skeletal miner
+3616	ghost	1	100	Treus Dayth
+3625	ghost	1	30	Ghost
+3661	bird	1	3	Chicken
+3662	bird	1	3	Chicken
+3663	bird	1	5	Rooster
+3692	vampyre	1	60	Vampyre Juvenile
+3693	vampyre	1	60	Vampyre Juvenile
+3694	vampyre	1	85	Vampyre Juvinate
+3695	vampyre	1	85	Vampyre Juvinate
+3696	vampyre	1	60	Vampyre Juvenile
+3697	vampyre	1	60	Vampyre Juvenile
+3698	vampyre	1	85	Vampyre Juvinate
+3699	vampyre	1	85	Vampyre Juvinate
+3707	vampyre	1	80	Feral Vampyre
+3708	vampyre	1	80	Feral Vampyre
+3709	vampyre	1	90	Vyrewatch
+3710	vampyre	1	90	Vyrewatch
+3711	vampyre	1	105	Vyrewatch
+3712	vampyre	1	110	Vyrewatch
+3713	vampyre	1	90	Vyrewatch
+3714	vampyre	1	90	Vyrewatch
+3715	vampyre	1	105	Vyrewatch
+3716	vampyre	1	110	Vyrewatch
+3717	vampyre	1	90	Vyrewatch
+3718	vampyre	1	90	Vyrewatch
+3719	vampyre	1	105	Vyrewatch
+3720	vampyre	1	110	Vyrewatch
+3721	vampyre	1	90	Vyrewatch
+3722	vampyre	1	90	Vyrewatch
+3723	vampyre	1	105	Vyrewatch
+3724	vampyre	1	110	Vyrewatch
+3725	vampyre	1	90	Vyrewatch
+3726	vampyre	1	90	Vyrewatch
+3727	vampyre	1	105	Vyrewatch
+3728	vampyre	1	110	Vyrewatch
+3729	vampyre	1	90	Vyrewatch
+3730	vampyre	1	90	Vyrewatch
+3731	vampyre	1	105	Vyrewatch
+3732	vampyre	1	110	Vyrewatch
+3748	vampyre	1	90	Vyrewatch
+3749	vampyre	1	90	Vyrewatch
+3750	vampyre	1	105	Vyrewatch
+3751	vampyre	1	110	Vyrewatch
+3752	vampyre	1	90	Vyrewatch
+3753	vampyre	1	90	Vyrewatch
+3754	vampyre	1	105	Vyrewatch
+3755	vampyre	1	110	Vyrewatch
+3756	vampyre	1	90	Vyrewatch
+3757	vampyre	1	90	Vyrewatch
+3758	vampyre	1	105	Vyrewatch
+3759	vampyre	1	110	Vyrewatch
+3760	vampyre	1	90	Vyrewatch
+3761	vampyre	1	90	Vyrewatch
+3762	vampyre	1	105	Vyrewatch
+3763	vampyre	1	110	Vyrewatch
+3851	mossgiant	1	85	Moss giant
+3852	mossgiant	1	85	Moss giant
+3908	bear	1	20	Bear Cub
+3909	bear	1	20	Bear Cub
+3912	wolve	1	69	Wolf
+3969	rat	1	2	Zombie rat
+3969	zombie	1	2	Zombie rat
+3970	rat	1	2	Zombie rat
+3970	zombie	1	2	Zombie rat
+3971	rat	1	2	Zombie rat
+3971	zombie	1	2	Zombie rat
+3972	skeleton	1	29	Skeleton
+3973	skeleton	1	29	Skeleton
+3974	skeleton	1	29	Skeleton
+3975	ghost	1	25	Ghost
+3976	ghost	1	25	Ghost
+3977	ghost	1	25	Ghost
+3978	ghost	1	25	Ghost
+3979	ghost	1	25	Ghost
+3980	zombie	1	30	Zombie
+3981	zombie	1	30	Zombie
+3982	lesserdemon	1	79	Lesser demon
+4005	darkbeast	90	225.4	Dark beast
+4043	pirate	1	20	Pirate
+4044	pirate	1	20	Pirate
+4045	pirate	1	20	Pirate
+4046	pirate	1	20	Pirate
+4047	pirate	1	20	Pirate
+4048	pirate	1	20	Pirate
+4049	pirate	1	20	Pirate
+4050	pirate	1	20	Pirate
+4051	pirate	1	20	Pirate
+4052	pirate	1	20	Pirate
+4120	troll	1	150.5	Troll general
+4121	troll	1	150.5	Troll general
+4122	troll	1	150.5	Troll general
+4123	troll	1	90	Troll spectator
+4124	troll	1	90	Troll spectator
+4125	troll	1	90	Troll spectator
+4126	troll	1	90	Troll spectator
+4127	troll	1	90	Troll spectator
+4128	troll	1	90	Troll spectator
+4129	troll	1	90	Troll spectator
+4130	troll	1	126	Dad
+4131	troll	1	90	Twig
+4132	troll	1	90	Berry
+4133	troll	1	90	Twig
+4134	troll	1	90	Berry
+4135	troll	1	95	Thrower troll
+4136	troll	1	95	Thrower troll
+4137	troll	1	95	Thrower troll
+4138	troll	1	95	Thrower troll
+4139	troll	1	95	Thrower troll
+4143	troll	1	90	Mountain troll
+4184	crocodile	1	62	Crocodile
+4185	dog	1	27	Jackal
+4192	scabarite	1	1	Scarab Swarm
+4303	kalphite	1	535.4	Kalphite Queen
+4303	bosse	1	535.4	Kalphite Queen
+4304	kalphite	1	535.4	Kalphite Queen
+4304	bosse	1	535.4	Kalphite Queen
+4319	skeleton	1	80	Skeleton Mage
+4331	blackknight	1	42	Black Knight
+4362	ogre	1	60	Ogre chieftain
+4367	ogre	1	80	Gorad
+4373	ogre	1	80	City guard
+4381	ogre	1	80	Enclave guard
+4427	vampyre	1	65	Vampyre Juvinate
+4428	vampyre	1	65	Vampyre Juvinate
+4429	vampyre	1	65	Vampyre Juvinate
+4430	vampyre	1	65	Vampyre Juvinate
+4431	vampyre	1	80	Feral Vampyre
+4432	vampyre	1	65	Vampyre Juvinate
+4436	vampyre	1	60	Vampyre Juvenile
+4437	vampyre	1	60	Vampyre Juvenile
+4438	vampyre	1	60	Vampyre Juvenile
+4439	vampyre	1	60	Vampyre Juvenile
+4442	vampyre	1	110	Vampyre Juvinate
+4443	vampyre	1	60	Vampyre Juvinate
+4486	vampyre	1	60	Vampyre Juvinate
+4487	vampyre	1	65	Vampyre Juvinate
+4491	skeleton	1	25	Skeleton fremennik
+4492	skeleton	1	25	Skeleton fremennik
+4493	skeleton	1	25	Skeleton fremennik
+4494	skeleton	1	35	Skeleton fremennik
+4495	skeleton	1	35	Skeleton fremennik
+4496	skeleton	1	35	Skeleton fremennik
+4497	skeleton	1	40	Skeleton fremennik
+4498	skeleton	1	40	Skeleton fremennik
+4499	skeleton	1	40	Skeleton fremennik
+4500	skeleton	1	60	Ulfric
+4501	brinerat	47	50	Brine rat
+4501	rat	47	50	Brine rat
+4504	bat	1	32	Giant bat
+4533	spider	1	32	Blessed spider
+4534	rat	1	30	Blessed giant rat
+4535	rat	1	30	Blessed giant rat
+4561	spider	1	2	Spider
+4649	wolve	1	34	Desert Wolf
+4650	wolve	1	34	Desert Wolf
+4651	wolve	1	34	Desert Wolf
+4799	scorpion	1	50	Giant Lobster
+4800	scorpion	1	50	Giant Lobster
+4805	hobgoblin	1	29	Hobgoblin
+4813	icefiend	1	15	Icefiend
+4819	crab	1	19	Crab
+4822	crab	1	18	Crab
+4927	bird	1	5	Entrana firebird
+5054	hellhound	1	55	Skeleton Hellhound
+5185	dwarve	1	16	Guard
+5186	dwarve	1	16	Guard
+5187	dwarve	1	16	Guard
+5188	dwarve	1	16	Guard
+5189	dwarve	1	16	Guard
+5192	goblin	1	5	Goblin
+5193	goblin	1	5	Goblin
+5195	goblin	1	5	Goblin
+5196	goblin	1	5	Goblin
+5197	goblin	1	5	Goblin
+5198	goblin	1	5	Goblin
+5199	goblin	1	5	Goblin
+5200	goblin	1	5	Goblin
+5201	goblin	1	5	Goblin
+5202	goblin	1	5	Goblin
+5203	goblin	1	5	Goblin
+5204	goblin	1	5	Goblin
+5205	goblin	1	5	Goblin
+5206	goblin	1	5	Goblin
+5207	goblin	1	5	Goblin
+5208	goblin	1	5	Goblin
+5237	skeleton	1	110	Skeleton
+5238	spider	1	2	Spider
+5239	spider	1	2	Spider
+5240	bird	1	10	Bird
+5241	bird	1	5	Bird
+5242	scorpion	1	15	Scorpion
+5243	spider	1	35.8	Jungle spider
+5258	monkey	1	130	Duke
+5259	monkey	1	130	Oipuis
+5260	monkey	1	130	Uyoro
+5261	monkey	1	130	Ouhai
+5262	monkey	1	130	Uodai
+5271	monkey	1	130	Monkey Guard
+5272	monkey	1	50	Monkey Archer
+5273	monkey	1	50	Monkey Archer
+5274	monkey	1	50	Monkey Archer
+5275	monkey	1	133	Monkey Guard
+5276	monkey	1	133	Monkey Guard
+5281	monkey	1	60	Monkey Zombie
+5281	zombie	1	60	Monkey Zombie
+5282	monkey	1	90	Monkey Zombie
+5282	zombie	1	90	Monkey Zombie
+5283	monkey	1	60	Monkey Zombie
+5283	zombie	1	60	Monkey Zombie
+5293	elve	1	107.5	Elf Warrior
+5294	elve	1	107.5	Elf Warrior
+5295	elve	1	105	Elf Archer
+5296	elve	1	105	Elf Archer
+5330	goblin	1	10	Cave goblin miner
+5331	goblin	1	10	Cave goblin miner
+5332	goblin	1	10	Cave goblin miner
+5333	goblin	1	10	Cave goblin miner
+5334	goblin	1	26	Cave goblin guard
+5335	goblin	1	26	Cave goblin guard
+5336	goblin	1	10	Cave goblin miner
+5337	goblin	1	10	Cave goblin miner
+5338	goblin	1	10	Cave goblin miner
+5339	goblin	1	10	Cave goblin miner
+5342	skeleton	1	50	Undead one
+5343	skeleton	1	50	Undead one
+5344	skeleton	1	73	Undead one
+5345	skeleton	1	73	Undead one
+5346	zombie	1	47	Undead one
+5347	zombie	1	47	Undead one
+5348	zombie	1	47	Undead one
+5349	zombie	1	59	Undead one
+5350	zombie	1	59	Undead one
+5351	zombie	1	59	Undead one
+5353	zombie	1	70	Nazastarool
+5354	skeleton	1	70	Nazastarool
+5355	ghost	1	80	Nazastarool
+5369	goblin	1	43	Goblin guard
+5370	ghost	1	20	Ghost
+5372	scorpion	1	7	Grave scorpion
+5373	spider	1	0	Poison spider
+5631	shade	1	76	Riyl shadow
+5632	shade	1	94	Asyn shadow
+5633	shade	1	115	Shade
+5634	vampyre	1	50	Vampyre Juvinate
+5635	vampyre	1	100	Vampyre Juvinate
+5636	vampyre	1	150	Vampyre Juvinate
+5637	vampyre	1	50	Vampyre Juvinate
+5638	vampyre	1	100	Vampyre Juvinate
+5639	vampyre	1	150	Vampyre Juvinate
+5640	vampyre	1	75	Feral Vampyre
+5641	vampyre	1	135	Feral Vampyre
+5642	vampyre	1	185	Feral Vampyre
+5647	zombie	1	20	Zombie
+5648	zombie	1	0	Undead Lumberjack
+5649	zombie	1	0	Undead Lumberjack
+5650	zombie	1	0	Undead Lumberjack
+5651	zombie	1	0	Undead Lumberjack
+5652	zombie	1	0	Undead Lumberjack
+5653	zombie	1	0	Undead Lumberjack
+5654	zombie	1	0	Undead Lumberjack
+5655	zombie	1	0	Undead Lumberjack
+5656	zombie	1	0	Undead Lumberjack
+5657	zombie	1	0	Undead Lumberjack
+5658	zombie	1	0	Undead Lumberjack
+5659	zombie	1	0	Undead Lumberjack
+5660	zombie	1	0	Undead Lumberjack
+5661	zombie	1	0	Undead Lumberjack
+5662	zombie	1	0	Undead Lumberjack
+5663	zombie	1	0	Undead Lumberjack
+5665	zombie	1	0	Undead Lumberjack
+5666	zombie	1	0	Undead Lumberjack
+5667	zombie	1	0	Undead Lumberjack
+5668	zombie	1	0	Undead Lumberjack
+5669	zombie	1	0	Undead Lumberjack
+5670	zombie	1	0	Undead Lumberjack
+5671	zombie	1	0	Undead Lumberjack
+5672	zombie	1	0	Undead Lumberjack
+5673	zombie	1	0	Undead Lumberjack
+5674	zombie	1	0	Undead Lumberjack
+5675	zombie	1	0	Undead Lumberjack
+5676	zombie	1	0	Undead Lumberjack
+5677	zombie	1	0	Undead Lumberjack
+5678	zombie	1	0	Undead Lumberjack
+5679	zombie	1	0	Undead Lumberjack
+5680	zombie	1	0	Undead Lumberjack
+5681	zombie	1	0	Undead Lumberjack
+5682	zombie	1	0	Undead Lumberjack
+5683	zombie	1	0	Undead Lumberjack
+5684	zombie	1	0	Undead Lumberjack
+5685	zombie	1	0	Undead Lumberjack
+5686	zombie	1	0	Undead Lumberjack
+5687	zombie	1	0	Undead Lumberjack
+5688	zombie	1	0	Undead Lumberjack
+5689	zombie	1	0	Undead Lumberjack
+5690	zombie	1	0	Undead Lumberjack
+5691	zombie	1	0	Undead Lumberjack
+5692	zombie	1	0	Undead Lumberjack
+5693	zombie	1	0	Undead Lumberjack
+5694	zombie	1	0	Undead Lumberjack
+5695	zombie	1	0	Undead Lumberjack
+5696	zombie	1	0	Undead Lumberjack
+5697	zombie	1	0	Undead Lumberjack
+5698	zombie	1	0	Undead Lumberjack
+5699	zombie	1	0	Undead Lumberjack
+5700	zombie	1	0	Undead Lumberjack
+5701	zombie	1	0	Undead Lumberjack
+5702	zombie	1	0	Undead Lumberjack
+5703	zombie	1	0	Undead Lumberjack
+5704	zombie	1	0	Undead Lumberjack
+5705	zombie	1	0	Undead Lumberjack
+5706	zombie	1	0	Undead Lumberjack
+5707	zombie	1	0	Undead Lumberjack
+5708	zombie	1	0	Undead Lumberjack
+5709	zombie	1	0	Undead Lumberjack
+5710	zombie	1	0	Undead Lumberjack
+5711	zombie	1	0	Undead Lumberjack
+5712	zombie	1	0	Undead Lumberjack
+5713	zombie	1	0	Undead Lumberjack
+5714	zombie	1	0	Undead Lumberjack
+5715	zombie	1	0	Undead Lumberjack
+5716	zombie	1	0	Undead Lumberjack
+5717	zombie	1	0	Undead Lumberjack
+5718	zombie	1	0	Undead Lumberjack
+5719	zombie	1	0	Undead Lumberjack
+5720	zombie	1	0	Undead Lumberjack
+5779	bosse	1	215	Giant Mole
+5822	troll	1	161	Ice Troll King
+5823	troll	1	63	Frenzied ice troll runt
+5824	troll	1	84	Frenzied ice troll male
+5825	troll	1	84	Frenzied ice troll female
+5826	troll	1	84	Frenzied ice troll grunt
+5828	troll	1	63	Ice troll runt
+5829	troll	1	84	Ice troll male
+5830	troll	1	84	Ice troll female
+5831	troll	1	84	Ice troll grunt
+5842	cow	1	8	Cow
+5862	hellhound	91	690	Cerberus
+5862	bosse	91	690	Cerberus
+5863	hellhound	91	690	Cerberus
+5863	bosse	91	690	Cerberus
+5866	hellhound	91	690	Cerberus
+5866	bosse	91	690	Cerberus
+5874	blackdemon	1	157	Black demon
+5875	blackdemon	1	157	Black demon
+5876	blackdemon	1	157	Black demon
+5877	blackdemon	1	157	Black demon
+5878	bluedragon	1	105	Blue dragon
+5879	bluedragon	1	105	Blue dragon
+5880	bluedragon	1	105	Blue dragon
+5881	bluedragon	1	105	Blue dragon
+5882	bluedragon	1	105	Blue dragon
+5884	troll	1	1	River troll
+5885	troll	1	1	River troll
+5886	bosse	85	478	Abyssal Sire
+5886	abyssaldemon	85	478	Abyssal Sire
+5887	bosse	85	478	Abyssal Sire
+5887	abyssaldemon	85	478	Abyssal Sire
+5888	bosse	85	478	Abyssal Sire
+5888	abyssaldemon	85	478	Abyssal Sire
+5889	bosse	85	478	Abyssal Sire
+5889	abyssaldemon	85	478	Abyssal Sire
+5890	bosse	85	478	Abyssal Sire
+5890	abyssaldemon	85	478	Abyssal Sire
+5891	bosse	85	478	Abyssal Sire
+5891	abyssaldemon	85	478	Abyssal Sire
+5908	bosse	85	478	Abyssal Sire
+5908	abyssaldemon	85	478	Abyssal Sire
+5914	bosse	85	50	Respiratory system
+5914	abyssaldemon	85	50	Respiratory system
+5935	crab	1	60	Sand Crab
+5936	crab	1	60	Sandy rocks
+5940	crab	1	198	Giant Rock Crab
+5942	dagannoth	1	85	Dagannoth
+5943	dagannoth	1	99.6	Dagannoth
+5971	bird	1	55	Mounted terrorbird gnome
+5972	bird	1	55	Mounted terrorbird gnome
+5973	bird	1	55	Mounted terrorbird gnome
+6046	dwarve	1	40	Black Guard
+6047	dwarve	1	40	Black Guard
+6048	dwarve	1	40	Black Guard
+6049	dwarve	1	40	Black Guard
+6050	dwarve	1	50	Black Guard Berserker
+6051	dwarve	1	50	Black Guard Berserker
+6052	dwarve	1	50	Black Guard Berserker
+6118	greendragon	1	246	Elvarg (hard)
+6143	shade	1	130	Urium Shadow
+6267	spider	1	50	Jungle spider
+6271	spider	1	50	Jungle spider
+6294	troll	1	287	Ice Troll King (hard)
+6295	blackdemon	1	255	Black demon (hard)
+6300	dagannoth	1	252	Dagannoth mother (hard)
+6301	dagannoth	1	252	Dagannoth mother (hard)
+6302	dagannoth	1	252	Dagannoth mother (hard)
+6303	dagannoth	1	252	Dagannoth mother (hard)
+6304	dagannoth	1	252	Dagannoth mother (hard)
+6305	dagannoth	1	252	Dagannoth mother (hard)
+6306	bird	1	240	Evil Chicken (hard)
+6323	bird	1	255	Giant Roc (hard)
+6330	troll	1	264	Dad (hard)
+6331	troll	1	299.6	Arrg (hard)
+6332	vampyre	1	210	Count Draynor (hard)
+6343	scabarite	1	137	Giant Scarab
+6344	vampyre	1	220	Dessous
+6345	icewarrior	1	146	Kamil
+6349	greendragon	1	80	Elvarg
+6356	troll	1	161	Ice Troll King
+6357	blackdemon	1	157	Black demon
+6361	dagannoth	1	126	Dagannoth mother
+6362	dagannoth	1	126	Dagannoth mother
+6363	dagannoth	1	126	Dagannoth mother
+6364	dagannoth	1	126	Dagannoth mother
+6365	dagannoth	1	126	Dagannoth mother
+6366	dagannoth	1	126	Dagannoth mother
+6367	bird	1	120	Evil Chicken
+6384	bird	1	250	Giant Roc
+6391	troll	1	126	Dad
+6392	troll	1	150.5	Arrg
+6393	vampyre	1	35	Count Draynor
+6434	goblin	1	10	Cave goblin
+6435	goblin	1	10	Cave goblin
+6436	goblin	1	10	Cave goblin
+6437	goblin	1	10	Cave goblin
+6440	skeleton	1	110	Giant skeleton
+6441	skeleton	1	85	Skeleton
+6442	skeleton	1	80	Skeleton
+6443	skeleton	1	71	Skeleton
+6444	skeleton	1	40	Skeleton
+6445	skeleton	1	53	Skeleton
+6446	skeleton	1	42	Skeleton
+6447	skeleton	1	58	Skeleton
+6448	skeleton	1	26	Skeleton
+6449	zombie	1	38	Zombie
+6450	zombie	1	40	Zombie
+6451	zombie	1	42	Zombie
+6452	zombie	1	48	Zombie
+6453	zombie	1	50	Zombie
+6454	zombie	1	57	Zombie
+6455	zombie	1	63	Zombie
+6456	zombie	1	65	Zombie
+6457	zombie	1	68	Zombie
+6458	zombie	1	71	Zombie
+6459	zombie	1	73	Zombie
+6460	zombie	1	75	Zombie
+6461	zombie	1	76	Zombie
+6462	zombie	1	81	Zombie
+6463	zombie	1	92	Zombie
+6464	zombie	1	96	Zombie
+6465	zombie	1	102	Zombie
+6466	zombie	1	76	Zombie
+6467	skeleton	1	69	Skeleton
+6468	skeleton	1	92	Skeleton
+6473	terrordog	40	87	Terror dog
+6474	terrordog	40	82	Terror dog
+6492	aviansie	1	357	Kree'arra
+6492	bosse	1	357	Kree'arra
+6493	bosse	1	350	Commander Zilyana
+6494	bosse	1	338	General Graardor
+6495	bosse	1	350.5	K'ril Tsutsaroth
+6495	greaterdemon	1	350.5	K'ril Tsutsaroth
+6496	bosse	1	255	Dagannoth Supreme
+6496	dagannoth	1	255	Dagannoth Supreme
+6497	bosse	1	331.4	Dagannoth Prime
+6497	dagannoth	1	331.4	Dagannoth Prime
+6498	bosse	1	331.4	Dagannoth Rex
+6498	dagannoth	1	331.4	Dagannoth Rex
+6499	bosse	1	215	Giant Mole
+6500	kalphite	1	535.5	Kalphite Queen
+6500	bosse	1	535.5	Kalphite Queen
+6501	kalphite	1	535.5	Kalphite Queen
+6501	bosse	1	535.5	Kalphite Queen
+6502	blackdragon	1	258	King Black Dragon
+6502	bosse	1	258	King Black Dragon
+6503	bear	1	312	Callisto
+6503	bosse	1	312	Callisto
+6504	spider	1	388.8	Venenatis
+6504	bosse	1	388.8	Venenatis
+6505	bosse	1	268.75	Chaos Elemental
+6506	tzhaar	1	25250	TzTok-Jad
+6593	lavadragon	1	248	Lava dragon
+6594	ent	1	107.5	Ent
+6596	zombie	1	24	Zombie
+6597	zombie	1	24	Zombie
+6598	zombie	1	24	Zombie
+6603	rogue	1	125	Rogue
+6604	mammoth	1	130	Mammoth
+6605	bandit	1	158.8	Bandit
+6606	darkwarrior	1	181.5	Dark warrior
+6607	chaosdruid	1	150	Elder Chaos druid
+6608	ankou	1	70	Ankou
+6609	bear	1	1300	Callisto
+6609	bosse	1	1300	Callisto
+6610	spider	1	956.2	Venenatis
+6610	bosse	1	956.2	Venenatis
+6611	skeleton	1	624	Vet'ion
+6611	bosse	1	624	Vet'ion
+6612	skeleton	1	322	Vet'ion
+6612	bosse	1	322	Vet'ion
+6613	hellhound	1	33	Skeleton Hellhound
+6613	skeleton	1	33	Skeleton Hellhound
+6614	hellhound	1	33	Greater Skeleton Hellhound
+6614	skeleton	1	33	Greater Skeleton Hellhound
+6615	bosse	1	260	Scorpia
+6615	scorpion	1	260	Scorpia
+6616	scorpion	1	2	Scorpia's offspring
+6617	scorpion	1	70	Scorpia's guardian
+6618	bosse	1	275	Crazy archaeologist
+6619	bosse	1	253	Chaos Fanatic
+6732	troll	1	1	River troll
+6733	troll	1	1	River troll
+6734	troll	1	1	River troll
+6735	troll	1	2	River troll
+6736	troll	1	3	River troll
+6737	troll	1	4	River troll
+6739	bird	1	3	Evil Chicken
+6740	shade	1	4.2	Shade
+6741	zombie	1	4.2	Zombie
+6762	pyrefiend	30	80	Pyrelord
+6766	lizardmen	1	157.5	Lizardman shaman
+6767	lizardmen	1	157.5	Lizardman shaman
+6795	pyrefiend	30	80	Pyrelord
+6813	monkey	1	50	Monkey Archer
+6824	bat	1	32	Giant bat
+6914	lizardmen	1	60	Lizardman
+6915	lizardmen	1	60	Lizardman
+6916	lizardmen	1	60	Lizardman
+6917	lizardmen	1	60	Lizardman
+6918	lizardmen	1	60	Lizardman brute
+6919	lizardmen	1	60	Lizardman brute
+6993	pirate	1	20	Pirate
+6994	pirate	1	20	Pirate
+6995	pirate	1	20	Pirate
+7018	goblin	1	5	Reanimated goblin
+7019	monkey	1	5	Reanimated monkey
+7021	minotaur	1	5	Reanimated minotaur
+7022	scorpion	1	15	Reanimated scorpion
+7023	bear	1	15	Reanimated bear
+7025	dog	1	35	Reanimated dog
+7026	chaosdruid	1	35	Reanimated chaos druid
+7027	hillgiant	1	35	Reanimated giant
+7028	ogre	1	35	Reanimated ogre
+7029	elve	1	35	Reanimated elf
+7030	troll	1	35	Reanimated troll
+7031	junglehorror	1	35	Reanimated horror
+7032	kalphite	1	35	Reanimated kalphite
+7033	dagannoth	1	35	Reanimated dagannoth
+7034	bloodveld	50	35	Reanimated bloodveld
+7035	tzhaar	1	35	Reanimated TzHaar
+7036	lesserdemon	1	35	Reanimated demon
+7037	aviansie	1	35	Reanimated aviansie
+7038	abyssaldemon	85	35	Reanimated abyssal
+7095	monkey	1	110	Tortured gorilla
+7096	monkey	1	110	Tortured gorilla
+7097	monkey	1	110	Tortured gorilla
+7118	monkey	1	65	Maniacal monkey
+7119	monkey	1	0	Maniacal Monkey Archer
+7144	blackdemon	1	408.5	Demonic gorilla
+7144	monkey	1	408.5	Demonic gorilla
+7145	blackdemon	1	408.5	Demonic gorilla
+7145	monkey	1	408.5	Demonic gorilla
+7146	blackdemon	1	408.5	Demonic gorilla
+7146	monkey	1	408.5	Demonic gorilla
+7147	blackdemon	1	408.5	Demonic gorilla
+7147	monkey	1	408.5	Demonic gorilla
+7148	blackdemon	1	408.5	Demonic gorilla
+7148	monkey	1	408.5	Demonic gorilla
+7149	blackdemon	1	408.5	Demonic gorilla
+7149	monkey	1	408.5	Demonic gorilla
+7150	monkey	1	210	Tortured gorilla
+7151	monkey	1	210	Tortured gorilla
+7152	blackdemon	1	408.5	Demonic gorilla
+7152	monkey	1	408.5	Demonic gorilla
+7153	monkey	1	210	Tortured gorilla
+7206	crab	1	60	Sand Crab
+7207	crab	1	60	Sandy rocks
+7209	dog	1	49	Guard dog
+7221	rat	1	2137.5	Scurrius
+7222	rat	1	600	Scurrius
+7223	rat	1	15	Giant rat
+7241	abyssaldemon	85	150	Abyssal demon
+7242	blackdemon	1	170	Black demon
+7243	blackdemon	1	160	Black demon
+7244	greaterdemon	1	120	Greater demon
+7245	greaterdemon	1	115	Greater demon
+7246	greaterdemon	1	130	Greater demon
+7247	lesserdemon	1	85	Lesser demon
+7248	lesserdemon	1	98	Lesser demon
+7249	dustdevil	65	130	Dust devil
+7250	darkbeast	90	225.4	Dark beast
+7251	firegiant	1	153.5	Fire giant
+7252	firegiant	1	133.5	Fire giant
+7253	metaldragon	1	125	Bronze dragon
+7254	metaldragon	1	199.5	Iron dragon
+7255	metaldragon	1	256.2	Steel dragon
+7256	hellhound	1	116	Hellhound
+7257	ankou	1	60	Ankou
+7258	shade	1	115	Shade
+7259	dagannoth	1	70	Dagannoth
+7260	dagannoth	1	120	Dagannoth
+7261	hillgiant	1	35	Hill Giant
+7262	mossgiant	1	60	Moss giant
+7263	ghost	1	25	Ghost
+7264	ghost	1	25	Ghost
+7265	skeleton	1	29	Skeleton
+7266	crab	1	200	King Sand Crab
+7267	crab	1	200	Sandy Boulder
+7269	magicaxe	1	44	Magic axe
+7270	hillgiant	1	100	Cyclops
+7271	hillgiant	1	75	Cyclops
+7272	banshee	15	100	Twisted Banshee
+7273	bluedragon	1	257	Brutal blue dragon
+7274	reddragon	1	306.2	Brutal red dragon
+7275	blackdragon	77	346.4	Brutal black dragon
+7276	bloodveld	50	170	Mutated Bloodveld
+7277	jellie	52	140	Warped Jelly
+7278	nechryael	80	210	Greater Nechryael
+7279	aberrantspectre	60	194.5	Deviant spectre
+7286	blackdemon	1	618.5	Skotizo
+7286	greaterdemon	1	618.5	Skotizo
+7296	ankou	1	60	Dark Ankou
+7388	crawlinghand	5	550	Crushing hand
+7389	cavecrawler	10	600	Chasm Crawler
+7390	banshee	15	610	Screaming banshee
+7391	banshee	15	2200	Screaming twisted banshee
+7392	rockslug	20	770	Giant rockslug
+7393	cockatrice	25	950	Cockathrice
+7394	pyrefiend	30	1250	Flaming pyrelord
+7395	basilisk	40	1700	Monstrous basilisk
+7396	infernalmage	45	1750	Malevolent Mage
+7397	bloodveld	50	2900	Insatiable Bloodveld
+7398	bloodveld	50	4100	Insatiable mutated Bloodveld
+7399	jellie	52	1900	Vitreous Jelly
+7400	jellie	52	2200	Vitreous Warped Jelly
+7401	cavehorror	58	1300	Cave abomination
+7402	aberrantspectre	60	2500	Abhorrent spectre
+7403	aberrantspectre	60	4085	Repugnant spectre
+7404	dustdevil	65	3000	Choke devil
+7405	kurask	70	2767.4	King kurask
+7406	smokedevil	93	2400	Nuclear smoke devil
+7407	gargoyle	75	2768	Marble gargoyle
+7408	gargoyle	75	2768	Marble gargoyle
+7409	darkbeast	90	6462	Night beast
+7410	abyssaldemon	85	4200	Greater abyssal demon
+7411	nechryael	80	3280	Nechryarch
+7416	hillgiant	1	129	Obor
+7485	zombie	1	65	Zombie
+7486	zombie	1	50	Zombie
+7487	zombie	1	71	Zombie
+7488	zombie	1	68	Zombie
+7515	blackdemon	1	376	Porazdir
+7573	lizardmen	1	0	Lizardman shaman
+7574	lizardmen	1	0	Lizardman shaman
+7604	skeleton	1	160	Skeletal Mystic
+7605	skeleton	1	160	Skeletal Mystic
+7606	skeleton	1	160	Skeletal Mystic
+7620	dog	1	45	Temple Guardian
+7656	lesserdemon	1	79	Lesser demon
+7657	lesserdemon	1	79	Lesser demon
+7664	lesserdemon	1	79	Lesser demon
+7679	tzhaar	1	200	TzHaar-Ket
+7682	tzhaar	1	80	TzHaar-Hur
+7683	tzhaar	1	80	TzHaar-Hur
+7684	tzhaar	1	80	TzHaar-Hur
+7685	tzhaar	1	80	TzHaar-Hur
+7686	tzhaar	1	80	TzHaar-Hur
+7687	tzhaar	1	80	TzHaar-Hur
+7691	tzhaar	1	10	Jal-Nib
+7692	tzhaar	1	25	Jal-MejRah
+7693	tzhaar	1	40	Jal-Ak
+7694	tzhaar	1	15	Jal-AkRek-Mej
+7695	tzhaar	1	15	Jal-AkRek-Xil
+7696	tzhaar	1	15	Jal-AkRek-Ket
+7697	tzhaar	1	81	Jal-ImKot
+7698	tzhaar	1	125	Jal-Xil
+7699	tzhaar	1	220	Jal-Zek
+7700	tzhaar	1	350	JalTok-Jad
+7701	tzhaar	1	90	Yt-HurKot
+7702	tzhaar	1	125	Jal-Xil
+7703	tzhaar	1	220	Jal-Zek
+7704	tzhaar	1	350	JalTok-Jad
+7705	tzhaar	1	90	Yt-HurKot
+7706	tzhaar	1	101890	TzKal-Zuk
+7708	tzhaar	1	75	Jal-MejJak
+7744	lizardmen	1	157.5	Lizardman shaman
+7745	lizardmen	1	157.5	Lizardman shaman
+7792	fossilislandwyvern	66	205	Long-tailed Wyvern
+7793	fossilislandwyvern	66	205	Taloned Wyvern
+7794	fossilislandwyvern	66	205	Spitting Wyvern
+7795	fossilislandwyvern	82	315	Ancient Wyvern
+7796	scorpion	1	50	Lobstrosity
+7797	mutatedzygomite	57	154	Ancient Zygomite
+7799	crab	1	100	Ammonite Crab
+7806	bosse	1	275	Deranged archaeologist
+7851	bosse	75	1350	Dusk
+7851	gargoyle	75	1350	Dusk
+7852	bosse	75	0	Dawn
+7852	gargoyle	75	0	Dawn
+7853	bosse	75	0	Dawn
+7853	gargoyle	75	0	Dawn
+7854	bosse	75	1350	Dusk
+7854	gargoyle	75	1350	Dusk
+7855	bosse	75	1350	Dusk
+7855	gargoyle	75	1350	Dusk
+7858	blackdemon	1	376	Demon of Light
+7859	blackdemon	1	376	Demon of Balance
+7860	blackdemon	1	376	Demon of Darkness
+7861	blackdragon	1	262	Black dragon
+7862	blackdragon	1	262	Black dragon
+7863	blackdragon	1	262	Black dragon
+7864	ankou	1	100	Ankou
+7865	lesserdemon	1	110	Lesser demon
+7866	lesserdemon	1	110	Lesser demon
+7867	lesserdemon	1	110	Lesser demon
+7868	greendragon	1	100	Green dragon
+7869	greendragon	1	100	Green dragon
+7870	greendragon	1	100	Green dragon
+7871	greaterdemon	1	120	Greater demon
+7872	greaterdemon	1	120	Greater demon
+7873	greaterdemon	1	120	Greater demon
+7874	blackdemon	1	200	Black demon
+7875	blackdemon	1	200	Black demon
+7876	blackdemon	1	200	Black demon
+7877	hellhound	1	150	Hellhound
+7878	icegiant	1	100	Ice giant
+7879	icegiant	1	100	Ice giant
+7880	icegiant	1	100	Ice giant
+7881	revenant	1	10	Revenant imp
+7881	ghost	1	10	Revenant imp
+7882	gargoyle	1	0	Definitely Not Dusk
+7882	bosse	1	0	Definitely Not Dusk
+7883	bosse	75	1350	Dusk
+7883	gargoyle	75	1350	Dusk
+7884	bosse	75	0	Dawn
+7884	gargoyle	75	0	Dawn
+7885	bosse	75	0	Dawn
+7885	gargoyle	75	0	Dawn
+7886	bosse	75	1350	Dusk
+7886	gargoyle	75	1350	Dusk
+7887	bosse	75	1350	Dusk
+7887	gargoyle	75	1350	Dusk
+7888	bosse	75	1350	Dusk
+7888	gargoyle	75	1350	Dusk
+7889	bosse	75	1350	Dusk
+7889	gargoyle	75	1350	Dusk
+7931	revenant	1	14	Revenant goblin
+7931	ghost	1	14	Revenant goblin
+7932	revenant	1	48	Revenant pyrefiend
+7932	ghost	1	48	Revenant pyrefiend
+7933	revenant	1	73	Revenant hobgoblin
+7933	ghost	1	73	Revenant hobgoblin
+7934	revenant	1	119	Revenant cyclops
+7934	ghost	1	119	Revenant cyclops
+7935	revenant	1	86	Revenant hellhound
+7935	ghost	1	86	Revenant hellhound
+7936	revenant	1	86	Revenant demon
+7936	ghost	1	86	Revenant demon
+7937	revenant	1	115	Revenant ork
+7937	ghost	1	115	Revenant ork
+7938	revenant	1	157	Revenant dark beast
+7938	ghost	1	157	Revenant dark beast
+7939	revenant	1	168	Revenant knight
+7939	ghost	1	168	Revenant knight
+7940	revenant	1	186	Revenant dragon
+7940	ghost	1	186	Revenant dragon
+7955	blackdragon	1	80	Baby black dragon
+7989	ogre	1	82	Ogress Warrior
+7990	ogre	1	82	Ogress Warrior
+7991	ogre	1	82	Ogress Shaman
+7992	ogre	1	82	Ogress Shaman
+7996	lizardmen	1	150	Corrupt Lizardman (hard)
+7997	lizardmen	1	50	Corrupt Lizardman
+8000	lizardmen	1	50	Corrupt Lizardman
+8030	metaldragon	1	317	Adamant dragon
+8031	metaldragon	1	363	Rune dragon
+8058	bluedragon	1	460	Vorkath
+8058	zombie	1	460	Vorkath
+8058	bosse	1	460	Vorkath
+8059	bluedragon	1	750	Vorkath
+8059	zombie	1	750	Vorkath
+8059	bosse	1	750	Vorkath
+8060	bluedragon	1	460	Vorkath
+8060	zombie	1	460	Vorkath
+8060	bosse	1	460	Vorkath
+8061	bluedragon	1	750	Vorkath
+8061	zombie	1	750	Vorkath
+8061	bosse	1	750	Vorkath
+8067	zombie	1	54.1	Zombie
+8068	zombie	1	54.1	Zombie
+8069	zombie	1	54.1	Zombie
+8070	skeleton	1	54	Skeleton
+8071	skeleton	1	54	Skeleton
+8072	skeleton	1	54	Skeleton
+8073	greendragon	1	75	Green dragon
+8075	reddragon	1	143.4	Red dragon
+8076	greendragon	1	75	Green dragon
+8078	reddragon	1	143.4	Red dragon
+8079	reddragon	1	143.4	Red dragon
+8080	metaldragon	1	169.1	Iron dragon
+8082	greendragon	1	75	Green dragon
+8084	blackdragon	1	194.7	Black dragon
+8085	blackdragon	1	194.7	Black dragon
+8087	reddragon	1	306.2	Brutal red dragon
+8088	metaldragon	1	266.5	Mithril dragon
+8089	metaldragon	1	266.5	Mithril dragon
+8090	metaldragon	1	317	Adamant dragon
+8091	metaldragon	1	363	Rune dragon
+8092	blackdragon	77	346.4	Brutal black dragon
+8093	blackdragon	77	346.4	Brutal black dragon
+8137	spider	1	4	Spider
+8138	spider	1	4	Spider
+8195	mossgiant	1	115	Bryophyta
+8242	vampyre	1	400	Ranis Drakan
+8243	vampyre	1	400	Ranis Drakan
+8244	vampyre	1	400	Ranis Drakan
+8245	vampyre	1	400	Ranis Drakan
+8246	vampyre	1	400	Ranis Drakan
+8247	vampyre	1	400	Ranis Drakan
+8248	vampyre	1	400	Ranis Drakan
+8252	vampyre	1	90	Vyrewatch
+8253	vampyre	1	90	Vyrewatch
+8254	vampyre	1	90	Vyrewatch
+8255	vampyre	1	90	Vyrewatch
+8256	vampyre	1	90	Vyrewatch
+8257	vampyre	1	90	Vyrewatch
+8258	vampyre	1	90	Vyrewatch
+8259	vampyre	1	90	Vyrewatch
+8297	crab	1	75	Swamp Crab
+8298	crab	1	75	Swamp Crab
+8299	crab	1	75	Swampy log
+8300	vampyre	1	90	Vyrewatch
+8301	vampyre	1	90	Vyrewatch
+8302	vampyre	1	90	Vyrewatch
+8303	vampyre	1	90	Vyrewatch
+8304	vampyre	1	90	Vyrewatch
+8305	vampyre	1	90	Vyrewatch
+8306	vampyre	1	90	Vyrewatch
+8307	vampyre	1	90	Vyrewatch
+8496	dwarve	1	18	Dwarf
+8563	lizardmen	1	60	Lizardman
+8564	lizardmen	1	60	Lizardman brute
+8565	lizardmen	1	157.5	Lizardman shaman
+8609	hydra	95	322.5	Hydra
+8610	wyrm	62	123	Wyrm
+8611	wyrm	62	123	Wyrm
+8612	drake	84	230.6	Drake
+8613	drake	84	230.6	Drake
+8614	lizard	44	50	Sulphur Lizard
+8615	hydra	95	1320	Alchemical Hydra
+8615	bosse	95	1320	Alchemical Hydra
+8616	hydra	95	1320	Alchemical Hydra
+8616	bosse	95	1320	Alchemical Hydra
+8617	hydra	95	1320	Alchemical Hydra
+8617	bosse	95	1320	Alchemical Hydra
+8618	hydra	95	1320	Alchemical Hydra
+8618	bosse	95	1320	Alchemical Hydra
+8619	hydra	95	1320	Alchemical Hydra
+8619	bosse	95	1320	Alchemical Hydra
+8620	hydra	95	1320	Alchemical Hydra
+8620	bosse	95	1320	Alchemical Hydra
+8621	hydra	95	1320	Alchemical Hydra
+8621	bosse	95	1320	Alchemical Hydra
+8622	hydra	95	1320	Alchemical Hydra
+8622	bosse	95	1320	Alchemical Hydra
+8703	spider	1	70	Temple Spider
+8713	spider	1	430	Sarachnis
+8713	bosse	1	430	Sarachnis
+8714	spider	1	30.7	Spawn of Sarachnis
+8715	spider	1	30	Spawn of Sarachnis
+8736	mossgiant	1	120	Moss Giant
+8759	elve	1	107.5	Iorwerth Warrior
+8760	elve	1	105	Iorwerth Archer
+8978	spider	1	32	Blessed spider
+9017	elve	1	107.5	Mourner
+9181	wolve	1	74	Dire Wolf
+9182	elve	1	107.5	Guard
+9183	elve	1	107.5	Guard
+9184	elve	1	107.5	Guard
+9185	elve	1	107.5	Guard
+9186	elve	1	107.5	Guard
+9187	elve	1	107.5	Guard
+9188	elve	1	107.5	Guard
+9189	elve	1	107.5	Guard
+9258	basilisk	60	5590	Basilisk Sentinel
+9282	basilisk	40	60	Basilisk Youngling
+9283	basilisk	40	75	Basilisk
+9284	basilisk	40	75	Basilisk
+9285	basilisk	40	75	Basilisk
+9286	basilisk	40	75	Basilisk
+9287	basilisk	40	170	Monstrous Basilisk
+9288	basilisk	40	170	Monstrous Basilisk
+9290	basilisk	40	600	The Jormungand
+9291	basilisk	40	600	The Jormungand
+9293	basilisk	60	300	Basilisk Knight
+9295	basilisk	40	360	Typhor
+9296	basilisk	40	360	Typhor
+9465	pyrefiend	30	1840	Infernal pyrelord
+9488	bird	1	3	Chicken
+9502	elve	1	107.5	Iorwerth Warrior
+9503	elve	1	107.5	Iorwerth Warrior
+9560	vampyre	1	252	Kroy
+9561	vampyre	1	360	Damien Leucurte
+9562	vampyre	1	360	Damien Leucurte
+9563	vampyre	1	360	Damien Leucurte
+9564	vampyre	1	360	Damien Leucurte
+9567	vampyre	1	0	Vanstrom Klause
+9568	vampyre	1	0	Vanstrom Klause
+9569	vampyre	1	0	Vanstrom Klause
+9570	vampyre	1	0	Vanstrom Klause
+9571	vampyre	1	0	Vanstrom Klause
+9609	bird	1	5	Seagull
+9614	vampyre	1	150	Vampyre Juvinate
+9615	vampyre	1	150	Vampyre Juvinate
+9616	vampyre	1	150	Vampyre Juvinate
+9617	vampyre	1	150	Vampyre Juvinate
+9632	vampyre	1	0	Vanstrom Klause
+9727	vampyre	1	85	Vampyre Juvinate
+9728	vampyre	1	85	Vampyre Juvinate
+9729	vampyre	1	85	Vampyre Juvinate
+9730	vampyre	1	85	Vampyre Juvinate
+9731	vampyre	1	60	Vampyre Juvenile
+9732	vampyre	1	60	Vampyre Juvenile
+9733	vampyre	1	60	Vampyre Juvenile
+9734	vampyre	1	60	Vampyre Juvenile
+9735	vampyre	1	90	Vyrewatch
+9736	vampyre	1	90	Vyrewatch
+9737	vampyre	1	90	Vyrewatch
+9738	vampyre	1	90	Vyrewatch
+9739	vampyre	1	90	Vyrewatch
+9740	vampyre	1	90	Vyrewatch
+9741	vampyre	1	90	Vyrewatch
+9742	vampyre	1	90	Vyrewatch
+9756	vampyre	38	150	Vyrewatch Sentinel
+9757	vampyre	38	150	Vyrewatch Sentinel
+9758	vampyre	38	150	Vyrewatch Sentinel
+9759	vampyre	38	150	Vyrewatch Sentinel
+9760	vampyre	38	150	Vyrewatch Sentinel
+9761	vampyre	38	150	Vyrewatch Sentinel
+9762	vampyre	38	150	Vyrewatch Sentinel
+9763	vampyre	38	150	Vyrewatch Sentinel
+10374	hillgiant	1	35	Hill Giant
+10375	hillgiant	1	35	Hill Giant
+10376	hillgiant	1	35	Hill Giant
+10397	turoth	55	1998	Spiked Turoth
+10398	wyrm	62	3520	Shadow Wyrm
+10399	wyrm	62	3520	Shadow Wyrm
+10400	drake	84	7087	Guardian Drake
+10402	hydra	95	8625	Colossal Hydra
+10435	sourhog	1	40	Sourhog
+10494	bird	1	3	Chicken
+10495	bird	1	3	Chicken
+10496	bird	1	3	Chicken
+10497	bird	1	3	Chicken
+10541	bird	1	5	Bird
+10544	ghost	1	50	Forgotten Soul
+10545	ghost	1	50	Forgotten Soul
+10589	shade	1	130	Urium Shade
+10623	tzhaar	1	350	JalTok-Jad
+10624	tzhaar	1	90	Yt-HurKot
+10717	skeleton	1	17	Skeleton
+10718	skeleton	1	17	Skeleton
+10719	skeleton	1	17	Skeleton
+10720	skeleton	1	17	Skeleton
+10721	skeleton	1	17	Skeleton
+10722	spider	1	65	Ice spider
+10888	bat	1	8	Bat
+10936	greaterdemon	1	266.5	Judge of Yama
+10938	greaterdemon	1	266.5	Judge of Yama
+10947	lizardmen	1	60	Lizardman brute
+11109	darkwarrior	1	80	Dark warrior
+11110	darkwarrior	1	70	Dark warrior
+11111	darkwarrior	1	50	Dark warrior
+11175	spider	92	60	Araxyte
+11175	araxyte	92	60	Araxyte
+11176	spider	92	100	Araxyte
+11176	araxyte	92	100	Araxyte
+11238	dustdevil	65	105	Dust devil
+11239	abyssaldemon	85	150	Abyssal demon
+11240	nechryael	80	210	Greater Nechryael
+11241	jellie	52	75	Jelly
+11242	jellie	52	75	Jelly
+11243	jellie	52	75	Jelly
+11244	jellie	52	75	Jelly
+11245	jellie	52	75	Jelly
+11246	revenant	1	920	Revenant maledictus
+11246	ghost	1	920	Revenant maledictus
+11268	goblin	1	30	Skoblin
+11268	skeleton	1	30	Skoblin
+11269	goblin	1	50	Snothead
+11269	skeleton	1	50	Snothead
+11270	goblin	1	80	Snailfeet
+11270	skeleton	1	80	Snailfeet
+11271	goblin	1	120	Mosschin
+11271	skeleton	1	120	Mosschin
+11272	goblin	1	160	Redeyes
+11272	skeleton	1	160	Redeyes
+11273	goblin	1	200	Strongbones
+11273	skeleton	1	200	Strongbones
+11274	goblin	1	50	Snothead
+11274	skeleton	1	50	Snothead
+11275	goblin	1	80	Snailfeet
+11275	skeleton	1	80	Snailfeet
+11290	spiritualcreature	68	105	Spiritual Warrior
+11291	spiritualcreature	63	110	Spiritual Ranger
+11292	spiritualcreature	83	137.5	Spiritual Mage
+11298	goblin	1	120	Mosschin
+11298	skeleton	1	120	Mosschin
+11299	goblin	1	160	Redeyes
+11299	skeleton	1	160	Redeyes
+11300	goblin	1	200	Strongbones
+11300	skeleton	1	200	Strongbones
+11463	hellhound	1	35	Reanimated hellhound
+11508	scabarite	1	51.2	Scarab Mage
+11581	crocodile	1	62	Crocodile
+11582	crocodile	1	62	Crocodile
+11583	dog	1	27	Jackal
+11952	blackknight	1	42	Black Knight
+11953	blackknight	1	42	Black Knight
+11989	bear	1	75	Grizzly bear
+11990	spider	1	73	Poison spider
+11992	bear	1	518	Artio
+11992	bosse	1	518	Artio
+11993	skeleton	1	322.5	Calvar'ion
+11993	bosse	1	322.5	Calvar'ion
+11994	skeleton	1	322.5	Calvar'ion
+11994	bosse	1	322.5	Calvar'ion
+11998	spider	1	541	Spindel
+11998	bosse	1	541	Spindel
+11999	spider	1	64	Poison spider
+12003	lizard	22	25	Desert Lizard
+12004	lizard	22	15	Small Lizard
+12077	bosse	1	1763.7	Phantom Muspah
+12078	bosse	1	1763.7	Phantom Muspah
+12079	bosse	1	1763.7	Phantom Muspah
+12080	bosse	1	1763.7	Phantom Muspah
+12082	bosse	1	1763.7	Phantom Muspah
+12107	hellhound	1	30	Skeleton Hellhound
+12107	skeleton	1	30	Skeleton Hellhound
+12108	hellhound	1	30	Greater Skeleton Hellhound
+12108	skeleton	1	30	Greater Skeleton Hellhound
+12166	bosse	1	305	Duke Sucellus
+12167	bosse	1	305	Duke Sucellus
+12191	bosse	1	305	Duke Sucellus
+12192	bosse	1	305	Duke Sucellus
+12193	bosse	1	360	Duke Sucellus
+12194	bosse	1	360	Duke Sucellus
+12195	bosse	1	360	Duke Sucellus
+12196	bosse	1	305	Duke Sucellus
+12204	bosse	1	900	The Whisperer
+12205	bosse	1	900	The Whisperer
+12206	bosse	1	660	The Whisperer
+12207	bosse	1	660	The Whisperer
+12214	bosse	1	1777.4	The Leviathan
+12215	bosse	1	720	The Leviathan
+12219	bosse	1	720	The Leviathan
+12223	bosse	1	1085	Vardorvis
+12224	bosse	1	500	Vardorvis
+12228	bosse	1	500	Vardorvis
+12361	lesserdemon	1	0	Lesser demon
+12363	lesserdemon	1	0	Lesser demon
+12365	lesserdemon	1	0	Lesser demon
+12385	blackdemon	1	157	Black demon
+12387	greaterdemon	1	87	Greater demon
+12389	lesserdemon	1	0	Lesser demon
+12425	bosse	1	500	Vardorvis
+12426	bosse	1	1085	Vardorvis
+12440	blackdragon	1	0	King Black Dragon
+12440	bosse	1	0	King Black Dragon
+12444	bosse	1	0	General Graardor
+12448	blackdemon	1	0	Porazdir
+12451	abyssaldemon	1	0	Greater abyssal demon
+12452	goblin	1	0	Giant goblin
+12455	tzhaar	1	0	Jal-ImKot
+12458	lizard	1	0	Sulphur Lizard
+12464	warpedcreature	56	3200	Mutated Terrorbird
+12465	warpedcreature	56	4510	Mutated Tortoise
+12490	warpedcreature	56	200	Warped Tortoise
+12491	warpedcreature	56	150	Warped Terrorbird
+12492	warpedcreature	56	150	Warped Terrorbird
+12493	warpedcreature	56	150	Warped Terrorbird
+12494	warpedcreature	56	150	Warped Terrorbird
+12495	warpedcreature	56	150	Warped Terrorbird
+12496	warpedcreature	56	150	Warped Terrorbird
+12497	warpedcreature	56	150	Warped Terrorbird
+12498	warpedcreature	56	150	Warped Terrorbird
+12499	warpedcreature	56	200	Warped Terrorbird
+12500	warpedcreature	56	200	Warped Terrorbird
+12501	warpedcreature	56	200	Warped Terrorbird
+12502	warpedcreature	56	200	Warped Terrorbird
+12503	warpedcreature	56	200	Warped Terrorbird
+12504	warpedcreature	56	200	Warped Terrorbird
+12538	crawlinghand	5	0	Bloodthirsty hand
+12539	cavecrawler	10	0	Bloodthirsty Crawler
+12540	banshee	15	0	Bloodthirsty banshee
+12542	banshee	15	0	Bloodthirsty twisted banshee
+12561	rockslug	20	0	Bloodthirst rockslug
+12562	cockatrice	25	1420	Bloodthirsty Cockathrice
+12563	pyrefiend	30	0	Bloodthirsty pyrelord
+12564	pyrefiend	30	0	Bloodthirsty Infernal pyrelord
+12565	basilisk	40	2550	Bloodthirsty basilisk
+12566	basilisk	60	8580	Bloodthirsty Basilisk Sentinel
+12567	infernalmage	45	0	Bloodthirsty Mage
+12568	bloodveld	50	4350	Bloodthirsty Bloodveld
+12569	bloodveld	50	6150	Bloodthirsty mutated Bloodveld
+12570	jellie	52	2850	Bloodthirsty Jelly
+12571	jellie	52	2200	Bloodthirsty Warped Jelly
+12572	cavehorror	58	0	Bloodthirsty abomination
+12573	aberrantspectre	60	0	Bloodthirsty spectre
+12574	aberrantspectre	60	0	Bloodthirsty Repugnant spectre
+12575	dustdevil	65	4500	Bloodthirsty choke devil
+12576	kurask	70	0	Bloodthirsty kurask
+12577	smokedevil	93	3600	Bloodthirsty smoke devil
+12578	gargoyle	75	0	Bloodthirsty gargoyle
+12579	gargoyle	75	0	Bloodthirsty gargoyle
+12580	darkbeast	90	10312.4	Bloodthirsty Night beast
+12581	abyssaldemon	85	6600	Bloodthirsty abyssal demon
+12582	nechryael	80	5040	Bloodthirsty Nechryarch
+12583	turoth	55	2993	Bloodthirsty Turoth
+12584	wyrm	62	5520	Bloodthirsty Shadow Wyrm
+12585	wyrm	62	5520	Bloodthirsty Shadow Wyrm
+12586	drake	84	0	Bloodthirsty Drake
+12588	hydra	95	13777.5	Bloodthirsty Hydra
+12596	firegiant	1	735	Branda the Fire Queen
+12720	zombie	1	75	Armoured zombie
+12721	zombie	1	75	Armoured zombie
+12722	zombie	1	75	Armoured zombie
+12723	zombie	1	75	Armoured zombie
+12724	zombie	1	75	Armoured zombie
+12725	zombie	1	75	Armoured zombie
+12726	zombie	1	75	Armoured zombie
+12727	zombie	1	75	Armoured zombie
+12728	zombie	1	75	Armoured zombie
+12729	zombie	1	75	Armoured zombie
+12730	zombie	1	85	Armoured zombie
+12731	zombie	1	85	Armoured zombie
+12732	zombie	1	85	Armoured zombie
+12733	zombie	1	85	Armoured zombie
+12734	zombie	1	85	Armoured zombie
+12735	zombie	1	85	Armoured zombie
+12736	zombie	1	85	Armoured zombie
+12738	zombie	1	85	Armoured zombie
+12739	zombie	1	85	Armoured zombie
+12755	zombie	1	85	Armoured zombie
+12757	zombie	1	85	Armoured zombie
+12758	zombie	1	85	Armoured zombie
+12761	zombie	1	85	Armoured zombie
+12763	zombie	1	85	Armoured zombie
+12764	zombie	1	85	Armoured zombie
+12844	mossgiant	1	60	Moss giant
+12845	mossgiant	1	60	Moss giant
+12846	mossgiant	1	60	Moss giant
+12847	mossgiant	1	60	Moss giant
+12848	hillgiant	1	35	Hill Giant
+12849	hillgiant	1	35	Hill Giant
+12850	hillgiant	1	35	Hill Giant
+12879	lessernagua	48	105	Sulphur Nagua
+13001	scorpion	1	17	Scorpion
+13004	cow	1	20	Buffalo
+13029	lizard	44	75	Grimy Lizard
+13030	cockatrice	25	52	Moonlight Cockatrice
+13031	wyrm	62	65	Wyrmling
+13032	wyrm	62	65	Wyrmling
+13033	lessernagua	48	105	Sulphur Nagua
+13476	skeleton	1	54	Skeleton
+13477	skeleton	1	54	Skeleton
+13478	skeleton	1	54	Skeleton
+13479	skeleton	1	54	Skeleton
+13489	zombie	1	30	Zombie pirate
+13489	pirate	1	30	Zombie pirate
+13490	zombie	1	35	Zombie pirate
+13490	pirate	1	35	Zombie pirate
+13491	zombie	1	35	Zombie pirate
+13491	pirate	1	35	Zombie pirate
+13492	zombie	1	40	Zombie pirate
+13492	pirate	1	40	Zombie pirate
+13493	zombie	1	40	Zombie pirate
+13493	pirate	1	40	Zombie pirate
+13495	skeleton	1	17	Skeleton
+13496	skeleton	1	17	Skeleton
+13497	skeleton	1	17	Skeleton
+13498	skeleton	1	17	Skeleton
+13499	skeleton	1	17	Skeleton
+13500	skeleton	1	17	Skeleton
+13501	skeleton	1	17	Skeleton
+13502	hillgiant	1	35	Hill Giant
+13503	hillgiant	1	35	Hill Giant
+13504	hillgiant	1	35	Hill Giant
+13599	greaterdemon	1	1065	Tormented Demon
+13600	greaterdemon	1	1065	Tormented Demon
+13601	greaterdemon	1	1065	Tormented Demon
+13602	greaterdemon	1	1065	Tormented Demon
+13657	hellhound	1	0	Cerberus
+13657	bosse	1	0	Cerberus
+13659	bosse	1	0	Thermonuclear smoke devil
+13659	smokedevil	1	0	Thermonuclear smoke devil
+13661	tzhaar	1	0	TzTok-Jad
+13666	spider	92	60	Araxyte
+13666	araxyte	92	60	Araxyte
+13667	spider	92	100	Araxyte
+13667	araxyte	92	100	Araxyte
+13668	araxyte	92	1708	Araxxor
+13668	bosse	92	1708	Araxxor
+13668	spider	92	1708	Araxxor
+13671	spider	92	58	Mirrorback Araxyte
+13671	araxyte	92	58	Mirrorback Araxyte
+13673	spider	92	65	Ruptura Araxyte
+13673	araxyte	92	65	Ruptura Araxyte
+13675	spider	92	58	Acidic Araxyte
+13675	araxyte	92	58	Acidic Araxyte
+13680	spider	92	4462.5	Dreadborn Araxyte
+13680	araxyte	92	4462.5	Dreadborn Araxyte
+13685	bosse	48	546	Amoxliatl
+13685	lessernagua	48	546	Amoxliatl
+13686	bosse	48	420	Amoxliatl
+13686	lessernagua	48	420	Amoxliatl
+13728	lessernagua	48	120	Frost Nagua
+13787	lessernagua	48	120	Frost Nagua
+13788	lessernagua	48	120	Frost Nagua
+13789	crab	1	60	Frost Crab
+13790	crab	1	60	Ice block
+13791	crab	1	60	Frost Crab
+13792	crab	1	60	Ice block
+13795	bluedragon	1	257	Brutal blue dragon
+13796	icegiant	1	70	Ice giant
+13797	icegiant	1	70	Ice giant
+13798	spider	1	65	Ice spider
+13799	jellie	52	140	Chilled jelly
+13800	cavecrawler	10	22	Cave crawler
+13801	cavecrawler	10	22	Cave crawler
+13802	icewarrior	1	59	Ice warrior
+13812	wolve	1	100	Dire Wolf Alpha
+13813	wolve	1	10	Dire Wolf
+14031	cavecrawler	10	600	Chasm Crawler
+14042	bat	1	8	Bat
+14103	bluedragon	1	105	Blue dragon
+14104	bluedragon	1	105	Blue dragon
+14105	bluedragon	1	50	Baby blue dragon
+14106	bluedragon	1	50	Baby blue dragon
+14113	zombie	1	110	Armoured zombie
+14114	zombie	1	110	Armoured zombie
+14115	zombie	1	110	Armoured zombie
+14116	zombie	1	110	Armoured zombie
+14117	zombie	1	110	Armoured zombie
+14118	zombie	1	110	Armoured zombie
+14119	zombie	1	110	Armoured zombie
+14120	zombie	1	110	Armoured zombie
+14121	zombie	1	110	Armoured zombie
+14122	zombie	1	110	Armoured zombie
+14126	scabarite	1	40	Small scarab
+14147	icegiant	1	735	Eldric the Ice King
+14420	lessernagua	48	165	Earthen Nagua
+14421	lessernagua	48	165	Earthen Nagua
+14422	mossgiant	1	60	Moss giant
+14423	rockslug	20	27	Rockslug
+14426	skeleton	1	0	Skeleton
+14427	skeleton	1	0	Skeleton
+14428	skeleton	1	0	Skeleton
+14430	lizard	44	75	Grimy Lizard
+14510	bird	1	15	Large chicken
+14520	custodianstalker	76	3382	Ancient Custodian
+14702	custodianstalker	54	135	Juvenile custodian stalker
+14703	custodianstalker	67	190	Mature custodian stalker
+14704	custodianstalker	76	250	Elder custodian stalker
+14706	custodianstalker	54	100	Strange creature
+14707	bosse	1	0	Doom of Mokhaiotl
+14708	bosse	1	0	Doom of Mokhaiotl (Shielded)
+14709	bosse	1	0	Doom of Mokhaiotl (Burrowed)
+14857	gryphon	51	110	Gryphon
+14858	gryphon	51	110	Gryphon
+14859	gryphon	51	2800	Dire gryphon
+14860	gryphon	51	400	Shellbane gryphon
+14860	bosse	51	400	Shellbane gryphon
+14922	frostdragon	1	235.5	Frost dragon
+14938	bird	1	10	Seagull
+14940	scorpion	1	2	Scorpion
+15009	gryphon	51	110	Gryphon
+15164	troll	1	1	Drink troll
+15165	zombie	1	90	A corpse
+15166	dagannoth	1	126	Blue dagannoth
+15167	troll	1	126	Daddy's special water
+15168	troll	1	147	The rocks
+15169	troll	1	110	Chuck up
+15171	troll	1	4	Dinky the drink troll
+15230	mogre	32	43.5	Mogre
+15230	ogre	32	43.5	Mogre
+15232	mogre	32	43.5	Mogre
+15232	ogre	32	43.5	Mogre
+15497	aquanite	78	180	Aquanite
+15498	aquanite	78	180	Aquanite
+15500	wyrm	62	154	Lava Strykewyrm
+15501	jellie	52	2200	Vitreous Chilled Jelly
+15502	aquanite	78	4200	Elder aquanite
+15503	aquanite	78	4200	Elder aquanite
+15504	wyrm	62	3655	Magma strykewyrm
+15557	tzhaar	1	0	TzTok-Jad-Rek
+15612	hellhound	91	2106	Cerberus (Echo)
+15612	bosse	91	2106	Cerberus (Echo)
+15616	kalphite	1	856.8	Kalphite Queen (Echo)
+15616	bosse	1	856.8	Kalphite Queen (Echo)
+15617	kalphite	1	856.8	Kalphite Queen (Echo)
+15617	bosse	1	856.8	Kalphite Queen (Echo)
+15625	cow	1	116	Bull
+15626	cow	1	116	Brutus
+15627	cow	1	116	Brutus
+15742	bosse	1	3675	Maggot King
+15765	vampyre	74	405	Venator
+15766	vampyre	74	405	Venator
+15767	vampyre	74	405	Venator
+15768	vampyre	74	405	Venator
+15769	vampyre	74	405	Venator
+15770	vampyre	74	3622.5	Blood-starved venator
+16296	wyrm	62	65	Wyrmling
+16297	wyrm	62	65	Wyrmling
+16330	troll	1	90	Mountain troll
+16331	troll	1	90	Mountain troll
+16332	troll	1	90	Mountain troll

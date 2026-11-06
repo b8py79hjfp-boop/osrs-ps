@@ -575,3 +575,26 @@ plugin-api change.
 - **Per-obj item ops.** "Bury" and "Scatter" are registered per obj with `onItemOp(obj, text)` (one handler per bone), leaving the global op texts free.
 - **The 1-tick hold after burying** is the brief's figure, not a sourced one (OPEN-PT1); it is a named constant.
 - **plugin-api.** No change.
+
+## D-042: Slayer and Hunter skills (slayer/hunter agent)
+
+Both live in `content/skills` (`Slayer.kt`, `Hunter.kt`) with no engine, combat or plugin-api change. Rules and OPEN items:
+docs/mechanics/slayer.md and hunter.md.
+- **Data over code.** `tools/wiki-import/slayer_tasks.py` writes `slayer-tasks.tsv` (326 weighted task rows of nine masters),
+  `slayer-monsters.tsv` (2,217 npc ids with their task group, Slayer level and Slayer xp from each `Infobox Monster`) and
+  `slayer-masters.tsv` (where to place the masters); `tools/wiki-import/hunter_creatures.py` writes `hunter.tsv` (21 creatures: five
+  birds, three chinchompas, a butterfly and twelve implings). Both re-run against the live Wiki.
+- **Persisted task.** The task is three `saved` Longs (group and master as `String.hashCode`, kills left), plus streak, Krystilia's
+  own streak and points. The group key is the infobox `cat` (lower case letters and digits, plural s dropped) shared by the task
+  tables and the monster rows; a hash collision between two groups fails the plugin's first use.
+- **Quests and unlocks are never assumed.** Task rows with a quest or a reward-unlock requirement are skipped (`QUESTS_ASSUMED_COMPLETE`
+  flag, default false), as the brief asks for unsourced requirements; this leaves about 180 of 326 rows. The masters' own access quests
+  are walking access and are not checked.
+- **The Slayer level gate is the `AttackCheck` event** that `content/combat` already publishes before every attack; no combat code changed.
+- **Masters are spawned by the Slayer plugin** at their Wiki infobox positions because `npc-spawns.tsv` only has Krystilia. Turael, Mazchna
+  and Duradel (the pre-quest npcs) are spawned; their quest replacements answer the same ops.
+- **Traps are loc state plus a per-player timer.** A laid trap is a dynamic loc and an entry in a player attribute; a player timer runs
+  once a tick over the player's (at most five) traps and a lure every third tick scans the world's tracked creature npcs
+  (`onNpcSpawn` collects the trapped kinds in a world attribute, in spawn order). No per-tick work happens for a player without traps.
+  Creatures removed by a catch use `NpcRef.respawnAfter`.
+- **Ferret, three butterflies and the other box-trap creatures are not implemented**: the Wiki has no success chart for them.

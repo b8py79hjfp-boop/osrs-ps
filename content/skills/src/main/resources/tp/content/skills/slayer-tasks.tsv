@@ -1,0 +1,327 @@
+master	group	name	min	max	emin	emax	weight	slayer	combat	skills	other
+Turael	banshee	Banshees	15	30	-	-	8	15	20	-	completion of Priest in Peril
+Turael	bat	Bats	15	30	-	-	7	0	5	-	-
+Turael	bear	Bears	10	20	-	-	7	0	13	-	-
+Turael	bird	Birds	15	30	-	-	6	0	0	-	-
+Turael	cavebug	Cave bugs	10	30	-	-	8	7	0	-	-
+Turael	cavecrawler	Cave crawlers	15	30	-	-	8	10	10	-	-
+Turael	caveslime	Cave slimes	10	20	-	-	8	17	15	-	-
+Turael	cow	Cows	15	30	-	-	8	0	0	-	-
+Turael	crawlinghand	Crawling Hands	15	30	-	-	8	5	0	-	completion of Priest in Peril
+Turael	dog	Dogs	15	30	-	-	7	0	15	-	-
+Turael	dwarve	Dwarves	10	25	-	-	7	0	6	-	-
+Turael	ghost	Ghosts	15	30	-	-	7	0	13	-	-
+Turael	goblin	Goblins	15	30	-	-	7	0	0	-	-
+Turael	icefiend	Icefiends	15	20	-	-	8	0	20	-	-
+Turael	kalphite	Kalphite	15	30	-	-	6	0	15	-	-
+Turael	lizard	Lizards	15	30	-	-	8	22	0	-	-
+Turael	minotaur	Minotaurs	10	20	-	-	7	0	7	-	-
+Turael	monkey	Monkeys	15	30	-	-	6	0	0	-	-
+Turael	rat	Rats	15	30	-	-	7	0	0	-	-
+Turael	scorpion	Scorpions	15	30	-	-	7	0	7	-	-
+Turael	skeleton	Skeletons	15	30	-	-	7	0	15	-	-
+Turael	spider	Spiders	15	30	-	-	6	0	0	-	-
+Turael	wolve	Wolves	15	30	-	-	7	0	20	-	-
+Turael	zombie	Zombies	15	30	-	-	7	0	10	-	-
+Spria	banshee	Banshees	15	30	-	-	8	15	20	-	completion of Priest in Peril
+Spria	bat	Bats	15	30	-	-	7	0	5	-	-
+Spria	bear	Bears	10	20	-	-	7	0	13	-	-
+Spria	bird	Birds	15	30	-	-	6	0	0	-	-
+Spria	cavebug	Cave bugs	10	30	-	-	8	7	0	-	-
+Spria	cavecrawler	Cave crawlers	15	30	-	-	8	10	10	-	-
+Spria	caveslime	Cave slimes	10	20	-	-	8	17	15	-	-
+Spria	cow	Cows	15	30	-	-	8	0	0	-	-
+Spria	crawlinghand	Crawling Hands	15	30	-	-	8	5	0	-	completion of Priest in Peril
+Spria	dog	Dogs	15	30	-	-	7	0	15	-	-
+Spria	dwarve	Dwarves	10	25	-	-	7	0	6	-	-
+Spria	ghost	Ghosts	15	30	-	-	7	0	13	-	-
+Spria	goblin	Goblins	15	30	-	-	7	0	0	-	-
+Spria	icefiend	Icefiends	15	20	-	-	8	0	20	-	-
+Spria	kalphite	Kalphites	15	30	-	-	6	0	15	-	-
+Spria	lizard	Lizards	15	30	-	-	8	22	0	-	-
+Spria	minotaur	Minotaurs	10	20	-	-	7	0	7	-	-
+Spria	monkey	Monkeys	15	30	-	-	6	0	0	-	-
+Spria	rat	Rats	15	30	-	-	7	0	0	-	-
+Spria	scorpion	Scorpions	15	30	-	-	7	0	7	-	-
+Spria	skeleton	Skeletons	15	30	-	-	7	0	15	-	-
+Spria	sourhog	Sourhogs	15	25	-	-	6	0	0	-	Completion of A Porcine of Interest
+Spria	spider	Spiders	15	30	-	-	6	0	0	-	-
+Spria	wolve	Wolves	15	30	-	-	7	0	20	-	-
+Spria	zombie	Zombies	15	30	-	-	7	0	10	-	-
+Mazchna	banshee	Banshees	30	50	-	-	8	15	20	-	completion of Priest in Peril
+Mazchna	bat	Bats	30	50	-	-	7	0	5	-	-
+Mazchna	bear	Bears	30	50	-	-	6	0	13	-	-
+Mazchna	catablepon	Catablepon	20	30	-	-	8	0	35	-	-
+Mazchna	cavebug	Cave bugs	10	20	-	-	8	7	0	-	-
+Mazchna	cavecrawler	Cave crawlers	30	50	-	-	8	10	10	-	-
+Mazchna	caveslime	Cave slimes	10	20	-	-	8	17	15	-	-
+Mazchna	cockatrice	Cockatrice	30	50	-	-	8	25	25	Defence:20	-
+Mazchna	crab	Crabs	30	50	-	-	8	1	0	-	-
+Mazchna	crawlinghand	Crawling Hands	30	50	-	-	8	5	0	-	completion of Priest in Peril
+Mazchna	dog	Dogs	30	50	-	-	7	0	15	-	-
+Mazchna	fleshcrawler	Flesh Crawlers	15	25	-	-	7	0	15	-	-
+Mazchna	ghost	Ghosts	30	50	-	-	7	0	13	-	-
+Mazchna	ghoul	Ghouls	10	20	-	-	7	0	25	-	completion of Priest in Peril
+Mazchna	hillgiant	Hill Giants	30	50	-	-	7	0	25	-	-
+Mazchna	hobgoblin	Hobgoblins	30	50	-	-	7	0	20	-	-
+Mazchna	icewarrior	Ice warriors	40	50	-	-	7	0	45	-	-
+Mazchna	kalphite	Kalphite	30	50	-	-	6	0	15	-	-
+Mazchna	killerwatt	Killerwatts	30	50	-	-	6	37	50	-	completion of Ernest the Chicken
+Mazchna	lizard	Lizards	30	50	-	-	8	22	0	-	-
+Mazchna	mogre	Mogres	30	50	-	-	8	32	30	-	completion of Skippy and the Mogres
+Mazchna	pyrefiend	Pyrefiends	30	50	-	-	8	30	25	-	-
+Mazchna	rockslug	Rockslugs	30	50	-	-	8	20	20	-	-
+Mazchna	scorpion	Scorpions	30	50	-	-	7	0	7	-	-
+Mazchna	shade	Shades	30	70	-	-	8	0	30	-	-
+Mazchna	skeleton	Skeletons	30	50	-	-	7	0	15	-	-
+Mazchna	vampyre	Vampyres	10	20	200	250	6	0	35	-	completion of Priest in Peril
+Mazchna	wallbeast	Wall beasts	10	20	-	-	7	35	30	Defence:5	-
+Mazchna	wolve	Wolves	30	50	-	-	7	0	20	-	-
+Mazchna	zombie	Zombies	30	50	-	-	7	0	10	-	-
+Vannaka	aberrantspectre	Aberrant spectres	40	90	200	250	8	60	65	-	completion of Priest in Peril
+Vannaka	abyssaldemon	Abyssal demons	40	90	200	250	5	85	85	-	completion of Priest in Peril or Fairytale II - Cure a Queen
+Vannaka	ankou	Ankou	25	35	91	150	8	0	40	-	-
+Vannaka	basilisk	Basilisks	40	90	200	250	8	40	40	Defence:20	-
+Vannaka	bloodveld	Bloodveld	40	90	200	250	8	50	50	-	completion of Priest in Peril
+Vannaka	bluedragon	Blue dragons	40	90	-	-	7	0	65	-	partial completion of Dragon Slayer I
+Vannaka	brinerat	Brine rats	40	90	-	-	7	47	45	-	completion of Olaf's Quest
+Vannaka	crab	Crabs	40	90	-	-	8	0	0	-	-
+Vannaka	crocodile	Crocodiles	40	90	-	-	6	0	50	-	-
+Vannaka	dagannoth	Dagannoth	40	90	-	-	7	0	75	-	completion of Horror from the Deep
+Vannaka	dustdevil	Dust devils	40	90	200	250	8	65	70	-	partial completion of Desert Treasure I
+Vannaka	elve	Elves	30	70	-	-	7	0	70	-	completion of Regicide
+Vannaka	feverspider	Fever spiders	30	90	-	-	7	42	40	-	partial completion of Rum Deal
+Vannaka	firegiant	Fire giants	40	90	-	-	7	0	65	-	-
+Vannaka	gargoyle	Gargoyles	40	90	200	250	5	75	80	-	completion of Priest in Peril
+Vannaka	ghoul	Ghouls	10	40	-	-	7	0	25	-	completion of Priest in Peril
+Vannaka	gryphon	Gryphons	30	80	110	160	10	51	0	Sailing:45	completion of Troubled Tortugans
+Vannaka	harpiebugswarm	Harpie Bug Swarms	40	90	-	-	8	33	45	Firemaking:33	-
+Vannaka	hellhound	Hellhounds	30	60	-	-	7	0	75	-	-
+Vannaka	hillgiant	Hill Giants	40	90	-	-	7	0	25	-	-
+Vannaka	hobgoblin	Hobgoblins	40	90	-	-	7	0	20	-	-
+Vannaka	icegiant	Ice giants	30	80	-	-	7	0	50	-	-
+Vannaka	icewarrior	Ice warriors	40	90	-	-	7	0	45	-	-
+Vannaka	infernalmage	Infernal Mages	40	90	-	-	8	45	40	-	completion of Priest in Peril
+Vannaka	jellie	Jellies	40	90	-	-	8	52	57	-	-
+Vannaka	junglehorror	Jungle horrors	40	90	-	-	8	0	65	-	completion of Cabin Fever
+Vannaka	kalphite	Kalphite	40	90	-	-	7	0	15	-	-
+Vannaka	kurask	Kurask	40	90	-	-	7	70	65	-	-
+Vannaka	lesserdemon	Lesser demons	40	90	-	-	7	0	60	-	-
+Vannaka	mogre	Mogres	40	90	-	-	7	32	30	-	completion of Skippy and the Mogres
+Vannaka	molanisk	Molanisks	40	50	-	-	7	39	50	-	completion of Death to the Dorgeshuun
+Vannaka	mossgiant	Moss giants	40	90	-	-	7	0	40	-	-
+Vannaka	nechryael	Nechryael	40	90	200	250	5	80	85	-	completion of Priest in Peril
+Vannaka	ogre	Ogres	40	90	-	-	7	0	40	-	-
+Vannaka	otherworldlybeing	Otherworldly beings	40	90	-	-	8	0	40	-	completion of Lost City
+Vannaka	pyrefiend	Pyrefiends	40	90	-	-	8	30	25	-	-
+Vannaka	seasnake	Sea snakes	40	90	-	-	6	40	50	-	completion of Royal Trouble
+Vannaka	shade	Shades	40	90	-	-	8	0	30	-	-
+Vannaka	shadowwarrior	Shadow warriors	30	80	-	-	8	0	60	-	completion of Legends' Quest
+Vannaka	spiritualcreature	Spiritual creatures	40	90	181	250	8	63	60	-	completion of Death Plateau, level 60 in or
+Vannaka	terrordog	Terror dogs	20	45	-	-	6	40	60	-	completion of Haunted Mine
+Vannaka	troll	Trolls	40	90	-	-	7	0	60	-	-
+Vannaka	turoth	Turoth	30	90	-	-	8	55	60	-	-
+Vannaka	vampyre	Vampyres	10	20	200	250	7	0	35	-	completion of Priest in Peril
+Vannaka	werewolve	Werewolves	30	60	-	-	7	0	60	-	completion of Priest in Peril
+Chaeldar	aberrantspectre	Aberrant spectres	70	130	200	250	8	60	65	-	completion of Priest in Peril
+Chaeldar	abyssaldemon	Abyssal demons	70	130	200	250	12	85	85	-	completion of Priest in Peril or Fairytale II - Cure a Queen
+Chaeldar	aviansie	Aviansie	70	130	130	250	9	0	0	-	Unlocked the ''Watch the birdie'' ability via spending 80 Slayer reward points
+Chaeldar	basilisk	Basilisks	70	130	200	250	7	40	40	Defence:20	-
+Chaeldar	blackdemon	Black demons	70	130	200	250	10	0	80	-	-
+Chaeldar	bloodveld	Bloodveld	70	130	200	250	8	50	50	-	completion of Priest in Peril
+Chaeldar	bluedragon	Blue dragons	70	130	-	-	8	0	65	-	partial completion of Dragon Slayer I
+Chaeldar	brinerat	Brine rats	70	130	-	-	7	47	45	-	completion of Olaf's Quest
+Chaeldar	cavehorror	Cave horrors	70	130	200	250	10	58	85	-	completion of Cabin Fever
+Chaeldar	cavekraken	Cave kraken	30	50	150	200	12	87	80	Magic:50	-
+Chaeldar	crab	Crabs	70	130	-	-	8	1	0	-	-
+Chaeldar	custodianstalker	Custodian stalker	70	130	200	250	11	54	0	-	completion of Shadows of Custodia
+Chaeldar	dagannoth	Dagannoth	70	130	-	-	11	0	75	-	completion of Horror from the Deep
+Chaeldar	dustdevil	Dust devils	70	130	200	250	9	65	70	-	partial completion of Desert Treasure I
+Chaeldar	elve	Elves	70	130	-	-	8	0	70	-	completion of Regicide
+Chaeldar	feverspider	Fever spiders	70	130	-	-	7	42	40	-	partial completion of Rum Deal
+Chaeldar	firegiant	Fire giants	70	130	-	-	12	0	65	-	-
+Chaeldar	fossilislandwyvern	Fossil Island Wyverns	10	20	55	75	7	66	60	-	completion of Bone Voyage and Elemental Workshop I
+Chaeldar	gargoyle	Gargoyles	70	130	200	250	11	75	80	-	completion of Priest in Peril
+Chaeldar	greaterdemon	Greater demons	70	130	200	250	9	0	70	-	-
+Chaeldar	gryphon	Gryphons	60	100	140	180	10	51	0	Sailing:45	completion of Troubled Tortugans
+Chaeldar	hellhound	Hellhounds	70	130	-	-	9	0	75	-	-
+Chaeldar	jellie	Jellies	70	130	-	-	10	52	57	-	-
+Chaeldar	junglehorror	Jungle horrors	70	130	-	-	10	0	65	-	completion of Cabin Fever
+Chaeldar	kalphite	Kalphite	70	130	-	-	11	0	15	-	-
+Chaeldar	kurask	Kurask	70	130	-	-	12	70	65	-	-
+Chaeldar	lesserdemon	Lesser demons	70	130	-	-	9	0	60	-	-
+Chaeldar	lessernagua	Lesser Nagua	50	100	-	-	4	48	0	-	completion of Perilous Moons
+Chaeldar	lizardmen	Lizardmen	50	90	-	-	8	0	0	-	Unlocked the ''Reptile got ripped'' ability via spending 75 Slayer reward points
+Chaeldar	mutatedzygomite	Mutated zygomites	8	15	-	-	7	57	60	-	completion of Lost City
+Chaeldar	nechryael	Nechryael	70	130	200	250	12	80	85	-	completion of Priest in Peril
+Chaeldar	shadowwarrior	Shadow warriors	70	130	-	-	8	0	60	-	completion of Legends' Quest
+Chaeldar	skeletalwyvern	Skeletal Wyverns	10	20	50	70	7	72	70	-	completion of Elemental Workshop I
+Chaeldar	spiritualcreature	Spiritual creatures	70	130	181	250	12	63	60	-	completion of Death Plateau, level 60 in or
+Chaeldar	troll	Trolls	70	130	-	-	11	0	60	-	-
+Chaeldar	turoth	Turoth	70	130	-	-	10	55	60	-	-
+Chaeldar	tzhaar	TzHaar	90	150	-	-	8	0	0	-	Unlocked the ''Hot stuff'' ability via spending 100 Slayer reward points
+Chaeldar	vampyre	Vampyres	80	100	200	250	6	0	0	-	Unlocked the ''Actual Vampyre Slayer'' ability via spending 80 Slayer reward points
+Chaeldar	warpedcreature	Warped creatures	70	130	-	-	6	0	0	-	Unlocked the ''Warped Reality'' ability via spending 60 Slayer reward points
+Chaeldar	wyrm	Wyrms	60	100	200	250	6	62	0	-	-
+Konar quo Maten	aberrantspectre	Aberrant spectres	120	170	200	250	6	60	65	-	-
+Konar quo Maten	abyssaldemon	Abyssal demons	120	170	200	250	9	85	85	-	completion of Priest in Peril or Fairytale II - Cure a Queen
+Konar quo Maten	ankou	Ankou	0	0	91	150	5	0	40	-	-
+Konar quo Maten	aviansie	Aviansie	120	170	200	250	6	0	0	-	Unlocked the ''Watch the birdie'' ability via spending 80 Slayer reward points
+Konar quo Maten	basilisk	Basilisks	110	170	200	250	5	40	0	-	unlocked the ''Basilocked'' ability via spending 80 Slayer reward points
+Konar quo Maten	blackdemon	Black demons	120	170	200	250	9	0	80	-	-
+Konar quo Maten	blackdragon	Black dragons	10	15	40	60	6	0	80	-	partial completion of Dragon Slayer I
+Konar quo Maten	bloodveld	Bloodveld	120	170	200	250	9	50	50	-	-
+Konar quo Maten	bluedragon	Blue dragons	120	170	-	-	4	0	65	-	partial completion of Dragon Slayer I, completion of Watchtower for access to Ogre Enclave
+Konar quo Maten	bosse	Bosses	3	35	-	-	8	0	0	-	Unlocked the Like a boss ability via spending 200 Slayer reward points, as well as various requirements for specific bosses
+Konar quo Maten	brinerat	Brine rats	120	170	-	-	2	47	45	-	completion of Olaf's Quest
+Konar quo Maten	cavekraken	Cave kraken	80	100	150	200	9	87	80	Magic:50	-
+Konar quo Maten	dagannoth	Dagannoth	120	170	-	-	8	0	75	-	completion of Horror from the Deep
+Konar quo Maten	darkbeast	Dark beasts	10	15	110	135	5	90	90	-	partial completion of Mourning's End Part II
+Konar quo Maten	drake	Drakes	75	140	-	-	10	84	0	-	-
+Konar quo Maten	dustdevil	Dust devils	120	170	200	250	6	65	70	-	partial completion of Desert Treasure I
+Konar quo Maten	firegiant	Fire giants	120	175	-	-	9	0	65	-	-
+Konar quo Maten	fossilislandwyvern	Fossil Island Wyverns	15	30	55	75	5	66	60	-	completion of Bone Voyage and Elemental Workshop I
+Konar quo Maten	gargoyle	Gargoyles	120	170	200	250	6	75	80	-	completion of Priest in Peril
+Konar quo Maten	greaterdemon	Greater demons	120	170	200	250	7	0	75	-	-
+Konar quo Maten	hellhound	Hellhounds	120	170	-	-	8	0	75	-	-
+Konar quo Maten	hydra	Hydras	125	190	-	-	10	95	0	-	-
+Konar quo Maten	jellie	Jellies	120	170	-	-	6	52	57	-	-
+Konar quo Maten	kalphite	Kalphite	120	170	-	-	9	0	15	-	-
+Konar quo Maten	kurask	Kurask	120	170	-	-	3	70	65	-	completion of Song of the Elves for access to Iorwerth Dungeon
+Konar quo Maten	lessernagua	Lesser Nagua	55	120	-	-	2	48	0	-	completion of Perilous Moons
+Konar quo Maten	lizardmen	Lizardmen	90	110	-	-	8	0	0	-	Unlocked the ''Reptile got ripped'' ability via spending 75 Slayer reward points
+Konar quo Maten	metaldragon	Metal dragons	30	40	150	200	15	0	85	-	partial completion of Dragon Slayer I
+Konar quo Maten	mutatedzygomite	Mutated Zygomites	10	25	-	-	2	57	60	-	completion of Lost City
+Konar quo Maten	nechryael	Nechryael	0	0	200	250	7	80	85	-	-
+Konar quo Maten	reddragon	Red dragons	30	50	-	-	5	0	68	-	partial completion of Dragon Slayer I, unlocked the ''Seeing red'' ability via spending 50 Slayer reward points
+Konar quo Maten	skeletalwyvern	Skeletal Wyverns	5	12	50	70	5	72	70	-	completion of Elemental Workshop I
+Konar quo Maten	smokedevil	Smoke devils	120	170	-	-	7	93	85	-	-
+Konar quo Maten	troll	Trolls	120	170	-	-	6	0	60	-	-
+Konar quo Maten	turoth	Turoth	120	170	-	-	3	55	60	-	-
+Konar quo Maten	vampyre	Vampyres	100	160	200	250	4	0	0	-	Unlocked the ''Actual Vampyre Slayer'' ability via spending 80 Slayer reward points
+Konar quo Maten	warpedcreature	Warped creatures	110	170	-	-	4	0	0	-	Unlocked the ''Warped Reality'' ability via spending 60 Slayer reward points
+Konar quo Maten	waterfiend	Waterfiends	120	170	-	-	2	0	75	-	Progressed the Barbarian Training miniquest up to the Pyre ships section
+Konar quo Maten	wyrm	Wyrms	125	190	200	250	10	62	0	-	-
+Nieve	aberrantspectre	Aberrant spectres	120	185	200	250	6	60	65	-	completion of Priest in Peril
+Nieve	abyssaldemon	Abyssal demons	120	185	200	250	9	85	85	-	completion of Priest in Peril or Fairytale II - Cure a Queen
+Nieve	ankou	Ankou	50	90	91	150	5	0	40	-	-
+Nieve	aquanite	Aquanites	40	60	150	200	5	78	0	Sailing:73	Unlocked the ''Lured In'' ability via spending 80 Slayer reward points
+Nieve	araxyte	Araxytes	40	60	200	250	8	92	0	-	Completion of Priest in Peril
+Nieve	aviansie	Aviansie	120	185	200	250	6	0	0	-	Unlocked the ''Watch the birdie'' ability via spending 80 Slayer reward points
+Nieve	basilisk	Basilisks	120	185	200	250	6	40	0	-	unlocked the ''Basilocked'' ability via spending 80 Slayer reward points
+Nieve	blackdemon	Black demons	120	185	200	250	9	0	80	-	-
+Nieve	blackdragon	Black dragons	10	20	40	60	6	0	80	-	partial completion of Dragon Slayer I
+Nieve	bloodveld	Bloodveld	120	185	200	250	9	50	50	-	completion of Priest in Peril
+Nieve	bluedragon	Blue dragons	120	185	-	-	4	0	65	-	partial completion of Dragon Slayer I
+Nieve	brinerat	Brine rats	120	185	-	-	3	47	45	-	completion of Olaf's Quest
+Nieve	cavehorror	Cave horrors	120	180	200	250	5	58	85	-	completion of Cabin Fever
+Nieve	cavekraken	Cave kraken	100	120	150	200	6	87	80	Magic:50	-
+Nieve	custodianstalker	Custodian stalker	110	170	200	250	8	54	0	-	completion of Shadows of Custodia
+Nieve	dagannoth	Dagannoth	120	185	-	-	8	0	75	-	completion of Horror from the Deep
+Nieve	darkbeast	Dark beasts	10	20	110	135	5	90	90	-	partial completion of Mourning's End Part II
+Nieve	drake	Drakes	30	95	-	-	7	84	0	-	-
+Nieve	dustdevil	Dust devils	120	185	200	250	6	65	70	-	partial completion of Desert Treasure I
+Nieve	elve	Elves	60	90	-	-	4	0	70	-	completion of Regicide
+Nieve	firegiant	Fire giants	120	185	-	-	9	0	65	-	-
+Nieve	fossilislandwyvern	Fossil Island Wyverns	5	25	55	75	5	66	60	-	completion of Bone Voyage and Elemental Workshop I
+Nieve	frostdragon	Frost dragons	60	100	180	240	5	0	85	Sailing:87	partial completion of Dragon Slayer I
+Nieve	gargoyle	Gargoyles	120	185	200	250	6	75	80	-	completion of Priest in Peril
+Nieve	greaterdemon	Greater demons	120	185	200	250	7	0	75	-	-
+Nieve	gryphon	Gryphons	110	170	190	250	7	51	0	Sailing:45	completion of Troubled Tortugans, Unlocked the ''Wings Spread'' ability via spending 80 Slayer reward points
+Nieve	hellhound	Hellhounds	120	185	-	-	8	0	75	-	-
+Nieve	kalphite	Kalphite	120	185	-	-	9	0	15	-	-
+Nieve	kurask	Kurask	120	185	-	-	3	70	65	-	-
+Nieve	lizardmen	Lizardmen	90	120	-	-	8	0	0	-	Unlocked the ''Reptile got ripped'' ability via spending 75 Slayer reward points
+Nieve	metaldragon	Metal dragons	30	40	150	200	12	0	85	-	partial completion of Dragon Slayer I
+Nieve	mutatedzygomite	Mutated Zygomites	10	25	-	-	2	57	60	-	completion of Lost City
+Nieve	nechryael	Nechryael	110	170	200	250	7	80	85	-	completion of Priest in Peril
+Nieve	reddragon	Red dragons	30	80	-	-	5	0	68	-	partial completion of Dragon Slayer I, unlocked the ''Seeing red'' ability via spending 50 Slayer reward points
+Nieve	scabarite	Scabarites	30	60	130	170	4	0	85	-	partial completion of Contact!
+Nieve	skeletalwyvern	Skeletal Wyverns	5	15	50	70	5	72	70	-	completion of Elemental Workshop I
+Nieve	smokedevil	Smoke devils	120	185	-	-	7	93	85	-	-
+Nieve	spiritualcreature	Spiritual creatures	120	185	181	250	6	63	60	-	completion of Death Plateau, level 60 in or
+Nieve	suqah	Suqahs	120	185	186	250	8	0	85	-	partial completion of Lunar Diplomacy
+Nieve	troll	Trolls	120	185	-	-	6	0	60	-	-
+Nieve	turoth	Turoth	120	185	-	-	3	55	60	-	-
+Nieve	tzhaar	TzHaar	110	180	-	-	10	0	0	-	Unlocked the ''Hot stuff'' ability via spending 100 Slayer reward points
+Nieve	vampyre	Vampyres	110	170	200	250	6	0	0	-	Unlocked the ''Actual Vampyre Slayer'' ability via spending 80 Slayer reward points
+Nieve	warpedcreature	Warped creatures	120	185	-	-	6	0	0	-	Unlocked the ''Warped Reality'' ability via spending 60 Slayer reward points
+Nieve	wyrm	Wyrms	80	145	200	250	7	62	0	-	-
+Duradel	aberrantspectre	Aberrant Spectres	130	200	200	250	7	60	65	-	completion of Priest in Peril
+Duradel	abyssaldemon	Abyssal Demons	130	200	200	250	12	85	85	-	completion of Priest in Peril or Fairytale II - Cure a Queen
+Duradel	ankou	Ankou	50	80	91	150	5	0	40	-	-
+Duradel	aquanite	Aquanites	30	50	150	200	5	78	0	Sailing:73	Unlocked the ''Lured In'' ability via spending 80 Slayer reward points
+Duradel	araxyte	Araxytes	60	80	200	250	10	92	0	-	Completion of Priest in Peril
+Duradel	aviansie	Aviansie	120	200	200	250	8	0	0	-	Unlocked the ''Watch the birdie'' ability via spending 80 Slayer reward points
+Duradel	basilisk	Basilisks	130	200	200	250	7	40	0	-	unlocked the ''Basilocked'' ability via spending 80 Slayer reward points
+Duradel	blackdemon	Black Demons	130	200	200	250	8	0	80	-	-
+Duradel	blackdragon	Black Dragons	10	20	40	60	9	0	80	-	partial completion of Dragon Slayer I
+Duradel	bloodveld	Bloodveld	130	200	200	250	8	50	50	-	completion of Priest in Peril
+Duradel	bluedragon	Blue Dragons	110	170	-	-	4	0	65	-	partial completion of Dragon Slayer I
+Duradel	cavehorror	Cave Horrors	130	200	200	250	4	58	85	-	completion of Cabin Fever
+Duradel	cavekraken	Cave Kraken	100	120	150	200	9	87	80	Magic:50	-
+Duradel	dagannoth	Dagannoth	130	200	-	-	9	0	75	-	completion of Horror from the Deep
+Duradel	darkbeast	Dark Beasts	10	20	110	135	11	90	90	-	started Mourning's End Part II
+Duradel	drake	Drakes	50	110	-	-	8	84	0	-	-
+Duradel	dustdevil	Dust Devils	130	200	200	250	5	65	70	-	partial completion of Desert Treasure I
+Duradel	elve	Elves	110	170	-	-	4	0	70	-	completion of Regicide
+Duradel	firegiant	Fire Giants	130	200	-	-	7	0	65	-	-
+Duradel	fossilislandwyvern	Fossil Island Wyverns	20	50	55	75	7	66	60	-	completion of Bone Voyage, completion of Elemental Workshop I
+Duradel	frostdragon	Frost dragons	70	120	180	240	5	0	85	Sailing:87	partial completion of Dragon Slayer I
+Duradel	gargoyle	Gargoyles	130	200	200	250	8	75	80	-	completion of Priest in Peril
+Duradel	greaterdemon	Greater Demons	130	200	200	250	9	0	75	-	-
+Duradel	gryphon	Gryphons	100	210	180	290	7	51	0	Sailing:45	completion of Troubled Tortugans, Unlocked the ''Wings Spread'' ability via spending 80 Slayer reward points
+Duradel	hellhound	Hellhounds	130	200	-	-	10	0	75	-	-
+Duradel	kalphite	Kalphite	130	200	-	-	9	0	15	-	-
+Duradel	kurask	Kurask	130	200	-	-	4	70	65	-	-
+Duradel	lizardmen	Lizardmen	130	210	-	-	10	0	0	-	Unlocked the ''Reptile got ripped'' ability via spending 75 Slayer reward points
+Duradel	metaldragon	Metal Dragons	35	45	150	200	14	0	85	-	partial completion of Dragon Slayer I
+Duradel	mutatedzygomite	Mutated Zygomites	20	30	-	-	2	57	60	-	completion of Lost City
+Duradel	nechryael	Nechryael	130	200	200	250	9	80	85	-	completion of Priest in Peril
+Duradel	reddragon	Red Dragons	30	65	-	-	8	0	68	-	partial completion of Dragon Slayer I, unlocked the ''Seeing red'' ability via spending 50 Slayer reward points
+Duradel	skeletalwyvern	Skeletal Wyverns	20	40	50	70	7	72	70	-	completion of Elemental Workshop I
+Duradel	smokedevil	Smoke Devils	130	200	-	-	9	93	85	-	-
+Duradel	spiritualcreature	Spiritual Creatures	130	200	181	250	7	63	60	-	completion of Death Plateau, level 60 in or
+Duradel	suqah	Suqahs	60	90	186	250	8	0	85	-	partial completion of Lunar Diplomacy
+Duradel	troll	Trolls	130	200	-	-	6	0	60	-	-
+Duradel	tzhaar	TzHaar	130	199	-	-	10	0	0	-	Unlocked the ''Hot stuff'' ability via spending 100 Slayer reward points
+Duradel	vampyre	Vampyres	100	210	200	250	8	0	0	-	Unlocked the ''Actual Vampyre Slayer'' ability via spending 80 Slayer reward points
+Duradel	warpedcreature	Warped creatures	130	200	-	-	8	0	0	-	Unlocked the ''Warped Reality'' ability via spending 60 Slayer reward points
+Duradel	waterfiend	Waterfiends	130	200	-	-	2	0	75	-	progressed the Firemaking tasks of the Barbarian Training miniquest up to crafting Pyre ships
+Duradel	wyrm	Wyrms	100	160	200	250	8	62	0	-	-
+Krystilia	abyssaldemon	Abyssal demons	75	125	200	250	5	85	0	-	-
+Krystilia	ankou	Ankou	75	125	91	150	6	0	0	-	-
+Krystilia	aviansie	Aviansie	75	125	200	250	7	0	0	-	-
+Krystilia	bandit	Bandits	75	125	-	-	4	0	0	-	-
+Krystilia	bear	Bears	65	100	-	-	6	0	0	-	-
+Krystilia	blackdemon	Black demons	100	150	200	250	7	0	0	-	-
+Krystilia	blackdragon	Black dragons	8	16	40	60	4	0	0	-	-
+Krystilia	blackknight	Black Knights	75	125	-	-	3	0	0	-	-
+Krystilia	bloodveld	Bloodveld	70	110	200	250	4	50	0	-	-
+Krystilia	chaosdruid	Chaos druids	50	90	-	-	5	0	0	-	-
+Krystilia	darkwarrior	Dark warriors	75	125	-	-	4	0	0	-	-
+Krystilia	dustdevil	Dust devils	75	125	200	250	5	65	0	-	-
+Krystilia	earthwarrior	Earth warriors	75	125	-	-	6	0	0	-	-
+Krystilia	ent	Ents	35	60	-	-	5	0	0	-	-
+Krystilia	firegiant	Fire giants	75	125	-	-	7	0	0	-	-
+Krystilia	greaterdemon	Greater demons	100	150	200	250	8	0	0	-	-
+Krystilia	greendragon	Green dragons	65	100	-	-	4	0	0	-	-
+Krystilia	hellhound	Hellhounds	75	125	-	-	7	0	0	-	-
+Krystilia	hillgiant	Hill Giants	75	125	-	-	3	0	0	-	-
+Krystilia	icegiant	Ice giants	100	150	-	-	6	0	0	-	-
+Krystilia	icewarrior	Ice warriors	100	150	-	-	7	0	0	-	-
+Krystilia	jellie	Jellies	100	150	-	-	5	52	0	-	-
+Krystilia	lavadragon	Lava dragons	35	60	-	-	3	0	0	-	-
+Krystilia	lesserdemon	Lesser demons	80	120	-	-	6	0	0	-	-
+Krystilia	magicaxe	Magic axes	75	125	-	-	7	0	0	-	-
+Krystilia	mammoth	Mammoths	75	125	-	-	6	0	0	-	-
+Krystilia	mossgiant	Moss giants	100	150	-	-	4	0	0	-	-
+Krystilia	nechryael	Nechryael	75	125	200	250	5	80	0	-	-
+Krystilia	pirate	Pirates	62	75	-	-	3	0	0	-	-
+Krystilia	revenant	Revenants	40	100	100	150	5	0	0	-	-
+Krystilia	rogue	Rogues	75	125	-	-	5	0	0	-	-
+Krystilia	scorpion	Scorpions	65	100	-	-	6	0	0	-	-
+Krystilia	skeleton	Skeletons	65	100	-	-	5	0	0	-	-
+Krystilia	spider	Spiders	65	100	-	-	6	0	0	-	-
+Krystilia	spiritualcreature	Spiritual creatures	100	150	181	250	6	63	0	-	-
+Krystilia	zombie	Zombies	75	125	-	-	3	0	0	-	-
