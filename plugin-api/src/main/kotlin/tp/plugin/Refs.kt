@@ -63,6 +63,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.interact(p, t, op)
     }
 
+    /** Logs the player out at the end of the tick. */
+    public fun logout() {
+        p.world.requestLogout(p)
+    }
+
     /** Ends the current interaction (no other interruption effects). */
     public fun stopInteraction() {
         p.clearInteraction()
@@ -272,6 +277,10 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     /** Drops [count] of [obj] from [slot] of [invId] under the player, private to them at first. */
     public fun drop(invId: Int, slot: Int, obj: Int, count: Int): Boolean =
         tx.dropToGround(of(invId), slot, obj, count, player.coord, player.username)
+
+    /** Drops [count] of [obj] from [slot] of [invId] onto [at], private to [owner] at first (death drops). */
+    public fun dropAt(invId: Int, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean =
+        tx.dropToGround(of(invId), slot, obj, count, at, owner)
 
     /** Picks [obj] up into [invId]. */
     public fun take(obj: ObjRef, invId: Int): Boolean = tx.takeFromGround(obj.g, of(invId))

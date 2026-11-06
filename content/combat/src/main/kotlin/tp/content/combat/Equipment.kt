@@ -1,9 +1,11 @@
 package tp.content.combat
 
+import tp.plugin.AppearanceChanged
 import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
+import tp.plugin.SharedAttrs
 import tp.symbols.Components
 import tp.symbols.Invs
 import tp.symbols.Varbits
@@ -11,12 +13,9 @@ import tp.symbols.Varps
 
 /** Appearance = worn objs + combat level + icons; sent whenever any of them change. */
 internal object Appearance {
-    /** Skull icon per player, set by PvP content through [skullIcon]. */
-    val SKULL = tp.plugin.AttrKey<Int>("skull_icon")
-
     fun refresh(player: PlayerRef) {
         val worn = IntArray(APPEARANCE_SLOTS) { player.worn(it) }
-        player.appearance(worn, player.combatLevel(), player[SKULL] ?: -1, player.headIcon())
+        player.appearance(worn, player.combatLevel(), player[SharedAttrs.SKULL_ICON] ?: -1, player.headIcon())
     }
 
     private const val APPEARANCE_SLOTS = 12
@@ -28,6 +27,7 @@ internal object Appearance {
  */
 public class Equipment : ContentPlugin {
     override fun ContentScope.register() {
+        events.on<AppearanceChanged> { Appearance.refresh(it.player) }
         onLogin {
             Appearance.refresh(this)
             setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)

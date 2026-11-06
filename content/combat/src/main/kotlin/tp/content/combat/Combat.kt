@@ -193,6 +193,7 @@ internal object CombatSystem {
         when (target) {
             is PlayerRef -> {
                 target.stopInteraction()
+                DeathRules.retribution(target)
                 target.queueHit(DEATH_ANIM_DELAY) { target.anim(Seqs.HUMAN_DEATH) }
                 target.queueHit(DEATH_RESPAWN_DELAY) { respawn(target, killer) }
             }
@@ -208,6 +209,7 @@ internal object CombatSystem {
     }
 
     private fun respawn(player: PlayerRef, killer: EntityRef?) {
+        DeathRules.dropItems(player, killer)
         bus.publish(DeathEvent(player, killer))
         player.message("Oh dear, you are dead!")
         player.teleport(RESPAWN)

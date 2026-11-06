@@ -35,3 +35,15 @@ public class HitEvent(
 
 /** [entity] died; published when the death sequence completes, before respawn (items kept on death, Retribution). */
 public class DeathEvent(public val entity: EntityRef, public val killer: EntityRef?) : Event
+
+/** Attributes shared between content modules. */
+public object SharedAttrs {
+    /** Skull icon shown over a player (-1/null = none); PvP content sets it, combat's appearance shows it. */
+    public val SKULL_ICON: AttrKey<Int> = AttrKey("skull_icon")
+
+    /** Tick until which teleports are blocked (Tele Block). */
+    public val TELEBLOCK_UNTIL: AttrKey<Long> = AttrKey("teleblock_until")
+}
+
+/** A player's look changed outside the equipment module (skull); the appearance owner re-sends it. */
+public class AppearanceChanged(public val player: PlayerRef) : Event

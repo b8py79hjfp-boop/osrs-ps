@@ -81,12 +81,28 @@ public sealed class EntityRef {
      * Queues [action] on this entity [delay] ticks from now: a strong queue script on players, the NPC queue on NPCs
      * (combat-timeline.md: hits are strong scripts on the defender).
      */
-    public fun queueHit(delay: Int, action: () -> Unit) {
+    public fun queueHit(delay: Int, strong: Boolean = true, action: () -> Unit) {
         when (val x = e) {
-            is Player -> x.queue.add(QueueType.STRONG, delay) { action() }
+            is Player -> x.queue.add(if (strong) QueueType.STRONG else QueueType.NORMAL, delay) { action() }
             is Npc -> x.queue.add(delay) { action() }
         }
     }
+
+    /** Players within [radius] tiles (Chebyshev, same level), excluding this entity. */
+    public fun playersWithin(radius: Int): List<PlayerRef> {
+        val out = ArrayList<PlayerRef>()
+        e.world.forEachPlayer { p ->
+            if (p !== e && p.coord.level == coord.level &&
+                maxOf(kotlin.math.abs(p.coord.x - coord.x), kotlin.math.abs(p.coord.z - coord.z)) <= radius
+            ) {
+                out += PlayerRef(p)
+            }
+        }
+        return out
+    }
+
+    /** Whether this world is a PvP world (WorldConfig). */
+    public val isPvpWorld: Boolean get() = e.world.config.pvpWorld
 
     /** Records [label] for this entity in the tick inspector (no-op unless tracing). */
     public fun trace(label: String) {

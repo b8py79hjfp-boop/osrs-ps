@@ -53,6 +53,8 @@ data class WorldConfig(
      * (OSRS Wiki "Player identification number"; tick.md PID).
      */
     val pidShuffle: IntRange = PID_WINDOW_NORMAL,
+    /** PvP world: everywhere outside safe zones counts as Wilderness level 15 (+ the real level) (Wiki "Wilderness"). */
+    val pvpWorld: Boolean = false,
     /** Ground obj lifetimes (ground-items.md; OPEN-G1 is this flag). */
     val groundTiming: GroundTiming = GroundTiming(),
 )
@@ -489,6 +491,12 @@ class World(
 
     /** Obj config (wear positions, params) for content facades. */
     fun objType(id: Int): tp.cache.config.obj.ObjType? = data.configs.objs[id]
+
+    /** Logs [player] out at the end of this tick (logout button). */
+    fun requestLogout(player: Player) {
+        player.session.send(ServerMessage.Logout)
+        player.session.close()
+    }
 
     fun setRunMode(player: Player, enabled: Boolean) {
         player.runMode = enabled
