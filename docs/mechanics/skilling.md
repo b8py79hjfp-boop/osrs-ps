@@ -19,6 +19,10 @@ Shared rules for every non-combat skill (`content/skills/.../Skilling.kt`, `Play
 - **SK5: filterable messages.** Per-action messages ("You swing your axe at the tree.", "You get some logs.") are sent
   as filterable game messages, chat type 105 (RS Mod `ChatType.Spam`).
 
+- **SK6: ending an action.** A script ends its action by not calling `keepInteraction()`. Mining and fishing check their tool before
+  calling it, and call `stopInteraction()` when they end after it (a rock that depletes, a catch that cannot be stored). See
+  mining.md and fishing.md for their timelines.
+
 ## OPEN
 
 - **OPEN-SK1:** sound effects are not sent (no synth-sound message in the protocol yet).

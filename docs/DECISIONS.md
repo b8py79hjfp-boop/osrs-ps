@@ -470,3 +470,18 @@ actions are not modelled: the importer takes the default (negative-reading) bran
 cannot run. No new plugin-api hook was needed: `onOpNpcOption` already only applies where no id-specific or named handler
 exists, which is the loc-fallback behaviour. The data is a node graph (not nested text) so the plugin walks it in a loop
 and never recurses in a suspending function. See docs/mechanics/npc-dialogue.md.
+
+## D-036: Mining and fishing from OSRS Wiki data
+
+RS Mod has no mining and an empty fishing module, so both skills are built on the `content/skills` base (D-034) from the OSRS Wiki
+(CC BY-NC-SA 3.0, `data/PROVENANCE.md`), with no RS Mod code or data adapted.
+- **Mining.** Rock levels, xp, success rates, respawn times, pickaxe cycles and the gem table come from the Wiki's rock, "Pickaxe",
+  "Skilling success rate" and "Mining gem drop table" pages (`MiningData.kt`, docs/mechanics/mining.md). Rock loc ids and empty
+  rocks come from the cache symbols. The roll cadence is the pickaxe's ticks between rolls; the arming tick follows woodcutting.
+- **Fishing.** Spot NPC ids per spot type are scraped from the Wiki's spot pages by `tools/wiki-import/fishing_spots.py` into
+  `fishing-spots.tsv`; fish, rates, tiers and the big net table are Kotlin data (`FishingData.kt`, docs/mechanics/fishing.md).
+  Spot movement is OPEN-FS1 (the rule is sourced, the tile sets and an NPC relocation call are not).
+- **Interaction end.** After a rock depletes or a fish cannot be stored the scripts call `PlayerRef.stopInteraction()`; the tool check
+  comes before `keepInteraction()` so a missing pickaxe does not repeat its message every tick. (Woodcutting still checks its axe
+  after `keepInteraction()`, so a missing axe repeats its message every tick.)
+- **World state.** The amethyst mined-count lives in a world attribute, as the Forestry timers do.

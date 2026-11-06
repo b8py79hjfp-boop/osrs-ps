@@ -34,3 +34,5 @@
   are not implemented.
 - **OPEN-WC2:** the stump respawn overlay timer (client script `add_overlay_timer_loc`) is not sent.
 - **OPEN-WC3:** the blessed axe, quest axes and the Gauntlet axes are not included (RS Mod leaves them out too).
+- **OPEN-WC4:** the axe check runs on the click tick (RS Mod runs it on the swing tick, one tick later), so a player with
+  no usable axe gets the message once and the action ends.

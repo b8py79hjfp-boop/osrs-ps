@@ -38,6 +38,13 @@ public class Woodcutting : ContentPlugin {
         val clock = Skilling.clock(p, Skilling.locKey(loc.id, loc.coord.packed))
         val kind = tree.kind
         if (!canCut(p, kind)) return Skilling.stop(p)
+        // Checked before the interaction is kept, so a missing axe ends the action (OPEN-WC4: RS Mod checks it a tick later).
+        val axe = Skilling.bestTool(p, Stats.WOODCUTTING, axeLevels)
+        if (axe < 0) {
+            p.message("You need an axe to chop down this tree.")
+            p.message("You do not have an axe which you have the woodcutting level to use.")
+            return Skilling.stop(p)
+        }
         keepInteraction()
         val tick = p.tick
         if (clock.fresh && clock.actionDelay < tick) {
@@ -45,12 +52,6 @@ public class Woodcutting : ContentPlugin {
             clock.actionDelay = tick + ACTION_TICKS
             clock.animDelay = tick + ACTION_TICKS
             return
-        }
-        val axe = Skilling.bestTool(p, Stats.WOODCUTTING, axeLevels)
-        if (axe < 0) {
-            p.message("You need an axe to chop down this tree.")
-            p.message("You do not have an axe which you have the woodcutting level to use.")
-            return Skilling.stop(p)
         }
         val anim = AXES.getValue(axe).anim
         if (clock.stage == 0) {
