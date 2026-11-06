@@ -426,9 +426,10 @@ class BotClient(
         private const val TRANSFER_WAIT_PACKETS = 10_000
         private const val SOCKET_TIMEOUT_MS = 30_000
 
+        /** Proof-of-work threads per bot JVM (`-Dbotswarm.powThreads`, default 1): platform threads, never carriers. */
         private val POW_SOLVER =
             java.util.concurrent.Executors
-                .newSingleThreadExecutor { r -> Thread(r, "pow").apply { isDaemon = true } }
+                .newFixedThreadPool(Integer.getInteger("botswarm.powThreads", 1)) { r -> Thread(r, "pow").apply { isDaemon = true } }
         private const val MOVE_CLICK_BYTES = 5
         private val RSA_PUBLIC_EXPONENT: BigInteger = BigInteger.valueOf(65537)
 
