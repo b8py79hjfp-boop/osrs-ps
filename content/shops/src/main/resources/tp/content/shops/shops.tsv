@@ -1,0 +1,429 @@
+id	name	currency	general	sell	buy	delta	inv	slots	members	owners
+0	Aaron's Archery Appendages.	995	0	1000	500	10	505	8	1	6059
+1	Aemad's Adventuring Supplies.	995	1	1300	400	20	3	40	1	8682
+2	Agelus' Farm Shop	995	0	1000	700	10	869	24	1	13339
+3	Agility Arena Store	29482	0	1000	1000	0	589	4	1	7650,7651
+4	Ak-Haranu's Exotic Shop.	995	0	1000	550	10	37	1	1	2989
+5	Al Kharid General Store	995	1	1300	400	30	3	40	0	2817
+6	Aldarin General Store	995	1	1300	400	30	901	40	1	13913
+7	Aleck's Hunter Emporium.	995	0	1200	700	20	940	13	1	1501
+8	Ali's Discount Wares.	995	0	1000	550	10	800	16	1	3533
+9	Alice's Farming shop.	995	0	1000	700	10	280	31	1	504
+10	Allanna's Farming Shop	995	0	1000	600	20	622	18	1	8531
+11	Alry the Angler's Angling Accessories	22820	0	1000	1000	0	43	18	1	8521
+12	Amelia's Seed Shop	995	0	1000	600	20	624	16	1	8530
+13	Amlodd's Magical Supplies	995	0	1000	550	1	25	18	1	9169
+14	Aneirin's Armour	995	0	1000	600	20	411	38	1	9157
+15	Apothecary's Potions	995	0	1000	1000	0	412	3	0
+16	Arcuani's Archery Supplies	995	0	1000	550	10	7	15	1	14776
+17	Ardougne Baker's Stall.	995	0	1000	800	20	225	4	1	8725,8724,3208
+18	Ardougne Fur Stall.	995	0	1200	950	20	59	12	1	3210,8727
+19	Ardougne Gem Stall.	995	0	1500	800	30	862	4	1	8723
+20	Ardougne Silver Stall.	995	0	1000	700	20	55	3	1	8722
+21	Ardougne Spice Stall.	995	0	1000	600	20	863	3	1	3209,8726
+22	Arhein's General Goods	995	1	1300	400	30	47	40	1	3200
+23	Armour Shop	995	0	1100	700	30	505	8	1	1943
+24	Armour store.	995	0	1000	600	20	411	38	1	1561
+25	Armoury	995	0	1500	500	10	49	28	1	2894
+26	Arnold's Eclectic Supplies.	995	1	1050	550	20	3	40	1	4293
+27	Artima's Crafting Supplies	995	0	1000	650	20	872	12	1	13342
+28	Atlazora's Rest	995	0	1000	1000	0	27	11	1	13345
+29	Auburn Pub	995	0	1000	1000	0	922	40	1	14660
+30	Auburnvale General Store	995	1	1300	400	30	3	40	1	14656
+31	Aubury's Rune Shop.	995	0	1000	600	1	5	14	0	11434,11435
+32	Aurel's Supplies	995	1	1300	400	30	3	40	1	4445
+33	Authentic Throwing Weapons.	995	0	1300	500	10	387	12	1	6069
+34	Ava's Odds and Ends	995	0	1300	400	30	387	12	1	4407
+35	Baba Yaga's Magic Shop.	995	0	1000	550	1	231	27	1	3837
+36	Bandit Bargains	995	0	1000	700	10	255	14	1	1833
+37	Bandit Duty Free	995	1	900	600	30	3	40	0	8692
+38	Barkers' Haberdashery	995	0	1300	400	30	137	31	1	6524
+39	Battle Runes	995	0	1000	550	2	5	14	1	2580,2581
+40	Beach Cocktails	995	0	1000	250	10	87	21	1	6524
+41	Bedabin Village Bartering	995	0	1200	800	30	1	7	1	4638
+42	Betty's Magic Emporium	995	0	1000	600	1	25	18	0	5905
+43	Blades by Urbi.	995	0	1500	250	10	6	18	1	3891
+44	Blair's Armour	995	0	1000	600	10	411	38	1	11040
+45	Blue Moon Inn	995	0	1000	1000	0	37	1	0
+46	Blurberry Bar	995	0	1000	250	10	1	7	1	6532
+47	Bob's Brilliant Axes.	995	0	1000	600	20	1	7	0	10619
+48	Bolkoy's Village Shop	995	1	1300	400	30	3	40	1	4965
+49	Branwen's Farming Shop	995	0	1000	700	10	942	17	1	9167
+50	Brian's Archery Supplies.	995	0	1000	650	20	1030	10	0	8694
+51	Brian's Battleaxe Bazaar.	995	0	1000	550	10	21	6	0	2892
+52	Briget's Weapons	995	0	1000	600	10	2	40	1	7201
+53	Bunbridge General Store	995	1	1300	400	30	3	40	0
+54	Burthorpe Supplies	995	1	1300	400	30	3	40	1	4106
+55	Cam Torum Blacksmith	995	0	1000	600	20	851	20	1	13038
+56	Cam Torum General Store	995	1	1300	400	30	848	40	1	13035
+57	Candle Shop	995	0	1300	400	30	48	1	1	3199
+58	Carefree Crafting Stall	995	0	1500	800	30	146	8	1	2363
+59	Cassie's Shield Shop.	995	0	1000	600	20	906	10	0	3214
+60	Castle Wars Ticket Exchange	4067	0	1000	1000	0	635	10	0	11650
+61	Cobado's Groceries	995	0	1000	700	10	231	27	1	13341
+62	Conara's Jewels	995	0	1000	700	20	853	24	1	13040
+63	Construction supplies	995	0	1300	500	0	395	5	1
+64	Contraband yak produce.	995	0	1100	700	30	11	4	1
+65	Crossbow Shop	995	0	3600	500	20	49	28	1	2785
+66	Crossbow Shop	995	0	3000	600	20	49	28	1	2783
+67	Crossbow Shop	995	0	3600	500	20	49	28	1	2784
+68	Culinaromancer's Chest	995	0	1300	400	20	64	23	1
+69	Daga's Scimitar Smithy	995	0	1000	500	20	224	5	1	5250
+70	Dal's General Ogre Supplies	995	1	1300	400	30	3	40	1	4401
+71	Dancing Donkey Inn	995	0	1000	0	0	37	1	0
+72	Dargaud's Bow and Arrows.	995	0	1000	500	10	80	27	1	6060
+73	Darkmeyer General Store	995	1	1300	400	30	3	40	1	9721
+74	Darkmeyer Lantern Shop	995	0	1200	400	30	9	6	1	9720
+75	Darkmeyer Meat Shop	995	0	1000	600	30	410	5	1	9723
+76	Darkmeyer Seamstress	995	0	1300	400	20	417	9	1	9724
+77	Darren's Wilderness Cape Shop.	995	0	1000	600	10	19	5	1	2198
+78	Daryl's Ranging Surplus	995	0	1000	550	10	464	21	1	11041
+79	Davon's Amulet Store.	995	0	1200	900	20	46	5	1	8680
+80	Dead Man's Chest	995	0	1000	1000	0	36	2	1
+81	Deepfin Inn	995	0	1000	0	0	973	11	1	15407
+82	Deepfin Point Ore Exchange	995	0	1100	700	20	973	11	1	15408
+83	Diango's Toy Store	995	0	1500	500	20	441	40	0	8693
+84	Dodgy Mike's Second Hand Clothing.	995	0	1000	600	20	417	9	1	4022
+85	Dommik's Crafting Store.	995	0	1000	650	20	27	11	0	2879
+86	Dorgesh-Kaan General Supplies	995	1	1300	550	30	511	40	1	2314
+87	Dragon Inn	995	0	1000	1000	0	29	3	1
+88	Draynor Seed Market	995	0	1200	600	30	624	16	1	500,2121
+89	Drogo's Mining Emporium.	995	0	1000	700	20	14	9	0	5895
+90	Durrik's Goods	995	1	2500	150	20	974	40	1	15411
+91	Dusuri's Star Shop	25527	0	1000	800	0	11	4	1	10631
+92	Dwarven shopping store	995	1	1300	300	30	3	40	0	5904
+93	Dyes to Die For	995	0	1300	550	10	927	6	1	14774
+94	Edgeville General Store	995	1	1300	400	30	3	40	0	2821
+95	Edmond's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2202
+96	Edward's Wilderness Cape Shop.	995	0	1000	600	10	19	5	1	2199
+97	Efaritay's Supplies	995	0	1000	500	0	1023	9	1	15943
+98	Elder Blunn's Spear and Shield Stall	995	0	1000	600	20	6	18	1	14838
+99	Elder Coco's Crafting Stall	995	0	1000	650	20	938	13	1	14829
+100	Elder Krill's Fishing Stall	995	0	1000	700	20	30	19	1	14835
+101	Elder Raley's Herblore Stall	995	0	1000	700	10	939	8	1	14841
+102	Elder Reggle's Farming Shop	995	0	1000	700	10	942	17	1	14844
+103	Elder Strom's Hunting Stall	995	0	1200	700	20	483	13	1	14832
+104	Elgan's Exceptional Staffs!	995	0	1000	550	10	1	7	1	9155
+105	Emelio's Kebab Shop	995	0	1000	500	0	896	1	1	13805
+106	Etceteria Fish	995	0	1300	700	30	231	27	1	3688,775
+107	Fairy Fixit's Fairy Enchantment	995	0	1000	600	10	37	1	1	7333
+108	Falador General Store	995	1	1300	400	30	3	40	0	2819
+109	Fancy Clothes Store	995	0	1300	400	20	208	21	1	2887
+110	Farming Supplies	995	0	1000	1000	0	1030	10	1
+111	Faustus' Fruit and Veg	995	0	1000	700	10	902	17	1	13914
+112	Fernahei's Fishing Hut.	995	0	1000	700	10	43	18	1	5363
+113	Fight Arena Bar	995	0	1000	0	0	414	30	1
+114	Filamina's Wares	995	0	1000	600	1	9	6	1	7204
+115	Fine Fashions	995	0	1000	550	10	87	21	1	14
+116	Fishing Guild Shop.	995	0	1000	700	10	80	27	1	8684
+117	Flakes 'n' Flotsam	25588	0	1000	1000	0	502	6	1	10605
+118	Floria's Fashion	995	0	1000	550	10	656	12	1	15606,15607
+119	Flosi's Fishmongers	995	0	1100	700	30	43	18	1	1942
+120	Flying Horse Inn	995	0	1000	0	0	37	1	1
+121	Flynn's Mace Market.	995	0	1000	600	10	19	5	0	5896
+122	Food Store	995	0	1000	700	10	902	17	0	2890
+123	Forester's Arms	995	0	1000	1000	0	352	40	1
+124	Forestry Shop	28134	0	1000	1000	0	414	30	0	11427,6724
+125	Fortis Baker's Stall	995	0	1000	800	20	864	3	1	13338
+126	Fortis Blacksmith	995	0	1000	600	20	867	30	1	13332
+127	Fortis Fur Stall	995	0	1200	950	20	861	16	1	13335
+128	Fortis Gem Stall	995	0	1500	800	30	862	4	1	13336
+129	Fortis General Store	995	1	1300	400	30	865	40	1	13330
+130	Fortis Silk Stall	995	0	500	500	0	860	3	1	13334
+131	Fortis Spice Stall	995	0	1000	700	20	863	3	1	13337
+132	Fossil Island General Store	995	1	1300	400	30	590	40	1	7769
+133	Frankie's Fishing Emporium	995	0	1000	950	10	902	17	1	6963
+134	Fremennik Fish Monger	995	0	1300	700	30	231	27	1	3947
+135	Fremennik Fur Trader	995	0	1200	950	20	59	12	1	3948
+136	Frenita's Cookery Shop.	995	0	1000	550	10	67	12	1	8685
+137	Frincos' Fabulous Herb Store.	995	0	1000	700	20	854	7	1	3215
+138	Funch's Fine Groceries	995	0	1000	550	10	6	18	1	16
+139	Gabooty's Tai Bwo Wannai Cooperative.	6306	0	1200	600	20	20	10	1
+140	Gabooty's Tai Bwo Wannai Drinky Store.	6306	0	1000	600	20	87	21	1
+141	Gaius' Two Handed Shop.	995	0	1000	600	20	39	6	1	7798
+142	Garden Centre	995	0	1000	400	30	56	16	1	3102,3103
+143	Garlic Cocktail Supply	995	0	1000	1000	0	1022	1	1	15714
+144	Gem Trader.	995	0	1000	700	30	26	8	0	2874
+145	General Store	995	1	2000	100	30	3	40	1	6525
+146	Gerrant's Fishy Business.	995	0	1000	700	10	30	19	0	2891
+147	Gianne's Restaurant	995	0	1000	250	10	5	14	1	2657
+148	Grace's Graceful Clothing	11849	0	1000	800	0	417	9	1	5919
+149	Grand Tree Groceries	995	0	1000	550	10	231	27	1	12
+150	Green Gemstone Gems	995	0	1500	800	30	862	4	1	2362
+151	Greengrocer of Miscellania	995	0	1200	950	20	19	5	1	3689,776
+152	Grud's Herblore Stall.	995	0	1300	400	30	40	7	1	4402
+153	Grum's Gold Exchange.	995	0	1000	700	20	28	15	0	2889
+154	Guinevere's Dyes	995	0	1300	550	10	927	6	1	9164
+155	Gulluck and Sons	995	0	1000	250	10	87	21	1	15
+156	Gunslik's Assorted Items	995	1	1300	400	30	3	40	1	2359
+157	Gwyn's Mining Emporium	995	0	1000	600	20	850	8	1	9159
+158	Hair of the Dog	995	0	1000	1000	0	36	2	1	6527
+159	Hamab's Crafting Emporium	995	0	1000	500	20	146	8	1	5253
+160	Happy Heroes' H'emporium.	995	0	1000	550	30	506	5	1	4924
+161	Harpoon Joe's House of 'Rum'.	995	0	1000	600	20	349	40	1	4019
+162	Harry's Fishing Shop.	995	0	1000	700	10	43	18	1	3213
+163	Hefin Inn	995	0	1000	1000	0	11	4	1
+164	Helmet Shop.	995	0	1000	600	10	858	10	0	2872
+165	Henderson's Catch of the Day	995	0	1000	700	10	6	18	1	14866
+166	Hendor's Awesome Ores	995	0	1000	700	20	587	7	0	7717
+167	Herquin's Gems.	995	0	1000	700	30	26	8	0	6529
+168	Hickton's Archery Emporium.	995	0	1000	500	10	49	28	1	3212
+169	Honest Jimmy's House of Stuff	8951	0	1000	1000	0	414	30	1	1816
+170	Horvik's Armour Shop.	995	0	1000	600	20	411	38	0	2882
+171	Huito's Herbal Supplies	995	0	1000	700	30	854	7	1	13041
+172	Ian's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2196
+173	Ifaba's General Store	995	1	1000	500	20	3	40	1	5252
+174	Imia's Supplies	995	0	1300	400	20	940	13	1	13131
+175	Initiate Temple Knight Armoury	995	0	1000	500	0	505	8	1
+176	Iorwerth's Arms	995	0	1500	250	10	6	18	1	9156
+177	Irksol	995	0	500	300	10	862	4	1	3203
+178	Ishmael's Fish He Sells	995	0	1000	700	10	30	19	1	10618
+179	Island Fishmonger	995	0	1300	700	30	231	27	1	3688,775
+180	Island Greengrocer	995	0	1200	950	20	19	5	1	3689,776
+181	Ivan's Supplies	995	0	1000	500	0	413	6	1	9532
+182	Iwan's Maces	995	0	1000	600	10	630	3	1	9153
+183	Jamila's Craft Stall.	995	0	1500	250	10	491	10	1	3892
+184	Jatix's Herblore Shop.	995	0	1000	700	30	40	7	1	8532
+185	Jennifer's General Supplies	995	1	1300	400	3	3	40	1	305
+186	Jiminua's Jungle Store.	995	1	1500	500	20	65	40	1	2893
+187	Jolly Boar Inn	995	0	1000	1000	0	37	1	0
+188	Jukat	995	0	1000	600	10	6	18	1	3201
+189	Karamja General Store	995	1	1300	400	30	3	40	0	2825
+190	Karamja Wines, Spirits, and Beers.	995	0	1000	700	20	904	8	0	13655
+191	Kastori Farming Supplies	995	0	1000	700	10	942	17	1	14761
+192	Kastori General Store	995	1	1300	400	30	924	40	1	14760
+193	Keepa Kettilon's store	995	0	1100	700	30	9	6	1	1945
+194	Keldagrim Stonemason	995	0	1300	500	30	265	5	1	3098
+195	Keldagrim's Best Bread	995	0	1500	800	30	225	4	1	2361
+196	Kenelme's Wares	995	0	1000	600	10	20	10	1	7202
+197	Khazard General Store	995	1	1400	400	10	61	40	1	2888
+198	King Narnode's Royal Seed Pods	995	0	100	0	0	394	8	1	8020
+199	King's Axe Inn	995	0	1000	1000	0	1	7	1	6532
+200	Kjut's Kebabs	995	0	1000	1000	0	37	1	1
+201	Kourend Castle Baker's Stall.	995	0	1000	800	20	225	4	1	8725,8724,3208
+202	Kourend Castle Gem Stall.	995	0	1000	800	20	862	4	1	3207
+203	Larry's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2197
+204	Laughing Miner Pub	995	0	1000	1000	0	36	2	1
+205	Leenz's General Supplies	995	1	1100	400	10	3	40	1	6986
+206	Legends Guild General Store.	995	1	1550	550	10	81	40	1	3960
+207	Legends Guild Shop of Useful Items.	995	0	1500	500	20	82	12	1	3961
+208	Leon's Prototype Crossbow.	995	0	1000	200	20	940	13	1	1502
+209	Leprechaun Larry's Farming Supplies.	995	0	1300	400	100	1030	10	1	757
+210	Little Munty's Little Shop	995	1	1100	400	10	3	40	1	7088
+211	Little Shop of Horace	995	1	1250	400	10	3	40	1	6943
+212	Lletya Archery Shop	995	0	1300	400	30	387	12	1	1481
+213	Lletya Food Store	995	0	1300	400	30	410	5	1	1482
+214	Lletya General Store	995	1	1300	400	30	3	40	1	1477
+215	Lletya Seamstress	995	0	1300	550	10	417	9	1	1478
+216	Lliann's Wares	995	0	1000	550	10	656	12	1	9170
+217	Logava Gricoller's Cooking Supplies	995	0	1000	550	10	56	16	1	6945
+218	Lost Property shop	995	0	1000	1000	0	1027	60	1
+219	Louie's Armoured Legs Bazaar.	995	0	1000	650	10	12	40	0	2876
+220	Lovecraft's Tackle	995	0	1000	500	20	30	19	1
+221	Lowe's Archery Emporium	995	0	1000	550	10	7	15	0	2883
+222	Lumbridge Blacksmith	995	0	1000	600	20	6	18	0	16806
+223	Lumbridge General Store	995	1	1300	400	30	3	40	0	2813,2814
+224	Lunami's Axe Shop	995	0	1000	550	10	920	10	1	14657
+225	Lundail's Arena-side Rune Shop.	995	0	1000	600	1	131	17	1	1601
+226	Mage Arena Staffs.	995	0	1000	0	20	132	3	1	1602
+227	Magic Guild Store	995	0	1000	600	1	82	12	1	3249
+228	Magic Guild Store	995	0	1000	600	1	80	27	1	3247
+229	Mairin's Market	21656	0	1000	1000	0	43	18	1	7784
+230	Martin Thwait's Lost and Found.	995	1	1000	600	20	3	40	1	3193
+231	Miltog's Lamps	995	0	1500	400	30	511	40	1	2297
+232	Mining Guild Mineral Exchange	21341	0	1000	800	0	850	8	1	7719
+233	Miscellanian Clothes Shop	995	0	1000	550	20	417	9	1	1079
+234	Miscellanian Food Shop	995	0	1000	550	20	394	8	1	1081
+235	Miscellanian General Store	995	1	1300	400	30	3	40	1	1080
+236	Mistrock Mining Supplies	995	0	1000	700	20	907	14	1	13930
+237	Mixology Rewards	995	0	1000	1000	0	800	16	1
+238	Moon Clan Fine Clothes.	995	0	1000	550	10	417	9	1	3842
+239	Moon Clan General Store.	995	1	1000	550	10	3	40	1	3840
+240	Moonrise Wines	995	0	1000	700	0	904	8	1	13916
+241	Mount Karuulm Weapon Shop	995	0	1000	600	20	623	10	1	8697
+242	Multicannon parts for sale	995	0	1070	400	10	974	40	1	1400
+243	Myreque's Rest	995	0	1000	0	0	36	2	1	15879
+244	Mysterious Hallowed Goods	24711	0	1000	1000	0	635	10	1	9640
+245	Mysterious Stranger	995	0	1000	1000	0	37	1	1
+246	Mysterious Stranger	995	0	1000	1000	0	37	1	1	10876,16270
+247	Mythical Cape Store	995	0	1000	1000	0	417	9	1	8037
+248	Myths' Guild Armoury	995	0	1500	500	20	909	5	1	7952
+249	Myths' Guild Herbalist	995	0	1000	700	10	854	7	1	7953
+250	Myths' Guild Weaponry	995	0	1000	600	20	82	12	1	8036
+251	Nardah General Store.	995	1	1300	400	30	3	40	1	4755
+252	Nardah Hunter Shop.	995	0	1200	700	20	484	13	1	1350
+253	Nardok's Bone Weapons	995	0	1000	600	20	413	6	1	996
+254	Nathifa's Bake Stall.	995	0	1000	550	10	225	4	1	3890
+255	Ned's Handmade Rope (100% Wool)	995	0	1000	200	20	441	40	0	4280
+256	Neil's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2201
+257	Neitiznot supplies.	995	0	1050	250	10	146	8	1	1884
+258	Nemus Retreat	995	0	1000	1000	0	20	10	1	14661
+259	Nurmof's Pickaxe Shop.	995	0	1000	600	20	68	6	0	8686
+260	Obli's General Store.	995	1	1500	500	20	3	40	1	5362
+261	Old Man Ral's Supplies	995	0	1000	500	0	413	6	1	15775
+262	Oobapohk's Javelin Store	995	0	1000	600	1	574	6	1	7120
+263	Ore seller.{{Sic}}	995	0	1500	400	0	587	7	1	1560
+264	Ore store	995	0	1100	700	30	507	8	1	1941
+265	Outer Fortis General Store	995	1	1300	400	30	865	40	1	13331
+266	Oziach	995	0	1300	400	30	505	8	0	822
+267	Paramaya Inn	995	0	1000	1000	0	904	8	1
+268	Party Room	995	0	1000	0	0	37	1	0
+269	Pellem's Fur Store	995	0	1300	400	20	826	20	1	13130
+270	Pelters' Veg Stall	995	0	1000	550	10	37	1	1
+271	Perry's Chop-chop Shop	995	0	3200	600	10	1	7	1	7240
+272	Picaria's Fishing Shop	995	0	1000	700	10	43	18	1	13158
+273	Pickaxe-Is-Mine	995	0	1300	550	30	265	5	1	2365
+274	Pie Shop	995	0	1000	550	10	67	12	1	6533
+275	Pollnivneach general store.	995	1	1000	550	10	254	40	1	3537
+276	Port Phasmatys General Store	995	1	1300	400	30	233	40	1	3000
+277	Port Roberts Cannonball Stall	995	0	2500	500	0	944	40	1	14915
+278	Port Roberts Fish Stall	995	0	1000	700	10	944	40	1	14912
+279	Port Roberts Fur Stall	995	0	1200	950	20	944	40	1	14908
+280	Port Roberts Gem Stall	995	0	1000	700	30	944	40	1	14909
+281	Port Roberts General Store	995	1	1300	400	30	944	40	1	14906
+282	Port Roberts Ore Stall	995	0	1100	700	20	944	40	1	14913
+283	Port Roberts Silk Stall	995	0	500	500	0	944	40	1	14907
+284	Port Roberts Silver Stall	995	0	1000	700	20	944	40	1	14910
+285	Port Roberts Spice Stall	995	0	1000	600	20	944	40	1	14911
+286	Port Roberts Veg Stall	995	0	1000	950	20	944	40	1	14914
+287	Prifddinas Foodstuffs	995	0	1000	700	10	629	18	1	9154
+288	Prifddinas Gem Stall	995	0	1000	800	20	862	4	1	9163
+289	Prifddinas General Store	995	1	1300	400	30	3	40	1	9158
+290	Prifddinas Herbal Supplies	995	0	1000	700	10	854	7	1	9168
+291	Prifddinas Silver Stall	995	0	1000	700	20	55	3	1	9160
+292	Prifddinas Spice Stall	995	0	1000	700	20	863	3	1	9161
+293	Prifddinas' Seamstress	995	0	1300	400	20	6	18	1	9165
+294	Proselyte Temple Knight Armoury	995	0	1000	500	0	411	38	1
+295	Prospector Percy's Nugget Shop	12012	0	1000	800	0	26	8	1	6562
+296	Quality Armour Shop	995	0	1300	550	30	263	9	1	2358
+297	Quality Weapons Shop	995	0	1300	550	30	262	11	1	2357
+298	Quartermaster's Stores	995	1	1300	400	30	3	40	1	3438
+299	Quetzacalli Gorge General Store	995	1	1300	400	30	910	40	1	14021
+300	Raetul and Co's Cloth Store.	995	0	1000	550	10	258	6	1	11599
+301	Ranael's Super Skirt Store.	995	0	1000	650	10	16	40	0	2878
+302	Ranging Guild Ticket Exchange	1464	0	1000	1000	0	82	12	1	6071
+303	Rasolo the Wandering Merchant	995	1	2000	50	30	3	40	1	679
+304	Rat & Bat	995	0	1000	0	0	37	1	1
+305	Ratpit Bar	995	0	1000	1000	0	36	2	1
+306	Ratpit Bar	995	0	1000	1000	0	36	2	1	6532
+307	Ratpit Bar	995	0	1000	1000	0	36	2	1	6532
+308	Razmire Builders Merchants.	995	0	1050	950	40	1030	10	1
+309	Razmire General Store.	995	1	1300	400	30	3	40	1
+310	Regath's Wares	995	1	1400	400	10	3	40	1	7056
+311	Reldak's Leather Armour	995	0	1000	400	30	505	8	1	2296
+312	Rellekka Longhall Bar	995	0	1300	700	30	29	3	1	3932
+313	Richard's Farming shop.	995	0	1000	700	10	280	31	1	503
+314	Richard's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2200
+315	Rimmington General Store	995	1	1300	400	30	3	40	0	2823
+316	Rising Sun Inn	995	0	1000	1000	0	29	3	0
+317	Rok's Chocs Box.	995	0	1000	650	20	36	2	1	4761
+318	Rommik's Crafty Supplies.	995	0	1000	650	20	27	11	0	6530
+319	Rufus' Meat Emporium	995	0	1300	700	30	394	8	1	6478
+320	Rusty Anchor Inn	995	0	1000	1000	0	37	1	0
+321	Salius' Armour Shop	995	0	1000	600	20	505	8	1	13970
+322	Salvager Overlook General Store	995	1	1300	400	30	908	40	1	13969
+323	Sam's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2204
+324	Sarah's Farming shop.	995	0	1000	700	10	280	31	1	501
+325	Sawmill	995	0	1300	500	0	395	5	1
+326	Scavvo's Rune Store.	995	0	1000	600	0	327	12	0	2871
+327	Seb's Shipyard Supplies	995	0	1300	500	0	969	5	1	15352
+328	Sebamo's Sublime Staffs	995	0	1000	550	20	921	6	1	14658
+329	Seddu's Adventurer's Store.	995	0	950	650	20	57	40	1	4754
+330	Shantay Pass Shop	995	0	1000	700	10	78	20	1
+331	Shayzien Styles	995	0	1000	550	10	656	12	1	11042
+332	Shields of Mistrock	995	0	1000	600	20	906	10	1	13929
+333	Shop of Distaste	995	0	1000	550	10	37	1	1
+334	Sian's Ranged Weaponry	995	0	1000	550	10	387	12	1	9166
+335	Sigmund the Merchant	995	1	1300	500	30	3	40	1	3894
+336	Silver Cog Silver Stall	995	0	1500	800	30	55	3	1	2364
+337	Simon's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2203
+338	Skulgrimen's Battle Gear	995	0	1300	700	30	10	40	1	3935
+339	Slayer Equipment	995	0	1000	600	1	639	26	1
+340	Smithing Smith's Shop.	995	0	1000	600	20	6	18	1	4018
+341	Solihib's Food Stall	995	0	1000	500	20	225	4	1	5249
+342	Spike's Spikes	995	0	1300	400	30	868	6	1	13333
+343	Stick Your Ore Inn	995	0	1000	1000	0	973	11	1	13928
+344	Stonecutter Supplies	995	0	1300	500	30	1030	10	1	13140
+345	Sulisal's Superb Fishing Store	995	0	1000	700	10	43	18	1	14762
+346	Sunlight's Sanctum	995	0	1000	1000	0	6	18	1	13917
+347	Sunset Coast General Store	995	1	1300	400	30	857	40	1	13159
+348	Supplies's Supplies	995	1	1300	400	30	3	40	1	16295
+349	Tal Teklan General Store	995	1	1300	400	30	931	40	1	14777
+350	Tal Teklan Rune Shop	995	0	1000	550	1	928	16	1	14775
+351	Tamayu's Spear Stall	995	0	1000	750	10	1	7	1	4704
+352	Temple Supplies	26792	0	1000	1000	0	414	30	1	11404
+353	The Asp & Snake Bar.	995	0	1000	550	10	9	6	1	3535,11874
+354	The Big Heist Lodge	995	0	1300	700	30	37	1	1	687
+355	The Burrow	995	0	1000	1000	0	36	2	1
+356	The Cloak and Stagger	995	0	1000	550	20	19	5	1	11043
+357	The Crypt	995	0	1000	1000	0	803	17	1
+358	The Deeper Lode	995	0	1400	550	20	19	5	1	7090
+359	The Esoterican Arms	995	0	1000	550	20	11	4	1	1078
+360	The Flaming Arrow	995	0	1000	1000	0	7	15	1	13344
+361	The Golden Field	995	0	1000	550	20	11	4	1	6954,6953
+362	The Haymaker's Arms	995	0	1000	550	20	11	4	1	6953
+363	The King's Inn	995	0	1000	1000	0	7	15	1	14496
+364	The Legless Faun	995	0	1000	1000	0	37	1	1
+365	The Lighthouse Store	995	1	1100	550	30	214	40	1	4423
+366	The Lost Pickaxe	995	0	1000	1000	0	20	10	1	13043
+367	The Old Nite	995	0	1000	1000	0	37	1	0
+368	The Other Inn.	995	0	1000	600	20	11	4	1	4020
+369	The Pandemonium	995	0	1000	1000	0	5	14	1	14969
+370	The Rolling Tide	995	0	1000	1000	0	85	9	1	14905
+371	The Runic Emporium	995	0	1000	550	1	849	16	1	13036
+372	The Sheared Ram	995	0	1000	0	0	29	3	0	7546
+373	The Shrimp and Parrot	995	0	1300	750	30	394	8	1	4920
+374	The Spice Is Right.	995	0	1500	250	10	9	6	1	11596,4202
+375	The Toad and Chicken	995	0	1000	0	10	29	3	1
+376	The Windbreaker	995	0	1000	1000	0	27	11	1	14020
+377	Thessalia's Fine Clothes.	995	0	1000	550	10	266	10	0	10477,10478
+378	Thirus Urkar's Fine Dynamite Store	995	0	11500	500	1	575	2	1	8546,8547
+379	Thurid's Brain Buckets	995	0	1300	400	30	858	10	1	13160
+380	Thyria's Wares	995	0	1000	600	1	849	16	1	7203
+381	Tiadeche's Karambwan Stall	995	0	550	450	10	29	3	1	4700
+382	Tizoro's Pickaxes	995	0	1000	600	20	850	8	1	13037
+383	Toci's Gem Store	995	0	1000	700	30	26	8	1	13915
+384	Tony's Pizza Bases	995	0	1000	600	30	225	4	0	8688
+385	Toothy's Pickaxes	995	0	1300	550	30	850	8	1	7071
+386	Trader Stan's Trading Post	995	1	2500	150	20	441	40	1
+387	Trader Sven's Black-market Goods.	995	0	1300	400	30	441	40	1	3779
+388	Tutab's Magical Market	995	0	1000	600	1	223	12	1	5251
+389	Two Feet Charley's Fish Shop.	995	0	1000	600	20	43	18	1	4017
+390	Tynan's Fishing Supplies	995	0	1000	850	10	1030	10	1	6964
+391	TzHaar-Hur-Lek's Ore and Gem Store	6529	0	1500	150	20	56	16	1	2184
+392	TzHaar-Hur-Rin's Ore and Gem Store	6529	0	1500	150	20	56	16	1	7689
+393	TzHaar-Hur-Tel's Equipment Store	6529	0	1500	150	20	325	8	1	2183
+394	TzHaar-Hur-Zal's Equipment Store	6529	0	1500	150	20	585	11	1	7688
+395	TzHaar-Mej-Roh's Rune Store	6529	0	1500	150	20	327	12	1	2185
+396	Valaine's Shop of Champions.	995	0	1300	400	30	505	8	0	2870
+397	Vanessa's Farming shop.	995	0	1000	700	10	280	31	1	502
+398	Vannah's Farming Stall	995	0	1000	700	10	942	17	1	6944
+399	Varrock General Store	995	1	1300	400	30	3	40	0	2815
+400	Varrock Swordshop	995	0	1000	600	20	6	18	0	2884
+401	Vermundi's Clothes Stall	995	0	1300	550	30	860	3	1	2367
+402	Vigr's Warhammers	995	0	1300	550	30	261	6	1	2356
+403	Void Knight Archery Store	995	0	1000	600	1	387	12	1	1765
+404	Void Knight General Store	995	1	1300	400	3	3	40	1	1768
+405	Void Knight Magic Store	995	0	1000	600	1	849	16	1	1767
+406	Warrens Fish Monger	995	0	1300	700	30	231	27	1	7912
+407	Warrens General Store	995	1	1300	400	30	3	40	1	7913
+408	Warrior Guild Armoury	995	0	1200	600	20	81	40	1	2471
+409	Warrior Guild Food Shop	995	0	1200	150	20	410	5	1	2469
+410	Warrior Guild Potion Shop	995	0	1200	150	20	412	3	1	2470
+411	Wayne's Chains! - Chainmail specialist.	995	0	1000	650	10	22	40	0	5897
+412	Weapons galore	995	0	1100	700	30	506	5	1	1944
+413	West Ardougne General Store	995	1	1200	550	20	3	40	1	4527
+414	Where Wyrmscraig's Wear Wares Were	995	0	1000	300	30	1027	60	1	16324
+415	White Knight Armoury	995	0	1000	1000	0	64	23	1
+416	William's Wilderness Cape Shop.	995	0	1000	600	10	19	5	0	2195
+417	Wine Shop.	995	0	1000	600	20	904	8	0	1260
+418	Worm Tongue's Wares	30038	0	1000	1000	0	589	4	1
+419	Yarnio's Baked Goods	995	0	1000	550	10	67	12	1	13039
+420	Yarsul's Prodigious Pickaxes	995	0	1000	600	20	68	6	0	7718
+421	Ye olde Tea Shoppe.	995	0	1000	600	20	69	1	1	8687
+422	Yrsa's Accoutrements	995	0	1300	700	30	208	21	1	3933
+423	Zaff's Superior Staffs!	995	0	1000	550	20	1	7	0	2880
+424	Zanaris General Store	995	1	1300	400	30	3	40	1	2868
+425	Zeke's Superior Scimitars.	995	0	1000	550	20	11	4	0	2875
+426	Zenesha's Plate Mail Body Shop.	995	0	1000	600	20	909	5	1	8681
+427	~ Uglug's stuffsies ~	995	0	1000	600	20	49	28	1	861

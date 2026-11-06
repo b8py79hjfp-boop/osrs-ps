@@ -16,6 +16,8 @@ dependencies {
     runtimeOnly(project(":content:pvp"))
     runtimeOnly(project(":content:world"))
     runtimeOnly(project(":content:magic"))
+    runtimeOnly(project(":content:drops"))
+    runtimeOnly(project(":content:shops"))
     testImplementation(project(":symbols"))
     testRuntimeOnly(libs.logback.classic)
 }

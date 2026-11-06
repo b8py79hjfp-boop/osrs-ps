@@ -72,7 +72,17 @@ private fun ConfigPrinters.obj(c: Configs) {
                 "params" to t.params,
             )
         },
-        { t -> listOf("name" to t.name, "cost" to t.cost, "stackable" to t.stackable, "members" to t.members) },
+        { t ->
+            listOf(
+                "name" to t.name,
+                "cost" to t.cost,
+                "stackable" to t.stackable,
+                "members" to t.members,
+                "tradeable" to t.tradeable,
+                "certTemplate" to t.certTemplate,
+                "placeholderTemplate" to t.placeholderTemplate,
+            )
+        },
     )
 }
 
@@ -150,7 +160,7 @@ private fun ConfigPrinters.npc(c: Configs) {
                 "params" to t.params,
             )
         },
-        { t -> listOf("name" to t.name, "size" to t.size, "combatLevel" to t.combatLevel, "standSeq" to t.standSeq) },
+        { t -> listOf("name" to t.name, "size" to t.size, "combatLevel" to t.combatLevel, "standSeq" to t.standSeq, "ops" to t.ops) },
     )
 }
 

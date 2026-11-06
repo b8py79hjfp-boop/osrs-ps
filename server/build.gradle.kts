@@ -15,6 +15,8 @@ dependencies {
     runtimeOnly(project(":content:gameframe"))
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:magic"))
+    runtimeOnly(project(":content:drops"))
+    runtimeOnly(project(":content:shops"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
     implementation(project(":hub"))

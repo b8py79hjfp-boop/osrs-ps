@@ -496,6 +496,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Item value (kept on death, price checker): the GE guide price if the obj has traded, else cache `cost`. */
     public fun objValue(obj: Int): Int = p.world.guidePrices[obj] ?: p.world.objType(obj)?.cost ?: 0
 
+    /** The cache `cost` of [obj] (the Wiki's "value": what shops and alchemy scale), never a Grand Exchange price. */
+    public fun objCost(obj: Int): Int = p.world.objType(obj)?.cost ?: 0
+
     // ---- inventories
 
     /** Inventory [invId]; [stackAll] = every obj stacks (bank). */

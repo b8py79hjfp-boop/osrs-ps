@@ -438,3 +438,19 @@ The door, double-door and gate movement adapts RS Mod `generic-locs` (ISC; licen
 The chatbox dialogue functions follow RS Mod (ISC) `ProtectedAccess` and `PlayerInterfaceExtensions`: which
 interfaces, client scripts, line heights and page widths. Text wraps on the cache's real `q8_full` glyph advances.
 Dialogues are suspending `PlayerScript` extensions, so content scripts read top to bottom (docs/mechanics/dialogue.md).
+
+## D-033: NPC shops from Wiki data, RS Mod rules
+
+- **Data.** The cache has no shop stock, only the client inv ids and their sizes. Stock, multipliers, delta, restock and owner come from
+  the Wiki's `{{Infobox Shop}}` / `{{StoreTableHead}}` / `{{StoreLine}}` (`tools/wiki-import/shops.py`, CC BY-NC-SA 3.0, `data/PROVENANCE.md`).
+  `cache-dump config npc|obj --all` gained trailing `ops` and `tradeable certTemplate placeholderTemplate` columns for it.
+- **Rules.** Price formulas, the message texts, the quantity-mode ops, the restock clock (`tick / rate`) and the default-item slot
+  behaviour follow RS Mod `api/shops` (ISC, github.com/rsmod/rsmod, read 2026-11-06). No source was copied: it was re-expressed against
+  `plugin-api`, so no ISC header is kept in `content/shops`. Where the Wiki states a formula (Shop, General store, Module:Shop
+  calculator) it agrees with RS Mod except for overstocked buying prices (OPEN-SH1).
+- **World state.** Stock lives in a world attribute (`EntityRef.worldAttr`), because plugins are shared by every world in the JVM. There is
+  no world tick hook, so restocking is lazy: `ShopStock.sync` applies the steps due since an item last changed, and each open shop
+  polls it with a one-tick soft timer to refresh the client.
+- **plugin-api.** Added `PlayerRef.objCost` (the cache `cost`, unlike `objValue` which prefers Grand Exchange prices).
+- **Duplicated gameframe helpers.** `content/shops` cannot see `content/gameframe`, so it repeats the main-modal opening and the backpack
+  restore (`SideInventory`) in a few lines.
