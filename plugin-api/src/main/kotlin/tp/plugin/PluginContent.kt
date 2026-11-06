@@ -118,7 +118,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     }
 
     override fun opLoc(locId: Int, option: Int): Script<Player>? =
-        (h.opLoc[key(locId, option)] ?: opLocResolved[key(locId, option)])?.let(::locScript)
+        (h.opLoc[key(locId, option)] ?: opLocResolved[key(locId, option)] ?: h.opLocFallback[key(locId, option)])?.let(::locScript)
 
     override fun apLoc(locId: Int, option: Int): Script<Player>? = h.apLoc[key(locId, option)]?.let(::locScript)
 

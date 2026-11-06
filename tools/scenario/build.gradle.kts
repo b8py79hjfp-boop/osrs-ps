@@ -14,9 +14,14 @@ dependencies {
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:combat"))
     runtimeOnly(project(":content:pvp"))
+    runtimeOnly(project(":content:world"))
+    runtimeOnly(project(":content:magic"))
     testImplementation(project(":symbols"))
     testRuntimeOnly(libs.logback.classic)
 }
 
 // The golden scenarios use the dev spawns (content/dev DevSpawns) rather than the world's Wiki spawns.
-tasks.withType<Test>().configureEach { systemProperty("tp.devSpawns", "true") }
+tasks.withType<Test>().configureEach {
+    systemProperty("tp.devSpawns", "true")
+    systemProperty("tp.worldSpawns", "false")
+}

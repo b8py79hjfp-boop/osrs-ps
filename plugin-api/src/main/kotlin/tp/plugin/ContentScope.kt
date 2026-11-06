@@ -47,6 +47,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
     }
 
     /**
+     * Generic loc behaviour (doors, ladders) for [loc] / [op]: used only when no other plugin handles that loc and op,
+     * so content-specific handlers always win.
+     */
+    public fun onOpLocFallback(loc: Int, op: Int, script: suspend PlayerScript.(LocRef) -> Unit) {
+        handlers.put(handlers.opLocFallback, key(loc, op), script, "oploc fallback $loc/$op")
+    }
+
+    /**
      * Operable loc interaction for every loc type whose cache name is [name] and whose op number [text] reads (e.g.
      * "Bank booth" / "Bank"; both compared ignoring case). Resolved once at world start; an id-specific [onOpLoc] wins.
      */
@@ -172,6 +180,7 @@ internal class Handlers {
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opLocNamed = HashMap<String, suspend PlayerScript.(LocRef) -> Unit>()
+    val opLocFallback = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

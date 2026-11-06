@@ -420,3 +420,15 @@ standard, ancient and lunar teleport spells, the three home teleports, magic tab
   (written only when it changes).
 - **Not done here (main-session areas):** IF_SUBOP delivery (right-click "Rub" sub-options) is a protocol change, and persisting the
   home teleport cooldown is a persistence change (teleports.md OPEN-TP9, OPEN-TP12).
+
+## D-031: Generic doors and climbing from generated tables, RS Mod translations
+
+The cache has no link between a door's open and closed states or between a ladder and where it leads. `cache-dump
+loc-links` derives both:
+- door pairs from gameval names, then shared models;
+- climb destinations by finding the matching loc on the other floor or 6,400 tiles away, and the reachable tile beside
+  it.
+
+The door, double-door and gate movement adapts RS Mod `generic-locs` (ISC; licence header kept in
+`content/world/.../Doors.kt`). These are fallback handlers, so content-specific door and ladder code always wins
+(docs/mechanics/doors-and-climbing.md).

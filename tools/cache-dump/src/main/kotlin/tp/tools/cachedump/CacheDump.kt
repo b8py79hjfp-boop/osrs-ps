@@ -18,6 +18,7 @@ private val USAGE =
       interface <id>                       every component of an interface
       map <squareX> <squareZ>              square summary, level-0 tile settings, loc list
       collision <x> <z> <level> [radius]   ASCII collision render around a tile (default radius 16)
+      loc-links <dir>                      doors.tsv (door/gate pairs) and climbs.tsv (ladder/stair links)
       find-locs <name>                     every placement of locs with this exact name (x z level id)
     default cache dir: ${defaultCacheDir()}
     """.trimIndent()
@@ -70,6 +71,10 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
 
         "find-locs" -> {
             findLocs(cache, cacheDir, args.joinToString(" ").ifBlank { throw UsageException("missing loc name") })
+        }
+
+        "loc-links" -> {
+            LocLinks.write(cache, cacheDir, Path.of(args.getOrNull(0) ?: throw UsageException("missing output dir")))
         }
 
         "pvp-safe-zones" -> {

@@ -64,6 +64,10 @@ class LocType internal constructor(val id: Int) {
     /** Whether opcode 1/6 gave explicit model shapes and the first is shape 10 (used by [active] resolution). */
     internal var firstModelShapeIsCentre: Boolean = false
     internal var hasModels: Boolean = false
+
+    /** Model ids in decode order (tools: pairing a door's two states by their shared model). */
+    var models: IntArray = IntArray(0)
+        internal set
 }
 
 /**
@@ -129,11 +133,13 @@ object LocTypeDecoder : ConfigDecoder<LocType> {
                 val n = buf.g1()
                 if (n > 0) {
                     t.hasModels = true
+                    val models = IntArray(n)
                     for (i in 0 until n) {
-                        if (opcode == 1) buf.g2() else buf.g4()
+                        models[i] = if (opcode == 1) buf.g2() else buf.g4()
                         val shape = buf.g1()
                         if (i == 0) t.firstModelShapeIsCentre = shape == SHAPE_CENTREPIECE
                     }
+                    t.models = models
                 }
             }
 
@@ -142,7 +148,7 @@ object LocTypeDecoder : ConfigDecoder<LocType> {
                 if (n > 0) {
                     t.hasModels = true
                     t.firstModelShapeIsCentre = true // no shape table: models apply to shape 10
-                    buf.skip(n * if (opcode == 5) 2 else 4)
+                    t.models = IntArray(n) { if (opcode == 5) buf.g2() else buf.g4() }
                 }
             }
 

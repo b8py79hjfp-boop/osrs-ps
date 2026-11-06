@@ -11,6 +11,8 @@ import tp.util.CoordGrid
 public class Spawns : ContentPlugin {
     override fun ContentScope.register() {
         onWorldStart {
+            // Headless scenarios turn the world's NPCs off (golden tests need empty ground).
+            if (System.getProperty("tp.worldSpawns") == "false") return@onWorldStart
             val text = Spawns::class.java.getResource("npc-spawns.tsv")?.readText() ?: error("npc-spawns.tsv missing")
             for (line in text.lineSequence().drop(1)) {
                 val c = line.split('\t')
