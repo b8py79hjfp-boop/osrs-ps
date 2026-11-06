@@ -7,7 +7,7 @@
 - [x] **Phase 2 — Networking and client** — done 2026-11-05: RuneLite 1.13.6 via RSProx (Windows) downloads the cache, logs in, walks/runs, `::commands` work, sees 20 bots
 - [x] **Phase 3 — Engine core** — done 2026-11-06 (awaiting real-client check)
 - [x] **Phase 4 — Combat and PvP** — done 2026-11-06: golden 3a–3h + DPS parity matrix pass; user confirmed 1v1 and 20-bot multi in RuneLite
-- [ ] Phase 5 — Scale and operations — implemented 2026-11-06; awaiting user test + the 16-core 30-minute run (docs/LOAD-TEST.md)
+- [x] **Phase 5 — Scale and operations** — closed 2026-11-06 at the user's request. 20-minute 3-world run in the sandbox: 3,008 players, logic within budget, no missed deadlines. The §7 16-core 4,096-player run is still to do (docs/LOAD-TEST.md).
 - [ ] Phase 6 — Release client
 - [ ] Phase 7+ — Content breadth
 
@@ -99,8 +99,19 @@
   - Checks: 300 bots over 3 worlds clean, 179 bot hops with saves carried, PostgreSQL saves survive restart, scaled
     load 417 players / 3 worlds with 0 missed deadlines (docs/LOAD-TEST.md). Fixed: logout lock overflow (logout was
     always refused), bot PoW starving carriers, ZoneSync boxing.
-  - Not done: friends chat (channels); in-game GE interface; OPEN-H1/H2 (world-hop.md); the 16-core 4,096-bot
-    30-minute acceptance run.
+  - Since then:
+    - friends chat (channels, Clan Setup, ranks);
+    - gameframe buttons: orbs, settings, emotes, equipment stats/price checker/kept on death, music with Wiki area
+      geometry, XP setup;
+    - GE guide prices;
+    - input dialogs;
+    - RuneLite MCP dev plugin.
+  - Load-test fixes: Argon2 concurrency cap; a failed login accept or a faulty tick no longer kills a world.
+  - Still open:
+    - in-game GE interface (commands for now);
+    - OPEN-H1/H2 (world-hop.md);
+    - the 16-core 4,096-bot acceptance run (info p99 was 97–130 ms on 4 shared cores);
+    - other OPENs in docs/mechanics.
 
 ## Blocking
 
@@ -115,7 +126,8 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 5 close-out: user test in RuneLite; friends chat; the 16-core 30-minute acceptance run (docs/LOAD-TEST.md).
+1. Phase 6: release client (RuneLite fork, launcher, signing, auto-update), brief §4.2.
+2. When a 16-core machine is available: the §7 acceptance run (docs/LOAD-TEST.md).
 2. Carried OPENs from Phase 4: NPC combat data (wiki-import), examine texts, poison/venom, Dismantle, PvP-world safe
    zones, singles-plus areas, per-weapon animations/projectile shapes.
 
