@@ -62,6 +62,10 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
             runeliteStatic(cache, args)
         }
 
+        "pvp-safe-zones" -> {
+            SafeZones.write(cache, cacheDir, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
+        }
+
         "summary" -> {
             printSummary(cache, cacheDir)
         }

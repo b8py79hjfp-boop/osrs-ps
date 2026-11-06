@@ -37,7 +37,10 @@ internal object Attacks {
         repeat(spec?.hits ?: 1) {
             val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
             val damage = minOf(Formulas.DAMAGE_CAP, if (hit) Formulas.damage(max, player::random) else 0)
-            val onLand = spec?.let { s -> { Specials.onLand(s, player, target, hit) } }
+            val onLand = {
+                spec?.let { s -> Specials.onLand(s, player, target, hit) }
+                if (hit) Toxic.onPlayerHit(player, target, type.style, damage)
+            }
             CombatSystem.queueHit(target, player, damage, CombatSystem.hitStyle(type.style), delay, onLand)
             if (hit) grantXp(player, stance, type.style, damage)
         }

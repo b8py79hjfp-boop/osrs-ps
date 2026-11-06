@@ -40,6 +40,14 @@ internal object Consumables {
     private val potionsByName: Map<String, Potion> =
         mapOf(
             "Saradomin brew" to Potion(::brew),
+            // Antipoison family (poison.md PO6): immunity per dose in 30-tick intervals (Poison page table, minutes × 60 / 18).
+            "Antipoison" to Potion { p -> Poison.cure(p, immunity = 5, antiVenom = false) },
+            "Superantipoison" to Potion { p -> Poison.cure(p, immunity = 20, antiVenom = false) },
+            "Antidote+" to Potion { p -> Poison.cure(p, immunity = 30, antiVenom = false) },
+            "Antidote++" to Potion { p -> Poison.cure(p, immunity = 40, antiVenom = false) },
+            "Anti-venom" to Potion { p -> Poison.cure(p, immunity = 41, antiVenom = true) },
+            "Anti-venom+" to Potion { p -> Poison.cure(p, immunity = 50, antiVenom = true) },
+            "Extended anti-venom+" to Potion { p -> Poison.cure(p, immunity = 59, antiVenom = true) },
             // 8 + ⌊base/4⌋ to every lowered stat except Hitpoints, Prayer included.
             "Super restore" to Potion { p -> restoreAll(p) { base -> 8 + base / 4 } },
             // 7 + ⌊Prayer level/4⌋ prayer points.

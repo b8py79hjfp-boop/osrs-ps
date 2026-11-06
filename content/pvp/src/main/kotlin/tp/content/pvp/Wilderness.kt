@@ -54,12 +54,66 @@ public class Wilderness : ContentPlugin {
             this[IN_MULTI] = inMulti
             areaQueue { setVarbit(Varbits.MULTIWAY_INDICATOR, if (inMulti) 1 else 0) }
         }
+        // W13: the singles-plus icon (varbit `singleway_plus_indicator`, set on area entry/exit like RS Mod's script).
+        val inSinglesPlus = !inMulti && isSinglesPlus(coord)
+        if (this[IN_SINGLES_PLUS] != inSinglesPlus) {
+            this[IN_SINGLES_PLUS] = inSinglesPlus
+            areaQueue { setVarbit(Varbits.SINGLEWAY_PLUS_INDICATOR, if (inSinglesPlus) 1 else 0) }
+        }
     }
 
     public companion object {
         private val AREA_CHECK = TimerId("wilderness_area")
         private val IN_WILD = tp.plugin.AttrKey<Boolean>("in_wilderness")
         private val IN_MULTI = tp.plugin.AttrKey<Boolean>("in_multi")
+        private val IN_SINGLES_PLUS = tp.plugin.AttrKey<Boolean>("in_singles_plus")
+
+        /**
+         * W12 PvP-world safe zones, packed tiles (`pvp-safe-zones.tsv`, derived from the cache by
+         * `cache-dump pvp-safe-zones`: bank interiors and our respawn point; geometry OPEN-W2).
+         */
+        private val SAFE: Set<Long> = loadSafeZones()
+
+        /** Tile key: level above x above z, 20 bits per coordinate. */
+        private const val LEVEL_SHIFT = 40
+        private const val X_SHIFT = 20
+
+        private fun pack(level: Int, x: Int, z: Int): Long = (level.toLong() shl LEVEL_SHIFT) or (x.toLong() shl X_SHIFT) or z.toLong()
+
+        private fun loadSafeZones(): Set<Long> {
+            val text = Wilderness::class.java.getResource("pvp-safe-zones.tsv")?.readText() ?: error("pvp-safe-zones.tsv missing")
+            val out = HashSet<Long>()
+            for (line in text.lineSequence().drop(1)) {
+                val c = line.split('\t')
+                if (c.size < 4) continue
+                val level = c[0].toInt()
+                val z = c[3].toInt()
+                for (x in c[1].toInt()..c[2].toInt()) out += pack(level, x, z)
+            }
+            return out
+        }
+
+        /** W12: inside a PvP-world safe zone. */
+        public fun isSafeZone(c: CoordGrid): Boolean = pack(c.level, c.x, c.z) in SAFE
+
+        /**
+         * W13 singles-plus areas (OSRS Wiki "Singles-plus combat"): the Revenant Caves ("entirely singles-plus"; cache
+         * map squares 49-50 x 157-159, the caves' squares) and the Wilderness Agility Course (its walled yard from the
+         * cache collision map, x 2988..3008, z 3931..3966). OPEN-M1: the Artio, Calvar'ion and Spindel lairs have no
+         * published coordinates.
+         */
+        public fun isSinglesPlus(c: CoordGrid): Boolean =
+            (c.x in REV_MIN_X..REV_MAX_X && c.z in REV_MIN_Z..REV_MAX_Z) ||
+                (c.level == 0 && c.x in AGIL_MIN_X..AGIL_MAX_X && c.z in AGIL_MIN_Z..AGIL_MAX_Z)
+
+        private const val REV_MIN_X = 3136
+        private const val REV_MAX_X = 3263
+        private const val REV_MIN_Z = 10048
+        private const val REV_MAX_Z = 10239
+        private const val AGIL_MIN_X = 2988
+        private const val AGIL_MAX_X = 3008
+        private const val AGIL_MIN_Z = 3931
+        private const val AGIL_MAX_Z = 3966
 
         /** Multi-combat polygons (RS Mod `multiway.json`, ISC; data/PROVENANCE.md). */
         public val MULTI: PolygonAreas =
@@ -67,7 +121,7 @@ public class Wilderness : ContentPlugin {
                 Wilderness::class.java.getResource("multiway.json")?.readText() ?: error("multiway.json missing"),
             )
 
-        /** PvP worlds: outside the Wilderness counts as level 15 (Wiki "Wilderness"); OPEN-W2: safe zones not modelled. */
+        /** PvP worlds: outside the Wilderness counts as level 15 (Wiki "Wilderness"), except in safe zones (W12). */
         private const val PVP_WORLD_LEVEL = 15
 
         /** Player op slot for "Attack" (matches content/combat `Combat.ATTACK_OP`). */
@@ -87,7 +141,8 @@ public class Wilderness : ContentPlugin {
         public fun level(c: CoordGrid, pvpWorld: Boolean = false): Int {
             val inBounds = c.level == 0 && c.x in MIN_X..MAX_X && c.z in MIN_Z + SAFE_ROWS..MAX_Z
             val wild = if (inBounds) (c.z - MIN_Z) / ROWS_PER_LEVEL + 1 else 0
-            return if (pvpWorld) wild + PVP_WORLD_LEVEL else wild
+            if (!pvpWorld) return wild
+            return if (wild == 0 && isSafeZone(c)) 0 else wild + PVP_WORLD_LEVEL
         }
     }
 }

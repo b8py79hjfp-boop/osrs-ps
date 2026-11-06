@@ -8,4 +8,5 @@ application {
 
 dependencies {
     implementation(project(":cache"))
+    implementation(project(":routefinder"))
 }

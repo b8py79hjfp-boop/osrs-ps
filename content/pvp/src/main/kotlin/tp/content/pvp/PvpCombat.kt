@@ -45,12 +45,19 @@ public class PvpCombat : ContentPlugin {
 
     // ---- PJ timers (single-way)
 
-    /** PJ: "both players start a longer PJ timer of 20 ticks" in single-way Wilderness PvP. OPEN-M1: multi areas. */
+    /**
+     * PJ: "both players start a longer PJ timer of 20 ticks" in single-way Wilderness PvP (16 on PvP worlds). A player
+     * fighting an NPC can't be attacked by another player in single-way combat, except in singles-plus areas (W13).
+     */
     private fun singleWay(check: AttackCheck) {
         val attacker = check.attacker as? PlayerRef ?: return
         val target = check.target as? PlayerRef ?: return
         if (target.coord in Wilderness.MULTI) return // multi-combat: no PJ protection
         val now = attacker.tick
+        if ((target[NPC_FIGHT_UNTIL] ?: 0L) > now && !Wilderness.isSinglesPlus(target.coord)) {
+            check.deny("Someone else is fighting that player.")
+            return
+        }
         val targetFoe = target[FIGHTING]
         if (targetFoe != null && targetFoe != attacker && (target[FIGHTING_UNTIL] ?: 0L) > now) {
             check.deny("Someone else is fighting that player.")
@@ -64,17 +71,21 @@ public class PvpCombat : ContentPlugin {
         val attacker = e.attacker as? PlayerRef ?: return
         val target = e.target as? PlayerRef ?: return
         val now = attacker.tick
+        val pj = pjTicks(attacker)
         for ((a, b) in listOf(attacker to target, target to attacker)) {
             a[FIGHTING] = b
-            a[FIGHTING_UNTIL] = now + PJ_TICKS
+            a[FIGHTING_UNTIL] = now + pj
         }
         target[HIT_BY] = attacker
-        target[HIT_BY_UNTIL] = now + PJ_TICKS
+        target[HIT_BY_UNTIL] = now + pj
         // Skull: attacking a player who hasn't attacked you (OPEN-SK1: "unprovoked" = not attacked by them in the last 20 min).
         val provokedAt = attacker[AGGRESSORS]?.get(target.username) ?: Long.MIN_VALUE
         target[AGGRESSORS] = (target[AGGRESSORS] ?: emptyMap()) + (attacker.username to now)
         if (now - provokedAt > AGGRESSOR_MEMORY) skull(bus, attacker)
     }
+
+    /** PJ timer page: 20 ticks in the Wilderness; "increased in the PvP worlds to 16 ticks". */
+    private fun pjTicks(player: PlayerRef): Int = if (player.isPvpWorld) PVP_WORLD_PJ_TICKS else PJ_TICKS
 
     private fun skull(bus: EventBus, player: PlayerRef) {
         player[SKULLED_UNTIL] = player.tick + SKULL_TICKS
@@ -123,6 +134,8 @@ public class PvpCombat : ContentPlugin {
         val target = e.target
         target[LAST_HIT_TICK] = target.tick
         val source = e.source ?: return
+        // An NPC's hit keeps a player in PvM combat for the PJ window (single-way protection, W13).
+        if (source is tp.plugin.NpcRef && target is PlayerRef) target[NPC_FIGHT_UNTIL] = target.tick + pjTicks(target)
         if (e.damage <= 0 || e.style == HitStyle.TYPELESS || target !is PlayerRef) return
         // Vengeance: "Reflects 75% of the next damage, rounded down" (Vengeance page).
         if (target[VENGEANCE] == true) {
@@ -212,6 +225,7 @@ public class PvpCombat : ContentPlugin {
         val FIGHTING_UNTIL = AttrKey<Long>("pvp_fighting_until")
         val HIT_BY = AttrKey<PlayerRef>("pvp_hit_by")
         val HIT_BY_UNTIL = AttrKey<Long>("pvp_hit_by_until")
+        val NPC_FIGHT_UNTIL = AttrKey<Long>("pvm_fight_until")
         val AGGRESSORS = AttrKey<Map<String, Long>>("pvp_aggressors")
         val SKULLED_UNTIL = AttrKey<Long>("skulled_until")
         val LAST_HIT_TICK = AttrKey<Long>("pvp_last_hit_tick")
@@ -222,6 +236,9 @@ public class PvpCombat : ContentPlugin {
 
         /** PJ timer page: 20 ticks in single-way Wilderness PvP. */
         const val PJ_TICKS = 20
+
+        /** PJ timer page: "increased in the PvP worlds to 16 ticks (9.6 seconds)". */
+        const val PVP_WORLD_PJ_TICKS = 16
 
         /** Skull page: 30 minutes after attacking a player. */
         const val SKULL_TICKS = 3000

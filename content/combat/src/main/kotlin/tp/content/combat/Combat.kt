@@ -32,6 +32,7 @@ public class Combat : ContentPlugin {
         onLogin {
             if (varp(Varps.SA_ENERGY) == 0 && this[Attr.ATTACK_CLOCK] == null) setVarp(Varps.SA_ENERGY, Specials.FULL_ENERGY)
             Specials.startRegen(this)
+            Poison.onLogin(this)
         }
         onOpNpcOption("Attack") { npc -> CombatSystem.attackFromOp(this, npc) }
         onApNpcOption("Attack") { npc -> CombatSystem.attackFromAp(this, npc) }
@@ -137,12 +138,24 @@ internal object CombatSystem {
         target.queueHit(delay) { applyHit(target, source, damage, style, onLand) }
     }
 
-    fun applyHit(target: EntityRef, source: EntityRef?, damage: Int, style: HitStyle, onLand: (() -> Unit)? = null) {
+    /** A hitsplat type pair: [lit] for the entity itself and the source, [tint] for other viewers. */
+    class Hitmark(val lit: Int, val tint: Int)
+
+    private val REGULAR = Hitmark(HITMARK_DAMAGE_LIT, HITMARK_DAMAGE_TINT)
+
+    fun applyHit(
+        target: EntityRef,
+        source: EntityRef?,
+        damage: Int,
+        style: HitStyle,
+        onLand: (() -> Unit)? = null,
+        mark: Hitmark = REGULAR,
+    ) {
         if (target.isDying || (target is NpcRef && !target.isInWorld)) return // OPEN-C2
         val dealt = minOf(damage, target.hitpoints)
         target.hitpoints -= dealt
         if (dealt > 0) {
-            target.hitsplat(source, dealt, HITMARK_DAMAGE_LIT, HITMARK_DAMAGE_LIT, HITMARK_DAMAGE_TINT)
+            target.hitsplat(source, dealt, mark.lit, mark.lit, mark.tint)
         } else {
             target.hitsplat(source, 0, HITMARK_BLOCK_LIT, HITMARK_BLOCK_LIT, HITMARK_BLOCK_TINT)
         }
@@ -206,6 +219,7 @@ internal object CombatSystem {
 
             is NpcRef -> {
                 target.stopInteraction()
+                Poison.clear(target)
                 target.queueHit(NPC_DEATH_DELAY) {
                     bus.publish(DeathEvent(target, killer))
                     target.respawnAfter(NpcCombatTable.of(target.type)?.respawn?.takeIf { it > 0 } ?: NPC_RESPAWN_DELAY)
@@ -221,6 +235,7 @@ internal object CombatSystem {
         player.teleport(RESPAWN)
         for (stat in 0 until STAT_COUNT) player.setLevel(stat, player.baseLevel(stat))
         player.deactivateAllPrayers()
+        Poison.clear(player)
         player.frozenUntil = 0
         player[Attr.FROZEN_BY] = null
         player[Attr.DYING] = null
@@ -316,6 +331,7 @@ internal object NpcCombat {
             }
         CombatSystem.announceAttack(npc, victim, style)
         CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(style), delay)
+        if (def != null) Toxic.onNpcAttack(npc, def, victim)
     }
 
     /**
