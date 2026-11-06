@@ -497,6 +497,15 @@ class World(
         player.session.appearance(tp.protocol.api.Appearance(worn.copyOf(APPEARANCE_SLOTS), hidden, combatLevel, skullIcon, prayerIcon))
     }
 
+    /** Obj ids by exact cache name (not noted, not placeholders), built on first use. */
+    private val objsByName: Map<String, List<Int>> by lazy {
+        data.configs.objs
+            .filter { !it.isNoted && !it.isPlaceholder && it.name != "null" }
+            .groupBy({ it.name }, { it.id })
+    }
+
+    fun objIdsNamed(name: String): List<Int> = objsByName[name].orEmpty()
+
     /** Obj config (wear positions, params) for content facades. */
     fun objType(id: Int): tp.cache.config.obj.ObjType? = data.configs.objs[id]
 

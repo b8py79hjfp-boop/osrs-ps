@@ -8,6 +8,7 @@ import tp.plugin.PlayerRef
 import tp.plugin.SharedAttrs
 import tp.symbols.Components
 import tp.symbols.Invs
+import tp.symbols.Objs
 import tp.symbols.Varbits
 import tp.symbols.Varps
 
@@ -28,13 +29,14 @@ internal object Appearance {
 public class Equipment : ContentPlugin {
     override fun ContentScope.register() {
         events.on<AppearanceChanged> { Appearance.refresh(it.player) }
+        onWorldStart { Consumables.load(this) }
         onLogin {
             Appearance.refresh(this)
             setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
         }
         // iop1..iop3 = button ops 2..4; what an op does depends on the obj's op text (cache iops): wieldables have
-        // "Wield"/"Wear" as iop2, food/potions "Eat"/"Drink" as iop1.
-        for (op in FIRST_ITEM_OP..LAST_ITEM_OP) {
+        // "Wield"/"Wear" as iop2, food/potions "Eat"/"Drink" as iop1, potions "Empty" as iop4.
+        for (op in ITEM_OPS) {
             onButton(Components.Inventory.ITEMS, op) { click -> itemOp(click) }
         }
         for ((slot, component) in WORN_COMPONENTS) {
@@ -45,10 +47,17 @@ public class Equipment : ContentPlugin {
     private fun PlayerRef.itemOp(click: ButtonClick) {
         val inv = inv(Invs.INV)
         if (click.slot !in 0 until inv.size || inv.obj(click.slot) != click.obj) return
-        when (objIop(click.obj, click.op - FIRST_ITEM_OP)?.lowercase()) {
+        when (objIop(click.obj, iopIndex(click.op))?.lowercase()) {
             "eat", "drink" -> Consumables.consume(this, click.slot, click.obj)
             "wield", "wear", "equip" -> if (objWearPos(click.obj) >= 0) wield(click.slot, click.obj)
+            "empty" -> if (Consumables.isPotion(click.obj)) empty(click.slot, click.obj)
         }
+    }
+
+    /** Potion "Empty": the potion becomes an empty vial. */
+    private fun PlayerRef.empty(slot: Int, obj: Int) {
+        interrupt()
+        if (transaction("empty") { replaceAt(Invs.INV, slot, obj, Objs.VIAL_EMPTY) }) message("You empty the vial.")
     }
 
     private fun PlayerRef.wield(slot: Int, obj: Int) {
@@ -98,9 +107,17 @@ public class Equipment : ContentPlugin {
     }
 
     private companion object {
-        /** Button ops of iop1..iop3 (iop n = button op n + 1: RS Mod `InvOpenScript` op mapping). */
-        const val FIRST_ITEM_OP = 2
-        const val LAST_ITEM_OP = 4
+        /**
+         * Button ops of iop1..iop4: iop1..3 = ops 2..4, iop4 = op 6, iop5 = op 7 (RS Mod `InvOpenScript` events Op2, Op3,
+         * Op4, Op6, Op7). Op 7 (Drop/Destroy) is handled by the backpack plugin.
+         */
+        val ITEM_OPS = intArrayOf(2, 3, 4, 6)
+
+        /** iop index (0-based) of a backpack button op. */
+        fun iopIndex(op: Int): Int = if (op >= IOP4_OP) op - IOP4_SHIFT else op - 2
+
+        private const val IOP4_OP = 6
+        private const val IOP4_SHIFT = 3
 
         /** Worn tab slot click (Remove). */
         const val OP_REMOVE = 1

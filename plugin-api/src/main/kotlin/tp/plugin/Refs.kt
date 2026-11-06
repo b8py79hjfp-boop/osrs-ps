@@ -317,6 +317,9 @@ public class WorldRef internal constructor(internal val w: World) {
 
     public fun objParamInt(obj: Int, param: Int): Int? = w.objType(obj)?.params?.int(param)
 
+    /** Obj ids with exactly this cache name (unnoted, not placeholders). */
+    public fun objIdsNamed(name: String): List<Int> = w.objIdsNamed(name)
+
     public fun objParamString(obj: Int, param: Int): String? = w.objType(obj)?.params?.string(param)
 
     /** Spawns NPC [type] at [at], wandering up to [wanderRange] tiles from it (random-walk.md). */
