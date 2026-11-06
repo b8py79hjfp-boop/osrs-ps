@@ -24,7 +24,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  *
  * Args: `--cache-dir <path>` (default `.data/cache/<rev>/disk`), `--boot-check` (verify data and exit; CI),
  * `--port` (first world's game + JS5 port, default 43594), `--worlds <n>` (worlds in this JVM, default 1; world i
- * listens on port + i), `--world` (first world id, default 1), `--http-port` (jav_config/worldlist with an embedded
+ * listens on port + i; with `--loopback-hosts` world i instead binds 127.0.0.(i+1) on the same port, so a real client can
+ * hop locally), `--world` (first world id, default 1), `--http-port` (jav_config/worldlist with an embedded
  * hub, default 8080), `--public-host` (address advertised to clients, default 127.0.0.1),
  * `--hub host:port` (remote hub over gRPC; default: an embedded hub), `--db <jdbc url>` `--db-user` `--db-password`
  * (embedded hub's PostgreSQL; default in-memory), `--trace <file>` (tick inspector JSONL, first world),
@@ -44,35 +45,31 @@ fun main(args: Array<String>) {
         return
     }
 
-    val gamePort = options["--port"]?.toIntOrNull() ?: DEFAULT_GAME_PORT
-    val httpPort = options["--http-port"]?.toIntOrNull() ?: DEFAULT_HTTP_PORT
-    val host = options["--public-host"] ?: "127.0.0.1"
-    val firstWorld = options["--world"]?.toIntOrNull() ?: 1
-    val worldCount = options["--worlds"]?.toIntOrNull() ?: 1
+    val node = NodeOptions(options)
     val rsa = RsaKeys.load(Path.of(".data", "rsa", "private.pem"))
     val traceOut = options["--trace"]?.let { Files.newBufferedWriter(Path.of(it)) }
     val recordOut = options["--record"]?.let { Files.newBufferedWriter(Path.of(it)) }
-    val maxPerIp = options["--max-per-ip"]?.toIntOrNull() ?: WorldNode.DEFAULT_MAX_PER_IP
 
     val remoteHub = options["--hub"]?.let { GrpcHubClient(it.substringBefore(':'), it.substringAfter(':').toInt()) }
     val embeddedHub = if (remoteHub != null) null else embeddedHub(options)
     val hub: HubServices = remoteHub ?: embeddedHub ?: error("no hub")
     val worlds =
-        (0 until worldCount).map { i ->
+        (0 until node.worldCount).map { i ->
             WorldNode.startWorld(
                 data,
                 rsa,
-                gamePort + i,
-                firstWorld + i,
+                node.portOf(i),
+                node.firstWorld + i,
                 seed = System.nanoTime(),
                 traceOut.takeIf { i == 0 },
                 recordOut.takeIf { i == 0 },
-                maxPerIp,
+                node.maxPerIp,
                 hub,
+                bindHost = node.hostOf(i).takeIf { node.loopback },
             )
         }
-    val links = worlds.mapIndexed { i, w -> WorldLinks(w, hub, host, gamePort + i).start() }
-    val http = embeddedHub?.let { worldListServer(worlds, host, httpPort, firstWorld) }
+    val links = worlds.mapIndexed { i, w -> WorldLinks(w, hub, node.hostOf(i), node.portOf(i)).start() }
+    val http = embeddedHub?.let { worldListServer(worlds, node::hostOf, node.httpPort, node.firstWorld) }
     Runtime.getRuntime().addShutdownHook(
         Thread {
             // Graceful shutdown (brief §12): every player is saved (final) before the process stops.
@@ -91,6 +88,23 @@ fun main(args: Array<String>) {
     Thread.currentThread().join()
 }
 
+/** Network layout of this world node. */
+private class NodeOptions(options: Map<String, String?>) {
+    val gamePort = options["--port"]?.toIntOrNull() ?: DEFAULT_GAME_PORT
+    val httpPort = options["--http-port"]?.toIntOrNull() ?: DEFAULT_HTTP_PORT
+    val host = options["--public-host"] ?: "127.0.0.1"
+    val firstWorld = options["--world"]?.toIntOrNull() ?: 1
+    val worldCount = options["--worlds"]?.toIntOrNull() ?: 1
+    val maxPerIp = options["--max-per-ip"]?.toIntOrNull() ?: WorldNode.DEFAULT_MAX_PER_IP
+
+    /** The client always connects to 43594, so for local hopping each world binds its own loopback address instead. */
+    val loopback = "--loopback-hosts" in options
+
+    fun hostOf(i: Int): String = if (loopback) "127.0.0.${i + 1}" else host
+
+    fun portOf(i: Int): Int = if (loopback) gamePort else gamePort + i
+}
+
 private fun embeddedHub(options: Map<String, String?>): Hub {
     val store =
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") }
@@ -99,14 +113,14 @@ private fun embeddedHub(options: Map<String, String?>): Hub {
     return Hub(store, HubConfig(autoRegister = true))
 }
 
-private fun worldListServer(worlds: List<tp.engine.World>, host: String, httpPort: Int, firstWorld: Int): ClientConfigServer =
+private fun worldListServer(worlds: List<tp.engine.World>, hostOf: (Int) -> String, httpPort: Int, firstWorld: Int): ClientConfigServer =
     ClientConfigServer(
         port = httpPort,
-        publicBaseUrl = "http://$host:$httpPort",
+        publicBaseUrl = "http://${hostOf(0)}:$httpPort",
         javConfigTemplate = Path.of(".data", "client", "jav_config.ws"),
         worlds = {
-            worlds.map {
-                WorldEntry(it.config.id, host, "tickperfect dev", ClientConfigServer.FLAG_MEMBERS, population = it.playerCount)
+            worlds.mapIndexed { i, w ->
+                WorldEntry(w.config.id, hostOf(i), "tickperfect dev", ClientConfigServer.FLAG_MEMBERS, population = w.playerCount)
             }
         },
         initialWorld = firstWorld,

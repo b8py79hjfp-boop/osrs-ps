@@ -31,6 +31,8 @@ public class PvpCombat : ContentPlugin {
         bus.on<HitEvent> { e -> onHit(e) }
         bus.on<DeathEvent> { e -> onDeath(e) }
         onButton(Components.Logout.LOGOUT) { requestLogout() }
+        onButton(Components.Worldswitcher.LOGOUT) { requestLogout() }
+        onButton(Components.Worldswitcher.BUTTONS) { click -> requestHop(click.slot) }
         onButton(Components.Magic_Spellbook.VENGEANCE) { castVengeance() }
         onApPlayerT(Components.Magic_Spellbook.TELEPORT_BLOCK) { target ->
             if (currentApRange != SPELL_RANGE) {
@@ -93,12 +95,26 @@ public class PvpCombat : ContentPlugin {
 
     /** "players cannot log out for 16 ticks after being attacked" (PJ timer page, Logout button page). */
     private fun PlayerRef.requestLogout() {
-        val lastHit = this[LAST_HIT_TICK] ?: Long.MIN_VALUE
-        if (tick - lastHit < LOGOUT_LOCK) {
+        if (inLogoutLock()) {
             message("You can't log out until 10 seconds after the end of combat.")
             return
         }
         logout()
+    }
+
+    /** Hit within the last [LOGOUT_LOCK] ticks (never hit = no lock). */
+    private fun PlayerRef.inLogoutLock(): Boolean {
+        val lastHit = this[LAST_HIT_TICK] ?: return false
+        return tick - lastHit < LOGOUT_LOCK
+    }
+
+    /** World hop: the same lock as logging out (docs/mechanics/world-hop.md H1). */
+    private fun PlayerRef.requestHop(worldId: Int) {
+        if (inLogoutLock()) {
+            message("You can't switch worlds until 10 seconds after the end of combat.")
+            return
+        }
+        if (!hop(worldId)) message("That world is not available.")
     }
 
     // ---- hits: vengeance, recoil, logout lock clock

@@ -16,6 +16,7 @@ import net.rsprot.protocol.game.outgoing.interfaces.IfSetEventsV2
 import net.rsprot.protocol.game.outgoing.inv.UpdateInvFull
 import net.rsprot.protocol.game.outgoing.inv.UpdateInvPartial
 import net.rsprot.protocol.game.outgoing.logout.Logout
+import net.rsprot.protocol.game.outgoing.logout.LogoutTransfer
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
 import net.rsprot.protocol.game.outgoing.misc.client.UpdateRebootTimerV2
@@ -319,6 +320,10 @@ internal class RspSession(
 
                 ServerMessage.Logout -> {
                     Logout
+                }
+
+                is ServerMessage.LogoutTransfer -> {
+                    LogoutTransfer(message.host, message.worldId, message.flags)
                 }
             }
 

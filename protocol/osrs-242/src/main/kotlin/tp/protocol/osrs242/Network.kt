@@ -88,6 +88,8 @@ class Osrs242Network(
     private val port: Int,
     /** Game and JS5 connections allowed per IP address (RSProt default 10); raise for local bot swarms. */
     private val maxConnectionsPerIp: Int = DEFAULT_MAX_PER_IP,
+    /** Address to bind (null = all). Lets several worlds share port 43594 on different addresses. */
+    private val bindHost: String? = null,
 ) : GameNetwork {
     private val js5 = shared.js5
     private val huffman = shared.huffman
@@ -102,7 +104,7 @@ class Osrs242Network(
         shared.guardThread(built)
         built.start()
         service = built
-        logger.info { "rev 242 network listening on :$port (js5: $js5Summary)" }
+        logger.info { "rev 242 network listening on ${bindHost ?: "*"}:$port (js5: $js5Summary)" }
     }
 
     override fun buildInfos() {
@@ -156,6 +158,7 @@ class Osrs242Network(
     private inner class Factory(private val gate: LoginGate) : AbstractNetworkServiceFactory<RspSession>() {
         var service: NetworkService<RspSession>? = null
         override val ports: List<Int> = listOf(port)
+        override val host: String? = bindHost
         override val supportedClientTypes: List<OldSchoolClientType> = listOf(OldSchoolClientType.DESKTOP)
 
         override fun getRsaKeyPair(): RsaKeyPair = rsa

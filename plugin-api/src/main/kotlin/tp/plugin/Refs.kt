@@ -73,6 +73,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.requestLogout(p)
     }
 
+    /** Hops to world [worldId] (logout + reconnect); false if that world is unknown or this one. */
+    public fun hop(worldId: Int): Boolean = p.world.hop(p, worldId)
+
     /** Ends the current interaction (no other interruption effects). */
     public fun stopInteraction() {
         p.clearInteraction()

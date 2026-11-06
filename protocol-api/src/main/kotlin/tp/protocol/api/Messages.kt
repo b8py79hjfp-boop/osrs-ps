@@ -135,4 +135,7 @@ sealed interface ServerMessage {
     data class SystemUpdate(val ticks: Int) : ServerMessage
 
     data object Logout : ServerMessage
+
+    /** World hop: the client logs out and connects to [host] as world [worldId] ([flags]: world-list properties). */
+    data class LogoutTransfer(val host: String, val worldId: Int, val flags: Int) : ServerMessage
 }

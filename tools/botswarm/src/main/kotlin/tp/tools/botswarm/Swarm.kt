@@ -26,7 +26,8 @@ fun main(args: Array<String>) {
     val port = args.getOrNull(2)?.toIntOrNull() ?: DEFAULT_PORT
     val centreX = args.getOrNull(CENTRE_X_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_X
     val centreZ = args.getOrNull(CENTRE_Z_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_Z
-    val fight = args.getOrNull(MODE_ARG) == "fight"
+    val mode = args.getOrNull(MODE_ARG) ?: "walk"
+    val fight = mode == "fight"
     // Account names are global across worlds (the hub refuses a second session), so each world's swarm needs its own.
     val prefix = args.getOrNull(PREFIX_ARG) ?: "bot"
     val modulus = BigInteger(Files.readString(Path.of(".data", "rsa", "modulus.hex")).trim(), HEX)
@@ -43,7 +44,11 @@ fun main(args: Array<String>) {
                     return@use
                 }
                 println("$prefix${i + 1}: logged in as index ${bot.playerIndex}")
-                if (fight) fight(bot, count) else wander(bot, centreX, centreZ)
+                when (mode) {
+                    "fight" -> fight(bot, count)
+                    "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
+                    else -> wander(bot, centreX, centreZ)
+                }
             }
         }
     }
@@ -76,6 +81,40 @@ private const val FIGHT_X = 3300
 private const val FIGHT_Z = 3800
 private const val FIGHT_SPREAD = 3
 private const val MAX_XP = 13_034_431
+
+/**
+ * World-hop loop (server started with `--loopback-hosts`): every few seconds open the World Switcher and click the next
+ * world (1 -> 2 -> 3 -> 1; slot = world id, docs/mechanics/world-hop.md), follow LOGOUT_TRANSFER to that world's host and
+ * log in again. Prints each hop; a login that fails (e.g. save not durable in time) is reported.
+ */
+private fun hop(first: BotClient, name: String, modulus: BigInteger, crcs: IntArray) {
+    var bot = first
+    var world = 1
+    var hops = 0
+    while (true) {
+        Thread.sleep(ThreadLocalRandom.current().nextLong(MIN_WALK_INTERVAL_NANOS, MAX_WALK_INTERVAL_NANOS) / NANOS_PER_MS)
+        val target = world % HOP_WORLDS + 1
+        bot.button(LOGOUT_WORLD_SWITCHER, 1)
+        bot.button(WORLDSWITCHER_BUTTONS, 1, sub = target)
+        val transfer = bot.awaitTransfer() ?: error("$name: no LOGOUT_TRANSFER")
+        bot.close()
+        bot = BotClient(transfer.first, DEFAULT_PORT, modulus, crcs)
+        val response = bot.login(name, "bot")
+        if (response != LOGIN_OK) {
+            System.err.println("$name: hop to ${transfer.second} refused: $response")
+            return
+        }
+        world = transfer.second
+        hops++
+        println("$name: hop $hops -> world $world")
+    }
+}
+
+/** Logout tab "World Switcher" and the switcher's world list (cache interface 182 comp 3, interface 69 comp 18). */
+private const val LOGOUT_WORLD_SWITCHER = 182 shl 16 or 3
+private const val WORLDSWITCHER_BUTTONS = 69 shl 16 or 18
+private const val HOP_WORLDS = 3
+private const val NANOS_PER_MS = 1_000_000L
 
 /** Drains server packets; every few seconds clicks a random tile within [WANDER_RADIUS] of the centre. */
 private fun wander(bot: BotClient, centreX: Int, centreZ: Int) {

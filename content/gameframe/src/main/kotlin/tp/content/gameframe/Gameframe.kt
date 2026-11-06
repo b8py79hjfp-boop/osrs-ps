@@ -14,6 +14,15 @@ import tp.symbols.Interfaces
 public class Gameframe : ContentPlugin {
     override fun ContentScope.register() {
         onLogin { openGameframe() }
+        // Logout tab <-> World Switcher (same side slot; the client closes the old sub on IF_OPENSUB).
+        onButton(Components.Logout.WORLD_SWITCHER) { openWorldSwitcher() }
+        onButton(Components.Worldswitcher.CLOSE) { openOverlay(Components.Toplevel.SIDE10, Interfaces.LOGOUT) }
+    }
+
+    private fun PlayerRef.openWorldSwitcher() {
+        openOverlay(Components.Toplevel.SIDE10, Interfaces.WORLDSWITCHER)
+        // World rows are dynamic children whose slot is the world id (docs/mechanics/world-hop.md H2, OPEN).
+        ifEvents(Components.Worldswitcher.BUTTONS, 0..MAX_WORLD_ID, IfEvents.op(1))
     }
 
     private fun PlayerRef.openGameframe() {
@@ -24,6 +33,9 @@ public class Gameframe : ContentPlugin {
     }
 
     private companion object {
+        /** Highest world id the switcher can send (world ids are u16 in LOGOUT_TRANSFER; OSRS uses up to ~600). */
+        const val MAX_WORLD_ID = 2047
+
         /** Backpack slots 0..27. */
         const val INV_LAST_SLOT = 27
 

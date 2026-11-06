@@ -3,6 +3,7 @@ package tp.server
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import tp.engine.World
+import tp.engine.WorldAddress
 import tp.protocol.api.ServerMessage
 import tp.services.Broadcast
 import tp.services.HubServices
@@ -27,8 +28,13 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 .onFailure { logger.warn(it) { "world $id: hub registration failed" } }
         }
         scheduler.scheduleAtFixedRate({
-            runCatching { runBlocking { hub.worlds.heartbeat(id, world.playerCount) } }
-        }, HEARTBEAT_SECONDS, HEARTBEAT_SECONDS, TimeUnit.SECONDS)
+            runCatching {
+                runBlocking {
+                    hub.worlds.heartbeat(id, world.playerCount)
+                    world.worldDirectory = hub.worlds.list().associate { it.id to WorldAddress(it.host, it.flags) }
+                }
+            }
+        }, 1, HEARTBEAT_SECONDS, TimeUnit.SECONDS)
         subscriptions +=
             hub.moderation.subscribeKicks(id) { account -> world.execute { world.playerByAccount(account)?.let(world::requestLogout) } }
         subscriptions +=

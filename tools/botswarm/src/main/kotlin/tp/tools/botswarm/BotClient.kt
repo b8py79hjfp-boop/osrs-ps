@@ -16,6 +16,7 @@ import java.io.IOException
 import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.security.SecureRandom
 
@@ -283,6 +284,34 @@ class BotClient(
         sendFixedPacket(OPPLAYER2, ByteBufUtil.getBytes(buf))
     }
 
+    /** IF_BUTTONX (opcode 71, fixed 9 bytes): g4 combined component, g2 sub, g2 obj, g1 op (RSProt `IfButtonXDecoder`). */
+    fun button(component: Int, op: Int, sub: Int = NONE, obj: Int = NONE) {
+        val buf = Unpooled.buffer(IF_BUTTONX_BYTES)
+        buf.writeInt(component)
+        buf.writeShort(sub)
+        buf.writeShort(obj)
+        buf.writeByte(op)
+        sendFixedPacket(IF_BUTTONX, ByteBufUtil.getBytes(buf))
+    }
+
+    /** Reads packets until LOGOUT_TRANSFER (opcode 91: pjstr host, g2 world, g4 flags); null if [maxPackets] pass first. */
+    fun awaitTransfer(maxPackets: Int = TRANSFER_WAIT_PACKETS): Pair<String, Int>? {
+        repeat(maxPackets) {
+            val packet = readPacket()
+            if (packet.opcode == LOGOUT_TRANSFER) {
+                val buf = ByteBuffer.wrap(packet.payload)
+                val host = StringBuilder()
+                while (true) {
+                    val c = buf.get().toInt() and 0xFF
+                    if (c == 0) break
+                    host.append(c.toChar())
+                }
+                return host.toString() to (buf.getShort().toInt() and 0xFFFF)
+            }
+        }
+        return null
+    }
+
     private fun sendFixedPacket(opcode: Int, payload: ByteArray) {
         output.writeByte((opcode + encodeCipher.nextInt()) and 0xFF)
         output.write(payload)
@@ -379,6 +408,15 @@ class BotClient(
         /** OPPLAYER2 opcode and fixed size (RSProt `GameClientProt`). */
         private const val OPPLAYER2 = 8
         private const val OPPLAYER_BYTES = 3
+
+        /** IF_BUTTONX opcode and fixed size (RSProt `GameClientProt`); 0xFFFF = no sub/obj. */
+        private const val IF_BUTTONX = 71
+        private const val IF_BUTTONX_BYTES = 9
+        private const val NONE = 0xFFFF
+
+        /** LOGOUT_TRANSFER server opcode (RSProt `GameServerProtId`). */
+        private const val LOGOUT_TRANSFER = 91
+        private const val TRANSFER_WAIT_PACKETS = 10_000
         private const val SOCKET_TIMEOUT_MS = 30_000
 
         private val POW_SOLVER =

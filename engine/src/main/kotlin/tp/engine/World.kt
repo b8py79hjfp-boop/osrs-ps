@@ -583,6 +583,21 @@ class World(
         forEachPlayer { requestLogout(it) }
     }
 
+    /** Worlds a player can hop to (id -> address), refreshed from the hub's directory by the world node. */
+    @Volatile var worldDirectory: Map<Int, WorldAddress> = emptyMap()
+
+    /**
+     * World hop: tells the client to reconnect to [worldId] and logs the player out (final save; the hub holds the new
+     * login until it lands). False if [worldId] is this world or unknown. Content checks the logout lock first.
+     */
+    fun hop(player: Player, worldId: Int): Boolean {
+        if (worldId == config.id) return false
+        val address = worldDirectory[worldId] ?: return false
+        player.session.send(ServerMessage.LogoutTransfer(address.host, worldId, address.flags))
+        player.session.close()
+        return true
+    }
+
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {
         player.session.send(ServerMessage.Logout)

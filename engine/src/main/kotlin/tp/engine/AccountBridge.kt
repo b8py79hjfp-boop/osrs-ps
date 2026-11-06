@@ -13,6 +13,9 @@ class AccountProfile(
     val save: String?,
 )
 
+/** Where a world is reached (hub world directory), for world hops. */
+class WorldAddress(val host: String, val flags: Int)
+
 /**
  * The world's link to the account authority (the hub, brief §7). Without one, logins are admitted by username only
  * (dev, tests). With one:
