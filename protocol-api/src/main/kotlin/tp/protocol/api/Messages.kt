@@ -207,6 +207,9 @@ sealed interface ServerMessage {
     /** Plays music track [id] (MIDI_SONG; fades in client cycles, 0 = cut). */
     data class MusicTrack(val id: Int, val fadeOut: Int = 0, val fadeIn: Int = 0) : ServerMessage
 
+    /** A short jingle (MIDI_JINGLE) over the current track. */
+    data class Jingle(val id: Int) : ServerMessage
+
     /**
      * One Grand Exchange slot (UPDATE_STOCKMARKET_SLOT). [status] 0 clears the slot (the other fields are ignored);
      * [gold] is the coins spent (buy) or received (sell) so far.

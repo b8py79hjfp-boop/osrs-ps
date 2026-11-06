@@ -8,7 +8,12 @@ public enum class HitStyle { MELEE, RANGED, MAGIC, TYPELESS }
  * [deny] with a message; the attack doesn't happen. Player-vs-player attacks are denied unless a subscriber [allow]s;
  * NPC attacks are allowed unless denied.
  */
-public class AttackCheck(public val attacker: EntityRef, public val target: EntityRef) : Event {
+public class AttackCheck(
+    public val attacker: EntityRef,
+    public val target: EntityRef,
+    /** The attack's style when known (duel rules); null for checks before a style is chosen. */
+    public val style: HitStyle? = null,
+) : Event {
     public var denial: String? = null
         private set
     public var allowed: Boolean = target !is PlayerRef || attacker !is PlayerRef
@@ -45,8 +50,44 @@ public class SpellAccuracyRoll(public val caster: PlayerRef, public val target: 
 /** [entity] died; published when the death sequence completes, before respawn (items kept on death, Retribution). */
 public class DeathEvent(public val entity: EntityRef, public val killer: EntityRef?) : Event
 
+/**
+ * Duel Arena rules (docs/mechanics/duel-arena.md DA2): bit numbers in varp `duel_options` (the client's option
+ * buttons, script 6169); worn slot `n` is disabled by bit [WORN_SHIFT] + n. Set on both duellers as
+ * [SharedAttrs.DUEL_RULES] while the fight runs so every module can enforce its part.
+ */
+public object DuelRules {
+    public const val NO_FORFEIT: Int = 0
+    public const val NO_MOVEMENT: Int = 1
+    public const val NO_WEAPON_SWITCH: Int = 2
+    public const val SHOW_INVENTORIES: Int = 3
+    public const val NO_RANGED: Int = 4
+    public const val NO_MELEE: Int = 5
+    public const val NO_MAGIC: Int = 6
+    public const val NO_DRINKS: Int = 7
+    public const val NO_FOOD: Int = 8
+    public const val NO_PRAYER: Int = 9
+    public const val FUN_WEAPONS: Int = 12
+    public const val NO_SPECIAL_ATTACKS: Int = 13
+    public const val WORN_SHIFT: Int = 14
+
+    /** Whether [player] is in a running duel with rule [bit] on. */
+    public fun has(player: PlayerRef, bit: Int): Boolean = (player[SharedAttrs.DUEL_RULES] ?: 0) and (1 shl bit) != 0
+
+    /** Whether worn [slot] is disabled for [player]'s running duel. */
+    public fun slotDisabled(player: PlayerRef, slot: Int): Boolean = has(player, WORN_SHIFT + slot)
+}
+
 /** Attributes shared between content modules. */
 public object SharedAttrs {
+    /** Rules of the running duel (bits of [DuelRules]); set from "FIGHT!" until the duel ends. */
+    public val DUEL_RULES: AttrKey<Int> = AttrKey("duel_rules")
+
+    /** The opponent while a duel is set up or running (other modules let the duel plugin decide PvP checks). */
+    public val DUEL_OPPONENT: AttrKey<PlayerRef> = AttrKey("duel_opponent")
+
+    /** When set, a death drops nothing and the player respawns here (Duel Arena: a safe death). */
+    public val SAFE_DEATH_AT: AttrKey<tp.util.CoordGrid> = AttrKey("safe_death_at")
+
     /** Skull icon shown over a player (-1/null = none); PvP content sets it, combat's appearance shows it. */
     public val SKULL_ICON: AttrKey<Int> = AttrKey("skull_icon")
 

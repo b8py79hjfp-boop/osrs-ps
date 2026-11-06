@@ -157,6 +157,10 @@ public class Prayers : ContentPlugin {
     private fun PlayerRef.toggle(prayer: PrayerDef) {
         val bits = varbit(Varbits.PRAYER_ALLACTIVE)
         val mask = 1 shl prayer.bit
+        if (bits and mask == 0 && duelRule(tp.plugin.DuelRules.NO_PRAYER)) {
+            message(DuelChecks.NO_PRAYER)
+            return
+        }
         if (bits and mask != 0) {
             setVarbit(Varbits.PRAYER_ALLACTIVE, bits and mask.inv())
             if (bits and mask.inv() == 0) {

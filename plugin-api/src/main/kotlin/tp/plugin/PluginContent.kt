@@ -192,6 +192,12 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         pending.answer(ref, choice)
     }
 
+    override fun onModalClosed(player: Player, interfaceId: Int) {
+        val list = h.modalClosed[interfaceId] ?: return
+        val ref = PlayerRef(player)
+        for (handler in list) ref.handler()
+    }
+
     override fun onNpcSpawn(npc: tp.engine.entity.Npc) {
         if (h.npcSpawn.isEmpty()) return
         val ref = NpcRef(npc)

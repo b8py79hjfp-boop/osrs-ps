@@ -85,6 +85,10 @@ public class Equipment : ContentPlugin {
         interrupt()
         val pos = objWearPos(obj)
         val twoHanded = pos == Wear.WEAPON && objWearPos2(obj) == Wear.SHIELD
+        DuelChecks.wieldDenial(this, pos, twoHanded)?.let {
+            message(it)
+            return
+        }
         val displaced = ArrayList<Int>(2)
         displaced += pos
         if (twoHanded) displaced += Wear.SHIELD

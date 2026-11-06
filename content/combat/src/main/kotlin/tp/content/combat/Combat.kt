@@ -109,7 +109,8 @@ internal object CombatSystem {
 
     private fun attackLoop(script: PlayerScript, target: EntityRef) {
         val player = script.player
-        if (!canFight(player, target)) return
+        if (!canFight(player, target, hitStyle(player.stanceAndType().second.style))) return
+        if (!DuelChecks.weaponAllowed(player)) return
         script.keepInteraction()
         player.face(target)
         if (player.attackClock() > player.tick) return
@@ -117,10 +118,10 @@ internal object CombatSystem {
     }
 
     /** Whether [attacker] may attack [target] now (AttackCheck event: PvP rules subscribe). */
-    fun canFight(attacker: EntityRef, target: EntityRef): Boolean {
+    fun canFight(attacker: EntityRef, target: EntityRef, style: HitStyle? = null): Boolean {
         if (target.isDying || attacker.isDying) return false
         if (target is NpcRef && !target.isInWorld) return false
-        val check = AttackCheck(attacker, target)
+        val check = AttackCheck(attacker, target, style)
         attacker.events.publish(check)
         val denial = check.denial
         if (denial != null || !check.allowed) {
@@ -244,10 +245,12 @@ internal object CombatSystem {
     }
 
     private fun respawn(player: PlayerRef, killer: EntityRef?) {
-        DeathRules.dropItems(player, killer)
+        // A safe death (Duel Arena) keeps every item and respawns where the minigame says.
+        val safe = player[tp.plugin.SharedAttrs.SAFE_DEATH_AT]
+        if (safe == null) DeathRules.dropItems(player, killer)
         player.events.publish(DeathEvent(player, killer))
         player.message("Oh dear, you are dead!")
-        player.teleport(RESPAWN)
+        player.teleport(safe ?: RESPAWN)
         for (stat in 0 until STAT_COUNT) player.setLevel(stat, player.baseLevel(stat))
         player.deactivateAllPrayers()
         Poison.clear(player)

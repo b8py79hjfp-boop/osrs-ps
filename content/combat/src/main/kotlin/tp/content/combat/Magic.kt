@@ -2,6 +2,7 @@ package tp.content.combat
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.DuelRules
 import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.PlayerRef
@@ -40,7 +41,11 @@ public class Magic : ContentPlugin {
             script.apRange(SPELL_RANGE)
             return
         }
-        if (!CombatSystem.canFight(player, target)) return
+        if (!CombatSystem.canFight(player, target, HitStyle.MAGIC)) return
+        if (spell.freeze > 0 && player.duelRule(DuelRules.NO_MOVEMENT)) {
+            player.message(DuelChecks.HOLD_SPELLS)
+            return
+        }
         player.face(target)
         val now = player.tick
         if (player.attackClock() > now) {

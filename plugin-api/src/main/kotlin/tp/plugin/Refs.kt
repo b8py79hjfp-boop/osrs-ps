@@ -315,6 +315,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.MusicTrack(id))
     }
 
+    /** Plays jingle [id] (`tp.symbols.Jingles`) over the music. */
+    public fun jingle(id: Int) {
+        p.session.send(ServerMessage.Jingle(id))
+    }
+
     /** Allowed ops/events on [component]'s slots [slots] (IF_SETEVENTS bit set). */
     public fun ifEvents(component: Int, slots: IntRange, events: Long) {
         p.session.send(ServerMessage.InterfaceEvents(component, slots.first, slots.last, events))
@@ -571,6 +576,11 @@ public class WorldRef internal constructor(internal val w: World) {
             .orEmpty()
 
     public fun objParamInt(obj: Int, param: Int): Int? = w.objType(obj)?.params?.int(param)
+
+    /** Puts loc [id] on the tile for this world (replacing its layer); reverts after [duration] ticks if positive. */
+    public fun addLoc(id: Int, at: CoordGrid, shape: Int, angle: Int, duration: Int = -1) {
+        w.locs.add(id, at, shape, angle, w.tick, duration)
+    }
 
     /** Obj ids with exactly this cache name (unnoted, not placeholders). */
     public fun objIdsNamed(name: String): List<Int> = w.objIdsNamed(name)

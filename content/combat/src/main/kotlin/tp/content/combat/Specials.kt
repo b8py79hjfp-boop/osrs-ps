@@ -65,6 +65,10 @@ internal object Specials {
 
     /** Spec bar click: toggle if the weapon has a special and enough energy. */
     fun toggle(player: PlayerRef) {
+        if (player.varp(Varps.SA_ATTACK) == 0 && player.duelRule(tp.plugin.DuelRules.NO_SPECIAL_ATTACKS)) {
+            player.message(DuelChecks.NO_SPECIALS)
+            return
+        }
         val def = defs[player.worn(Wear.WEAPON)]
         if (player.varp(Varps.SA_ATTACK) != 0) {
             player.setVarp(Varps.SA_ATTACK, 0)

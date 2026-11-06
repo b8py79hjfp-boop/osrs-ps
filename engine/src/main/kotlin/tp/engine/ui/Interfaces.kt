@@ -43,9 +43,10 @@ class Interfaces {
     internal fun closeModal(player: Player) {
         val s = states[player.slot] ?: return
         if (s.modalDestination == -1) return
-        s.subs.remove(s.modalDestination)
+        val closed = s.subs.remove(s.modalDestination)
         player.session.send(ServerMessage.CloseSub(s.modalDestination))
         s.modalDestination = -1
+        if (closed != null) player.world.content.onModalClosed(player, closed)
     }
 
     /** Whether [interfaceId] is currently open for [player] (as toplevel or in any destination). */

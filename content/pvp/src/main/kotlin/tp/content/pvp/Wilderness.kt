@@ -5,6 +5,7 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.plugin.PolygonAreas
+import tp.plugin.SharedAttrs
 import tp.plugin.TimerId
 import tp.symbols.Varbits
 import tp.util.CoordGrid
@@ -20,6 +21,8 @@ public class Wilderness : ContentPlugin {
         events.on<AttackCheck> { check ->
             val attacker = check.attacker as? PlayerRef ?: return@on
             val target = check.target as? PlayerRef ?: return@on
+            // Duels are the Duel Arena's call (duel-arena.md).
+            if (attacker[SharedAttrs.DUEL_OPPONENT] != null || target[SharedAttrs.DUEL_OPPONENT] != null) return@on
             val a = level(attacker.coord, attacker.isPvpWorld)
             val b = level(target.coord, target.isPvpWorld)
             when {

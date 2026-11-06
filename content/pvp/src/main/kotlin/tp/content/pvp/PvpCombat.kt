@@ -78,6 +78,8 @@ public class PvpCombat : ContentPlugin {
         }
         target[HIT_BY] = attacker
         target[HIT_BY_UNTIL] = now + pj
+        // Duels never skull (duel-arena.md DA1: a safe fight).
+        if (attacker[SharedAttrs.DUEL_OPPONENT] != null) return
         // Skull: attacking a player who hasn't attacked you (OPEN-SK1: "unprovoked" = not attacked by them in the last 20 min).
         val provokedAt = attacker[AGGRESSORS]?.get(target.username) ?: Long.MIN_VALUE
         target[AGGRESSORS] = (target[AGGRESSORS] ?: emptyMap()) + (attacker.username to now)

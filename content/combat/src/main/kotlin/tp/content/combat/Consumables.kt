@@ -99,11 +99,11 @@ internal object Consumables {
     fun consume(player: PlayerRef, slot: Int, obj: Int): Boolean {
         val food = foods[obj]
         if (food != null) {
-            eat(player, slot, obj, food)
+            if (player.duelRule(tp.plugin.DuelRules.NO_FOOD)) player.message(DuelChecks.NO_FOOD) else eat(player, slot, obj, food)
             return true
         }
         val (potion, next) = potions[obj] ?: return false
-        drink(player, slot, obj, next, potion)
+        if (player.duelRule(tp.plugin.DuelRules.NO_DRINKS)) player.message(DuelChecks.NO_DRINKS) else drink(player, slot, obj, next, potion)
         return true
     }
 

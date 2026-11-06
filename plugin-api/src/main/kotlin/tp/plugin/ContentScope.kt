@@ -16,6 +16,11 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.login += handler
     }
 
+    /** Runs when modal [interfaceId] closes for a player, however it closed (decline, walking away, logout). */
+    public fun onModalClosed(interfaceId: Int, handler: PlayerRef.() -> Unit) {
+        handlers.modalClosed.getOrPut(interfaceId) { ArrayList() } += handler
+    }
+
     /** Runs for every NPC added to the world (spawn data, content), e.g. to set its hunt range. */
     public fun onNpcSpawn(handler: NpcRef.() -> Unit) {
         handlers.npcSpawn += handler
@@ -162,6 +167,7 @@ internal class Handlers {
     val login = ArrayList<PlayerRef.() -> Unit>()
     val logout = ArrayList<PlayerRef.() -> Unit>()
     val npcSpawn = ArrayList<NpcRef.() -> Unit>()
+    val modalClosed = HashMap<Int, MutableList<PlayerRef.() -> Unit>>()
     var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()

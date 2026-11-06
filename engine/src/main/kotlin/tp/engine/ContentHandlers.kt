@@ -53,6 +53,9 @@ interface ContentHandlers {
     /** IF_BUTTOND: slot [fromSub] of [fromComponent] dropped on slot [toSub] of [toComponent] (both interfaces open). */
     fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {}
 
+    /** The modal [interfaceId] was closed (by the player, movement, another modal or content). */
+    fun onModalClosed(player: Player, interfaceId: Int) {}
+
     /** An NPC was added to the world or respawned (content may set its hunt range, boss state). */
     fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
 

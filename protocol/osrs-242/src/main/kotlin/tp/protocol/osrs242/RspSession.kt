@@ -288,7 +288,7 @@ internal class RspSession(
                 }
             }
 
-        @Suppress("CyclomaticComplexMethod")
+        @Suppress("CyclomaticComplexMethod", "LongMethod") // one branch per message type
         fun toRsprot(message: ServerMessage): OutgoingGameMessage =
             when (message) {
                 is ServerMessage.GameMessage -> {
@@ -377,6 +377,7 @@ internal class RspSession(
                 }
 
                 is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+                is ServerMessage.Jingle,
                 is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
                 ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
                 is ServerMessage.PrivateMessageEcho, is ServerMessage.ChannelJoined, ServerMessage.ChannelLeft,
@@ -421,7 +422,7 @@ private fun friendRow(row: FriendRow): UpdateFriendList.Friend =
 /** Friends/ignore lists, private messages, friends chat (and interface/music updates, via [uiProt]). */
 private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
-        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
+        is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack, is ServerMessage.Jingle,
         is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong,
         -> {
             uiProt(message)
@@ -517,6 +518,11 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
 
         is ServerMessage.MusicTrack -> {
             MidiSongV2(message.id, message.fadeOut, 0, message.fadeIn, 0)
+        }
+
+        is ServerMessage.Jingle -> {
+            net.rsprot.protocol.game.outgoing.sound
+                .MidiJingle(message.id)
         }
 
         is ServerMessage.VarpLong -> {
