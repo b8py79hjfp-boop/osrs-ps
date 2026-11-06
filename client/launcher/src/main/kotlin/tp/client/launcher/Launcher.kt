@@ -64,7 +64,9 @@ fun main(args: Array<String>) {
 
     val javaBin = Path.of(System.getProperty("java.home"), "bin", if (isWindows()) "java.exe" else "java").toString()
     val classpath = manifest.artifacts.joinToString(java.io.File.pathSeparator) { repo.resolve(it.name).toString() }
-    val command = listOf(javaBin) + manifest.jvmArgs + listOf("-cp", classpath, manifest.mainClass) + args
+    // macOS needs the same extra opens RuneLite's launcher passes there (bootstrap clientJvm17MacArguments).
+    val platformArgs = if (System.getProperty("os.name").lowercase().contains("mac")) MAC_ARGS else emptyList()
+    val command = listOf(javaBin) + manifest.jvmArgs + platformArgs + listOf("-cp", classpath, manifest.mainClass) + args
     log("starting ${config.appName} ${manifest.version} (revision ${manifest.revision})")
     ProcessBuilder(command).inheritIO().start()
 }
@@ -102,6 +104,10 @@ private fun log(message: String) = println("[launcher] $message")
 
 private fun fail(message: String): Nothing {
     System.err.println("[launcher] $message")
+    // A double-clicked app has no console: show the reason in a dialog when there is a display.
+    if (!java.awt.GraphicsEnvironment.isHeadless()) {
+        javax.swing.JOptionPane.showMessageDialog(null, message, LauncherConfig.load().appName, javax.swing.JOptionPane.ERROR_MESSAGE)
+    }
     exitProcess(1)
 }
 
@@ -119,5 +125,8 @@ class LauncherConfig(val appName: String, val appId: String, val updateUrl: Stri
 }
 
 private val TIMEOUT: Duration = Duration.ofSeconds(30)
+
+/** Pinned bootstrap b4dab8e7, `clientJvm17MacArguments` beyond the common set. */
+private val MAC_ARGS = listOf("--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED")
 private const val HTTP_OK = 200
 private const val BUFFER = 1 shl 16

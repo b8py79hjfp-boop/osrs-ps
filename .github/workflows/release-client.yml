@@ -1,0 +1,238 @@
+name: release-client
+
+# Builds the release client (brief §4.2, docs/CLIENT.md "Release client"): the signed update directory for the hub and
+# the per-platform installers. Manual runs are dry runs (throwaway keys are allowed); a tag `client-v<major.minor.patch>`
+# is a release and refuses to run without the real secrets.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Client version for the manifest and installers (major.minor.patch)"
+        required: true
+        default: "1.0.0"
+  push:
+    tags:
+      - "client-v*"
+
+permissions:
+  contents: read
+
+env:
+  RELEASE: ${{ startsWith(github.ref, 'refs/tags/client-v') }}
+  VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+
+jobs:
+  update-dir:
+    # Platform-independent: patched game client + fork + signed manifest. The installers do not contain the client.
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Version
+        run: |
+          v="${VERSION#client-v}"
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version '$v' must be major.minor.patch"; exit 1; }
+          echo "CLIENT_VERSION=$v" >> "$GITHUB_ENV"
+
+      - name: Release values are not development values
+        if: env.RELEASE == 'true'
+        run: |
+          if grep -nE '127\.0\.0\.1|localhost' client/runelite/release.properties client/launcher/src/main/resources/tp/client/launcher/launcher.properties; then
+            echo "::error::release.properties / launcher.properties still hold development URLs (docs/CLIENT.md, Release client)"; exit 1
+          fi
+
+      - uses: actions/setup-java@v6
+        id: jdk25
+        with: { distribution: temurin, java-version: "25" }
+      # JDK 21 builds the RuneLite fork (client/runelite/build.sh).
+      - uses: actions/setup-java@v6
+        id: jdk21
+        with: { distribution: temurin, java-version: "21" }
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Client artifacts (stock RuneLite bootstrap mirror)
+        # TODO ARTIFACT_STORE_URL: the brief wants a private artifact store; `setupClient` still reads repo.runelite.net.
+        # Point it at the store once it exists (repository variable ARTIFACT_STORE_URL) and drop the public mirror.
+        env:
+          JAVA_HOME: ${{ steps.jdk25.outputs.path }}
+          ARTIFACT_STORE_URL: ${{ vars.ARTIFACT_STORE_URL }}
+        run: ./gradlew setupClient
+
+      - name: Login RSA modulus
+        env:
+          RSA_MODULUS_HEX: ${{ secrets.RSA_MODULUS_HEX }}
+          JAVA_HOME: ${{ steps.jdk25.outputs.path }}
+        run: |
+          mkdir -p .data/rsa
+          if [ -n "$RSA_MODULUS_HEX" ]; then
+            printf '%s' "$RSA_MODULUS_HEX" > .data/rsa/modulus.hex
+          elif [ "$RELEASE" = "true" ]; then
+            echo "::error::secret RSA_MODULUS_HEX is required for a release"; exit 1
+          else
+            echo "::warning::RSA_MODULUS_HEX not set: dry run with a throwaway login key (the client will not log in to a real server)"
+            ./gradlew generateRsa
+          fi
+
+      - name: Fork (client/runelite)
+        env:
+          JAVA_HOME: ${{ steps.jdk21.outputs.path }}
+        run: |
+          if [ -x client/runelite/build.sh ]; then
+            client/runelite/build.sh
+          elif [ "$RELEASE" = "true" ]; then
+            echo "::error::client/runelite/build.sh is missing"; exit 1
+          else
+            echo "::warning::client/runelite/build.sh is missing: dry run keeps the stock RuneLite client jar"
+          fi
+
+      - name: Game client patch (client/gamepatch)
+        env:
+          JAVA_HOME: ${{ steps.jdk25.outputs.path }}
+        run: |
+          # site comes from the fork's release values so both agree on the hub
+          site="$(sed -n 's/^site=//p' client/runelite/release.properties | tail -n 1)"
+          injected="$(ls "$PWD"/.data/client/artifacts/injected-client-*.jar | head -n 1)"
+          ./gradlew :client:gamepatch:run --args="$injected $PWD/.data/client/patched/$(basename "$injected") --site ${site:-http://127.0.0.1:8080} --config $PWD/client/gamepatch/patches.json --modulus $PWD/.data/rsa/modulus.hex"
+
+      - name: Assemble, sign the manifest, publish to update-dir/
+        env:
+          JAVA_HOME: ${{ steps.jdk25.outputs.path }}
+          MANIFEST_PRIVATE_KEY: ${{ secrets.MANIFEST_PRIVATE_KEY }}
+        run: |
+          if [ "$RELEASE" != "true" ]; then export ALLOW_STOCK_CLIENT=1; fi
+          client/dist/assemble-artifacts.sh "$RUNNER_TEMP/artifacts"
+          key="$RUNNER_TEMP/manifest-private.key"
+          if [ -n "$MANIFEST_PRIVATE_KEY" ]; then
+            printf '%s' "$MANIFEST_PRIVATE_KEY" > "$key"
+          elif [ "$RELEASE" = "true" ]; then
+            echo "::error::secret MANIFEST_PRIVATE_KEY is required for a release"; exit 1
+          else
+            echo "::warning::MANIFEST_PRIVATE_KEY not set: dry run signs with a throwaway key; launchers will reject this manifest"
+            ./gradlew :client:launcher:release --args="keygen $RUNNER_TEMP/dryrun-keys"
+            key="$RUNNER_TEMP/dryrun-keys/manifest-private.key"
+          fi
+          revision="$(sed -n 's/^osrs.revision=//p' gradle.properties)"
+          ./gradlew :client:launcher:release --args="publish $RUNNER_TEMP/artifacts $PWD/update-dir $CLIENT_VERSION $revision $key"
+          rm -f "$key"
+
+      # TODO: deploy update-dir/ to the hub's update directory (the hub serves it at /update). Until then it is a
+      # downloadable artifact; copy it to the hub by hand (docs/CLIENT.md, "Publish").
+      - uses: actions/upload-artifact@v4
+        with:
+          name: update-dir
+          path: update-dir/
+          if-no-files-found: error
+
+  package:
+    name: package (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    continue-on-error: ${{ matrix.experimental }}
+    env:
+      # Only used to decide whether the signing steps below run (a step cannot test secrets directly).
+      WINDOWS_CERT_PFX_BASE64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+      APPLE_CERT_P12_BASE64: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-latest,   os: windows, arch: x64,   experimental: false }
+          # Hosted Windows arm64 runner (free for public repositories only). WiX 3 / JDK 21 on arm64 are unverified.
+          - { runner: windows-11-arm,   os: windows, arch: arm64, experimental: true }
+          # macos-13 (the last Intel image) was retired in December 2025; macos-15-intel is its replacement.
+          - { runner: macos-15-intel,   os: macos,   arch: x64,   experimental: false }
+          - { runner: macos-14,         os: macos,   arch: arm64, experimental: false }
+          - { runner: ubuntu-latest,    os: linux,   arch: x64,   experimental: false }
+          # Hosted Linux arm64 runner (free for public repositories only).
+          - { runner: ubuntu-24.04-arm, os: linux,   arch: arm64, experimental: false }
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Version
+        shell: bash
+        run: |
+          v="${VERSION#client-v}"
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version '$v' must be major.minor.patch"; exit 1; }
+          echo "INSTALLER_VERSION=$v" >> "$GITHUB_ENV"
+          # jpackage on macOS needs a major version above 0
+          if [ "${v%%.*}" = "0" ]; then echo "::error::version must start with 1 or higher"; exit 1; fi
+
+      - uses: actions/setup-java@v6
+        id: jdk25
+        with: { distribution: temurin, java-version: "25" }
+      # jpackage 17+ comes from this JDK; it packages the Java 11/17 runtime that package.sh builds with jlink.
+      - uses: actions/setup-java@v6
+        id: jdk21
+        with: { distribution: temurin, java-version: "21" }
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Linux packaging tools
+        if: matrix.os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot dpkg-dev
+
+      - name: WiX 3 (Windows installers)
+        if: matrix.os == 'windows'
+        shell: bash
+        run: command -v candle.exe >/dev/null || choco install wixtoolset -y --no-progress
+
+      - name: Windows signing certificate
+        if: matrix.os == 'windows' && env.WINDOWS_CERT_PFX_BASE64 != ''
+        shell: bash
+        run: |
+          printf '%s' "$WINDOWS_CERT_PFX_BASE64" | base64 -d > "$RUNNER_TEMP/codesign.pfx"
+          echo "WINDOWS_CERT_PFX=$RUNNER_TEMP/codesign.pfx" >> "$GITHUB_ENV"
+
+      - name: macOS signing keychain
+        if: matrix.os == 'macos' && env.APPLE_CERT_P12_BASE64 != ''
+        env:
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          # the .p12 holds the Developer ID Application and Developer ID Installer certificates
+          kc="$RUNNER_TEMP/signing.keychain-db"; pw="$(uuidgen)"
+          printf '%s' "$APPLE_CERT_P12_BASE64" | base64 -d > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$pw" "$kc"
+          security set-keychain-settings -lut 21600 "$kc"
+          security unlock-keychain -p "$pw" "$kc"
+          security import "$RUNNER_TEMP/cert.p12" -P "$APPLE_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$kc"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$pw" "$kc"
+          security list-keychains -d user -s "$kc" login.keychain
+          echo "APPLE_KEYCHAIN=$kc" >> "$GITHUB_ENV"
+
+      - name: Package
+        shell: bash
+        env:
+          JAVA_HOME: ${{ steps.jdk25.outputs.path }}
+          JPACKAGE_JDK: ${{ steps.jdk21.outputs.path }}
+          REQUIRE_SIGNING: ${{ env.RELEASE == 'true' && '1' || '' }}
+          UPDATE_URL: ${{ vars.UPDATE_URL }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+          APPLE_SIGNING_USER: ${{ secrets.APPLE_SIGNING_USER }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: client/dist/package.sh "${{ matrix.os }}" "${{ matrix.arch }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}-${{ matrix.arch }}
+          path: client/dist/build/out/*
+          if-no-files-found: error
+
+  github-release:
+    # Tag builds only: collects the installers into a draft GitHub release for a human to publish.
+    if: startsWith(github.ref, 'refs/tags/client-v')
+    needs: [update-dir, package]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: installers
+          merge-multiple: true
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" installers/* --repo "$GITHUB_REPOSITORY" --draft --title "$GITHUB_REF_NAME" --notes "Installers. The update directory is the update-dir artifact of the workflow run."

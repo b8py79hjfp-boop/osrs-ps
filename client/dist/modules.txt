@@ -1,0 +1,23 @@
+# Modules of the jlink runtime (build-runtime.sh). One per line: <module> <reason>. A leading '?' marks a module that is
+# added only when the build JDK has it (platform-specific). Everything is a JDK module of Java 11 and 17.
+#
+# Derived with:  jdeps --multi-release 11 --ignore-missing-deps --print-module-deps <jars>
+#   - launcher jars (client/launcher installDist)  -> java.base,java.net.http
+#   - every client jar of the pinned bootstrap (.data/client/artifacts + the fork's client jar)
+#       -> java.base,java.desktop,java.naming,java.sql,jdk.httpserver,jdk.management,jdk.unsupported
+# plus the modules that are only reached through service lookup or reflection, which jdeps cannot see.
+# RuneLite's own launcher ships a full JRE (jlink only for Windows arm64, with ~55 modules); this list is the minimum.
+java.base            core
+java.desktop         Swing/AWT/Java2D UI of the client and the game applet; pulls in java.datatransfer, java.prefs, java.xml
+java.logging         java.util.logging (OkHttp, JNA, JDK internals); logback also bridges to it
+java.management      javax.management used by logback's JMXConfigurator (loaded with the logging config)
+java.naming          logback's JNDI actions/selector (InsertFromJNDIAction, ContextJNDISelector)
+java.net.http        the launcher's HttpClient (manifest and artifact downloads)
+java.sql             Gson's date adapters reference java.sql.Date/Timestamp (com.google.gson.GsonBuilder)
+jdk.httpserver       com.sun.net.httpserver used by net.runelite.client.account.SessionManager (local login-callback listener)
+jdk.management       com.sun.management.OperatingSystemMXBean used by net.runelite.client.TelemetryClient
+jdk.unsupported      sun.misc.Unsafe (Guava, Gson, JNA)
+jdk.crypto.ec        elliptic-curve TLS suites and the launcher's ECDSA (SHA256withECDSA) manifest verification; loaded by service lookup, so jdeps does not report it (a separate module in Java 11 and 17)
+jdk.charsets         extended charsets, loaded by service lookup (precaution: RuneLite's Windows arm64 runtime ships it; jdeps cannot see it)
+jdk.zipfs            jar/zip FileSystem provider, loaded by service lookup (precaution: in RuneLite's runtime; jdeps cannot see it)
+?jdk.crypto.mscapi   Windows certificate store (SunMSCAPI), as in RuneLite's Windows runtime; only exists in Windows JDKs

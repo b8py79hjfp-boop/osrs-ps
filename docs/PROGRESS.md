@@ -126,7 +126,20 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Next
 
-1. Phase 6: release client (RuneLite fork, launcher, signing, auto-update), brief §4.2.
+1. Phase 6 (in progress, see docs/plans/phase-6.md).
+   - Done:
+     - `setupClient`;
+     - game-client patcher + test 5 (patch half);
+     - RuneLite fork (12 patches): built from source, starts, downloads the cache from our JS5 and reaches the game's
+       terms screen on World 1 under Xvfb;
+     - signed-update launcher (tamper/offline tested);
+     - jlink runtime (Java 11) + jpackage `.deb`/`.tar.gz` built here; Windows/macOS packaging, signing hooks and the
+       release workflow are written but not run.
+   - Needs the user:
+     - branding;
+     - code-signing certificates and Apple notarization credentials;
+     - production URLs and manifest key;
+     - clean-machine install/update/login/hop test and a traffic capture.
 2. When a 16-core machine is available: the §7 acceptance run (docs/LOAD-TEST.md).
 2. Carried OPENs from Phase 4: NPC combat data (wiki-import), examine texts, poison/venom, Dismantle, PvP-world safe
    zones, singles-plus areas, per-weapon animations/projectile shapes.
