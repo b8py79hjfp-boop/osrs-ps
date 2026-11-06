@@ -46,6 +46,7 @@ object CommandCodec {
     /** Field index of a button's optional sub-op (recordings made before IF_SUBOP have four fields). */
     private const val SUBOP_FIELD = 5
 
+    @Suppress("CyclomaticComplexMethod") // one branch per command type
     fun encode(c: ClientCommand): String =
         when (c) {
             is ClientCommand.MoveClick -> "move ${c.x} ${c.z} ${c.ctrl} ${c.minimap}"
@@ -57,6 +58,9 @@ object CommandCodec {
             is ClientCommand.OpObj -> "opobj ${c.option} ${c.id} ${c.x} ${c.z} ${c.ctrl}"
             is ClientCommand.OpPlayerT -> "opplayert ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.OpNpcT -> "opnpct ${c.index} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
+            is ClientCommand.OpLocT -> "oploct ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
+            is ClientCommand.OpObjT -> "opobjt ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
+            is ClientCommand.ButtonT -> "buttont ${c.fromComponent} ${c.fromSub} ${c.fromObj} ${c.toComponent} ${c.toSub} ${c.toObj}"
             is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj} ${c.subop}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
@@ -109,6 +113,18 @@ object CommandCodec {
 
             "opnpct" -> {
                 ClientCommand.OpNpcT(i(1), i(2), i(3), i(4), b(5))
+            }
+
+            "oploct" -> {
+                ClientCommand.OpLocT(i(1), i(2), i(3), i(4), i(5), i(6), b(7))
+            }
+
+            "opobjt" -> {
+                ClientCommand.OpObjT(i(1), i(2), i(3), i(4), i(5), i(6), b(7))
+            }
+
+            "buttont" -> {
+                ClientCommand.ButtonT(i(1), i(2), i(3), i(4), i(5), i(6))
             }
 
             "button" -> {

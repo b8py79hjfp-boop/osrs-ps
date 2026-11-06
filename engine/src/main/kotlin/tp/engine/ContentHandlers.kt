@@ -38,9 +38,22 @@ interface ContentHandlers {
 
     fun apPlayerT(component: Int): Script<Player>? = null
 
-    fun opNpcT(component: Int): Script<Player>? = null
+    fun opNpcT(component: Int, obj: Int = -1, npcType: Int = -1): Script<Player>? = null
 
-    fun apNpcT(component: Int): Script<Player>? = null
+    fun apNpcT(component: Int, obj: Int = -1, npcType: Int = -1): Script<Player>? = null
+
+    /** Interface component (an item: [obj] in slot [sub]; or a spell) used on loc [locId]. */
+    fun opLocT(component: Int, obj: Int, locId: Int): Script<Player>? = null
+
+    fun apLocT(component: Int, obj: Int, locId: Int): Script<Player>? = null
+
+    /** Interface component used on ground obj [groundObj]. */
+    fun opObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? = null
+
+    fun apObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? = null
+
+    /** IF_BUTTONT: slot [fromSub] ([fromObj]) of [fromComponent] used on slot [toSub] ([toObj]) of [toComponent]. */
+    fun onButtonT(player: Player, fromComponent: Int, fromSub: Int, fromObj: Int, toComponent: Int, toSub: Int, toObj: Int) {}
 
     fun apObj(objId: Int, option: Int): Script<Player>? = null
 

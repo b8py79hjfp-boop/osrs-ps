@@ -315,7 +315,13 @@ class World(
                 val open = interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)
                 if (!open || !isOtherVisible(player, other)) return invalid(player, command)
                 player.routeCtrl = command.ctrl
-                interact(player, InteractionTarget.OfPlayer(other ?: return), command.component, targeted = true)
+                interact(
+                    player,
+                    InteractionTarget.OfPlayer(other ?: return),
+                    command.component,
+                    targeted = true,
+                    used = UsedItem(command.component, command.sub, command.obj),
+                )
             }
 
             is ClientCommand.OpNpcT -> {
@@ -323,7 +329,51 @@ class World(
                 val open = interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)
                 if (!open || npc == null || !inView(player, npc)) return invalid(player, command)
                 player.routeCtrl = command.ctrl
-                interact(player, InteractionTarget.OfNpc(npc), command.component, targeted = true)
+                interact(
+                    player,
+                    InteractionTarget.OfNpc(npc),
+                    command.component,
+                    targeted = true,
+                    used = UsedItem(command.component, command.sub, command.obj),
+                )
+            }
+
+            is ClientCommand.OpLocT -> {
+                if (!inBuildArea(player, command.x, command.z) || !interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) {
+                    return invalid(player, command)
+                }
+                val loc = locs.find(player.coord.level, command.x, command.z, command.id) ?: return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(player, loc, command.component, targeted = true, used = UsedItem(command.component, command.sub, command.obj))
+            }
+
+            is ClientCommand.OpObjT -> {
+                val at = CoordGrid(command.x, command.z, player.coord.level)
+                val obj = ground.find(at, command.id, player)
+                if (obj == null || !interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) return invalid(player, command)
+                player.routeCtrl = command.ctrl
+                interact(
+                    player,
+                    InteractionTarget.Obj(at, obj.id),
+                    command.component,
+                    targeted = true,
+                    used = UsedItem(command.component, command.sub, command.obj),
+                )
+            }
+
+            is ClientCommand.ButtonT -> {
+                val fromOpen = interfaces.isOpen(player, command.fromComponent ushr COMPONENT_SHIFT)
+                val toOpen = interfaces.isOpen(player, command.toComponent ushr COMPONENT_SHIFT)
+                if (!fromOpen || !toOpen) return invalid(player, command)
+                content.onButtonT(
+                    player,
+                    command.fromComponent,
+                    command.fromSub,
+                    command.fromObj,
+                    command.toComponent,
+                    command.toSub,
+                    command.toObj,
+                )
             }
 
             is ClientCommand.OpObj -> {
@@ -543,14 +593,35 @@ class World(
      * Starts an interaction (a new one interrupts the old: I7). [targeted]: [option] is a packed interface component
      * used on the target (spells: OPPLAYERT/OPNPCT).
      */
-    fun interact(player: Player, target: InteractionTarget, option: Int, targeted: Boolean = false) {
+    fun interact(player: Player, target: InteractionTarget, option: Int, targeted: Boolean = false, used: UsedItem? = null) {
         if (player.isDelayed) return
         interrupt(player)
+        player.usedItem = used
+        val obj = used?.obj ?: -1
         val (op, ap) =
             when {
-                targeted && target is InteractionTarget.OfPlayer -> content.opPlayerT(option) to content.apPlayerT(option)
-                targeted && target is InteractionTarget.OfNpc -> content.opNpcT(option) to content.apNpcT(option)
-                else -> scriptsFor(target, option)
+                targeted && target is InteractionTarget.OfPlayer -> {
+                    content.opPlayerT(option) to content.apPlayerT(option)
+                }
+
+                targeted && target is InteractionTarget.OfNpc -> {
+                    content.opNpcT(option, obj, target.npc.type) to
+                        content.apNpcT(option, obj, target.npc.type)
+                }
+
+                targeted && target is InteractionTarget.Loc -> {
+                    content.opLocT(option, obj, target.id) to
+                        content.apLocT(option, obj, target.id)
+                }
+
+                targeted && target is InteractionTarget.Obj -> {
+                    content.opObjT(option, obj, target.id) to
+                        content.apObjT(option, obj, target.id)
+                }
+
+                else -> {
+                    scriptsFor(target, option)
+                }
             }
         player.interaction = Interaction(target, option, op, ap)
     }
@@ -995,6 +1066,9 @@ class World(
 
 /** The chatbox item search's answer (RESUME_P_OBJDIALOG); obj -1 = cancelled. Passed to content as a dialog answer. */
 data class ObjDialogAnswer(val obj: Int)
+
+/** The interface slot a targeted interaction uses: an item ([obj] in [sub] of [component]) or a spell component. */
+data class UsedItem(val component: Int, val sub: Int, val obj: Int)
 
 /** A pause-button click (RESUME_PAUSEBUTTON) a waiting dialogue script receives: [sub] is the chosen option slot. */
 data class PauseInput(val component: Int, val sub: Int)

@@ -34,3 +34,16 @@ pseudocode verbatim.
   of reach, as RS Mod does; osrs-docs doesn't specify.
 - **OPEN-I2:** ground-item ("obj") op distance: objs use I1's loc rule with a 1×1 footprint (rsmod-pathfinder
   rectangle reach).
+
+## Using items and spells on things (I10)
+
+- **Packets.** OPLOCT, OPOBJT, OPNPCT, OPPLAYERT and IF_BUTTONT carry the used component, slot and obj. The targeted
+  interaction routes and reaches like an op, then runs the use-on script on arrival.
+- **Content API.** `onUseOnLoc` / `onUseOnNpc` / `onUseOnObj` take an item id, or -1 for any item.
+  `onUseOnItem(a, b)` fires either way round. Spells use `onOpLocT` / `onOpObjT` / `onButtonT`, keyed by component.
+  The used slot is `PlayerScript.used`.
+- **Validation.** Client input is hostile (brief §12):
+  - the used backpack slot must still hold the item when the script runs;
+  - both slots of an item-on-item must hold what the client says, and they must be different slots.
+- **Default.** An item use with no handler answers "Nothing interesting happens.", OSRS's line for a use with no
+  effect.

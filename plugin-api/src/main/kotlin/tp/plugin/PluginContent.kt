@@ -7,6 +7,7 @@ import tp.engine.entity.Player
 import tp.engine.interact.InteractionTarget
 import tp.engine.script.Script
 import tp.symbols.Components
+import tp.symbols.Invs
 import java.util.ServiceLoader
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
@@ -16,6 +17,9 @@ private val logger = KotlinLogging.logger {}
 /** Packed component id split (`iface << 16 | comp`). */
 private const val COMPONENT_SHIFT = 16
 private const val COMPONENT_MASK = 0xFFFF
+
+/** OSRS's reply to using an item on something that has no use for it. */
+private const val NOTHING_INTERESTING = "Nothing interesting happens."
 
 /** Loc types have five ops (cache `LocType` opcodes 30-34). */
 private const val LOC_OPS = 5
@@ -150,9 +154,71 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun apPlayerT(component: Int): Script<Player>? = h.apPlayerT[component]?.let(::playerScript)
 
-    override fun opNpcT(component: Int): Script<Player>? = h.opNpcT[component]?.let(::npcScript)
+    override fun opNpcT(component: Int, obj: Int, npcType: Int): Script<Player>? =
+        if (component == Components.Inventory.ITEMS) {
+            useScript(h.useOnNpc[useKey(obj, npcType)] ?: h.useOnNpc[useKey(-1, npcType)], ::npcScript)
+        } else {
+            h.opNpcT[component]?.let(::npcScript)
+        }
 
-    override fun apNpcT(component: Int): Script<Player>? = h.apNpcT[component]?.let(::npcScript)
+    override fun apNpcT(component: Int, obj: Int, npcType: Int): Script<Player>? =
+        if (component == Components.Inventory.ITEMS) null else h.apNpcT[component]?.let(::npcScript)
+
+    override fun opLocT(component: Int, obj: Int, locId: Int): Script<Player>? =
+        if (component == Components.Inventory.ITEMS) {
+            useScript(h.useOnLoc[useKey(obj, locId)] ?: h.useOnLoc[useKey(-1, locId)], ::locScript)
+        } else {
+            h.opLocT[component]?.let(::locScript)
+        }
+
+    override fun apLocT(component: Int, obj: Int, locId: Int): Script<Player>? = null
+
+    override fun opObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? =
+        if (component == Components.Inventory.ITEMS) {
+            useScript(h.useOnObj[useKey(obj, groundObj)] ?: h.useOnObj[useKey(-1, groundObj)], ::objScript)
+        } else {
+            h.opObjT[component]?.let(::objScript)
+        }
+
+    override fun apObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? = null
+
+    override fun onButtonT(player: Player, fromComponent: Int, fromSub: Int, fromObj: Int, toComponent: Int, toSub: Int, toObj: Int) {
+        val ref = ref(player)
+        val event = ItemOnItem(fromComponent, fromSub, fromObj, toComponent, toSub, toObj)
+        if (fromComponent != Components.Inventory.ITEMS) {
+            h.buttonT[fromComponent]?.let { ref.it(event) }
+            return
+        }
+        // Hostile input (brief §12): both slots must hold what the client says.
+        val inv = player.world.inventory(player, Invs.INV)
+        val fromOk = fromSub in 0 until inv.size && inv.obj(fromSub) == fromObj
+        val toOk = toComponent != Components.Inventory.ITEMS || (toSub in 0 until inv.size && inv.obj(toSub) == toObj && toSub != fromSub)
+        if (!fromOk || !toOk) return
+        val handler =
+            h.useOnItem[useKey(fromObj, toObj)] ?: h.useOnItem[useKey(fromObj, -1)]
+                ?: h.useOnItem[useKey(toObj, -1)]?.let { hd -> { e: ItemOnItem -> hd(e.swapped()) } }
+        if (handler == null) {
+            ref.message(NOTHING_INTERESTING)
+            return
+        }
+        ref.handler(event)
+    }
+
+    /** Item use-on: the handler if any (run only while the used slot still holds the item), else the OSRS default line. */
+    private fun <T> useScript(
+        handler: (suspend PlayerScript.(T) -> Unit)?,
+        wrap: (suspend PlayerScript.(T) -> Unit) -> Script<Player>,
+    ): Script<Player> {
+        val body: suspend PlayerScript.(T) -> Unit = handler ?: { player.message(NOTHING_INTERESTING) }
+        val inner = wrap(body)
+        return {
+            val used = self.usedItem
+            val inv = self.world.inventory(self, Invs.INV)
+            if (used != null && used.sub in 0 until inv.size && inv.obj(used.sub) == used.obj) inner()
+        }
+    }
+
+    private fun useKey(a: Int, b: Int): Long = (a.toLong() shl Int.SIZE_BITS) or Integer.toUnsignedLong(b)
 
     override fun opObj(objId: Int, option: Int): Script<Player>? =
         (h.opObj[key(objId, option)] ?: h.opObj[key(ContentScope.DEFAULT_ID, option)])?.let(::objScript)

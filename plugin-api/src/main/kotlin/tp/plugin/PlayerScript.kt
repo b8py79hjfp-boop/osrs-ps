@@ -28,6 +28,9 @@ public class PlayerScript internal constructor(private val scope: ScriptScope<Pl
     /** Waits for a pause-button / dialogue answer. */
     public suspend fun awaitInput(): Any = scope.awaitInput()
 
+    /** The item (or spell slot) this use-on interaction started from, or null. */
+    public val used: UsedItem? get() = scope.self.usedItem?.let { UsedItem(it.component, it.sub, it.obj) }
+
     /** The entity this script's interaction targets (player or NPC), or null. */
     public val target: EntityRef?
         get() =

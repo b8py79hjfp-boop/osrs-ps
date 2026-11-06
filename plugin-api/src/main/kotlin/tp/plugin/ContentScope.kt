@@ -21,6 +21,47 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.modalClosed.getOrPut(interfaceId) { ArrayList() } += handler
     }
 
+    /**
+     * Inventory item [obj] used on loc [loc] (OPLOCT), run on arrival; [obj] -1 = any item. Unhandled uses answer
+     * "Nothing interesting happens." The used slot is [PlayerScript.used].
+     */
+    public fun onUseOnLoc(obj: Int, loc: Int, script: suspend PlayerScript.(LocRef) -> Unit) {
+        handlers.put(handlers.useOnLoc, useKey(obj, loc), script, "use $obj on loc $loc")
+    }
+
+    /** Inventory item [obj] used on an NPC of type [npc] (OPNPCT); [obj] -1 = any item. */
+    public fun onUseOnNpc(obj: Int, npc: Int, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.useOnNpc, useKey(obj, npc), script, "use $obj on npc $npc")
+    }
+
+    /** Inventory item [obj] used on ground item [groundObj] (OPOBJT); [obj] -1 = any item. */
+    public fun onUseOnObj(obj: Int, groundObj: Int, script: suspend PlayerScript.(ObjRef) -> Unit) {
+        handlers.put(handlers.useOnObj, useKey(obj, groundObj), script, "use $obj on obj $groundObj")
+    }
+
+    /** Inventory item [a] used on inventory item [b], either way round (IF_BUTTONT). [b] -1 = any item. */
+    public fun onUseOnItem(a: Int, b: Int, handler: PlayerRef.(ItemOnItem) -> Unit) {
+        handlers.put(handlers.useOnItem, useKey(a, b), handler, "use $a on item $b")
+        if (a != b && b >= 0) handlers.put(handlers.useOnItem, useKey(b, a), { e -> handler(e.swapped()) }, "use $b on item $a")
+    }
+
+    /** A spell or other component [component] used on loc [loc] (OPLOCT from a non-inventory component). */
+    public fun onOpLocT(component: Int, script: suspend PlayerScript.(LocRef) -> Unit) {
+        handlers.put(handlers.opLocT, component, script, "oploct $component")
+    }
+
+    /** A spell or other component [component] used on a ground item (OPOBJT, e.g. Telekinetic Grab). */
+    public fun onOpObjT(component: Int, script: suspend PlayerScript.(ObjRef) -> Unit) {
+        handlers.put(handlers.opObjT, component, script, "opobjt $component")
+    }
+
+    /** A spell or other component [component] used on an inventory item (IF_BUTTONT into the backpack, e.g. alchemy). */
+    public fun onButtonT(component: Int, handler: PlayerRef.(ItemOnItem) -> Unit) {
+        handlers.put(handlers.buttonT, component, handler, "buttont $component")
+    }
+
+    private fun useKey(a: Int, b: Int): Long = (a.toLong() shl Int.SIZE_BITS) or Integer.toUnsignedLong(b)
+
     /** Runs for every NPC added to the world (spawn data, content), e.g. to set its hunt range. */
     public fun onNpcSpawn(handler: NpcRef.() -> Unit) {
         handlers.npcSpawn += handler
@@ -181,6 +222,13 @@ internal class Handlers {
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opLocNamed = HashMap<String, suspend PlayerScript.(LocRef) -> Unit>()
     val opLocFallback = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
+    val useOnLoc = HashMap<Long, suspend PlayerScript.(LocRef) -> Unit>()
+    val useOnNpc = HashMap<Long, suspend PlayerScript.(NpcRef) -> Unit>()
+    val useOnObj = HashMap<Long, suspend PlayerScript.(ObjRef) -> Unit>()
+    val useOnItem = HashMap<Long, PlayerRef.(ItemOnItem) -> Unit>()
+    val opLocT = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
+    val opObjT = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
+    val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

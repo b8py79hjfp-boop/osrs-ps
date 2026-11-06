@@ -34,3 +34,21 @@ public class ButtonClick internal constructor(
     /** Right-click sub-option (IF_SUBOP), -1 for the plain op. */
     public val subop: Int = -1,
 )
+
+/**
+ * An item (or spell component) used on an inventory item: [from] slot [fromSlot] holding [fromObj] onto [to] slot
+ * [toSlot] holding [toObj].
+ */
+public class ItemOnItem internal constructor(
+    public val from: Int,
+    public val fromSlot: Int,
+    public val fromObj: Int,
+    public val to: Int,
+    public val toSlot: Int,
+    public val toObj: Int,
+) {
+    internal fun swapped(): ItemOnItem = ItemOnItem(to, toSlot, toObj, from, fromSlot, fromObj)
+}
+
+/** The inventory slot a use-on interaction started from ([PlayerScript.used]). */
+public class UsedItem internal constructor(public val component: Int, public val slot: Int, public val obj: Int)

@@ -29,6 +29,38 @@ sealed interface ClientCommand {
     /** Ground item op. */
     data class OpObj(val option: Int, val id: Int, val x: Int, val z: Int, val ctrl: Boolean) : ClientCommand
 
+    /** Interface component (item / spell) [component]/[sub]/[obj] used on loc [id] at ([x], [z]) (OPLOCT). */
+    data class OpLocT(
+        val id: Int,
+        val x: Int,
+        val z: Int,
+        val component: Int,
+        val sub: Int,
+        val obj: Int,
+        val ctrl: Boolean,
+    ) : ClientCommand
+
+    /** Interface component used on ground obj [id] at ([x], [z]) (OPOBJT). */
+    data class OpObjT(
+        val id: Int,
+        val x: Int,
+        val z: Int,
+        val component: Int,
+        val sub: Int,
+        val obj: Int,
+        val ctrl: Boolean,
+    ) : ClientCommand
+
+    /** One component slot used on another (IF_BUTTONT: item on item, spell on item). */
+    data class ButtonT(
+        val fromComponent: Int,
+        val fromSub: Int,
+        val fromObj: Int,
+        val toComponent: Int,
+        val toSub: Int,
+        val toObj: Int,
+    ) : ClientCommand
+
     /**
      * IF3 button / inventory slot op. [component] is packed `iface << 16 | comp`; [sub] the slot, [obj] the item;
      * [subop] the right-click sub-option (IF_SUBOP, e.g. a jewellery "Rub" destination), -1 for a plain op.

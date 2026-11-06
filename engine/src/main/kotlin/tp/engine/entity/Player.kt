@@ -31,6 +31,9 @@ class Player internal constructor(
 ) : Entity(world, spawn) {
     val stats = PlayerStats()
 
+    /** The item or spell slot of the current targeted interaction (use-on), or null. */
+    var usedItem: tp.engine.UsedItem? = null
+
     /** Persisted content state outside varps (fee paid flags, cooldown ticks): saved as the `attrs` object. */
     val saved: HashMap<String, Long> = HashMap()
 

@@ -257,6 +257,24 @@ class Osrs242Network(
         override fun getCount(address: String): Int = delegate.getCount(address)
     }
 
+    /** Item / spell use-on packets: OPLOCT, OPOBJT, IF_BUTTONT. */
+    private fun targetedConsumers(b: GameMessageConsumerRepositoryBuilder<RspSession>) {
+        b.addListener(net.rsprot.protocol.game.incoming.locs.OpLocTV1::class.java) { s, m ->
+            s.deliver(ClientCommand.OpLocT(m.id, m.x, m.z, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.locs.OpLocTV2::class.java) { s, m ->
+            s.deliver(ClientCommand.OpLocT(m.id, m.x, m.z, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.objs.OpObjT::class.java) { s, m ->
+            s.deliver(ClientCommand.OpObjT(m.id, m.x, m.z, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.buttons.IfButtonT::class.java) { s, m ->
+            s.deliver(
+                ClientCommand.ButtonT(m.selectedCombinedId, m.selectedSub, m.selectedObj, m.targetCombinedId, m.targetSub, m.targetObj),
+            )
+        }
+    }
+
     /** Decoded packets -> [ClientCommand]s, delivered to the session currently being polled. */
     private fun consumers(): GameMessageConsumerRepositoryProvider<RspSession> {
         val b = GameMessageConsumerRepositoryBuilder<RspSession>()
@@ -270,6 +288,7 @@ class Osrs242Network(
         b.addListener(MapBuildComplete::class.java) { s, _ -> s.deliver(ClientCommand.MapBuildComplete) }
         b.addListener(OpLocV2::class.java) { s, m -> s.deliver(ClientCommand.OpLoc(m.op, m.id, m.x, m.z, m.controlKey)) }
         b.addListener(OpLocV3::class.java) { s, m -> s.deliver(ClientCommand.OpLoc(m.op, m.id, m.x, m.z, m.controlKey)) }
+        targetedConsumers(b)
         b.addListener(OpNpcV2::class.java) { s, m -> s.deliver(ClientCommand.OpNpc(m.op, m.index, m.controlKey)) }
         b.addListener(OpPlayer::class.java) { s, m -> s.deliver(ClientCommand.OpPlayer(m.op, m.index, m.controlKey)) }
         b.addListener(OpPlayerT::class.java) { s, m ->
