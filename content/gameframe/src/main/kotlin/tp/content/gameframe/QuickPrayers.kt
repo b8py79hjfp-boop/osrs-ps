@@ -11,7 +11,7 @@ import tp.symbols.Varbits
 /**
  * Quick-prayer setup (orb op 2): the selection panel stores the chosen prayers in varbit `quickprayer_selected` (same
  * bit layout as `prayer_allactive`: RS Mod copies one into the other). Activating them (orb op 1) lives with the
- * prayer drain in content/combat and is OPEN-O3; so is conflict resolution between selected prayers.
+ * prayer drain in content/combat (`Prayers`, prayers.md P6), which also resolves conflicts between selected prayers.
  */
 public class QuickPrayers : ContentPlugin {
     /** Prayer slot (cache enum 4956 key) -> its varbit bit and level. */

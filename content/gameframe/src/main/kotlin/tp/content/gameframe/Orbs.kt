@@ -8,8 +8,8 @@ import tp.symbols.Varbits
 
 /**
  * Minimap orbs (docs/mechanics/gameframe-buttons.md O1..O5): run toggle, XP drops toggle (its setup panel is
- * [XpDropsSetup]), quick-prayer setup and the world map orb. The special attack orb lives in content/combat; the
- * quick-prayer toggle (op 1) is OPEN-O3.
+ * [XpDropsSetup]), quick-prayer setup and the world map orb. The special attack orb and the quick-prayer toggle (op 1)
+ * live in content/combat.
  */
 public class Orbs : ContentPlugin {
     override fun ContentScope.register() {

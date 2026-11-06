@@ -18,3 +18,4 @@ out/
 
 # Local Claude settings
 .claude/settings.local.json
+__pycache__/

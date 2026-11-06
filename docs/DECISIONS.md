@@ -284,7 +284,7 @@ count the defender's own turns (scripts.md Q13), which yields the processing-ord
 v2 (ISC, github.com/rsmod/rsmod `content/interfaces/{settings,emotes,equipment,journal-tab,prayer-tab}`, read 2026-11-06).
 No source was copied: it was re-expressed against `plugin-api` with gameval symbols, so no ISC header is kept in the
 files; each KDoc names the RS Mod script it follows. Plugin-api gained `WorldRef.enumStrings` and `PlayerRef.runMode`
-now also writes varp `option_run` (the run orb reads it). The quick-prayer toggle stays with content/combat (OPEN-O3).
+now also writes varp `option_run` (the run orb reads it). The quick-prayer toggle lives in content/combat (prayers.md P6).
 
 Addendum (equipment, price checker, items kept on death, music, XP drops, bond/house options): modals that come with a
 list of items borrow the backpack's side slot (`openOverlay` on `toplevel:side3`, backpack reopened afterwards) instead of
