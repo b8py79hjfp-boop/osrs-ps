@@ -134,8 +134,11 @@ sealed interface ZoneOp {
 
 /** Outgoing messages, revision-independent. Info packets and rebuilds are handled by the session itself. */
 sealed interface ServerMessage {
-    /** Chatbox game message. */
-    data class GameMessage(val text: String) : ServerMessage
+    /**
+     * A chatbox line: [type] is the client's message type (0 game; 101 trade request and 103 duel request, which the
+     * client makes clickable for [name]).
+     */
+    data class GameMessage(val text: String, val type: Int = 0, val name: String? = null) : ServerMessage
 
     /** Root (toplevel) interface. */
     data class OpenTop(val interfaceId: Int) : ServerMessage
@@ -167,6 +170,8 @@ sealed interface ServerMessage {
         val objs: IntArray,
         val counts: IntArray,
         val slots: IntArray?,
+        /** The partner's copy of the inventory (client `invother`, e.g. the other side of a trade). */
+        val other: Boolean = false,
     ) : ServerMessage
 
     /** Skill level/xp (stat id per the client's stat order). */

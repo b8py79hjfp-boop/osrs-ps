@@ -131,6 +131,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.GameMessage(text))
     }
 
+    /** A clickable request line from [from]: chat type 101 (trade) or 103 (duel), e.g. "<name> wishes to trade with you." */
+    public fun requestMessage(from: PlayerRef, text: String, duel: Boolean) {
+        p.session.send(ServerMessage.GameMessage(text, if (duel) DUEL_REQUEST_TYPE else TRADE_REQUEST_TYPE, from.username))
+    }
+
     /** Hard interruption: cancels the interaction and route, closes the modal, clears weak scripts (interactions.md I7). */
     public fun interrupt() {
         p.world.interrupt(p)
@@ -286,8 +291,8 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
      * Sends [invId] to the client as [objs]/[counts] without changing any server inventory: for panels that only show
      * items (items kept on death). Nothing moves, so nothing goes through a transaction or the item journal.
      */
-    public fun showInv(invId: Int, objs: IntArray, counts: IntArray) {
-        p.session.send(ServerMessage.Inventory(invId, objs, counts, null))
+    public fun showInv(invId: Int, objs: IntArray, counts: IntArray, other: Boolean = false) {
+        p.session.send(ServerMessage.Inventory(invId, objs, counts, null, other))
     }
 
     /**
@@ -539,6 +544,13 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
 
     public fun move(fromInv: Int, slot: Int, obj: Int, count: Int, toInv: Int): Boolean = tx.move(of(fromInv), slot, obj, count, of(toInv))
 
+    /**
+     * Moves [count] of [obj] from [slot] of [from]'s [fromInv] into [to]'s [toInv], in this same transaction (trades:
+     * both sides change hands atomically).
+     */
+    public fun moveTo(from: PlayerRef, fromInv: Int, slot: Int, obj: Int, count: Int, to: PlayerRef, toInv: Int): Boolean =
+        tx.move(from.p.world.inventory(from.p, fromInv), slot, obj, count, to.p.world.inventory(to.p, toInv))
+
     public fun replaceAt(invId: Int, slot: Int, obj: Int, newObj: Int, count: Int = 1): Boolean =
         tx.replaceAt(of(invId), slot, obj, newObj, count)
 
@@ -631,6 +643,10 @@ public class DbRowRef internal constructor(private val row: tp.cache.config.dbro
 
 /** A map loc an interaction targets. */
 private const val MILLIS_PER_MINUTE = 60_000L
+
+/** Client chat message types (RuneLite `ChatMessageType` TRADEREQ / CHALREQ_TRADE). */
+private const val TRADE_REQUEST_TYPE = 101
+private const val DUEL_REQUEST_TYPE = 103
 
 public class LocRef internal constructor(public val id: Int, public val coord: CoordGrid, public val shape: Int, public val angle: Int)
 

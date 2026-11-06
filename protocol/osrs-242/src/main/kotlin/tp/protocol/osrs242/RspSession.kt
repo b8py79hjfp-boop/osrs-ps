@@ -218,7 +218,9 @@ internal class RspSession(
 
         /** Root world id for rebuilds (RS Mod `RspCycle.worldId`). */
         private const val ROOT_WORLD = -1
-        private const val GAME_MESSAGE_TYPE = 0
+
+        /** Combined ids below -70000 mark a mirrored ("other") inventory. */
+        private const val OTHER_INV_BASE = 70_000
         private const val SUB_MODAL = 0
         private const val SUB_OVERLAY = 1
         private const val COMPONENT_SHIFT = 16
@@ -292,7 +294,13 @@ internal class RspSession(
         fun toRsprot(message: ServerMessage): OutgoingGameMessage =
             when (message) {
                 is ServerMessage.GameMessage -> {
-                    MessageGame(GAME_MESSAGE_TYPE, message.text)
+                    if (message.name !=
+                        null
+                    ) {
+                        MessageGame(message.type, message.name, message.text)
+                    } else {
+                        MessageGame(message.type, message.text)
+                    }
                 }
 
                 is ServerMessage.OpenTop -> {
@@ -396,7 +404,9 @@ internal class RspSession(
          * one, as observed on live OSRS (RS Mod `UpdateInventory`); RSProt: positive combined ids crash the client.
          */
         private fun inventory(m: ServerMessage.Inventory): OutgoingGameMessage {
-            val combined = -(INV_COMBINED_BASE + m.invId)
+            // RSProt `UpdateInvFull`: "a value of < -70000 ... tells the client that the respective inventory is a
+            // 'mirrored' one" (the partner's side, `invother`).
+            val combined = if (m.other) -(OTHER_INV_BASE + INV_COMBINED_BASE + m.invId) else -(INV_COMBINED_BASE + m.invId)
 
             fun packed(slot: Int): Long = if (m.objs[slot] < 0) InventoryObject.NULL else InventoryObject(m.objs[slot], m.counts[slot])
             val slots = m.slots ?: return UpdateInvFull(combined, m.invId, m.objs.indexOfLast { it >= 0 } + 1) { packed(it) }

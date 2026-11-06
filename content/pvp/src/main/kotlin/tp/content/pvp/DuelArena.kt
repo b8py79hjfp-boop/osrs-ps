@@ -109,7 +109,7 @@ public class DuelArena : ContentPlugin {
         }
         player[CHALLENGED] = other to player.tick
         player.message("Sending duel request...")
-        other.message("${player.username} wishes to duel with you.")
+        other.requestMessage(player, "${player.username} wishes to duel with you.", duel = true)
     }
 
     // ---- DA2 options
