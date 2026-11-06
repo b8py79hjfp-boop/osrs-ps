@@ -13,6 +13,14 @@ public interface ContentRegistry {
     public val plugins: List<ContentPlugin>
 }
 
+/** An item dragged from slot [fromSlot] of [fromComponent] onto slot [toSlot] of [toComponent] (-1 = no slot). */
+public class ButtonDrag internal constructor(
+    public val fromComponent: Int,
+    public val fromSlot: Int,
+    public val toComponent: Int,
+    public val toSlot: Int,
+)
+
 /** IF3 button click as delivered to an [ContentScope.onButton] handler (already validated: the interface is open). */
 public class ButtonClick internal constructor(
     /** Packed component (`iface << 16 | comp`), as in `tp.symbols.Components`. */

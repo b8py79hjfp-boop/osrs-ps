@@ -16,6 +16,9 @@ private val logger = KotlinLogging.logger {}
 private const val COMPONENT_SHIFT = 16
 private const val COMPONENT_MASK = 0xFFFF
 
+/** Loc types have five ops (cache `LocType` opcodes 30-34). */
+private const val LOC_OPS = 5
+
 /**
  * Compiles every registered plugin into the engine's [ContentHandlers]. Built once at boot; lookups are hash maps,
  * no reflection after boot (brief §6).
@@ -30,8 +33,44 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onWorldStart(world: World) {
         this.world = world
+        resolveNamed(world)
         val ref = WorldRef(world)
         for (handler in h.worldStart) ref.handler()
+    }
+
+    /** Resolved name + op text handlers by (config id, op), built once so a click costs one map lookup. */
+    private val opLocResolved = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
+    private val opNpcResolved = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
+
+    private fun resolveNamed(world: World) {
+        if (h.opLocNamed.isNotEmpty()) resolveLocs(world)
+        if (h.opNpcNamed.isNotEmpty()) {
+            for (type in world.data.configs.npcs) {
+                for ((index, text) in type.ops.ops.withIndex()) {
+                    val handler = text?.let { h.opNpcNamed[Handlers.namedKey(type.name, it)] } ?: continue
+                    opNpcResolved[key(type.id, index + 1)] = handler
+                }
+            }
+        }
+    }
+
+    /**
+     * Name + op text handlers of loc types. A multi-loc (a loc that changes with a varbit) is clicked by its base id, so
+     * it also gets the handlers of the types it can change into.
+     */
+    private fun resolveLocs(world: World) {
+        val locs = world.data.configs.locs
+        for (type in locs) {
+            for ((index, text) in type.ops.ops.withIndex()) {
+                val handler = text?.let { h.opLocNamed[Handlers.namedKey(type.name, it)] } ?: continue
+                opLocResolved[key(type.id, index + 1)] = handler
+            }
+        }
+        for (type in locs) {
+            for (target in type.multiLocs ?: continue) {
+                for (op in 1..LOC_OPS) opLocResolved[key(target, op)]?.let { opLocResolved.putIfAbsent(key(type.id, op), it) }
+            }
+        }
     }
 
     override fun onLogin(player: Player) {
@@ -54,12 +93,14 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         return true
     }
 
-    override fun opLoc(locId: Int, option: Int): Script<Player>? = h.opLoc[key(locId, option)]?.let(::locScript)
+    override fun opLoc(locId: Int, option: Int): Script<Player>? =
+        (h.opLoc[key(locId, option)] ?: opLocResolved[key(locId, option)])?.let(::locScript)
 
     override fun apLoc(locId: Int, option: Int): Script<Player>? = h.apLoc[key(locId, option)]?.let(::locScript)
 
     override fun opNpc(npcType: Int, option: Int): Script<Player>? =
-        (h.opNpc[key(npcType, option)] ?: opText(npcType, option)?.let(h.opNpcByText::get))?.let(::npcScript)
+        (h.opNpc[key(npcType, option)] ?: opNpcResolved[key(npcType, option)] ?: opText(npcType, option)?.let(h.opNpcByText::get))
+            ?.let(::npcScript)
 
     override fun apNpc(npcType: Int, option: Int): Script<Player>? =
         (h.apNpc[key(npcType, option)] ?: opText(npcType, option)?.let(h.apNpcByText::get))?.let(::npcScript)
@@ -113,6 +154,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun npcHunt(npc: tp.engine.entity.Npc) {
         h.npcHunt?.invoke(NpcRef(npc))
+    }
+
+    override fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {
+        val handler = h.drags[fromComponent] ?: return
+        ref(player).handler(ButtonDrag(fromComponent, fromSub, toComponent, toSub))
     }
 
     override fun onDialogAnswer(player: Player, value: Any) {

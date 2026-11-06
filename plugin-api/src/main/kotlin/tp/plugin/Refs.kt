@@ -396,6 +396,26 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
             ?.takeIf { !it.isNoted }
             ?.certLink ?: -1
 
+    /** Whether [obj] stacks in a normal inventory (cache `stackable`; notes and placeholders follow their template). */
+    public fun objStackable(obj: Int): Boolean = p.world.objType(obj)?.isStackable ?: false
+
+    /** Whether [obj] is a bank placeholder (cache placeholder template set). */
+    public fun isPlaceholder(obj: Int): Boolean = p.world.objType(obj)?.isPlaceholder ?: false
+
+    /** The placeholder obj of real [obj] (cache `placeholderLink`), or -1 when it has none or [obj] is itself one. */
+    public fun placeholderOf(obj: Int): Int =
+        p.world
+            .objType(obj)
+            ?.takeIf { !it.isPlaceholder }
+            ?.placeholderLink ?: -1
+
+    /** The real obj a placeholder [obj] stands for, or -1 when [obj] is not a placeholder. */
+    public fun placeholderTarget(obj: Int): Int =
+        p.world
+            .objType(obj)
+            ?.takeIf { it.isPlaceholder }
+            ?.placeholderLink ?: -1
+
     /** Whether [obj] can be traded on the Grand Exchange (cache flag). */
     public fun isGeTradeable(obj: Int): Boolean = p.world.objType(unnoted(obj))?.geTradeable == true
 

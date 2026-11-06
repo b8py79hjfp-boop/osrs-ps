@@ -380,3 +380,24 @@ directory and the host guard are the cross-cutting choices; the rest is per chec
   overwrites the injected-client classes inside the shaded jar (753 classes). Final-jar scan:
   - exactly one 1024-bit modulus, ours;
   - no Jagex, RuneLite or Discord URLs.
+
+## D-029 — Bank ported from RS Mod; packed layout; name-based loc and NPC handlers
+
+`content/gameframe` has the bank (`Bank`, `BankLayout`, `BankDrag`; docs/mechanics/bank.md). The rules, op numbers, component
+roles and tab/placeholder behaviour come from RS Mod v2 `content/interfaces/bank` (ISC, github.com/rsmod/rsmod, read
+2026-11-06). No source was copied: it was re-expressed against `plugin-api` with gameval symbols, so no ISC header is kept in the
+files; each KDoc names the RS Mod function it follows.
+
+- **Packed layout instead of gaps.** RS Mod lets inv 95 have empty slots between items and compacts on the `bank_compress`
+  queue after the bank closes. Here the occupied slots are always packed at the front and the main tab's size is derived
+  (RS Mod keeps it in a server-only varbit), so the cache's `bank_tab_1..9` varbits are the only layout state. Every slot move is
+  a swap inside one `PlayerRef.transaction` (blocks move by three reversals), which is atomic and journaled; the varbits are
+  written after the transaction commits. Cost: a deposit into a numbered tab or a collapse is O(bank size) swaps, on a player
+  action, not on the tick path.
+- **plugin-api** gained `ContentScope.onOpLocNamed` / `onOpNpcNamed` (loc and NPC ops by cache name + op text, resolved once at
+  world start into id-keyed maps, so a click is one lookup; an id-specific handler wins; `onOpNpcNamed` wins over
+  `onOpNpcOption`), `IfEvents.DEPTH2`, and `PlayerRef.objStackable / isPlaceholder / placeholderOf / placeholderTarget`. The
+  cache has no content groups for "bank booth", so names stand in for RS Mod's `content.bank_booth` / `content.banker`.
+- **Not ported** (bank.md "Not implemented"): wear/eat extra ops (content/combat's wield interrupts and would close the
+  modal), fillers, potion store, tags, PIN, confirmation popups, sold slots, worn-bonus texts. Drag operations are written but
+  unreachable until IF_BUTTOND is delivered to content (OPEN-B7).

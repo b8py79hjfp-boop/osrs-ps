@@ -41,6 +41,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opLoc, key(loc, op), script, "oploc $loc/$op")
     }
 
+    /**
+     * Operable loc interaction for every loc type whose cache name is [name] and whose op number [text] reads (e.g.
+     * "Bank booth" / "Bank"; both compared ignoring case). Resolved once at world start; an id-specific [onOpLoc] wins.
+     */
+    public fun onOpLocNamed(name: String, text: String, script: suspend PlayerScript.(LocRef) -> Unit) {
+        handlers.put(handlers.opLocNamed, namedKey(name, text), script, "oploc '$name'/'$text'")
+    }
+
     /** Approachable loc interaction: runs within approach range and line of sight (I2). */
     public fun onApLoc(loc: Int, op: Int, script: suspend PlayerScript.(LocRef) -> Unit) {
         handlers.put(handlers.apLoc, key(loc, op), script, "aploc $loc/$op")
@@ -56,6 +64,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
      */
     public fun onOpNpcOption(text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
         handlers.put(handlers.opNpcByText, text.lowercase(), script, "opnpc text '$text'")
+    }
+
+    /**
+     * NPC op by cache name and op text (e.g. "Banker" / "Talk-to"), for NPC types without an id-specific handler. Wins
+     * over [onOpNpcOption]. Resolved once at world start.
+     */
+    public fun onOpNpcNamed(name: String, text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.opNpcNamed, namedKey(name, text), script, "opnpc '$name'/'$text'")
     }
 
     /** Approach variant of [onOpNpcOption] (ranged/magic attacks call `apRange`). */
@@ -103,6 +119,11 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opObj, key(DEFAULT_ID, op), script, "opobj default/$op")
     }
 
+    /** A drag that starts on [fromComponent] (any target; the handler checks [ButtonDrag.toComponent]). */
+    public fun onButtonDrag(fromComponent: Int, handler: PlayerRef.(ButtonDrag) -> Unit) {
+        handlers.put(handlers.drags, fromComponent, handler, "drag $fromComponent")
+    }
+
     /**
      * IF3 button on [component] (packed, `tp.symbols.Components`); runs only while its interface is open. [op] 0 = any
      * op without its own handler.
@@ -112,6 +133,8 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
     }
 
     private fun key(id: Int, op: Int): Int = (id shl OP_BITS) or op
+
+    private fun namedKey(name: String, text: String): String = Handlers.namedKey(name, text)
 
     internal companion object {
         const val OP_BITS = 4
@@ -131,6 +154,8 @@ internal class Handlers {
     var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
+    val opLocNamed = HashMap<String, suspend PlayerScript.(LocRef) -> Unit>()
+    val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
@@ -144,6 +169,12 @@ internal class Handlers {
     val apNpcT = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
     val opObj = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttons = HashMap<Long, PlayerRef.(ButtonClick) -> Unit>()
+    val drags = HashMap<Int, PlayerRef.(ButtonDrag) -> Unit>()
+
+    companion object {
+        /** Key of a name + op text handler. */
+        fun namedKey(name: String, text: String): String = "${name.lowercase()}|${text.lowercase()}"
+    }
 
     fun <K, V> put(map: MutableMap<K, V>, key: K, value: V, what: String) {
         check(map.put(key, value) == null) { "duplicate handler: $what" }

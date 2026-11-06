@@ -32,6 +32,16 @@ sealed interface ClientCommand {
     /** IF3 button / inventory slot op. [component] is packed `iface << 16 | comp`; [sub] the slot, [obj] the item. */
     data class Button(val component: Int, val option: Int, val sub: Int, val obj: Int) : ClientCommand
 
+    /** An item dragged from one component slot onto another (IF_BUTTOND); subs/objs are -1 when absent. */
+    data class ButtonDrag(
+        val fromComponent: Int,
+        val fromSub: Int,
+        val fromObj: Int,
+        val toComponent: Int,
+        val toSub: Int,
+        val toObj: Int,
+    ) : ClientCommand
+
     /** Public chat line (already Huffman-decoded). */
     data class PublicChat(val text: String, val colour: Int, val effect: Int, val type: Int) : ClientCommand
 

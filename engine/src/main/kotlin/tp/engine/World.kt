@@ -330,6 +330,13 @@ class World(
                 content.onButton(player, command.component, command.option, command.sub, command.obj)
             }
 
+            is ClientCommand.ButtonDrag -> {
+                val fromOpen = interfaces.isOpen(player, command.fromComponent ushr COMPONENT_SHIFT)
+                val toOpen = interfaces.isOpen(player, command.toComponent ushr COMPONENT_SHIFT)
+                if (!fromOpen || !toOpen) return invalid(player, command)
+                content.onButtonDrag(player, command.fromComponent, command.fromSub, command.toComponent, command.toSub)
+            }
+
             is ClientCommand.PublicChat -> {
                 if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
                 if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(MUTED_MESSAGE))

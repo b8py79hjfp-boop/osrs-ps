@@ -11,6 +11,13 @@ import tp.symbols.Invs
  */
 public class Backpack : ContentPlugin {
     override fun ContentScope.register() {
+        // RS Mod `HeldOpScript.dragHeld`: closes the modal, refused while delayed, then swaps the two backpack slots.
+        onButtonDrag(Components.Inventory.ITEMS) { d ->
+            val size = inv(Invs.INV).size
+            val valid = d.toComponent == Components.Inventory.ITEMS && d.fromSlot in 0 until size && d.toSlot in 0 until size
+            closeModal()
+            if (valid && d.fromSlot != d.toSlot && !isDelayed) transaction("inv drag") { swap(Invs.INV, d.fromSlot, d.toSlot) }
+        }
         onButton(Components.Inventory.ITEMS, OP_DROP) { click ->
             interrupt()
             val inv = inv(Invs.INV)

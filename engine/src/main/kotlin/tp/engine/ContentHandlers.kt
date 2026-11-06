@@ -50,6 +50,9 @@ interface ContentHandlers {
     /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
     fun onDialogAnswer(player: Player, value: Any) {}
 
+    /** IF_BUTTOND: slot [fromSub] of [fromComponent] dropped on slot [toSub] of [toComponent] (both interfaces open). */
+    fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {}
+
     /** An NPC was added to the world (content may set its hunt range). */
     fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
 

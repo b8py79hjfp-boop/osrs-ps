@@ -60,6 +60,7 @@ object CommandCodec {
             is ClientCommand.ResumeString -> "resumestring ${str(c.text)}"
             is ClientCommand.ResumeCount -> "resumecount ${c.count}"
             is ClientCommand.ResumeObj -> "resumeobj ${c.obj}"
+            is ClientCommand.ButtonDrag -> "drag ${c.fromComponent} ${c.fromSub} ${c.fromObj} ${c.toComponent} ${c.toSub} ${c.toObj}"
             ClientCommand.CloseModal -> "closemodal"
             is ClientCommand.WindowStatus -> "window ${c.mode} ${c.width} ${c.height}"
             is ClientCommand.Social -> "social ${c.action} ${str(c.name)} ${str(c.text)} ${c.rank}"
@@ -121,6 +122,10 @@ object CommandCodec {
 
             "resumeobj" -> {
                 ClientCommand.ResumeObj(i(1))
+            }
+
+            "drag" -> {
+                ClientCommand.ButtonDrag(i(1), i(2), i(3), i(4), i(5), i(6))
             }
 
             "resumestring" -> {

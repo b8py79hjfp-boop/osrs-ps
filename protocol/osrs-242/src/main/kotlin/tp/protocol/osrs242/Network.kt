@@ -20,6 +20,7 @@ import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.buttons.If3Button
+import net.rsprot.protocol.game.incoming.buttons.IfButtonD
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatJoinLeave
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatKick
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatSetRank
@@ -277,6 +278,19 @@ class Osrs242Network(
         }
         b.addListener(OpObjV2::class.java) { s, m -> s.deliver(ClientCommand.OpObj(m.op, m.id, m.x, m.z, m.controlKey)) }
         b.addListener(If3Button::class.java) { s, m -> s.deliver(ClientCommand.Button(m.combinedId, m.op, m.sub, m.obj)) }
+        b.addListener(IfButtonD::class.java) { s, m ->
+            fun opt(v: Int) = if (v == NONE_U16) -1 else v
+            s.deliver(
+                ClientCommand.ButtonDrag(
+                    m.selectedCombinedId,
+                    opt(m.selectedSub),
+                    opt(m.selectedObj),
+                    m.targetCombinedId,
+                    opt(m.targetSub),
+                    opt(m.targetObj),
+                ),
+            )
+        }
         b.addListener(MessagePublic::class.java) { s, m ->
             s.deliver(ClientCommand.PublicChat(m.message, m.colour, m.effect, m.type))
         }
@@ -411,3 +425,6 @@ internal object DefaultAppearance {
         )
     }
 }
+
+/** RSProt reports an absent sub/obj as 0xFFFF. */
+private const val NONE_U16 = 0xFFFF
