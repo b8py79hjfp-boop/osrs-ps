@@ -25,6 +25,11 @@ import tp.services.Sanction
 import tp.services.SaveService
 import tp.services.SocialEvent
 import tp.services.SocialService
+import tp.services.TpBuyResult
+import tp.services.TpCollect
+import tp.services.TpListing
+import tp.services.TpTrade
+import tp.services.TradingPostService
 import tp.services.WorldDirectory
 import tp.services.WorldInfo
 import java.util.concurrent.ConcurrentHashMap
@@ -316,6 +321,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
 
     override val exchange: ExchangeService = Exchange(store, ::db)
 
+    override val tradingPost: TradingPostService = TradingPost(store, ::db)
+
     // ---------------------------------------------------------------- hiscores, moderation, broadcasts
 
     override val hiscores: HiscoreService =
@@ -578,4 +585,98 @@ internal class Exchange(private val store: HubStore, private val db: suspend (()
         }
 
     override suspend fun history(accountId: Long): List<GeOffer> = io { store.history(accountId) }
+}
+
+/**
+ * The trading post (docs/mechanics/trading-post.md, a custom feature): fixed-price player listings any player can buy
+ * from at once. One lock serialises every change so a listing is never oversold; worlds move items and coins through
+ * item transactions before (list, buy) or after (collect) calling in.
+ */
+internal class TradingPost(private val store: HubStore, private val db: suspend (() -> Any?) -> Any?) : TradingPostService {
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun <T> io(block: () -> T): T = db(block) as T
+
+    private val lock = Any()
+
+    override suspend fun list(accountId: Long, seller: String, obj: Int, quantity: Int, price: Int, maxListings: Int): TpListing? =
+        io {
+            synchronized(lock) {
+                if (quantity <= 0 || price <= 0) return@synchronized null
+                if (store.tpOpenListings().count { it.accountId == accountId } >= maxListings) return@synchronized null
+                store.putTpListing(TpListing(0, accountId, seller, obj, quantity, 0, price, System.currentTimeMillis()))
+            }
+        }
+
+    override suspend fun cancel(accountId: Long, id: Long): TpListing? =
+        io {
+            synchronized(lock) {
+                val l = store.tpOpenListings().firstOrNull { it.id == id && it.accountId == accountId } ?: return@synchronized null
+                val closed = store.putTpListing(l.copy(closed = true))
+                val box = store.tpCollect(accountId)
+                val items = box.items.toMutableMap().apply { merge(l.obj, l.remaining, Int::plus) }
+                store.setTpCollect(accountId, TpCollect(box.coins, items))
+                closed
+            }
+        }
+
+    override suspend fun search(objs: Set<Int>?, seller: String?, limit: Int): List<TpListing> =
+        io {
+            store
+                .tpOpenListings()
+                .asReversed()
+                .asSequence()
+                .filter { objs == null || it.obj in objs }
+                .filter { seller == null || it.seller.equals(seller, ignoreCase = true) }
+                .take(limit)
+                .toList()
+        }
+
+    override suspend fun mine(accountId: Long): List<TpListing> = io { store.tpOpenListings().filter { it.accountId == accountId } }
+
+    override suspend fun buy(accountId: Long, buyer: String, id: Long, quantity: Int, price: Int): TpBuyResult =
+        io {
+            synchronized(lock) {
+                val l = store.tpOpenListings().firstOrNull { it.id == id }
+                when {
+                    l == null -> {
+                        TpBuyResult(0, null, "That listing is no longer available.")
+                    }
+
+                    l.accountId == accountId -> {
+                        TpBuyResult(0, l, "You can't buy your own listing.")
+                    }
+
+                    l.price != price -> {
+                        TpBuyResult(0, l, "The price of that listing has changed.")
+                    }
+
+                    else -> {
+                        val n = minOf(quantity, l.remaining)
+                        val updated = store.putTpListing(l.copy(sold = l.sold + n))
+                        val box = store.tpCollect(l.accountId)
+                        store.setTpCollect(l.accountId, TpCollect(box.coins + n.toLong() * l.price, box.items))
+                        val now = System.currentTimeMillis()
+                        store.addTpTrade(TpTrade(accountId, l.obj, n, l.price, bought = true, other = l.seller, atMs = now))
+                        store.addTpTrade(TpTrade(l.accountId, l.obj, n, l.price, bought = false, other = buyer, atMs = now))
+                        TpBuyResult(n, updated, null)
+                    }
+                }
+            }
+        }
+
+    override suspend fun collect(accountId: Long): TpCollect =
+        io {
+            synchronized(lock) {
+                val box = store.tpCollect(accountId)
+                store.setTpCollect(accountId, TpCollect(0, emptyMap()))
+                box
+            }
+        }
+
+    override suspend fun pending(accountId: Long): TpCollect = io { store.tpCollect(accountId) }
+
+    override suspend fun history(accountId: Long): List<TpTrade> = io { store.tpTrades(accountId) }
+
+    private fun TpListing.copy(sold: Int = this.sold, closed: Boolean = this.closed) =
+        TpListing(id, accountId, seller, obj, quantity, sold, price, listedAtMs, closed)
 }

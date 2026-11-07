@@ -10,6 +10,7 @@ import tp.services.CollectPart
 import tp.services.HubServices
 import tp.services.LoginResult
 import tp.services.Sanction
+import tp.services.TpPb
 import tp.services.WorldInfo
 import tp.services.grpc.AccountRef
 import tp.services.grpc.AccountsGrpcKt
@@ -103,6 +104,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             .addService(Worlds())
             .addService(Social())
             .addService(Exchange())
+            .addService(TradingPostRpc())
             .addService(Hiscores())
             .addService(Moderation())
             .addService(Broadcasts())
@@ -375,6 +377,33 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             }
     }
 
+    private inner class TradingPostRpc : tp.services.grpc.TradingPostGrpcKt.TradingPostCoroutineImplBase() {
+        private val tpost get() = hub.tradingPost
+
+        override suspend fun list(request: tp.services.grpc.TpListRequest) =
+            with(request) { TpPb.maybe(tpost.list(accountId, seller, obj, quantity, price, maxListings)) }
+
+        override suspend fun cancel(request: tp.services.grpc.TpIdRequest) = TpPb.maybe(tpost.cancel(request.accountId, request.id))
+
+        override suspend fun search(request: tp.services.grpc.TpSearchRequest) =
+            with(request) {
+                TpPb.listings(
+                    tpost.search(if (byObj) objsList.toSet() else null, seller.ifEmpty { null }, limit.coerceIn(1, MAX_TP_RESULTS)),
+                )
+            }
+
+        override suspend fun mine(request: AccountRef) = TpPb.listings(tpost.mine(request.accountId))
+
+        override suspend fun buy(request: tp.services.grpc.TpBuyRequest) =
+            with(request) { TpPb.buy(tpost.buy(accountId, buyer, id, quantity, price)) }
+
+        override suspend fun collect(request: AccountRef) = TpPb.collect(tpost.collect(request.accountId))
+
+        override suspend fun pending(request: AccountRef) = TpPb.collect(tpost.pending(request.accountId))
+
+        override suspend fun history(request: AccountRef) = TpPb.trades(tpost.history(request.accountId))
+    }
+
     private inner class Exchange : ExchangeGrpcKt.ExchangeCoroutineImplBase() {
         override suspend fun guidePrices(request: PbEmpty): tp.services.grpc.GuidePriceList =
             tp.services.grpc.GuidePriceList
@@ -486,3 +515,6 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
     @Suppress("unused") // keeps LoginResult referenced for readers of the wire format
     private val resultNames = LoginResult.entries.map { it.name }
 }
+
+/** Upper bound on one trading post search reply (a client asking for more gets this many). */
+private const val MAX_TP_RESULTS = 200

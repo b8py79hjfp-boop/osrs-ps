@@ -6,6 +6,9 @@ import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
+import tp.services.TpCollect
+import tp.services.TpListing
+import tp.services.TpTrade
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -147,6 +150,122 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             c.prepareStatement(query).use { ps ->
                 args.forEachIndexed { i, a -> ps.setObject(i + 1, a) }
                 ps.executeQuery().use { rs -> buildList { while (rs.next()) add(rs.offer()) } }
+            }
+        }
+
+    private fun java.sql.ResultSet.tpListing() =
+        TpListing(
+            getLong("id"),
+            getLong("account_id"),
+            getString("seller"),
+            getInt("obj"),
+            getInt("quantity"),
+            getInt("sold"),
+            getInt("price"),
+            getLong("listed_at"),
+            getBoolean("closed"),
+        )
+
+    override fun tpOpenListings(): List<TpListing> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM tp_listings WHERE NOT closed AND sold < quantity ORDER BY id").use { ps ->
+                ps.executeQuery().use { rs -> buildList { while (rs.next()) add(rs.tpListing()) } }
+            }
+        }
+
+    override fun putTpListing(listing: TpListing): TpListing =
+        sql { c ->
+            if (listing.id == 0L) {
+                c
+                    .prepareStatement(
+                        "INSERT INTO tp_listings (account_id, seller, obj, quantity, sold, price, listed_at, closed) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
+                    ).use { ps ->
+                        with(listing) { listOf(accountId, seller, obj, quantity, sold, price, listedAtMs, closed) }
+                            .forEachIndexed { i, a -> ps.setObject(i + 1, a) }
+                        ps.executeQuery().use { rs ->
+                            rs.next()
+                            rs.tpListing()
+                        }
+                    }
+            } else {
+                c.prepareStatement("UPDATE tp_listings SET sold = ?, closed = ? WHERE id = ?").use { ps ->
+                    ps.setInt(1, listing.sold)
+                    ps.setBoolean(2, listing.closed)
+                    ps.setLong(3, listing.id)
+                    ps.executeUpdate()
+                }
+                listing
+            }
+        }
+
+    override fun tpCollect(id: Long): TpCollect =
+        sql { c ->
+            c.prepareStatement("SELECT coins, items FROM tp_collect WHERE account_id = ?").use { ps ->
+                ps.setLong(1, id)
+                ps.executeQuery().use { rs ->
+                    if (rs.next()) TpCollect(rs.getLong(1), decodeItems(rs.getString(2))) else TpCollect(0, emptyMap())
+                }
+            }
+        }
+
+    override fun setTpCollect(id: Long, collect: TpCollect) {
+        if (collect.empty) return exec("DELETE FROM tp_collect WHERE account_id = ?", id)
+        exec(
+            "INSERT INTO tp_collect (account_id, coins, items) VALUES (?, ?, ?) " +
+                "ON CONFLICT (account_id) DO UPDATE SET coins = EXCLUDED.coins, items = EXCLUDED.items",
+            id,
+            collect.coins,
+            collect.items.entries.joinToString(",") { "${it.key}:${it.value}" },
+        )
+    }
+
+    private fun decodeItems(text: String): Map<Int, Int> =
+        text.split(',').filter { it.isNotEmpty() }.associate { e -> e.substringBefore(':').toInt() to e.substringAfter(':').toInt() }
+
+    override fun addTpTrade(trade: TpTrade) {
+        with(trade) {
+            exec(
+                "INSERT INTO tp_trades (account_id, obj, quantity, price, bought, other, at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                accountId,
+                obj,
+                quantity,
+                price,
+                bought,
+                other,
+                atMs,
+            )
+        }
+        exec(
+            "DELETE FROM tp_trades WHERE account_id = ? AND id NOT IN " +
+                "(SELECT id FROM tp_trades WHERE account_id = ? ORDER BY id DESC LIMIT ?)",
+            trade.accountId,
+            trade.accountId,
+            TP_HISTORY_SIZE,
+        )
+    }
+
+    override fun tpTrades(id: Long): List<TpTrade> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM tp_trades WHERE account_id = ? ORDER BY id DESC").use { ps ->
+                ps.setLong(1, id)
+                ps.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            add(
+                                TpTrade(
+                                    rs.getLong("account_id"),
+                                    rs.getInt("obj"),
+                                    rs.getInt("quantity"),
+                                    rs.getInt("price"),
+                                    rs.getBoolean("bought"),
+                                    rs.getString("other"),
+                                    rs.getLong("at"),
+                                ),
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -455,6 +574,15 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                     obj int NOT NULL, quantity int NOT NULL, price int NOT NULL, completed int NOT NULL,
                     collect_coins bigint NOT NULL, collect_items int NOT NULL)""",
                 "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS gold bigint NOT NULL DEFAULT 0",
+                """CREATE TABLE IF NOT EXISTS tp_listings (
+                    id bigserial PRIMARY KEY, account_id bigint REFERENCES accounts(id), seller text NOT NULL, obj int NOT NULL,
+                    quantity int NOT NULL, sold int NOT NULL, price int NOT NULL, listed_at bigint NOT NULL,
+                    closed boolean NOT NULL DEFAULT false)""",
+                """CREATE TABLE IF NOT EXISTS tp_collect (
+                    account_id bigint PRIMARY KEY REFERENCES accounts(id), coins bigint NOT NULL, items text NOT NULL)""",
+                """CREATE TABLE IF NOT EXISTS tp_trades (
+                    id bigserial PRIMARY KEY, account_id bigint REFERENCES accounts(id), obj int NOT NULL, quantity int NOT NULL,
+                    price int NOT NULL, bought boolean NOT NULL, other text NOT NULL, at bigint NOT NULL)""",
                 "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS aborted boolean NOT NULL DEFAULT false",
                 "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS tax_rate int NOT NULL DEFAULT 0",
                 "ALTER TABLE ge_offers ADD COLUMN IF NOT EXISTS tax bigint NOT NULL DEFAULT 0",

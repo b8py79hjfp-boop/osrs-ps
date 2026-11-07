@@ -4,6 +4,9 @@ import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
+import tp.services.TpCollect
+import tp.services.TpListing
+import tp.services.TpTrade
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -172,6 +175,40 @@ class MemoryStore : HubStore {
     }
 
     override fun history(id: Long): List<GeOffer> = geHistory[id]?.let { synchronized(it) { it.toList() } }.orEmpty()
+
+    private val tpIds = AtomicLong()
+    private val tpListings = ConcurrentHashMap<Long, TpListing>()
+    private val tpCollects = ConcurrentHashMap<Long, TpCollect>()
+    private val tpTrades = ConcurrentHashMap<Long, ArrayDeque<TpTrade>>()
+
+    override fun tpOpenListings(): List<TpListing> = tpListings.values.filter { !it.closed && it.remaining > 0 }.sortedBy { it.id }
+
+    override fun putTpListing(listing: TpListing): TpListing {
+        val stored =
+            if (listing.id == 0L) {
+                with(listing) { TpListing(tpIds.incrementAndGet(), accountId, seller, obj, quantity, sold, price, listedAtMs, closed) }
+            } else {
+                listing
+            }
+        tpListings[stored.id] = stored
+        return stored
+    }
+
+    override fun tpCollect(id: Long): TpCollect = tpCollects[id] ?: TpCollect(0, emptyMap())
+
+    override fun setTpCollect(id: Long, collect: TpCollect) {
+        if (collect.empty) tpCollects.remove(id) else tpCollects[id] = collect
+    }
+
+    override fun addTpTrade(trade: TpTrade) {
+        val rows = tpTrades.computeIfAbsent(trade.accountId) { ArrayDeque() }
+        synchronized(rows) {
+            rows.addFirst(trade)
+            while (rows.size > TP_HISTORY_SIZE) rows.removeLast()
+        }
+    }
+
+    override fun tpTrades(id: Long): List<TpTrade> = tpTrades[id]?.let { synchronized(it) { it.toList() } }.orEmpty()
 
     override fun submitHiscores(id: Long, name: String, xpTenths: IntArray) {
         hiscores[id] = name to xpTenths.copyOf()

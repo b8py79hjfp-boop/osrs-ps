@@ -57,6 +57,9 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
     private val worldsStub = WorldsGrpcKt.WorldsCoroutineStub(channel)
     private val socialStub = SocialGrpcKt.SocialCoroutineStub(channel)
     private val exchangeStub = ExchangeGrpcKt.ExchangeCoroutineStub(channel)
+    private val tpStub =
+        tp.services.grpc.TradingPostGrpcKt
+            .TradingPostCoroutineStub(channel)
     private val hiscoresStub = HiscoresGrpcKt.HiscoresCoroutineStub(channel)
     private val moderationStub = ModerationGrpcKt.ModerationCoroutineStub(channel)
     private val broadcastsStub = BroadcastsGrpcKt.BroadcastsCoroutineStub(channel)
@@ -437,6 +440,72 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
         )
 
     private fun MaybeOffer.toModel(): GeOffer? = if (present) offer.toModel() else null
+
+    override val tradingPost: TradingPostService =
+        object : TradingPostService {
+            private fun ref(id: Long) = AccountRef.newBuilder().setAccountId(id).build()
+
+            override suspend fun list(accountId: Long, seller: String, obj: Int, quantity: Int, price: Int, maxListings: Int): TpListing? =
+                TpPb.maybe(
+                    tpStub.list(
+                        tp.services.grpc.TpListRequest
+                            .newBuilder()
+                            .setAccountId(accountId)
+                            .setSeller(seller)
+                            .setObj(obj)
+                            .setQuantity(quantity)
+                            .setPrice(price)
+                            .setMaxListings(maxListings)
+                            .build(),
+                    ),
+                )
+
+            override suspend fun cancel(accountId: Long, id: Long): TpListing? =
+                TpPb.maybe(
+                    tpStub.cancel(
+                        tp.services.grpc.TpIdRequest
+                            .newBuilder()
+                            .setAccountId(accountId)
+                            .setId(id)
+                            .build(),
+                    ),
+                )
+
+            override suspend fun search(objs: Set<Int>?, seller: String?, limit: Int): List<TpListing> =
+                tpStub
+                    .search(
+                        tp.services.grpc.TpSearchRequest
+                            .newBuilder()
+                            .setByObj(objs != null)
+                            .addAllObjs(objs.orEmpty())
+                            .setSeller(seller.orEmpty())
+                            .setLimit(limit)
+                            .build(),
+                    ).listingsList
+                    .map { TpPb.listing(it) }
+
+            override suspend fun mine(accountId: Long): List<TpListing> = tpStub.mine(ref(accountId)).listingsList.map { TpPb.listing(it) }
+
+            override suspend fun buy(accountId: Long, buyer: String, id: Long, quantity: Int, price: Int): TpBuyResult =
+                TpPb.buy(
+                    tpStub.buy(
+                        tp.services.grpc.TpBuyRequest
+                            .newBuilder()
+                            .setAccountId(accountId)
+                            .setBuyer(buyer)
+                            .setId(id)
+                            .setQuantity(quantity)
+                            .setPrice(price)
+                            .build(),
+                    ),
+                )
+
+            override suspend fun collect(accountId: Long): TpCollect = TpPb.collect(tpStub.collect(ref(accountId)))
+
+            override suspend fun pending(accountId: Long): TpCollect = TpPb.collect(tpStub.pending(ref(accountId)))
+
+            override suspend fun history(accountId: Long): List<TpTrade> = TpPb.trades(tpStub.history(ref(accountId)))
+        }
 
     override val exchange: ExchangeService =
         object : ExchangeService {

@@ -967,3 +967,10 @@ OpenRune-Server (ISC, Copyright (c) 2025 RS Mod; an RS Mod fork) is a reference 
 boss health bar (`content/combat/BossHpBar.kt`) adapts its `BossHpBarScript` (varps, colours, client script sequence, timings) and
 keeps the ISC notice in the file header. Where the cache disagrees (script 2102's argument order) the cache wins.
 
+## D-070 Trading Post is a custom, hub-backed feature
+
+The owner asked for a "Trading Post" like the screenshots of another server. It is not OSRS, so its rules live in
+docs/mechanics/trading-post.md as our own (TP1..TP6), not as sourced mechanics. Listings are global (hub, Postgres), a single
+lock in the hub serialises list / buy / cancel / collect so a listing is never oversold, and worlds move every coin and item
+through item transactions on their side before (list, buy) or after (collect) the hub call, refunding on failure.
+

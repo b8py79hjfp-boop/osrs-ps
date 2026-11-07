@@ -5,6 +5,9 @@ import tp.services.ClanRecord
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
+import tp.services.TpCollect
+import tp.services.TpListing
+import tp.services.TpTrade
 
 class AccountRow(
     val id: Long,
@@ -93,6 +96,22 @@ interface HubStore : AutoCloseable {
     /** Newest first. */
     fun history(id: Long): List<GeOffer>
 
+    /** Trading post: open listings (all accounts), oldest first. */
+    fun tpOpenListings(): List<TpListing>
+
+    /** Inserts ([TpListing.id] 0) or updates a listing; returns it with its id. */
+    fun putTpListing(listing: TpListing): TpListing
+
+    fun tpCollect(id: Long): TpCollect
+
+    fun setTpCollect(id: Long, collect: TpCollect)
+
+    /** Appends a trade and keeps the newest [TP_HISTORY_SIZE] per account. */
+    fun addTpTrade(trade: TpTrade)
+
+    /** Newest first. */
+    fun tpTrades(id: Long): List<TpTrade>
+
     fun submitHiscores(id: Long, name: String, xpTenths: IntArray)
 
     fun topHiscores(stat: Int, count: Int): List<HiscoreEntry>
@@ -103,3 +122,6 @@ interface HubStore : AutoCloseable {
 
 /** GE history length: "now extends to 40 previous listings" (OSRS Wiki "Grand Exchange" changes). */
 const val GE_HISTORY_SIZE: Int = 40
+
+/** Trading post trades kept per account (the History view). */
+const val TP_HISTORY_SIZE: Int = 50

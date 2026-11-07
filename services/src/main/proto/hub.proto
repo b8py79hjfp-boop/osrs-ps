@@ -332,6 +332,92 @@ message MaybeOffer {
   GeOffer offer = 2;
 }
 
+// ---------------------------------------------------------------- trading post (custom)
+
+message TpListingPb {
+  int64 id = 1;
+  int64 account_id = 2;
+  string seller = 3;
+  int32 obj = 4;
+  int32 quantity = 5;
+  int32 sold = 6;
+  int32 price = 7;
+  int64 listed_at = 8;
+  bool closed = 9;
+}
+
+message TpListings { repeated TpListingPb listings = 1; }
+
+message TpMaybeListing {
+  bool present = 1;
+  TpListingPb listing = 2;
+}
+
+message TpListRequest {
+  int64 account_id = 1;
+  string seller = 2;
+  int32 obj = 3;
+  int32 quantity = 4;
+  int32 price = 5;
+  int32 max_listings = 6;
+}
+
+message TpIdRequest {
+  int64 account_id = 1;
+  int64 id = 2;
+}
+
+message TpSearchRequest {
+  bool by_obj = 1;
+  repeated int32 objs = 2;
+  string seller = 3; // empty = any
+  int32 limit = 4;
+}
+
+message TpBuyRequest {
+  int64 account_id = 1;
+  string buyer = 2;
+  int64 id = 3;
+  int32 quantity = 4;
+  int32 price = 5;
+}
+
+message TpBuyReply {
+  int32 bought = 1;
+  bool has_listing = 2;
+  TpListingPb listing = 3;
+  string error = 4; // empty = none
+}
+
+message TpCollectPb {
+  int64 coins = 1;
+  repeated int32 objs = 2;
+  repeated int32 counts = 3;
+}
+
+message TpTradePb {
+  int64 account_id = 1;
+  int32 obj = 2;
+  int32 quantity = 3;
+  int32 price = 4;
+  bool bought = 5;
+  string other = 6;
+  int64 at = 7;
+}
+
+message TpTrades { repeated TpTradePb trades = 1; }
+
+service TradingPost {
+  rpc List(TpListRequest) returns (TpMaybeListing);
+  rpc Cancel(TpIdRequest) returns (TpMaybeListing);
+  rpc Search(TpSearchRequest) returns (TpListings);
+  rpc Mine(AccountRef) returns (TpListings);
+  rpc Buy(TpBuyRequest) returns (TpBuyReply);
+  rpc Collect(AccountRef) returns (TpCollectPb);
+  rpc Pending(AccountRef) returns (TpCollectPb);
+  rpc History(AccountRef) returns (TpTrades);
+}
+
 service Exchange {
   rpc Place(PlaceOfferRequest) returns (GeOffer);
   rpc Offers(AccountRef) returns (GeOffers);

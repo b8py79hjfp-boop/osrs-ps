@@ -12,6 +12,7 @@ interface HubServices {
     val worlds: WorldDirectory
     val social: SocialService
     val exchange: ExchangeService
+    val tradingPost: TradingPostService
     val hiscores: HiscoreService
     val moderation: ModerationService
     val broadcasts: BroadcastService
@@ -274,6 +275,63 @@ interface ExchangeService {
 
     /** Guide prices (obj -> coins) from completed trades; objs never traded are absent (callers fall back to cost). */
     suspend fun guidePrices(): Map<Int, Int>
+}
+
+// ---------------------------------------------------------------- trading post (custom, docs/mechanics/trading-post.md)
+
+/** One trading post listing: [quantity] of [obj] at [price] coins each, [sold] of them bought so far. */
+class TpListing(
+    val id: Long,
+    val accountId: Long,
+    val seller: String,
+    val obj: Int,
+    val quantity: Int,
+    val sold: Int,
+    val price: Int,
+    val listedAtMs: Long,
+    val closed: Boolean = false,
+) {
+    val remaining: Int get() = quantity - sold
+}
+
+/** What waits to be collected: coins from sales and items from cancelled listings. */
+class TpCollect(val coins: Long, val items: Map<Int, Int>) {
+    val empty: Boolean get() = coins == 0L && items.isEmpty()
+}
+
+/** One past trade from [accountId]'s side: [bought] or sold [quantity] of [obj] at [price] each with [other]. */
+class TpTrade(val accountId: Long, val obj: Int, val quantity: Int, val price: Int, val bought: Boolean, val other: String, val atMs: Long)
+
+/** Result of [TradingPostService.buy]: how many were bought (0 = none) and an error message when nothing was. */
+class TpBuyResult(val bought: Int, val listing: TpListing?, val error: String?)
+
+interface TradingPostService {
+    /** Lists [quantity] [obj] at [price] each; the world has already taken the items. Null when [maxListings] are open. */
+    suspend fun list(accountId: Long, seller: String, obj: Int, quantity: Int, price: Int, maxListings: Int): TpListing?
+
+    /** Closes listing [id] of [accountId]; the unsold rest goes to the collection box. */
+    suspend fun cancel(accountId: Long, id: Long): TpListing?
+
+    /** Open listings, newest first; [objs] / [seller] filter when not null (seller matched case-insensitively). */
+    suspend fun search(objs: Set<Int>?, seller: String?, limit: Int): List<TpListing>
+
+    /** [accountId]'s open listings, oldest first. */
+    suspend fun mine(accountId: Long): List<TpListing>
+
+    /**
+     * Buys up to [quantity] from listing [id] for [buyer]; the world has already taken quantity * price coins and
+     * refunds the difference for whatever was not bought. Coins for the seller go to the seller's collection box.
+     */
+    suspend fun buy(accountId: Long, buyer: String, id: Long, quantity: Int, price: Int): TpBuyResult
+
+    /** Takes everything waiting in [accountId]'s collection box. */
+    suspend fun collect(accountId: Long): TpCollect
+
+    /** Peeks at the collection box without taking it. */
+    suspend fun pending(accountId: Long): TpCollect
+
+    /** [accountId]'s last trades, newest first. */
+    suspend fun history(accountId: Long): List<TpTrade>
 }
 
 // ---------------------------------------------------------------- hiscores, moderation, broadcasts
