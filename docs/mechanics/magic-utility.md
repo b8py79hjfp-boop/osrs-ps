@@ -113,7 +113,7 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 - **OPEN-MU18:** Heal Group (level 95, divides up to 75% of the healer's hitpoints between up to five injured players, 90 second cooldown shared with Heal Other).
 - **OPEN-MU19:** Resurrect Crops (level 78; success 50% at 78 Magic to 75% at 99; failure clears the patch) needs farming patch internals in content/skills.
 - **OPEN-MU20:** Mark of Darkness, the demonbanes, Ward of Arceuus, the grasps, corruption spells, Vile Vigour, Dark Lure, Death Charge, Skeletal / Ghostly / Undead Grasp and the thrall spells: combat or timers outside this task. Degrime and the Sinister / Demonic Offerings (Arceuus utility spells) are also not done.
-- **OPEN-MU21:** NPC Contact (interface 75 `lunar_contact_npc` and the contact dialogues), Magic Imbue, Fertile Soil, Dream, Hunter Kit, Monster Examine, Geomancy, Cure Plant, Boost Potion Share, the Tele Group spells, Boat spells, Ape Atoll Dungeon teleport and the minigame teleports: not implemented.
+- **OPEN-MU21:** NPC Contact (interface 75 `lunar_contact_npc` and the contact dialogues), Fertile Soil, Dream, Hunter Kit, Monster Examine, Geomancy, Cure Plant, Boost Potion Share, the Tele Group spells, Boat spells, Ape Atoll Dungeon teleport and the minigame teleports: not implemented. (Magic Imbue: content/magic MagicImbue.kt.)
 - **OPEN-MU23:** rune pouch, tomes (fire, water, earth), Explorer's rings and the Fountain of Rune as rune sources.
 - **OPEN-MU24:** alchemy warnings and restricted zones (AL2, AL4).
 - **OPEN-MU25:** autocast of the jewellery enchants (7 ticks), Plank Make (6 ticks) and orb spells (6 ticks): only manual casts exist.
