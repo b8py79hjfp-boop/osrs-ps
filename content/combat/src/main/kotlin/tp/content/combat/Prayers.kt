@@ -116,6 +116,21 @@ internal fun PlayerRef.protects(style: CombatStyle): Boolean = activePrayers().a
 
 internal fun PlayerRef.headIcon(): Int = activePrayers().firstOrNull { it.effect.headIcon >= 0 }?.effect?.headIcon ?: -1
 
+private val PROTECTION_BLOCKED_UNTIL = tp.plugin.AttrKey<Long>("protection_blocked_until")
+
+/** Special attacks (Sever, special-attacks.md SP20): protection prayers go off and can't be used for [ticks]. */
+internal fun PlayerRef.disableProtection(ticks: Int) {
+    val bits = varbit(Varbits.PRAYER_ALLACTIVE)
+    var next = bits
+    for (p in PrayerTable.prayers) if (p.effect.protects != null) next = next and (1 shl p.bit).inv()
+    if (next != bits) setVarbit(Varbits.PRAYER_ALLACTIVE, next)
+    this[PROTECTION_BLOCKED_UNTIL] = tick + ticks
+    message("You have been injured and can't use protection prayers!")
+    Appearance.refresh(this)
+}
+
+internal fun PlayerRef.protectionBlocked(): Boolean = (this[PROTECTION_BLOCKED_UNTIL] ?: 0L) > tick
+
 internal fun PlayerRef.deactivateAllPrayers() {
     setVarbit(Varbits.PRAYER_ALLACTIVE, 0)
     setVarbit(Varbits.QUICKPRAYER_ACTIVE, 0)
@@ -168,6 +183,10 @@ public class Prayers : ContentPlugin {
                 setVarbit(Varbits.QUICKPRAYER_ACTIVE, 0)
             }
             Appearance.refresh(this)
+            return
+        }
+        if (prayer.effect.protects != null && protectionBlocked()) {
+            message("You have been injured and can't use protection prayers!")
             return
         }
         if (baseLevel(Stat.PRAYER) < prayer.level) {

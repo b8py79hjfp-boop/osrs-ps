@@ -1,104 +1,113 @@
 package tp.content.combat
 
-import tp.plugin.EntityRef
 import tp.plugin.PlayerRef
 import tp.plugin.TimerId
 import tp.symbols.Objs
-import tp.symbols.Seqs
 import tp.symbols.Varps
 
+/** How a special attack is delivered (special-attacks.md SP2). */
+internal enum class SpecStyle { MELEE, RANGED, MAGIC, INSTANT }
+
 /**
- * A special attack as data (brief §8: "special attacks as data plus hooks"). Energy in tenths of a percent (varp
- * sa_energy, 1000 = 100%). Values: OSRS Wiki "Special attacks" (SA) and weapon pages; combat-formulas.md table.
+ * One weapon's special attack ([SpecialTable], generated): energy in tenths of a percent (varp `sa_energy`, 1000 =
+ * 100%), accuracy and damage multipliers in permille (accuracy 0 = the attack always hits), hit count, forced defence
+ * roll, anim and graphics, and whether it fires at once instead of waiting for the attack clock.
  */
-internal class SpecialDef(
+internal class SpecialRow(
+    val obj: Int,
+    val name: String,
     val energy: Int,
-    val accuracyPercent: Int = 100,
-    /** Max-hit multiplier in permille (1375 = ×1.375). */
-    val damagePermille: Int = 1000,
-    val hits: Int = 1,
-    val defenceType: AttackType? = null,
-    val anim: Int? = null,
-    /** Freeze applied when a hit lands successfully (ZGS) / regardless (tentacle), in ticks. */
-    val freezeOnHit: Int = 0,
-    val freezeAlways: Int = 0,
-    /** No attack cooldown (granite maul: C6). */
-    val instant: Boolean = false,
-)
+    val style: SpecStyle,
+    val accuracyPermille: Int,
+    val damagePermille: Int,
+    val hits: Int,
+    val defenceType: AttackType?,
+    val anim: Int,
+    val spot: Int,
+    val targetSpot: Int,
+    val projectile: Int,
+    val instant: Boolean,
+) {
+    val guaranteed: Boolean get() = accuracyPermille == 0
+}
 
 internal object Specials {
     const val FULL_ENERGY = 1000
 
-    /** Special energy +10% per 50 ticks (brief §8; Wiki "10% per 30 seconds"). */
+    /** SP3 (Wiki "Special attacks"): +10% every 50 ticks; every 25 with a lightbearer. */
     private const val REGEN_INTERVAL = 50
+    private const val LIGHTBEARER_INTERVAL = 25
     private const val REGEN_AMOUNT = 100
     private val REGEN = TimerId("special_regen")
+    private val COUNTER = tp.plugin.AttrKey<Int>("special_regen_counter")
 
-    @Suppress("MagicNumber") // Wiki values
-    private val defs: Map<Int, SpecialDef> =
-        mapOf(
-            // Dragon dagger "Puncture": 25%, two hits, +15% accuracy and damage, slash (SA:2181-2193).
-            Objs.DRAGON_DAGGER to SpecialDef(250, 115, 1150, hits = 2, defenceType = AttackType.SLASH, anim = Seqs.PUNCTURE),
-            Objs.DRAGON_DAGGER_P to SpecialDef(250, 115, 1150, hits = 2, defenceType = AttackType.SLASH, anim = Seqs.PUNCTURE),
-            Objs.DRAGON_DAGGER_P_ to SpecialDef(250, 115, 1150, hits = 2, defenceType = AttackType.SLASH, anim = Seqs.PUNCTURE),
-            Objs.DRAGON_DAGGER_P__ to SpecialDef(250, 115, 1150, hits = 2, defenceType = AttackType.SLASH, anim = Seqs.PUNCTURE),
-            // Armadyl godsword "The Judgement": 50%, double accuracy, ×1.375, slash (SA:1281-1293).
-            Objs.AGS to SpecialDef(500, 200, 1375, defenceType = AttackType.SLASH, anim = Seqs.ARMADYL_SPECIAL_ATTACK),
-            // Zamorak godsword "Ice Cleave": 50%, double accuracy, ×1.1, 32-tick freeze on a hit (SA:2565-2578).
-            Objs.ZGS to SpecialDef(500, 200, 1100, defenceType = AttackType.SLASH, freezeOnHit = 32),
-            // Abyssal whip "Energy Drain": 50%, +25% accuracy (Abyssal_whip:56).
-            Objs.ABYSSAL_WHIP to SpecialDef(500, 125),
-            // Abyssal tentacle "Binding Tentacle": 50%, 8-tick freeze regardless of hit (Abyssal_tentacle:60).
-            Objs.ABYSSAL_TENTACLE to SpecialDef(500, freezeAlways = 8),
-            // Granite maul "Quick Smash": 60%, no accuracy change, no attack cooldown (GM:78-89).
-            Objs.GRANITE_MAUL to SpecialDef(600, instant = true, anim = Seqs.SLAYER_GRANITE_MAUL_SPECIAL_ATTACK),
-            // Dragon claws "Slice and Dice": 50%, 4 hits (simplified: OPEN-SP1, the 4-2-1-1 roll pattern isn't modelled).
-            Objs.DRAGON_CLAWS to SpecialDef(500, hits = 4, damagePermille = 500, defenceType = AttackType.SLASH),
-        )
+    private val byObj: Map<Int, SpecialRow> = SpecialTable.ALL.associateBy { it.obj }
+
+    fun of(obj: Int): SpecialRow? = byObj[obj]
 
     fun startRegen(player: PlayerRef) {
-        player.timer(REGEN, REGEN_INTERVAL, soft = true) {
+        player.timer(REGEN, 1, soft = true) {
+            val interval = if (worn(Wear.RING) == Objs.LIGHTBEARER) LIGHTBEARER_INTERVAL else REGEN_INTERVAL
+            val n = (this[COUNTER] ?: 0) + 1
+            if (n < interval) {
+                this[COUNTER] = n
+                return@timer
+            }
+            this[COUNTER] = 0
             val energy = varp(Varps.SA_ENERGY)
             if (energy < FULL_ENERGY) setVarp(Varps.SA_ENERGY, minOf(FULL_ENERGY, energy + REGEN_AMOUNT))
         }
     }
 
-    /** Spec bar click: toggle if the weapon has a special and enough energy. */
+    /** SP4: the spec bar / orb. Buff specials fire at once; the rest arm the next attack. */
     fun toggle(player: PlayerRef) {
-        if (player.varp(Varps.SA_ATTACK) == 0 && player.duelRule(tp.plugin.DuelRules.NO_SPECIAL_ATTACKS)) {
-            player.message(DuelChecks.NO_SPECIALS)
-            return
-        }
-        val def = defs[player.worn(Wear.WEAPON)]
         if (player.varp(Varps.SA_ATTACK) != 0) {
             player.setVarp(Varps.SA_ATTACK, 0)
             return
         }
-        if (def == null) return
-        if (player.varp(Varps.SA_ENERGY) < def.energy) {
-            player.message("You do not have enough special attack energy left.")
+        if (player.duelRule(tp.plugin.DuelRules.NO_SPECIAL_ATTACKS)) {
+            player.message(DuelChecks.NO_SPECIALS)
+            return
+        }
+        val row = byObj[player.worn(Wear.WEAPON)] ?: byObj[player.worn(Wear.SHIELD)]
+        if (row == null) {
+            player.message("This weapon does not have a special attack.")
+            return
+        }
+        if (player.varp(Varps.SA_ENERGY) < row.energy) {
+            player.message(NO_ENERGY)
+            return
+        }
+        if (row.style == SpecStyle.INSTANT && !row.instantAttack()) {
+            if (SpecialEffects.buff(player, row)) player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - row.energy)
             return
         }
         player.setVarp(Varps.SA_ATTACK, 1)
+        // SP5: Quick Smash and Momentum Throw hit now, without waiting for the attack clock.
+        if (row.instant) SpecialEffects.instantAttack(player)
     }
+
+    /** Instant-style rows that are attacks (granite maul, thrownhammer-like) rather than buffs. */
+    private fun SpecialRow.instantAttack(): Boolean = name in INSTANT_ATTACKS
+
+    private val INSTANT_ATTACKS = setOf("Quick Smash", "Momentum Throw", "Ferocity", "Shield Slam")
 
     /** C10: the spec used by this attack, energy deducted now; null if the bar is off or energy is short. */
-    fun take(player: PlayerRef): SpecialDef? {
+    fun take(player: PlayerRef): SpecialRow? {
         if (player.varp(Varps.SA_ATTACK) == 0) return null
         player.setVarp(Varps.SA_ATTACK, 0)
-        val def = defs[player.worn(Wear.WEAPON)] ?: return null
+        val row = byObj[player.worn(Wear.WEAPON)] ?: return null
+        if (row.style == SpecStyle.INSTANT && !row.instantAttack()) return null
         val energy = player.varp(Varps.SA_ENERGY)
-        if (energy < def.energy) {
-            player.message("You do not have enough special attack energy left.")
+        val cost = SpecialEffects.cost(player, row)
+        if (energy < cost) {
+            player.message(NO_ENERGY)
             return null
         }
-        player.setVarp(Varps.SA_ENERGY, energy - def.energy)
-        return def
+        player.setVarp(Varps.SA_ENERGY, energy - cost)
+        return row
     }
 
-    /** On the application tick: freeze effects. */
-    fun onLand(def: SpecialDef, attacker: EntityRef, target: EntityRef, hit: Boolean) {
-        if (def.freezeAlways > 0) Freezes.freeze(target, attacker, def.freezeAlways)
-        if (hit && def.freezeOnHit > 0) Freezes.freeze(target, attacker, def.freezeOnHit)
-    }
+    /** OPEN-SA-25: the Wiki gives this text for the bar; kept for every refusal. */
+    const val NO_ENERGY = "You do not have enough special attack energy left."
 }

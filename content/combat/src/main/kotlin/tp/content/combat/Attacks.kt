@@ -17,35 +17,30 @@ internal object Attacks {
             if (!PoweredStaves.attack(player, target, staff, stance)) player.stopInteraction()
             return
         }
-        val now = player.tick
         val spec = Specials.take(player)
-        if (spec?.instant != true) player.setAttackClock(now + player.attackSpeed())
+        if (spec != null) return SpecialEffects.perform(player, target, spec, stance, type, category)
+        player.setAttackClock(player.tick + player.attackSpeed())
         if (type.style == CombatStyle.RANGED && category.usesAmmo() && !CombatSystem.useAmmo(player)) {
             player.message("There is no ammo left in your quiver.")
             player.stopInteraction()
             return
         }
-        val defenceType = spec?.defenceType ?: type
-        val attackRoll = attackRoll(player, stance, type) * (spec?.accuracyPercent ?: PERCENT) / PERCENT
-        val defenceRoll = defenceRoll(target, defenceType, rangedDefenceOf(category))
-        var max = maxHit(player, stance, type) * (spec?.damagePermille ?: PERMILLE) / PERMILLE
+        val attackRoll = attackRoll(player, stance, type)
+        val defenceRoll = defenceRoll(target, type, rangedDefenceOf(category))
+        var max = maxHit(player, stance, type)
         if (target is PlayerRef && target.protects(type.style)) max = Formulas.protectedMaxHit(max)
         val distance = player.distanceTo(target)
         val delay = hitDelay(type.style, category, distance)
-        player.anim(spec?.anim ?: attackAnim(player, category, type))
+        player.anim(attackAnim(player, category, type))
         if (type.style == CombatStyle.RANGED) rangedVisuals(player, target, category, delay)
         CombatVisuals.block(target, delay)
         CombatSystem.announceAttack(player, target, type.style)
-        repeat(spec?.hits ?: 1) {
-            val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
-            val damage = minOf(Formulas.DAMAGE_CAP, if (hit) Formulas.damage(max, player::random) else 0)
-            val onLand = {
-                spec?.let { s -> Specials.onLand(s, player, target, hit) }
-                if (hit) Toxic.onPlayerHit(player, target, type.style, damage)
-            }
-            CombatSystem.queueHit(target, player, damage, CombatSystem.hitStyle(type.style), delay, onLand)
-            if (hit) grantXp(player, stance, type.style, damage)
+        val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
+        val damage = minOf(Formulas.DAMAGE_CAP, if (hit) Formulas.damage(max, player::random) else 0)
+        CombatSystem.queueHit(target, player, damage, CombatSystem.hitStyle(type.style), delay) {
+            if (hit) Toxic.onPlayerHit(player, target, type.style, damage)
         }
+        if (hit) grantXp(player, stance, type.style, damage)
     }
 
     /**
@@ -60,7 +55,7 @@ internal object Attacks {
             else -> NpcCombatDef.DEF_STANDARD
         }
 
-    private fun WeaponCategory.usesAmmo(): Boolean = this === Weapons.BOW || this === Weapons.CROSSBOW
+    fun WeaponCategory.usesAmmo(): Boolean = this === Weapons.BOW || this === Weapons.CROSSBOW
 
     fun attackRoll(player: PlayerRef, stance: Stance, type: AttackType, magicBonusMultiplier: Int = 1): Int =
         when (type.style) {
@@ -186,6 +181,13 @@ internal object Attacks {
      * CD-W4: the launch graphic on the player (height 96) and the projectile of the ammo, or of the thrown weapon
      * itself, in its shape (RS Mod `PvNCombat.attackRanged`).
      */
+    fun rangedVisualsFor(
+        player: PlayerRef,
+        target: EntityRef,
+        category: WeaponCategory,
+        delay: Int,
+    ): Unit = rangedVisuals(player, target, category, delay)
+
     private fun rangedVisuals(player: PlayerRef, target: EntityRef, category: WeaponCategory, delay: Int) {
         val thrown = category === Weapons.THROWN
         val source = if (thrown) player.worn(Wear.WEAPON) else player.worn(Wear.AMMO)
@@ -242,7 +244,5 @@ internal object Attacks {
     /** RS Mod `PvNCombat`: the ranged launch spot anim at height 96. */
     private const val LAUNCH_HEIGHT = 96
 
-    private const val PERCENT = 100
-    private const val PERMILLE = 1000
     private const val EFFECTIVE_BASE = 8
 }

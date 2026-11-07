@@ -191,6 +191,15 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Whether the player has an interaction in progress. */
     public val isInteracting: Boolean get() = p.interactionTarget != null
 
+    /** The NPC or player this player is interacting with, or null. */
+    public val interactionTarget: EntityRef?
+        get() =
+            when (val t = p.interactionTarget) {
+                is tp.engine.interact.InteractionTarget.OfNpc -> NpcRef(t.npc)
+                is tp.engine.interact.InteractionTarget.OfPlayer -> PlayerRef(t.player)
+                else -> null
+            }
+
     /** Real time in whole minutes since the Unix epoch (cooldowns the client shows as real time, e.g. home teleport). */
     public val epochMinutes: Long get() = System.currentTimeMillis() / MILLIS_PER_MINUTE
 

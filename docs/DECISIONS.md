@@ -781,3 +781,9 @@ summon), `BoatStats`, `ShipbuildingData`, `BoatItems`; `Boats` gained `rebuild`;
 - **Projectile heights** are MAP_PROJANIM_V2 units (RSProt dropped the implicit × 4); the earlier 40 / 43 values were 4× too low. Shapes
   are RS Mod's `ProjAnimBuilds`; arrival stays on our hit tick (golden scenarios).
 - **protocol-api `Appearance.renderAnims`** carries the weapon's base animation set.
+
+## D-055: Special attacks are a generated table plus rules by special name
+
+`SpecialTable.kt` is generated from `docs/research/special-attacks.tsv` (cache enum 906 lists the objs, so no weapon is missed). Numbers the
+Wiki gives as plain multipliers are data; the formula specials, hit patterns, multi-target shapes and effects are code in `SpecialEffects.kt`
+keyed by the special's name, so one rule serves every variant obj. Leagues / Deadman specials keep only their generic row (OPEN-SP2).
