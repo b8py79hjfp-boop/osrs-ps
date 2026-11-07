@@ -111,6 +111,30 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** The NPC type this player sees [npc] as: a multi-NPC (Aubury, quest NPCs) resolves through the player's vars. */
     public fun seenType(npc: NpcRef): Int = p.world.seenNpcType(p, npc.n.type)
 
+    // ---- cutscene camera (absolute tiles; height in client units; rate / acceleration 0 = at once)
+
+    public fun camLookAt(at: CoordGrid, height: Int, rate: Int = 0, acceleration: Int = 0) {
+        p.session.send(ServerMessage.CamLookAt(at.x, at.z, height, rate, acceleration))
+    }
+
+    public fun camMoveTo(at: CoordGrid, height: Int, rate: Int = 0, acceleration: Int = 0) {
+        p.session.send(ServerMessage.CamMoveTo(at.x, at.z, height, rate, acceleration))
+    }
+
+    /** Gives the camera back to the player. */
+    public fun camReset() {
+        p.session.send(ServerMessage.CamReset)
+    }
+
+    public fun camShake(axis: Int, random: Int, amplitude: Int, rate: Int) {
+        p.session.send(ServerMessage.CamShake(axis, random, amplitude, rate))
+    }
+
+    /** 0 enabled, 1 unclickable, 2 hidden, 3 compass hidden, 4 unclickable + compass hidden, 5 disabled. */
+    public fun minimapState(state: Int) {
+        p.session.send(ServerMessage.MinimapState(state))
+    }
+
     /** Sends a staff command to the hub (moderation, broadcasts, system update); the reply arrives as a game message. */
     public fun staffCommand(command: String, args: List<String>) {
         val bridge = p.world.accounts

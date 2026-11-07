@@ -78,3 +78,35 @@ internal fun clanProt(message: ServerMessage): OutgoingGameMessage =
             error("not a clan message: $message")
         }
     }
+
+/** Cutscene camera and minimap (quests, cutscenes). */
+internal fun cameraProt(message: ServerMessage): OutgoingGameMessage =
+    when (message) {
+        is ServerMessage.CamLookAt -> {
+            net.rsprot.protocol.game.outgoing.camera
+                .CamLookAtV3(message.x, message.z, message.height, message.rate, message.rate2, false)
+        }
+
+        is ServerMessage.CamMoveTo -> {
+            net.rsprot.protocol.game.outgoing.camera
+                .CamMoveToV3(message.x, message.z, message.height, message.rate, message.rate2, false)
+        }
+
+        ServerMessage.CamReset -> {
+            net.rsprot.protocol.game.outgoing.camera.CamReset
+        }
+
+        is ServerMessage.CamShake -> {
+            net.rsprot.protocol.game.outgoing.camera
+                .CamShake(message.axis, message.random, message.amplitude, message.rate)
+        }
+
+        is ServerMessage.MinimapState -> {
+            net.rsprot.protocol.game.outgoing.misc.client
+                .MinimapToggle(message.state)
+        }
+
+        else -> {
+            error("not a camera message: $message")
+        }
+    }

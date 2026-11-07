@@ -491,6 +491,12 @@ internal class RspSession(
                     socialProt(message)
                 }
 
+                is ServerMessage.CamLookAt, is ServerMessage.CamMoveTo, ServerMessage.CamReset, is ServerMessage.CamShake,
+                is ServerMessage.MinimapState,
+                -> {
+                    cameraProt(message)
+                }
+
                 is ServerMessage.ClanChannel, is ServerMessage.ClanChannelLeft, is ServerMessage.ClanSettings,
                 is ServerMessage.ClanSettingsLeft, is ServerMessage.ClanMessage, is ServerMessage.ClanSystemMessage,
                 -> {

@@ -406,6 +406,22 @@ sealed interface ServerMessage {
     /** Clan system line (joins, leaves, rank changes) in the clan chat. */
     data class ClanSystemMessage(val guest: Boolean, val worldId: Int, val counter: Int, val text: String) : ServerMessage
 
-    /** World hop: the client logs out and connects to [host] as world [worldId] ([flags]: world-list properties). */
+    /**
+     * Cutscene camera (RSProt CAM_LOOKAT / CAM_MOVETO V3): look at, or move the camera to, absolute tile [x], [z] at
+     * [height]; [rate] constant speed, [rate2] acceleration (0 / 0 = at once).
+     */
+    data class CamLookAt(val x: Int, val z: Int, val height: Int, val rate: Int, val rate2: Int) : ServerMessage
+
+    data class CamMoveTo(val x: Int, val z: Int, val height: Int, val rate: Int, val rate2: Int) : ServerMessage
+
+    /** Gives the camera back to the player. */
+    data object CamReset : ServerMessage
+
+    /** Camera shake on [axis] (0..4, RSProt `CamShake`): [random], [amplitude], [rate]. */
+    data class CamShake(val axis: Int, val random: Int, val amplitude: Int, val rate: Int) : ServerMessage
+
+    /** Minimap state: 0 enabled, 1 unclickable, 2 hidden, 3 compass hidden, 4 both, 5 disabled. */
+    data class MinimapState(val state: Int) : ServerMessage
+
     data class LogoutTransfer(val host: String, val worldId: Int, val flags: Int) : ServerMessage
 }
