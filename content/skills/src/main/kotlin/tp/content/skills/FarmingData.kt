@@ -3,36 +3,82 @@
 package tp.content.skills
 
 import tp.symbols.Objs
-import tp.symbols.Varbits
 
-/** The kinds of farming patch this plugin covers; [tsv] is the name used in `farming-varbits.tsv` and `farming-crops.tsv`. */
-internal enum class PatchType(val tsv: String) {
-    ALLOTMENT("ALLOTMENT"),
-    HERB("HERB"),
-    FLOWER("FLOWER"),
-    TREE("TREE"),
-    FRUIT_TREE("FRUIT_TREE"),
+/** What a fully grown crop yields (docs/mechanics/farming.md F6, F7). */
+internal enum class Harvest {
+    /** Picked until the harvest lives run out (allotment, herb, hops, seaweed, bush, cactus, celastrus). */
+    LIVES,
+
+    /** One harvest of the whole patch (flower, belladonna, crystal tree). */
+    SINGLE,
+
+    /** Fruit picked one at a time, [FarmingConst.MAX_FRUIT] of them (fruit tree, calquat, mushroom). */
+    FRUIT,
+
+    /** Chopped down with an axe (tree, hardwood, redwood). */
+    CHOP,
+
+    /** Nothing to take: the plant itself is the product (spirit tree, anima plants, Hespori). */
+    NONE,
+}
+
+/** Which tool treats a diseased crop (docs/mechanics/farming.md F4; Wiki "Disease (Farming)"). */
+internal enum class Cure { PLANT_CURE, SECATEURS, EITHER }
+
+/**
+ * The kinds of farming patch this plugin covers; [tsv] is the name used in `farming-varbits.tsv` and `farming-crops.tsv` (RuneLite's
+ * `PatchImplementation`). [harvest] is what the grown crop gives, [check] whether a grown crop first waits for "Check-health",
+ * [canWater] whether watering helps (Wiki "Crop disease": allotment, flower and hops patches only), [compostLives] whether compost
+ * adds harvest lives (Wiki "Farming#Compost": allotment, hops, herb, seaweed, celastrus), [baseLives] the lives of a fresh crop.
+ */
+internal enum class PatchType(
+    val tsv: String,
+    val label: String,
+    val harvest: Harvest,
+    val check: Boolean = false,
+    val canWater: Boolean = false,
+    val compostLives: Boolean = false,
+    val baseLives: Int = FarmingConst.BASE_LIVES,
+    val cure: Cure = Cure.PLANT_CURE,
+) {
+    ALLOTMENT("ALLOTMENT", "allotment", Harvest.LIVES, canWater = true, compostLives = true),
+    HERB("HERB", "herb patch", Harvest.LIVES, compostLives = true),
+    FLOWER("FLOWER", "flower patch", Harvest.SINGLE, canWater = true),
+    TREE("TREE", "tree patch", Harvest.CHOP, check = true, cure = Cure.SECATEURS),
+    FRUIT_TREE("FRUIT_TREE", "fruit tree patch", Harvest.FRUIT, check = true, cure = Cure.SECATEURS),
+    HOPS("HOPS", "hops patch", Harvest.LIVES, canWater = true, compostLives = true),
+    BUSH("BUSH", "bush patch", Harvest.LIVES, check = true, baseLives = FarmingConst.BUSH_LIVES, cure = Cure.SECATEURS),
+    CACTUS("CACTUS", "cactus patch", Harvest.LIVES, check = true),
+    MUSHROOM("MUSHROOM", "mushroom patch", Harvest.FRUIT),
+    BELLADONNA("BELLADONNA", "belladonna patch", Harvest.SINGLE),
+    CALQUAT("CALQUAT", "calquat patch", Harvest.FRUIT, check = true, cure = Cure.SECATEURS),
+    SPIRIT_TREE("SPIRIT_TREE", "spirit tree patch", Harvest.NONE, check = true, cure = Cure.SECATEURS),
+    SEAWEED("SEAWEED", "seaweed patch", Harvest.LIVES, compostLives = true),
+    CELASTRUS("CELASTRUS", "celastrus patch", Harvest.LIVES, check = true, compostLives = true, cure = Cure.EITHER),
+    REDWOOD("REDWOOD", "redwood patch", Harvest.CHOP, check = true, cure = Cure.SECATEURS),
+    HESPORI("HESPORI", "Hespori patch", Harvest.NONE),
+    CRYSTAL_TREE("CRYSTAL_TREE", "crystal tree patch", Harvest.SINGLE, check = true),
+    HARDWOOD_TREE("HARDWOOD_TREE", "hardwood tree patch", Harvest.CHOP, check = true, cure = Cure.EITHER),
+    ANIMA("ANIMA", "anima patch", Harvest.NONE),
     ;
 
     /** Whether the crop gives its produce through harvest lives (docs/mechanics/farming.md F6). */
-    val usesLives: Boolean get() = this == ALLOTMENT || this == HERB
+    val usesLives: Boolean get() = harvest == Harvest.LIVES
 
-    /** Whether the crop is a tree that must be health-checked once grown (F7). */
-    val isTree: Boolean get() = this == TREE || this == FRUIT_TREE
+    /** Whether the crop is a tree (or tree-like plant) pruned with secateurs, not cured (F4). */
+    val isTree: Boolean get() = cure == Cure.SECATEURS
 
-    /** Whether the patch can be watered (Wiki "Crop disease": allotment, flower and hops patches only). */
-    val canWater: Boolean get() = this == ALLOTMENT || this == FLOWER
+    /** Whether a stump is left when the crop is chopped down (F7). */
+    val chopped: Boolean get() = harvest == Harvest.CHOP
 
-    /** The patch's name in game messages. */
-    val label: String
-        get() =
-            when (this) {
-                ALLOTMENT -> "allotment"
-                HERB -> "herb patch"
-                FLOWER -> "flower patch"
-                TREE -> "tree patch"
-                FRUIT_TREE -> "fruit tree patch"
-            }
+    /** Whether the patch holds saplings (planted with a spade) and not seeds (a seed dibber), Wiki "Sapling" / "Seed dibber". */
+    val takesSaplings: Boolean
+        get() = this in SAPLING_TYPES
+
+    private companion object {
+        val SAPLING_TYPES: Set<PatchType> =
+            setOf(TREE, FRUIT_TREE, HARDWOOD_TREE, CALQUAT, SPIRIT_TREE, CELASTRUS, REDWOOD, CRYSTAL_TREE)
+    }
 }
 
 /** What a patch holds (docs/mechanics/farming.md F1). The ordinal is stored in the saved state, so only append. */
@@ -81,23 +127,55 @@ internal class Crop(
     val cycleMin: Int,
     val firstMin: Int,
     val cycles: Int,
-    val ctsLow: Int,
-    val ctsHigh: Int,
+    ctsLowRaw: Int,
+    ctsHighRaw: Int,
     val name: String,
 ) {
-    /** Wiki "Crop disease": fruit trees 18/128, maple 13, magic 9, herbs 27; the rest is OPEN-FM2 (see [FarmingConst]). */
+    /** Chance to save a harvest life at level 1 (of 256); crops with no published value use the OPEN-FA3 stand-in. */
+    val ctsLow: Int = if (ctsLowRaw > 0 || !type.usesLives) ctsLowRaw else FarmingConst.OPEN_CTS_LOW
+
+    /** Chance to save a harvest life at level 99 (of 256). */
+    val ctsHigh: Int = if (ctsHighRaw > 0 || !type.usesLives) ctsHighRaw else FarmingConst.OPEN_CTS_HIGH
+
+    /**
+     * Wiki "Crop disease": fruit trees 18/128, maple 13, magic 9, herbs 27; poison ivy, Hespori, anima plants and the crystal tree
+     * are immune (0); the rest is OPEN-FM2 / OPEN-FA1 (see [FarmingConst]).
+     */
     val diseaseBase: Int =
         when {
+            key == "POISON_IVY" || type == PatchType.HESPORI || type == PatchType.ANIMA || type == PatchType.CRYSTAL_TREE -> 0
             type == PatchType.FRUIT_TREE -> FarmingConst.FRUIT_DISEASE
             key == "MAPLE" -> FarmingConst.MAPLE_DISEASE
             key == "MAGIC" -> FarmingConst.MAGIC_DISEASE
             type == PatchType.HERB -> FarmingConst.HERB_DISEASE
-            type == PatchType.TREE -> FarmingConst.OPEN_TREE_DISEASE
+            type.isTree || type == PatchType.HARDWOOD_TREE || type == PatchType.CELASTRUS -> FarmingConst.OPEN_TREE_DISEASE
             else -> FarmingConst.OPEN_CROP_DISEASE
         }
 
     /** Wiki "Crop disease": herbs 3 of 4 cycles, maple 7 of 8, magic 11 of 12 (all but the first), fruit trees 4 of 6. */
     val diseaseCycles: Int = if (type == PatchType.FRUIT_TREE) cycles - 2 else cycles - 1
+
+    /** Minutes between the regrowth ticks of a picked-bare bush or cactus, 0 if the crop does not regrow (F6). */
+    val regrowMin: Int =
+        when (key) {
+            "CACTUS" -> FarmingConst.CACTUS_REGROW_MIN
+            "POTATO_CACTUS" -> FarmingConst.POTATO_CACTUS_REGROW_MIN
+            else -> if (type == PatchType.BUSH) FarmingConst.BUSH_REGROW_MIN else 0
+        }
+
+    /** Regrowth ticks until a picked-bare bush or cactus bears again. */
+    val regrowTicks: Int =
+        when (key) {
+            "CACTUS" -> FarmingConst.CACTUS_REGROW_TICKS
+            "POTATO_CACTUS" -> FarmingConst.POTATO_CACTUS_REGROW_TICKS
+            else -> if (type == PatchType.BUSH) FarmingConst.BUSH_REGROW_TICKS else 0
+        }
+
+    /** Whether the patch keeps the plant after its harvest lives run out and bears again (bush, cacti). */
+    val regrows: Boolean get() = regrowMin > 0
+
+    /** Whether the crop is planted as a sapling. */
+    val isSapling: Boolean get() = type.takesSaplings
 }
 
 /** Numbers of the farming rules, each with its source (docs/mechanics/farming.md). */
@@ -114,11 +192,17 @@ internal object FarmingConst {
     /** Wiki "Crop disease" table: all herbs. */
     const val HERB_DISEASE = 27
 
-    /** OPEN-FM2: the Wiki gives no rate for oak, willow and yew; maple's is used. */
+    /** OPEN-FM2 / OPEN-FA1: no Wiki rate for oak, willow, yew, hardwoods, calquat, redwood, celastrus and spirit trees; maple's is used. */
     const val OPEN_TREE_DISEASE = 13
 
-    /** OPEN-FM2: the Wiki gives no rate for allotments and flowers; the herbs' is used. */
+    /** OPEN-FM2 / OPEN-FA1: the Wiki gives no rate for allotments, flowers, hops, bushes, cacti ...; the herbs' is used. */
     const val OPEN_CROP_DISEASE = 27
+
+    /** OPEN-FA3: no published chance to save a life for bushes, cacti, celastrus ...; level 1 stand-in (herbs, allotments: 82-140). */
+    const val OPEN_CTS_LOW = 100
+
+    /** OPEN-FA3: level 99 stand-in; the Wiki says CTS-high is 180 for nearly every crop with a published value. */
+    const val OPEN_CTS_HIGH = 180
 
     /** The disease roll is out of 128 (Wiki "Crop disease": "rounded down to the nearest 1/128th"). */
     const val DISEASE_DENOMINATOR = 128
@@ -126,11 +210,20 @@ internal object FarmingConst {
     /** Compost (1), supercompost (2) and ultracompost (3) cut the chance by 50%, 80% and 90% (Wiki "Crop disease"): kept = 1/DIVISOR. */
     val COMPOST_DIVISOR = intArrayOf(1, 2, 5, 10)
 
+    /** Wiki "Disease (Farming)": a live Iasor plant cuts every patch's disease chance to 20% (a divisor of 5), never below 1/128. */
+    const val IASOR_DIVISOR = 5
+
     /** OPEN-FM3: the Wiki says watering "reduces" the chance without a number; half is used. */
     const val WATERED_DIVISOR = 2
 
     /** Wiki "Farming#Variable crop yield": a fully grown patch has 3 lives, plus 1 / 2 / 3 for compost / super / ultra. */
     const val BASE_LIVES = 3
+
+    /** Wiki "Redberry bush" (and the other bushes, "Bush Yield Improvements" 23 Aug 2018): a bush gives at least four berries. */
+    const val BUSH_LIVES = 4
+
+    /** Wiki "Farming#Variable crop yield" (Attas): the Attas plant raises the chance to save a life by 5%. */
+    const val ATTAS_PERCENT = 105
 
     /** Wiki "Farming#Growth timing": weeds grow back every 5 minutes (the shortest growth tick). */
     const val WEEDS_MIN = 5
@@ -138,11 +231,23 @@ internal object FarmingConst {
     /** Weed levels: 3 is full weeds, 0 is raked clear (RuneLite `PatchImplementation` WEEDS stages 3 .. 0). */
     const val FULL_WEEDS = 3
 
-    /** Wiki "Fruit tree": a fully grown fruit tree bears six fruit. */
+    /** Wiki "Fruit tree" / "Calquat tree" / "Bittercap Mushrooms": a fully grown crop of this kind bears six items. */
     const val MAX_FRUIT = 6
 
     /** Wiki "Fruit tree": a new fruit every 40 minutes, on the tree growth tick. */
     const val FRUIT_REGROW_MIN = 40
+
+    /** RuneLite `Produce.REDBERRIES` ... (BSD-2): bushes regrow on a 20 minute tick; Wiki "Redberry bush": about 80 minutes. */
+    const val BUSH_REGROW_MIN = 20
+    const val BUSH_REGROW_TICKS = 4
+
+    /** RuneLite `Produce.CACTUS` (BSD-2): regrowth tick 20 minutes over 3 stages. */
+    const val CACTUS_REGROW_MIN = 20
+    const val CACTUS_REGROW_TICKS = 3
+
+    /** RuneLite `Produce.POTATO_CACTUS` (BSD-2): regrowth tick 5 minutes over 6 stages. */
+    const val POTATO_CACTUS_REGROW_MIN = 5
+    const val POTATO_CACTUS_REGROW_TICKS = 6
 
     /** Wiki "Crop disease": a diseased crop uses the next slowest growth tick, which doubles each tier (Wiki "Growth timing"). */
     const val DISEASED_CYCLE_FACTOR = 2
@@ -161,6 +266,15 @@ internal object FarmingConst {
 
     /** Wiki "Magic secateurs": +10% on the chance-to-save constants (Farming#Variable crop yield, `ItemBoost`). */
     const val SECATEURS_PERCENT = 110
+
+    /** Wiki "Crystal tree": a harvest gives 28-32 crystal shards. */
+    const val CRYSTAL_SHARDS_MIN = 28
+    const val CRYSTAL_SHARDS_SPAN = 5
+
+    /** Wiki "Belladonna": at least six nightshade, up to 18 at level 99 (the bonus step is OPEN-FA4: 12 over levels 1..99). */
+    const val BELLADONNA_MIN = 6
+    const val BELLADONNA_BONUS_MAX = 12
+    const val BELLADONNA_KEY = "BELLADONNA"
 
     /** Cache seq 2273 (raking): 56 client ticks of 20 ms = 1.9 game ticks (OPEN-FM8). */
     const val RAKE_TICKS = 2
@@ -199,6 +313,9 @@ internal object FarmingConst {
 internal object FarmingItems {
     val COMPOST: Map<Int, Int> = mapOf(Objs.BUCKET_COMPOST to 1, Objs.BUCKET_SUPERCOMPOST to 2, Objs.BUCKET_ULTRACOMPOST to 3)
 
+    /** The bucket of compost of [tier] (1..3). */
+    val BUCKET_OF: IntArray = intArrayOf(0, Objs.BUCKET_COMPOST, Objs.BUCKET_SUPERCOMPOST, Objs.BUCKET_ULTRACOMPOST)
+
     /** Watering cans holding water, by remaining doses (Wiki "Watering can": 8 doses at most). */
     val CANS: Map<Int, Int> =
         mapOf(
@@ -226,199 +343,51 @@ internal object FarmingItems {
         )
 
     val SECATEURS: Set<Int> = setOf(Objs.SECATEURS, Objs.FAIRY_ENCHANTED_SECATEURS)
+
+    /** Compost potion doses to the potion item (Wiki "Compost bin#Upgrading": one dose upgrades a bin of compost to supercompost). */
+    val COMPOST_POTIONS: Map<Int, Int> =
+        mapOf(
+            Objs.SUPERCOMPOST_POTION_1 to 1,
+            Objs.SUPERCOMPOST_POTION_2 to 2,
+            Objs.SUPERCOMPOST_POTION_3 to 3,
+            Objs.SUPERCOMPOST_POTION_4 to 4,
+        )
 }
 
-/** One patch the player can farm: the multi-loc [loc] a click on it reports, drawn through the shared varbit [slot]. */
-internal class Patch(val loc: Int, val type: PatchType, val slot: Int, val name: String) {
+/**
+ * One patch the player can farm: the multi-loc parents [locs] a click on it reports (several for a patch drawn from many locs),
+ * drawn through the shared varbit [slot]. [farmers] are the NPCs that take payment to protect it ([payIndex]: the farmer's op 3 /
+ * op 4 "Pay" for the first / second patch), [neverDiseased] marks the patches the Wiki says never fall ill, [guild] the Farming
+ * Guild patches (farming contracts).
+ */
+@Suppress("LongParameterList") // one patch row of FarmingSites
+internal class Patch(
+    val locs: IntArray,
+    val type: PatchType,
+    val slot: Int,
+    val name: String,
+    val farmers: IntArray = EMPTY,
+    val payIndex: Int = 0,
+    val neverDiseased: Boolean = false,
+    val guild: Boolean = false,
+) {
+    /** The patch's identity in saved keys. */
+    val loc: Int get() = locs[0]
+
     /** Saved keys of the patch's packed state and of the minute its growth was last brought up to. */
-    val stateKey: String = "farming.$loc"
-    val timeKey: String = "farming.$loc.t"
-}
+    val stateKey: String = "farming.${locs[0]}"
+    val timeKey: String = "farming.${locs[0]}.t"
 
-/** A farm: the [patches] whose states the client needs while the player is within [FarmingData.SITE_RADIUS] of ([x], [z]). */
-internal class Site(val name: String, val x: Int, val z: Int, val patches: List<Patch>)
-
-/**
- * The patches covered (docs/mechanics/farming.md F8). Loc ids, shared varbits and tiles are from cache 2757 (the multi-loc
- * parents with `multiVarbit` 4771 .. 4774, `find-locs`); which patch uses which slot follows RuneLite's `FarmingWorld` (BSD-2).
- */
-internal object FarmingData {
-    /** Half the client's 104-tile scene: patches farther than this from the player are not loaded by the client. */
-    const val SITE_RADIUS = 52
-
-    private fun farm(name: String, x: Int, z: Int, a: Int, b: Int, flower: Int, herb: Int): Site =
-        Site(
-            name,
-            x,
-            z,
-            listOf(
-                Patch(a, PatchType.ALLOTMENT, Varbits.FARMING_TRANSMIT_A, "$name north allotment"),
-                Patch(b, PatchType.ALLOTMENT, Varbits.FARMING_TRANSMIT_B, "$name south allotment"),
-                Patch(flower, PatchType.FLOWER, Varbits.FARMING_TRANSMIT_C, "$name flower patch"),
-                Patch(herb, PatchType.HERB, Varbits.FARMING_TRANSMIT_D, "$name herb patch"),
-            ),
-        )
-
-    private fun tree(name: String, x: Int, z: Int, loc: Int): Site =
-        Site(name, x, z, listOf(Patch(loc, PatchType.TREE, Varbits.FARMING_TRANSMIT_A, "$name tree patch")))
-
-    private fun fruit(name: String, x: Int, z: Int, loc: Int): Site =
-        Site(name, x, z, listOf(Patch(loc, PatchType.FRUIT_TREE, Varbits.FARMING_TRANSMIT_A, "$name fruit tree patch")))
-
-    val SITES: List<Site> =
-        listOf(
-            farm("Falador", 3055, 3308, 8550, 8551, 7847, 8150),
-            farm("Catherby", 2810, 3463, 8552, 8553, 7848, 8151),
-            farm("Ardougne", 2666, 3374, 8554, 8555, 7849, 8152),
-            farm("Port Phasmatys", 3602, 3525, 8556, 8557, 7850, 8153),
-            tree("Taverley", 2935, 3437, 8388),
-            tree("Falador", 3003, 3372, 8389),
-            tree("Varrock", 3228, 3458, 8390),
-            tree("Lumbridge", 3192, 3230, 8391),
-            Site(
-                "Gnome Stronghold",
-                2455,
-                3430,
-                listOf(
-                    Patch(19147, PatchType.TREE, Varbits.FARMING_TRANSMIT_A, "Gnome Stronghold tree patch"),
-                    Patch(7962, PatchType.FRUIT_TREE, Varbits.FARMING_TRANSMIT_B, "Gnome Stronghold fruit tree patch"),
-                ),
-            ),
-            fruit("Tree Gnome Village", 2489, 3179, 7963),
-            fruit("Brimhaven", 2764, 3212, 7964),
-            fruit("Catherby", 2860, 3433, 7965),
-        )
-
-    /** Tool leprechaun npc ids of the cache (`config npc`: "Tool Leprechaun" 0 and 12109; Wiki "Tool Leprechaun" lists both). */
-    val LEPRECHAUNS: IntArray = intArrayOf(0, 12109)
-
-    /** Index of the site nearest ([x], [z]) within [SITE_RADIUS] (Chebyshev), or -1. */
-    fun nearestSite(x: Int, z: Int): Int {
-        var best = -1
-        var bestDistance = Int.MAX_VALUE
-        for (i in SITES.indices) {
-            val site = SITES[i]
-            val d = maxOf(kotlin.math.abs(site.x - x), kotlin.math.abs(site.z - z))
-            if (d <= SITE_RADIUS && d < bestDistance) {
-                best = i
-                bestDistance = d
-            }
-        }
-        return best
+    private companion object {
+        val EMPTY = IntArray(0)
     }
 }
 
-/** The crops of `farming-crops.tsv`. */
-internal class CropTable private constructor(val crops: List<Crop>) {
-    private val byIndex: Array<Crop?> = arrayOfNulls<Crop>(crops.size + 1).also { a -> crops.forEach { a[it.index] = it } }
-    val bySeed: Map<Int, Crop> = crops.associateBy { it.seed }
-    private val byKey: Map<String, Crop> = crops.associateBy { it.key }
-
-    /** The crop stored as [index] in a saved state (1-based), or null. */
-    fun at(index: Int): Crop? = byIndex.getOrNull(index)
-
-    fun key(key: String): Crop? = byKey[key]
-
-    companion object {
-        /** The columns of `farming-crops.tsv`; the file's header names them. */
-        private const val COLUMNS = 16
-
-        /** Reads `farming-crops.tsv`. */
-        fun load(): CropTable {
-            val text = CropTable::class.java.getResource("farming-crops.tsv")?.readText() ?: error("farming-crops.tsv missing")
-            val rows =
-                text
-                    .lineSequence()
-                    .drop(1)
-                    .filter { it.isNotBlank() }
-                    .map { it.split('\t') }
-                    .toList()
-            return CropTable(rows.mapIndexed { i, cols -> parse(i + 1, cols) })
-        }
-
-        private fun parse(index: Int, cols: List<String>): Crop {
-            require(cols.size == COLUMNS) { "farming-crops.tsv row has ${cols.size} columns: $cols" }
-            val type = PatchType.entries.firstOrNull { it.tsv == cols[1] } ?: error("farming-crops.tsv: unknown patch ${cols[1]}")
-            return Crop(
-                index = index,
-                key = cols[0],
-                type = type,
-                level = cols[2].toInt(),
-                seedsPer = cols[3].toInt(),
-                seed = cols[4].toInt(),
-                produce = cols[5].toInt(),
-                clean = cols[6].toInt(),
-                plantXp = cols[7].toDoubleOrNull() ?: 0.0,
-                harvestXp = cols[8].toDoubleOrNull() ?: 0.0,
-                checkXp = cols[9].toDoubleOrNull() ?: 0.0,
-                cycleMin = cols[10].toInt(),
-                firstMin = cols[11].toInt(),
-                cycles = cols[12].toInt(),
-                ctsLow = cols[13].toIntOrNull() ?: 0,
-                ctsHigh = cols[14].toIntOrNull() ?: 0,
-                name = cols[15],
-            )
-        }
-    }
+/** A compost bin: the multi-loc parent [loc] drawn through [slot]; [big] is the Farming Guild's giant bin (30 items). */
+internal class Bin(val loc: Int, val slot: Int, val name: String, val big: Boolean = false) {
+    val stateKey: String = "farming.bin.$loc"
+    val timeKey: String = "farming.bin.$loc.t"
 }
 
-/**
- * The patch varbit layouts of `farming-varbits.tsv` (RuneLite `PatchImplementation`, BSD-2; tools/wiki-import/farming_varbits.py),
- * turned around: the varbit values that draw a (patch type, produce, state, stage). A state can have several values: the
- * lowest is the plain one, the next the watered one (allotment, flower), the last the stump of a tree.
- */
-internal class VarbitTable private constructor(private val values: Map<String, IntArray>) {
-    /** The values for the produce [produce] of a patch of [type] in [state] ([CropState]) at [stage], or empty. */
-    fun values(type: PatchType, produce: String, state: CropState, stage: Int): IntArray =
-        values[key(type, produce, state, stage)] ?: EMPTY
-
-    /** The plain value, or [fallback]. */
-    fun plain(type: PatchType, produce: String, state: CropState, stage: Int, fallback: Int): Int =
-        values(type, produce, state, stage).firstOrNull() ?: fallback
-
-    /** The watered value if there is one, else the plain value, else [fallback]. */
-    fun watered(type: PatchType, produce: String, stage: Int, fallback: Int): Int {
-        val v = values(type, produce, CropState.GROWING, stage)
-        return if (v.size > 1) v[1] else v.firstOrNull() ?: fallback
-    }
-
-    /** The last value (the stump of a tree), or [fallback]. */
-    fun last(type: PatchType, produce: String, state: CropState, stage: Int, fallback: Int): Int =
-        values(type, produce, state, stage).lastOrNull() ?: fallback
-
-    /** The crop states of the layouts (RuneLite `CropState`). */
-    enum class CropState { HARVESTABLE, GROWING, DISEASED, DEAD }
-
-    companion object {
-        private val EMPTY = IntArray(0)
-
-        private const val COLUMNS = 7
-
-        private fun key(type: PatchType, produce: String, state: CropState, stage: Int): String =
-            "${type.ordinal}|$produce|${state.ordinal}|$stage"
-
-        /** Reads `farming-varbits.tsv`. */
-        fun load(): VarbitTable {
-            val resource = VarbitTable::class.java.getResource("farming-varbits.tsv")
-            val text = resource?.readText() ?: error("farming-varbits.tsv missing")
-            val lists = HashMap<String, MutableList<Int>>()
-            for (line in text.lineSequence()) {
-                if (line.isBlank() || line.startsWith('#') || line.startsWith("patch\t")) continue
-                val cols = line.split('\t')
-                require(cols.size == COLUMNS) { "farming-varbits.tsv row has ${cols.size} columns: $cols" }
-                val type = PatchType.entries.firstOrNull { it.tsv == cols[0] } ?: continue
-                val state = CropState.entries.firstOrNull { it.name == cols[4] } ?: continue
-                val first = cols[1].toInt()
-                val last = cols[2].toInt()
-                val stageFirst = cols[5].toInt()
-                val stageLast = cols[6].toInt()
-                val step = Integer.signum(stageLast - stageFirst)
-                for (v in first..last) {
-                    val stage = stageFirst + (v - first) * step
-                    lists.getOrPut(key(type, cols[3], state, stage)) { ArrayList() } += v
-                }
-            }
-            return VarbitTable(lists.mapValues { it.value.toIntArray() })
-        }
-    }
-}
+/** A farm: the [patches] and [bins] whose states the client needs while the player is within [FarmingSites.SITE_RADIUS] of ([x], [z]). */
+internal class Site(val name: String, val x: Int, val z: Int, val patches: List<Patch>, val bins: List<Bin> = emptyList())

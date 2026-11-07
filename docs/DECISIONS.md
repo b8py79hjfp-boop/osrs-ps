@@ -626,6 +626,13 @@ Rules and OPEN items: docs/mechanics/construction.md.
   ticks since (multiples of the cycle in epoch minutes), so crops grow offline. Disease rolls use the world RNG when the patch is looked at, not at the tick.
 - **Rev-242 behaviour.** The Wiki's 3 June 2026 change (planting xp at the end, spade on growing plants) is not applied (OPEN-FM1).
 - **plugin-api.** No change. `content/skills` only; the sapling / plant-pot stage, compost bins, tool store and farmer protection are OPEN-FM4/FM12.
+- **Expansion (all patch types, saplings, compost bins, tool store, protection, contracts).** `farming_varbits.py` now imports 20 `PatchImplementation` layouts
+  (same BSD-2 source and header), `farming_crops.py` 76 crops plus `farming-saplings.tsv` and `farming-payments.tsv`, `farming_contracts.py` the 71 contract tasks and the
+  seed pack tables. The patch behaviours are table-driven by `PatchType` (harvest mode, check-health, cure tool, compost lives) instead of branches on type. Patch locs, slots and gardeners
+  are `FarmingSites.kt` (loc ids found with `find-locs` by `multiVarbit`, slots and gardeners from RuneLite `FarmingWorld`). `PatchState` keeps its layout and gains the
+  paid flag and two more crop bits at the top, so saved states stay valid. Seedlings grow lazily (a saved clock, converted in the backpack and bank on login, on the
+  3-tick timer and when watering), a compost bin is one saved Long plus the closing minute, the tool store one saved count per tool. Unknowns are OPEN-FA1..18 in
+  docs/mechanics/farming.md (Tithe Farm is OPEN-FA15). plugin-api: no change; proposals are listed in the task report.
 
 ## D-045: Instances as copied zones in instance space
 

@@ -4,7 +4,8 @@ Farming patch varbit layouts (docs/mechanics/farming.md F1) adapted from the Run
 (`PatchImplementation.forVarbitValue`, BSD-2-Clause, Copyright (c) 2019 Abex; logged in docs/DECISIONS.md).
 
 The plugin maps the value of each patch's multiloc varbit to (produce, crop state, stage). This script reads the
-ALLOTMENT, HERB, FLOWER, TREE and FRUIT_TREE enums of that file and writes every `if (value ...)` branch as one row,
+enums of every patch type in PATCHES (allotment, herb, flower, tree, fruit tree, hops, bush, cactus, mushroom, belladonna, calquat,
+spirit tree, seaweed, celastrus, redwood, Hespori, crystal tree, hardwood, anima, compost bins) and writes every `if (value ...)` branch as one row,
 so the server can go the other way: from a patch state to the varbit value the client draws.
 
 Output (tab-separated, `#` lines are comments, header first):
@@ -21,7 +22,11 @@ import os
 import re
 import sys
 
-PATCHES = ["ALLOTMENT", "HERB", "FLOWER", "TREE", "FRUIT_TREE"]
+PATCHES = [
+    "ALLOTMENT", "HERB", "FLOWER", "TREE", "FRUIT_TREE",
+    "BUSH", "HOPS", "CACTUS", "MUSHROOM", "BELLADONNA", "CALQUAT", "SPIRIT_TREE", "SEAWEED", "CELASTRUS", "REDWOOD",
+    "HESPORI", "CRYSTAL_TREE", "HARDWOOD_TREE", "ANIMA", "COMPOST", "BIG_COMPOST",
+]
 
 HEADER = """# Farming patch varbit layouts: value of the patch's multiloc varbit -> produce, crop state and stage.
 # Adapted from RuneLite runelite-client plugins/timetracking/farming/PatchImplementation.java; its licence follows.
