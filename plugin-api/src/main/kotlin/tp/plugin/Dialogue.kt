@@ -108,6 +108,20 @@ public suspend fun PlayerScript.choice(title: String = "Select an Option", varar
     return input.sub
 }
 
+/**
+ * The destroy confirmation (`confirmdestroy` 584, client script 814: obj, count, question, [message]): true only when
+ * "Yes" is clicked (docs/mechanics/gameframe-buttons.md DS1).
+ */
+public suspend fun PlayerScript.confirmDestroy(obj: Int, count: Int, message: String): Boolean {
+    Dialogues.openChat(player, Interfaces.CONFIRMDESTROY)
+    player.clientScript(CS_CONFIRM_DESTROY, obj, count, DESTROY_QUESTION, message)
+    player.ifEvents(Components.Confirmdestroy.YES, -1..-1, IfEvents.PAUSE_BUTTON)
+    player.ifEvents(Components.Confirmdestroy.NO, -1..-1, IfEvents.PAUSE_BUTTON)
+    val input = awaitInput() as? PauseInput ?: return false
+    player.closeModal()
+    return input.component == Components.Confirmdestroy.YES
+}
+
 /** Waits for the continue click; false if something else answered (the script should stop). */
 private suspend fun PlayerScript.awaitContinue(): Boolean {
     val input = awaitInput()
@@ -221,5 +235,10 @@ private const val DEFAULT_ZOOM = 400
 private const val CS_TEXT_ALIGN = 600
 private const val CS_CHATBOX_RESET_BACKGROUND = 2379
 private const val CS_CHATBOX_MULTI_INIT = 58
+private const val CS_CONFIRM_DESTROY = 814
+
+/** OPEN-DS1: the question line of the destroy confirmation (the client script takes it as an argument). */
+private const val DESTROY_QUESTION = "Are you sure you want to destroy this object?"
+
 private const val CS_OBJBOX_BUTTONS = 2868
 private const val CS_MESBOX_INIT = 1508
