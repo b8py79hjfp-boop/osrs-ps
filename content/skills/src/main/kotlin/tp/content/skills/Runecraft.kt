@@ -32,6 +32,7 @@ public class Runecraft : ContentPlugin {
         for (essence in listOf(RunecraftData.RUNE_ESSENCE, RunecraftData.PURE_ESSENCE)) {
             onUseOnLoc(essence, Locs.ASTRAL_ALTAR) { astral(player) }
         }
+        RunecraftSunfire.register(this)
         onLogin {
             syncEntry()
             timer(SYNC, SYNC_TICKS, soft = true) { syncEntry() }
