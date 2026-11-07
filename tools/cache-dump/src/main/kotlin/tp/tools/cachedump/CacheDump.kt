@@ -81,6 +81,10 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
             SafeZones.write(cache, cacheDir, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
         }
 
+        "anim-groups" -> {
+            AnimGroups.write(cache, Path.of(args.getOrNull(0) ?: throw UsageException("missing output dir")))
+        }
+
         "overlays" -> {
             printOverlays(cache, intArg(args, 0, "squareX"), intArg(args, 1, "squareZ"))
         }

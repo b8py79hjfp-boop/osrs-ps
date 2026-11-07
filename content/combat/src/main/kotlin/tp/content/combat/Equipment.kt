@@ -38,7 +38,9 @@ internal fun PlayerRef.afterChange(pos: Int) {
 internal object Appearance {
     fun refresh(player: PlayerRef) {
         val worn = IntArray(APPEARANCE_SLOTS) { player.worn(it) }
-        player.appearance(worn, player.combatLevel(), player[SharedAttrs.SKULL_ICON] ?: -1, player.headIcon())
+        val weapon = worn[Wear.WEAPON]
+        val render = if (weapon >= 0) WeaponData.of(weapon)?.renderAnims else null
+        player.appearance(worn, player.combatLevel(), player[SharedAttrs.SKULL_ICON] ?: -1, player.headIcon(), render)
     }
 
     private const val APPEARANCE_SLOTS = 12

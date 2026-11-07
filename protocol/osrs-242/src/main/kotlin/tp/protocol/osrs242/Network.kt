@@ -498,14 +498,34 @@ internal object DefaultAppearance {
         ext.setCombatLevel(FRESH_COMBAT_LEVEL)
         IDENT_KITS.forEachIndexed { slot, kit -> ext.setIdentKit(slot, kit) }
         COLOURS.forEachIndexed { slot, colour -> ext.setColour(slot, colour) }
+        BaseAnims.apply(ext, null)
+    }
+}
+
+/** The player's base animation set; a weapon's own anims (protocol-api `Appearance.renderAnims`) replace the defaults. */
+internal object BaseAnims {
+    private val DEFAULTS =
+        intArrayOf(
+            Seqs.HUMAN_READY,
+            Seqs.HUMAN_TURNONSPOT,
+            Seqs.HUMAN_WALK_F,
+            Seqs.HUMAN_WALK_B,
+            Seqs.HUMAN_WALK_L,
+            Seqs.HUMAN_WALK_R,
+            Seqs.HUMAN_RUNNING,
+        )
+
+    fun apply(ext: PlayerAvatarExtendedInfo, anims: IntArray?) {
+        fun at(i: Int): Int = anims?.getOrNull(i)?.takeIf { it >= 0 } ?: DEFAULTS[i]
+        @Suppress("MagicNumber") // the seven slots of the set, in order
         ext.setBaseAnimationSet(
-            readyAnim = Seqs.HUMAN_READY,
-            turnAnim = Seqs.HUMAN_TURNONSPOT,
-            walkAnim = Seqs.HUMAN_WALK_F,
-            walkAnimBack = Seqs.HUMAN_WALK_B,
-            walkAnimLeft = Seqs.HUMAN_WALK_L,
-            walkAnimRight = Seqs.HUMAN_WALK_R,
-            runAnim = Seqs.HUMAN_RUNNING,
+            readyAnim = at(0),
+            turnAnim = at(1),
+            walkAnim = at(2),
+            walkAnimBack = at(3),
+            walkAnimLeft = at(4),
+            walkAnimRight = at(5),
+            runAnim = at(6),
         )
     }
 }

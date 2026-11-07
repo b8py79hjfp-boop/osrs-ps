@@ -38,3 +38,13 @@ Sources:
 - **OPEN-N8:** NPC projectile hit delays use the player formulas (C1). NPC attack animations and projectiles aren't sent
   (no data source; visual only).
 - Aggression, tolerance, max range and retreat: aggression.md.
+
+## Animations
+
+- **N10:** NPCs play an attack anim per style, a block anim when hit and a death anim when they die. The cache has no
+  such fields on NPC configs, so `npc-anims.tsv` is derived from it (tools/wiki-import/npc_anims.py over `cache-dump
+  anim-groups`): the seqs animating the stand seq's skeleton (frame base or keyframe set), picked by their gameval
+  names (`*_ATTACK`, `*_DEFEND` / `*_BLOCK`, `*_DEATH` and variants), preferring the stand seq's name prefix and the
+  nearest id. 3,864 of 4,303 fighting NPCs get an attack anim.
+- **OPEN-N11:** the derived anims are a heuristic (no server data source); NPC projectiles for ordinary ranged / magic
+  NPCs are not known and none are shown (bosses send their own).

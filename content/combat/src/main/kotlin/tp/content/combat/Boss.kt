@@ -225,8 +225,7 @@ internal object BossCombat {
 
     /** A projectile from [npc] to [victim] landing after [delay] ticks (30 client cycles per tick). */
     fun projectile(npc: NpcRef, victim: EntityRef, gfx: Int, delay: Int) {
-        if (gfx < 0) return
-        npc.projectile(victim, gfx, START_HEIGHT, END_HEIGHT, START_CYCLES, maxOf(START_CYCLES + 1, delay * CYCLES_PER_TICK))
+        ProjType.NPC_DEFAULT.launch(npc, victim, gfx, delay)
     }
 
     /** Players inside the rectangle (an arena) on [npc]'s level. */
@@ -261,9 +260,6 @@ internal object BossCombat {
         return centre
     }
 
-    private const val START_HEIGHT = 43
-    private const val END_HEIGHT = 31
-    private const val START_CYCLES = 30
     private const val CYCLES_PER_TICK = 30
     private const val ARENA_SCAN = 32
     private const val RANDOM_TRIES = 20

@@ -167,7 +167,10 @@ public sealed class EntityRef {
     /** Ticks until a hit queued on this entity now with [delay] lands (includes the processing-order +1). */
     public fun ticksUntilHit(delay: Int): Int = e.ticksUntilQueued(delay)
 
-    /** A projectile (spot anim [id]) from this entity to [target], arriving after [endCycles] client cycles. */
+    /**
+     * A projectile (spot anim [id]) from this entity to [target], arriving after [endCycles] client cycles. Heights are
+     * MAP_PROJANIM_V2 units (no implicit × 4); [progress] is the fine-unit offset it starts from its source.
+     */
     public fun projectile(
         target: EntityRef,
         id: Int,
@@ -176,8 +179,9 @@ public sealed class EntityRef {
         startCycles: Int,
         endCycles: Int,
         angle: Int = DEFAULT_ANGLE,
+        progress: Int = 0,
     ) {
-        e.world.projectile(e, target.e, id, startHeight, endHeight, startCycles, endCycles, angle)
+        e.world.projectile(e, target.e, id, startHeight, endHeight, startCycles, endCycles, angle, progress)
     }
 
     /** A spot anim on the tile [at] (MAP_ANIM), seen by everyone near it. */

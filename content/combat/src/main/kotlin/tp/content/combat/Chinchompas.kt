@@ -29,8 +29,7 @@ internal object Chinchompas {
         val delay = Formulas.thrownDelay(distance)
         // Gameval names: the `_pvn` throw is the player-versus-NPC variant.
         player.anim(if (target is PlayerRef) Seqs.HUMAN_CHINCHOMPA_ATTACK else Seqs.HUMAN_CHINCHOMPA_ATTACK_PVN)
-        val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
-        player.projectile(target, projectileOf(thrown), START_HEIGHT, END_HEIGHT, minOf(PROJ_START, arrive - 1), arrive)
+        ProjType.CHINCHOMPA.launch(player, target, projectileOf(thrown), delay)
         // CH3: the primary target's roll decides the whole explosion.
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
         val max = Attacks.maxHit(player, stance, type)
@@ -95,8 +94,4 @@ internal object Chinchompas {
 
     /** Up to 9 targets in all (the primary + 8). */
     private const val MAX_EXTRA = 8
-    private const val CYCLES_PER_TICK = 30
-    private const val PROJ_START = 20
-    private const val START_HEIGHT = 40
-    private const val END_HEIGHT = 36
 }

@@ -61,7 +61,7 @@ internal fun PlayerRef.bonus(param: Int): Int {
 
 internal fun PlayerRef.weaponCategory(): WeaponCategory {
     val weapon = worn(Wear.WEAPON)
-    return if (weapon < 0) Weapons.UNARMED else Weapons.of(objCategory(weapon))
+    return if (weapon < 0) Weapons.UNARMED else Weapons.forObj(weapon, objCategory(weapon))
 }
 
 /** Current stance slot (varp com_mode 0..3) resolved to the weapon's stance and attack type. */
@@ -74,7 +74,14 @@ internal fun PlayerRef.stanceAndType(): Pair<Stance, AttackType> {
 /** Weapon attack speed (param 14, default 4 unarmed; rapid −1: C8). */
 internal fun PlayerRef.attackSpeed(): Int {
     val weapon = worn(Wear.WEAPON)
-    val base = if (weapon < 0) DEFAULT_SPEED else objParam(weapon, Param.ATTACK_SPEED, DEFAULT_SPEED)
+    val base =
+        if (weapon <
+            0
+        ) {
+            DEFAULT_SPEED
+        } else {
+            objParam(weapon, Param.ATTACK_SPEED, WeaponData.of(weapon)?.speed?.takeIf { it > 0 } ?: DEFAULT_SPEED)
+        }
     return if (stanceAndType().first == Stance.RAPID) maxOf(1, base - 1) else base
 }
 
@@ -83,7 +90,7 @@ internal fun PlayerRef.attackRange(): Int {
     val (stance, type) = stanceAndType()
     if (type.style != CombatStyle.RANGED) return 1
     val weapon = worn(Wear.WEAPON)
-    val base = if (weapon < 0) 1 else objParam(weapon, Param.ATTACK_RANGE, 1)
+    val base = if (weapon < 0) 1 else objParam(weapon, Param.ATTACK_RANGE, WeaponData.of(weapon)?.range?.takeIf { it > 0 } ?: 1)
     return if (stance == Stance.LONGRANGE) minOf(MAX_RANGE, base + 2) else base
 }
 

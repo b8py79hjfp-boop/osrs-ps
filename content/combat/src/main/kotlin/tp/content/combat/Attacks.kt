@@ -28,12 +28,9 @@ internal object Attacks {
         if (target is PlayerRef && target.protects(type.style)) max = Formulas.protectedMaxHit(max)
         val distance = player.distanceTo(target)
         val delay = hitDelay(type.style, category, distance)
-        player.anim(spec?.anim ?: attackAnim(category, type))
-        if (type.style == CombatStyle.RANGED) {
-            val projectile = if (category === Weapons.CROSSBOW) SpotAnims.CROSSBOWBOLT_TRAVEL else SpotAnims.RUNE_ARROW_TRAVEL
-            val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
-            player.projectile(target, projectile, PROJ_START_HEIGHT, PROJ_END_HEIGHT, minOf(PROJ_START, arrive - 1), arrive)
-        }
+        player.anim(spec?.anim ?: attackAnim(player, category, type))
+        if (type.style == CombatStyle.RANGED) rangedVisuals(player, target, category, delay)
+        CombatVisuals.block(target, delay)
         CombatSystem.announceAttack(player, target, type.style)
         repeat(spec?.hits ?: 1) {
             val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
@@ -155,17 +152,52 @@ internal object Attacks {
             else -> Formulas.bowDelay(distance)
         }
 
-    /** Visual only (OPEN-V1: per-weapon attack animations aren't in the cache). */
-    private fun attackAnim(category: WeaponCategory, type: AttackType): Int =
+    /** CD-W2: the wielded weapon's anim for the current combat-tab slot (RS Mod obj data), else the category's. */
+    private fun attackAnim(player: PlayerRef, category: WeaponCategory, type: AttackType): Int {
+        val weapon = player.worn(Wear.WEAPON)
+        val slot = player.varp(Varps.COM_MODE).coerceIn(0, SLOTS - 1)
+        val own =
+            if (weapon >=
+                0
+            ) {
+                WeaponData.of(weapon)?.attackAnims?.let { it[slot].takeIf { a -> a >= 0 } ?: it.firstOrNull { a -> a >= 0 } }
+            } else {
+                null
+            }
+        return own ?: categoryAnim(category, type)
+    }
+
+    private fun categoryAnim(category: WeaponCategory, type: AttackType): Int =
         when {
             category === Weapons.UNARMED -> Seqs.HUMAN_UNARMEDPUNCH
             category === Weapons.BOW -> Seqs.HUMAN_BOW
             category === Weapons.CROSSBOW -> Seqs.HUMAN_CROSSBOW
             category === Weapons.STAB_SWORD -> if (type == AttackType.STAB) Seqs.HUMAN_DDAGGER_LUNGE else Seqs.HUMAN_DDAGGER_HACK
-            category === Weapons.TWO_HANDED -> Seqs.HUMAN_DHSWORD_SLASH
+            category === Weapons.TWO_HANDED || category === Weapons.GODSWORD -> Seqs.HUMAN_DHSWORD_SLASH
             category === Weapons.STAFF -> Seqs.HUMAN_STAFF_POUND
             else -> Seqs.HUMAN_SWORD_SLASH
         }
+
+    /**
+     * CD-W4: the launch graphic on the player (height 96) and the projectile of the ammo, or of the thrown weapon
+     * itself, in its shape (RS Mod `PvNCombat.attackRanged`).
+     */
+    private fun rangedVisuals(player: PlayerRef, target: EntityRef, category: WeaponCategory, delay: Int) {
+        val thrown = category === Weapons.THROWN
+        val source = if (thrown) player.worn(Wear.WEAPON) else player.worn(Wear.AMMO)
+        val def = if (source >= 0) WeaponData.of(source) else null
+        if (def != null && def.projLaunch >= 0) player.spotAnim(def.projLaunch, height = LAUNCH_HEIGHT)
+        val travel =
+            def?.projTravel?.takeIf { it >= 0 }
+                ?: if (category === Weapons.CROSSBOW) SpotAnims.CROSSBOWBOLT_TRAVEL else SpotAnims.RUNE_ARROW_TRAVEL
+        val shape =
+            def?.projAnim?.let(ProjType::named) ?: when (category) {
+                Weapons.CROSSBOW -> ProjType.BOLT
+                Weapons.THROWN -> ProjType.THROWN
+                else -> ProjType.ARROW
+            }
+        shape.launch(player, target, travel, delay)
+    }
 
     /** Combat XP per damage (Combat Options CO:17-46): 4 per damage to the style's skill, 4/3 to Hitpoints. */
     @Suppress("MagicNumber") // xp rates
@@ -201,11 +233,10 @@ internal object Attacks {
         player.addXp(Stat.HITPOINTS, damage * 4.0 / 3)
     }
 
-    /** Client cycles (20 ms) per tick, and projectile shape (OPEN-C1: per-weapon values not in the cache). */
-    private const val CYCLES_PER_TICK = 30
-    private const val PROJ_START = 20
-    private const val PROJ_START_HEIGHT = 40
-    private const val PROJ_END_HEIGHT = 36
+    private const val SLOTS = 4
+
+    /** RS Mod `PvNCombat`: the ranged launch spot anim at height 96. */
+    private const val LAUNCH_HEIGHT = 96
 
     private const val PERCENT = 100
     private const val PERMILLE = 1000

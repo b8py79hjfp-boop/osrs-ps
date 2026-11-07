@@ -98,9 +98,8 @@ internal object SpellCasting {
         val distance = if (spell.toSouthWest) southWestDistance(player, target) else player.distanceTo(target)
         val delay = Formulas.magicDelay(distance)
         val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
-        if (spell.projectile >= 0) {
-            player.projectile(target, spell.projectile, PROJ_START_HEIGHT, PROJ_END_HEIGHT, minOf(PROJ_START, arrive - 1), arrive)
-        }
+        shapeOf(spell).launch(player, target, spell.projectile, delay)
+        CombatVisuals.block(target, delay)
         val freezeLands = spell.effect.freezes() && Bosses.freezeLands(player, target)
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random) || freezeLands
         target.spotAnim(if (hit) spell.impact else SpotAnims.FAILEDSPELL_IMPACT, height = IMPACT_HEIGHT, delay = arrive)
@@ -218,6 +217,16 @@ internal object SpellCasting {
         return false
     }
 
+    /** RS Mod `ProjAnimBuilds` shapes per spell family (the elemental and ancient spells use `magic_spell`). */
+    private fun shapeOf(spell: CombatSpell): ProjType =
+        when {
+            spell.name == "Iban Blast" -> ProjType.IBAN
+            spell.name == "Crumble Undead" -> ProjType.CRUMBLE
+            spell.effect is SpellEffect.Bind -> ProjType.BIND
+            spell.effect is SpellEffect.Debuff -> ProjType.CURSE
+            else -> ProjType.MAGIC
+        }
+
     private fun SpellEffect.freezes(): Boolean = this is SpellEffect.Freeze || this is SpellEffect.Bind
 
     /** Combat spells: 5 ticks (AS:6). */
@@ -240,12 +249,9 @@ internal object SpellCasting {
     private val STAT_NAMES = mapOf(Stat.ATTACK to "attack", Stat.STRENGTH to "strength", Stat.DEFENCE to "defence")
     private val GOD_STAVES = intArrayOf(Objs.SARADOMIN_STAFF, Objs.GUTHIX_STAFF, Objs.ZAMORAK_STAFF)
 
-    /** RS Mod `ElementalSpells`: cast spotanim at height 92, impact at 124; projectile `magic_spell` 43 / 31, start 51. */
+    /** RS Mod `ElementalSpells`: cast spotanim at height 92, impact at 124. */
     private const val CAST_HEIGHT = 92
     private const val IMPACT_HEIGHT = 124
-    private const val PROJ_START_HEIGHT = 43
-    private const val PROJ_END_HEIGHT = 31
-    private const val PROJ_START = 51
     private const val CYCLES_PER_TICK = 30
     private const val PERCENT = 100
 

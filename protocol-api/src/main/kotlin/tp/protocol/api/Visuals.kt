@@ -64,4 +64,9 @@ class Appearance(
     val skullIcon: Int,
     /** Overhead prayer icon id, -1 = none. */
     val prayerIcon: Int,
+    /**
+     * Base animation set while the worn weapon is wielded: ready, turn, walk, walk back, walk left, walk right, run;
+     * null or -1 entries = the human defaults.
+     */
+    val renderAnims: IntArray? = null,
 )

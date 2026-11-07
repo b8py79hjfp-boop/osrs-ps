@@ -93,8 +93,8 @@ internal class WeaponCategory(val id: Int, val slots: List<Pair<Stance, AttackTy
 /**
  * Weapon categories (client ids for varbit `combat_weapon_category`) and their stances and attack types. Ids, stances
  * and types: RS Mod `WeaponCategory`, `StyleEnums`, `TypeEnums` (ISC; three-style categories use slots 0, 1, 3).
- * The cache has no obj → weapon category mapping in rev 242 (no opcode 212 data, no such enum found:
- * combat-data.md), so [byObjCategory] maps the obj `category` param, checked per weapon in the cache.
+ * The cache has no obj → weapon category mapping in rev 242 (combat-data.md), so the category of each weapon comes from
+ * [WeaponData] (RS Mod's obj data, D-054); [of] maps the obj `category` param for weapons it doesn't list.
  */
 internal object Weapons {
     private val A = Stance.ACCURATE
@@ -104,27 +104,81 @@ internal object Weapons {
     private val AR = Stance.ACCURATE_RANGED
     private val R = Stance.RAPID
     private val L = Stance.LONGRANGE
+    private val AM = Stance.ACCURATE_MAGIC
+    private val LM = Stance.LONGRANGE_MAGIC
+    private val STAB = AttackType.STAB
+    private val SLASH = AttackType.SLASH
+    private val CRUSH = AttackType.CRUSH
+    private val RANGED = AttackType.RANGED
+    private val MAGIC = AttackType.MAGIC
 
     private fun cat(id: Int, vararg slots: Pair<Stance, AttackType>?): WeaponCategory =
         WeaponCategory(id, if (slots.size == THREE) listOf(slots[0], slots[1], null, slots[2]) else slots.toList())
 
-    val UNARMED = cat(0, A to AttackType.CRUSH, AG to AttackType.CRUSH, D to AttackType.CRUSH)
-    val AXE = cat(1, A to AttackType.SLASH, AG to AttackType.SLASH, AG to AttackType.CRUSH, D to AttackType.SLASH)
-    val BLUNT = cat(2, A to AttackType.CRUSH, AG to AttackType.CRUSH, D to AttackType.CRUSH)
-    val BOW = cat(3, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
-    val CLAW = cat(4, A to AttackType.SLASH, AG to AttackType.SLASH, C to AttackType.STAB, D to AttackType.SLASH)
-    val CROSSBOW = cat(5, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
-    val SLASH_SWORD = cat(9, A to AttackType.SLASH, AG to AttackType.SLASH, C to AttackType.STAB, D to AttackType.SLASH)
-    val TWO_HANDED = cat(10, A to AttackType.SLASH, AG to AttackType.SLASH, AG to AttackType.CRUSH, D to AttackType.SLASH)
-    val STAB_SWORD = cat(17, A to AttackType.STAB, AG to AttackType.STAB, AG to AttackType.SLASH, D to AttackType.STAB)
-    val STAFF = cat(18, A to AttackType.CRUSH, AG to AttackType.CRUSH, D to AttackType.CRUSH)
-    val THROWN = cat(19, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
+    val UNARMED = cat(0, A to CRUSH, AG to CRUSH, D to CRUSH)
+    val AXE = cat(1, A to SLASH, AG to SLASH, AG to CRUSH, D to SLASH)
+    val BLUNT = cat(2, A to CRUSH, AG to CRUSH, D to CRUSH)
+    val BOW = cat(3, AR to RANGED, R to RANGED, L to RANGED)
+    val CLAW = cat(4, A to SLASH, AG to SLASH, C to STAB, D to SLASH)
+    val CROSSBOW = cat(5, AR to RANGED, R to RANGED, L to RANGED)
+    val SALAMANDER = cat(6, AG to SLASH, R to RANGED, D to MAGIC, null)
+    val CHINCHOMPA = cat(7, AR to RANGED, R to RANGED, L to RANGED)
+    val GUN = cat(8, null, AG to CRUSH, null, null)
+    val SLASH_SWORD = cat(9, A to SLASH, AG to SLASH, C to STAB, D to SLASH)
+    val TWO_HANDED = cat(10, A to SLASH, AG to SLASH, AG to CRUSH, D to SLASH)
+    val PICKAXE = cat(11, A to STAB, AG to STAB, AG to CRUSH, D to STAB)
+    val POLEARM = cat(12, C to STAB, AG to SLASH, D to STAB)
+    val POLESTAFF = cat(13, A to CRUSH, AG to CRUSH, D to CRUSH)
+    val SCYTHE = cat(14, A to SLASH, AG to SLASH, AG to CRUSH, D to SLASH)
+    val SPEAR = cat(15, C to STAB, C to SLASH, C to CRUSH, D to STAB)
+    val SPIKED = cat(16, A to CRUSH, AG to CRUSH, C to STAB, D to CRUSH)
+    val STAB_SWORD = cat(17, A to STAB, AG to STAB, AG to SLASH, D to STAB)
+    val STAFF = cat(18, A to CRUSH, AG to CRUSH, D to CRUSH)
+    val THROWN = cat(19, AR to RANGED, R to RANGED, L to RANGED)
+    val WHIP = cat(20, A to SLASH, C to SLASH, D to SLASH)
+    val BLADED_STAFF = cat(21, A to STAB, AG to SLASH, D to CRUSH)
+    val BANNER = cat(22, A to SLASH, AG to SLASH, AG to CRUSH, D to SLASH)
 
-    /** Chinchompas: short / medium / long fuse (Wiki "Chinchompa (weapon)"), weapon category 7. */
-    val CHINCHOMPA = cat(7, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
-    val WHIP = cat(20, A to AttackType.SLASH, C to AttackType.SLASH, D to AttackType.SLASH)
+    /** Godswords: the 2h sword stances under their own client id (RS Mod: the tab shows 23 for them). */
+    val GODSWORD = cat(23, A to SLASH, AG to SLASH, AG to CRUSH, D to SLASH)
+    val POWERED_STAFF = cat(24, AM to MAGIC, AM to MAGIC, LM to MAGIC)
+    val BLUDGEON = cat(27, AG to CRUSH, AG to CRUSH, AG to CRUSH)
+    val BULWARK = cat(28, A to CRUSH, null, null, AG to CRUSH)
 
-    /** Obj `category` (cache) → weapon category, from the weapons checked in cache 2757 (combat-data.md). */
+    private val byId: Map<Int, WeaponCategory> =
+        listOf(
+            UNARMED,
+            AXE,
+            BLUNT,
+            BOW,
+            CLAW,
+            CROSSBOW,
+            SALAMANDER,
+            CHINCHOMPA,
+            GUN,
+            SLASH_SWORD,
+            TWO_HANDED,
+            PICKAXE,
+            POLEARM,
+            POLESTAFF,
+            SCYTHE,
+            SPEAR,
+            SPIKED,
+            STAB_SWORD,
+            STAFF,
+            THROWN,
+            WHIP,
+            BLADED_STAFF,
+            BANNER,
+            GODSWORD,
+            POWERED_STAFF,
+            BLUDGEON,
+            BULWARK,
+        ).associateBy { it.id }
+
+    fun byId(id: Int): WeaponCategory? = byId[id]
+
+    /** Obj `category` (cache) → weapon category, for weapons [WeaponData] doesn't list (combat-data.md). */
     private val byObjCategory: Map<Int, WeaponCategory> =
         mapOf(
             1 to STAFF, // staves (Staff of air, Ancient staff, Ahrim's staff)
@@ -141,6 +195,9 @@ internal object Weapons {
         )
 
     fun of(objCategory: Int): WeaponCategory = byObjCategory[objCategory] ?: UNARMED
+
+    /** The weapon category of [obj]: [WeaponData] first, then the obj category param. */
+    fun forObj(obj: Int, objCategory: Int): WeaponCategory = WeaponData.of(obj)?.category?.let(::byId) ?: of(objCategory)
 
     private const val THREE = 3
 }

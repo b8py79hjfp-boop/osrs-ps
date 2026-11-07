@@ -467,8 +467,8 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         }
 
     /** Sends this player's look: worn obj per wear position 0..11 (-1 empty). */
-    public fun appearance(worn: IntArray, combatLevel: Int, skullIcon: Int = -1, prayerIcon: Int = -1) {
-        p.world.refreshAppearance(p, worn, combatLevel, skullIcon, prayerIcon)
+    public fun appearance(worn: IntArray, combatLevel: Int, skullIcon: Int = -1, prayerIcon: Int = -1, renderAnims: IntArray? = null) {
+        p.world.refreshAppearance(p, worn, combatLevel, skullIcon, prayerIcon, renderAnims)
     }
 
     /** Obj config param [param] of [obj] (int), or [default]. */

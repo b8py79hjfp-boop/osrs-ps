@@ -182,6 +182,7 @@ internal class RspSession(
         ext.setCombatLevel(appearance.combatLevel)
         ext.setSkullIcon(appearance.skullIcon)
         ext.setOverheadIcon(appearance.prayerIcon)
+        BaseAnims.apply(ext, appearance.renderAnims)
     }
 
     private fun wornSecondary(appearance: Appearance, pos: Int, which: Int): Int =

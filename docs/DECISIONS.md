@@ -771,3 +771,13 @@ summon), `BoatStats`, `ShipbuildingData`, `BoatItems`; `Boats` gained `rebuild`;
 - Not done: Bank PIN (OPEN-SY2), Seb's shop, dialogue text of the shipwrights, schematic discovery (`LOST_SCHEMATIC_*` are only read), Pandemonium's cargo hold
   still bypasses the builder (OPEN-PAN1).
 
+
+## D-054: Weapon and NPC animation data from RS Mod's obj data and from the cache's skeletons
+
+- **`weapons.tsv`** is converted from RS Mod `api/cache-enricher/.../objs.toml` (ISC) by `tools/wiki-import/rsmod_weapons.py`: weapon
+  category, per-slot attack anims, block anim, render anims, sounds, speed / range overrides, ammo projectiles (1,331 objs). The live game keeps
+  these server-side; RS Mod's table is the most complete open source.
+- **`npc-anims.tsv`** is derived from our own cache (seq skeleton + gameval names), because no open data source lists NPC combat anims.
+- **Projectile heights** are MAP_PROJANIM_V2 units (RSProt dropped the implicit × 4); the earlier 40 / 43 values were 4× too low. Shapes
+  are RS Mod's `ProjAnimBuilds`; arrival stays on our hit tick (golden scenarios).
+- **protocol-api `Appearance.renderAnims`** carries the weapon's base animation set.

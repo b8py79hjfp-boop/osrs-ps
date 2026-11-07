@@ -261,6 +261,7 @@ internal object CombatSystem {
                 target.stopInteraction()
                 Poison.clear(target)
                 Bosses.of(target.type)?.died(target, killer)
+                CombatVisuals.npcDeath(target)
                 target.queueHit(NPC_DEATH_DELAY) {
                     // Drops go to the player who dealt the most damage (Wiki "Drops").
                     target.events.publish(DeathEvent(target, killer, Bosses.topDamager(target) ?: killer as? PlayerRef))
@@ -398,6 +399,8 @@ internal object NpcCombat {
                 CombatStyle.MAGIC -> Formulas.magicDelay(npc.distanceTo(victim))
             }
         CombatSystem.announceAttack(npc, victim, style)
+        CombatVisuals.npcAttack(npc, style)
+        CombatVisuals.block(victim, delay)
         CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(style), delay)
         if (def != null) Toxic.onNpcAttack(npc, def, victim)
     }

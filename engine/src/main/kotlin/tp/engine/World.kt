@@ -765,14 +765,23 @@ class World(
      * Sends [player]'s look: [worn] = obj per wear position 0..11 (-1 empty); each obj's `wearpos2/3` (cache) hide
      * other positions (e.g. a full helm hides hair).
      */
-    fun refreshAppearance(player: Player, worn: IntArray, combatLevel: Int, skullIcon: Int, prayerIcon: Int) {
+    fun refreshAppearance(
+        player: Player,
+        worn: IntArray,
+        combatLevel: Int,
+        skullIcon: Int,
+        prayerIcon: Int,
+        renderAnims: IntArray? = null,
+    ) {
         val hidden = IntArray(APPEARANCE_SLOTS * 2) { -1 }
         for (pos in 0 until APPEARANCE_SLOTS) {
             val type = worn.getOrNull(pos)?.takeIf { it >= 0 }?.let { data.configs.objs[it] } ?: continue
             hidden[pos * 2] = type.wearPos2
             hidden[pos * 2 + 1] = type.wearPos3
         }
-        player.session.appearance(tp.protocol.api.Appearance(worn.copyOf(APPEARANCE_SLOTS), hidden, combatLevel, skullIcon, prayerIcon))
+        player.session.appearance(
+            tp.protocol.api.Appearance(worn.copyOf(APPEARANCE_SLOTS), hidden, combatLevel, skullIcon, prayerIcon, renderAnims),
+        )
     }
 
     /** Obj ids by exact cache name (not noted, not placeholders), built on first use. */
@@ -791,7 +800,17 @@ class World(
      * A projectile from [from] to [to] (visual only), timed in client cycles from this tick's info pass: it starts
      * after [startCycles] and arrives after [endCycles] (combat-timeline.md OPEN-C1).
      */
-    fun projectile(from: Entity, to: Entity, id: Int, startHeight: Int, endHeight: Int, startCycles: Int, endCycles: Int, angle: Int) {
+    fun projectile(
+        from: Entity,
+        to: Entity,
+        id: Int,
+        startHeight: Int,
+        endHeight: Int,
+        startCycles: Int,
+        endCycles: Int,
+        angle: Int,
+        progress: Int = 0,
+    ) {
         val c = from.coord
         val op =
             tp.protocol.api.ZoneOp.Projectile(
@@ -803,7 +822,7 @@ class World(
                 startCycles,
                 endCycles,
                 angle,
-                0,
+                progress,
                 from.avatarRef,
                 to.avatarRef,
                 to.coord.x,

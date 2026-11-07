@@ -37,3 +37,13 @@ and conflict groups aren't in the cache: OSRS Wiki "Prayer" table (prayers.md).
   (npc-combat.md).
 - **OPEN-N2:** NPC death length (the Wiki infobox has no field for it).
 - **OPEN-V1:** per-weapon attack animations (visual only).
+
+## Weapon data (server-side, not in the cache)
+
+| # | Rule | Source |
+|---|---|---|
+| CD-W1 | Each weapon's category (the combat tab varbit `combat_weapon_category` and its stances / attack types, 27 categories) comes from `weapons.tsv`; weapons it doesn't list fall back to the obj `category` param mapping. | RS Mod `objs.toml` (ISC), `WeaponCategory`, `StyleEnums`, `TypeEnums` |
+| CD-W2 | The attack anim is the weapon's anim for the selected combat-tab slot (else its first one, else the category default); a special attack's own anim wins. | RS Mod `objs.toml` `anim_stance1..4` |
+| CD-W3 | When hit, a player plays the shield's block anim, else the weapon's, else `human_unarmedblock`, timed to the hit (not while moving); NPCs play their block anim (npc-combat.md N10). | RS Mod `combatPlayDefendAnim` |
+| CD-W4 | While a weapon is wielded the player's base animations (ready, turn, walk ×4, run) are its own where given. Ranged attacks show the ammo's (or thrown weapon's) launch graphic at height 96 and its travel projectile in its shape (arrow, bolt, thrown, chinchompa, dark bow doubles); projectiles of every kind use the RS Mod `ProjAnimBuilds` shapes (heights in MAP_PROJANIM_V2 units), arriving on the hit tick. | RS Mod `objs.toml`, `PvNCombat`, `ProjAnimBuilds` |
+| CD-W5 | Attack speed and range come from the cache params 14 / 13; `weapons.tsv` fills them where the cache has none. | RS Mod `objs.toml` |
