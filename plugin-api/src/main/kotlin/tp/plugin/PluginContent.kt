@@ -180,7 +180,8 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             h.opObjT[component]?.let(::objScript)
         }
 
-    override fun apObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? = null
+    override fun apObjT(component: Int, obj: Int, groundObj: Int): Script<Player>? =
+        if (component == Components.Inventory.ITEMS) null else h.apObjT[component]?.let(::objScript)
 
     override fun onButtonT(player: Player, fromComponent: Int, fromSub: Int, fromObj: Int, toComponent: Int, toSub: Int, toObj: Int) {
         val ref = ref(player)

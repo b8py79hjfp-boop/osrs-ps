@@ -4,16 +4,16 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.symbols.Components
-import tp.symbols.Invs
 import tp.symbols.Objs
 import tp.symbols.Varbits
 import tp.util.CoordGrid
 
-/** Spellbook varbit `spellbook` values (RS Mod `Spellbook`: standard 0, ancients 1, lunars 2). */
+/** Spellbook varbit `spellbook` values (RS Mod `Spellbook`: standard 0, ancients 1, lunars 2, arceuus 3). */
 internal object Book {
     const val STANDARD = 0
     const val ANCIENT = 1
     const val LUNAR = 2
+    const val ARCEUUS = 3
 }
 
 /**
@@ -53,10 +53,11 @@ public class SpellTeleports : ContentPlugin {
             choiceDialog(DEEP_WILDERNESS_WARNING, listOf("Yes", "No")) { pick -> if (pick == 1) cast(spell, confirmed = true) }
             return
         }
-        if (!transaction("teleport runes") { spell.runes.all { (rune, count) -> remove(Invs.INV, rune, count) } }) {
-            return message("You do not have enough runes to cast this spell.")
+        if (!transaction("teleport runes") { SpellRunes.take(this, this@cast, spell.runes) }) {
+            return message(Casting.NO_RUNES)
         }
         addXp(MAGIC, spell.xp)
+        Spellbooks.onCast(this)
         Teleports.start(this, spell.style, spell.destination)
     }
 
@@ -379,6 +380,93 @@ public class SpellTeleports : ContentPlugin {
                     unlock = "Lunar Diplomacy",
                     deepWarning = true,
                 ),
+            ) + arceuusSpells()
+
+        /**
+         * Arceuus spellbook teleports (OSRS Wiki spell pages, magic-utility.md AR1). Destinations are the Wiki's map pin or
+         * the centre of its polygon; Respawn Teleport goes to our respawn point, Lumbridge (OPEN-MU7).
+         */
+        @Suppress("MagicNumber")
+        private fun arceuusSpells(): List<TeleportSpell> =
+            listOf(
+                arceuus(Components.Magic_Spellbook.TELEPORT_ARCEUUS_LIBRARY, 6, 9.5, 1632, 3837, Objs.LAWRUNE to 1, Objs.EARTHRUNE to 2),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_DRAYNOR_MANOR,
+                    17,
+                    16.0,
+                    3109,
+                    3351,
+                    Objs.LAWRUNE to 1,
+                    Objs.EARTHRUNE to 1,
+                    Objs.WATERRUNE to 1,
+                ),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_BATTLEFRONT,
+                    23,
+                    19.0,
+                    1347,
+                    3740,
+                    Objs.LAWRUNE to 1,
+                    Objs.EARTHRUNE to 1,
+                    Objs.FIRERUNE to 1,
+                ),
+                arceuus(Components.Magic_Spellbook.TELEPORT_MIND_ALTAR, 28, 22.0, 2979, 3510, Objs.LAWRUNE to 1, Objs.MINDRUNE to 2),
+                arceuus(Components.Magic_Spellbook.TELEPORT_RESPAWN, 34, 27.0, 3222, 3218, Objs.LAWRUNE to 1, Objs.SOULRUNE to 1),
+                arceuus(Components.Magic_Spellbook.TELEPORT_SALVE_GRAVEYARD, 40, 30.0, 3433, 3461, Objs.LAWRUNE to 1, Objs.SOULRUNE to 2),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_FENKENSTRAIN_CASTLE,
+                    48,
+                    50.0,
+                    3548,
+                    3529,
+                    Objs.LAWRUNE to 1,
+                    Objs.SOULRUNE to 1,
+                    Objs.EARTHRUNE to 1,
+                ),
+                arceuus(Components.Magic_Spellbook.TELEPORT_WEST_ARDOUGNE, 61, 68.0, 2500, 3290, Objs.LAWRUNE to 2, Objs.SOULRUNE to 2),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_HARMONY_ISLAND,
+                    65,
+                    74.0,
+                    3797,
+                    2866,
+                    Objs.LAWRUNE to 1,
+                    Objs.SOULRUNE to 1,
+                    Objs.NATURERUNE to 1,
+                ),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_CEMETERY,
+                    71,
+                    82.0,
+                    2980,
+                    3763,
+                    Objs.LAWRUNE to 1,
+                    Objs.SOULRUNE to 1,
+                    Objs.BLOODRUNE to 1,
+                ),
+                arceuus(
+                    Components.Magic_Spellbook.TELEPORT_BARROWS,
+                    83,
+                    90.0,
+                    3564,
+                    3315,
+                    Objs.LAWRUNE to 2,
+                    Objs.SOULRUNE to 2,
+                    Objs.BLOODRUNE to 1,
+                ),
+            )
+
+        @Suppress("LongParameterList")
+        private fun arceuus(component: Int, level: Int, xp: Double, x: Int, z: Int, vararg runes: Pair<Int, Int>): TeleportSpell =
+            TeleportSpell(
+                component,
+                Book.ARCEUUS,
+                level,
+                xp,
+                runes.toList(),
+                CoordGrid(x, z, 0),
+                CastStyle.ARCEUUS,
+                unlock = "the Arceuus spellbook",
             )
     }
 }

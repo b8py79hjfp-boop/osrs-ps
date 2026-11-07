@@ -679,3 +679,13 @@ hotspot, stats link and port task dock must resolve) by the `Sailing` plugin, so
   601 and 602) and 60 of its 61 docks (Last Light is missing); mechanics docs `docs/mechanics/sailing-*.md` carry the OPEN items.
 - **Placeholder rules.** Barracuda rank tuples were decoded as (target ticks, laps, supplies, bonus XP x10, trial XP x10) and checked against the three Wiki
   tables; the crew id-to-name mapping and the `(stat, level)` crew requirement tuples are derived by matching values, flagged [D] in the docs.
+
+## D-049: Non-combat spells as content/magic, with one plugin-api hook (magic-utility agent)
+
+Rules and OPEN items: docs/mechanics/magic-utility.md. All spells are `content/magic` plugins; no engine, protocol, combat, pvp or skills change.
+- **One rune-payment path.** `SpellRunes.take` pays a spell inside the spell's own item transaction (equipped elemental staff supplies its element, combination runes cover both elements, the rest is plain runes), so a spell that fails after paying costs nothing. The existing spell teleports were switched to it; content/combat's combat spells still remove plain runes (main session).
+- **Cast clock and a one-deep queue** (`Casting`): a spell cast before the previous one's Wiki "speed" is over is queued once as a weak script (Wiki: Superheat / enchant queue one spell), not dropped and not stacked.
+- **Items by cache name.** The spell tables list the Wiki's item names and resolve them once at world start (`WorldRef.objIdsNamed`); a name the cache lacks drops that row. Exact items (runes, bones, fruit, vessels) use `tp.symbols`.
+- **`ContentScope.onApObjT`** is the one plugin-api addition: Telekinetic Grab must run from range 10 over obstacles, and the engine already supports ap scripts on ground-item targets (`ContentHandlers.apObjT`) but the plugin facade returned null.
+- **Effects owned by other modules stay OPEN** instead of being edited from here: the Charge boost to god spells (combat), Shadow Veil in pickpocketing and Resurrect Crops (skills), Vengeance Other, combat spells ending a Spellbook Swap. The timers and attrs they need are kept here under named keys.
+- **Reanimation** is limited to the Dark Altar's range because no drop-location record exists for ensouled heads (OPEN-MU12), which is stricter than the game rather than a guess at its rule.

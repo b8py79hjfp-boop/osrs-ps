@@ -24,6 +24,9 @@ internal enum class CastStyle(val stages: List<CastStage>, val ticks: Int) {
 
     /** Lunar spellbook: seq 1816 and spotanim 747 (`lunar_teleport_spotanim`); Wiki speed 4 ticks. */
     LUNAR(listOf(CastStage(0, Seqs.HUMAN_TELEPORT_OTHER_IMPACT, SpotAnims.LUNAR_TELEPORT_SPOTANIM)), STANDARD_TICKS),
+
+    /** Arceuus spellbook: seq 6575 (`human_spellcast_arceuus_teleport`) and spotanim 1296; Wiki speed 4 ticks (MU3). */
+    ARCEUUS(listOf(CastStage(0, Seqs.HUMAN_SPELLCAST_ARCEUUS_TELEPORT, SpotAnims.ARCEUUS_TELEPORT_SPOTANIM)), STANDARD_TICKS),
 }
 
 /**

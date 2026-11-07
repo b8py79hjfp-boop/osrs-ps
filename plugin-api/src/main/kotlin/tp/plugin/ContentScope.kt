@@ -55,6 +55,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opObjT, component, script, "opobjt $component")
     }
 
+    /**
+     * Approach variant of [onOpObjT]: a spell [component] used on a ground item runs from within its approach range
+     * (see [PlayerScript.apRange]) and line of sight, e.g. Telekinetic Grab from up to 10 tiles away.
+     */
+    public fun onApObjT(component: Int, script: suspend PlayerScript.(ObjRef) -> Unit) {
+        handlers.put(handlers.apObjT, component, script, "apobjt $component")
+    }
+
     /** A spell or other component [component] used on an inventory item (IF_BUTTONT into the backpack, e.g. alchemy). */
     public fun onButtonT(component: Int, handler: PlayerRef.(ItemOnItem) -> Unit) {
         handlers.put(handlers.buttonT, component, handler, "buttont $component")
@@ -260,6 +268,7 @@ internal class Handlers {
     val useOnItem = HashMap<Long, PlayerRef.(ItemOnItem) -> Unit>()
     val opLocT = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opObjT = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
+    val apObjT = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
     var examine: (PlayerRef.(Examined) -> Unit)? = null
     var heading: (PlayerRef.(Int) -> Unit)? = null

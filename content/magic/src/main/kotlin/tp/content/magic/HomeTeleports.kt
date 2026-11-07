@@ -114,13 +114,17 @@ public class HomeTeleports : ContentPlugin {
                 CastStage(14, Seqs.AIDE_PLAYER_TELEPORTING, SpotAnims.AIDE_PLAYER_TELEPORT),
             )
 
-        /** Wiki: Lumbridge (3221, 3218), Edgeville (centre of the (3087..3090, 3501..3504) polygon), Lunar Isle (2094, 3913). */
+        /**
+         * Wiki: Lumbridge (3221, 3218), Edgeville (centre of the (3087..3090, 3501..3504) polygon), Lunar Isle (2094, 3913),
+         * Arceuus: the Dark Altar (1700, 3882).
+         */
         @Suppress("MagicNumber")
         private val HOMES: List<HomeSpell> =
             listOf(
                 HomeSpell(Components.Magic_Spellbook.TELEPORT_HOME_STANDARD, Book.STANDARD, CoordGrid(3221, 3218, 0)),
                 HomeSpell(Components.Magic_Spellbook.TELEPORT_HOME_ZAROS, Book.ANCIENT, CoordGrid(3088, 3502, 0)),
                 HomeSpell(Components.Magic_Spellbook.TELEPORT_HOME_LUNAR, Book.LUNAR, CoordGrid(2094, 3913, 0)),
+                HomeSpell(Components.Magic_Spellbook.TELEPORT_HOME_ARCEUUS, Book.ARCEUUS, CoordGrid(1700, 3882, 0)),
             )
     }
 }
