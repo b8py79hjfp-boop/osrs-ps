@@ -9,7 +9,7 @@ import tp.symbols.Objs
  * saved value `diary.<area>.<tier>`; tier counts, "tier complete", "reward claimed" and "started" are derived from it and
  * mirrored into the varbits the client scripts read.
  */
-internal class Diaries(val data: DiaryData) {
+internal class Diaries(val data: DiaryData, private val quests: QuestGate) {
     /**
      * Completes [id] for [player] (AD1): a no-op returning false when it is already done, unknown or a skill requirement is
      * not met (the content that calls this has normally checked the requirement itself; this is the diary's own check, AD2).
@@ -21,7 +21,7 @@ internal class Diaries(val data: DiaryData) {
         val key = tasksKey(id.area, id.tier)
         val mask = player.saved(key) ?: 0L
         val bit = 1L shl (id.index - 1)
-        if (mask and bit != 0L || !meetsSkills(player, task)) return false
+        if (mask and bit != 0L || !meetsSkills(player, task) || !quests.met(player, task.quests)) return false
         player.setSaved(key, mask or bit)
         sync(player, id.area, id.tier)
         val area = data.areas[id.area]
@@ -36,6 +36,12 @@ internal class Diaries(val data: DiaryData) {
             )
         }
         return true
+    }
+
+    /** Whether [player] meets the skill and (implemented) quest requirements of task [id] now (AD2). */
+    fun meetsRequirements(player: PlayerRef, id: TaskId): Boolean {
+        val task = data.task(id) ?: return false
+        return meetsSkills(player, task) && quests.met(player, task.quests)
     }
 
     fun isDone(player: PlayerRef, id: TaskId): Boolean = (player.saved(tasksKey(id.area, id.tier)) ?: 0L) and (1L shl (id.index - 1)) != 0L
@@ -130,9 +136,9 @@ internal class Diaries(val data: DiaryData) {
             when (req.stat) {
                 SkillReq.COMBAT -> player.combatLevel >= req.level
 
+                // OPEN-AD2: quest points are not counted (content/quests is another module)
                 SkillReq.QUEST_POINTS -> true
 
-                // OPEN-AD2: no quest point count in the repository
                 else -> (if (req.boostable) player.level(req.stat) else player.baseLevel(req.stat)) >= req.level
             }
         }

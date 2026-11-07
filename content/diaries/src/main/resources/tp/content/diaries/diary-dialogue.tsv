@@ -1,0 +1,865 @@
+# tree <area> <standard|tier>, then nodes as in npc-dialogue.tsv. Wiki Transcript: pages, CC BY-NC-SA 3.0; tools/wiki-import/achievement_diaries.py
+tree	0	standard
+N	1	Ahoy!
+C	Select an Option	5	What is this place?	2	What do you do?	5	I'd like to trade in my tickets, please.	8	I have a question about my Achievement Diary.	11	MORE	17
+P	3	What is this place?
+N	4	Welcome to the Brimhaven Agility Arena!
+N	1	If ye want to know more talk to Cap'n Izzy, he found it!
+P	6	What do you do?
+N	7	I be the Jack o' Tickets. I exchange the tickets ye collect in the Agility Arena for more stuff. Ye can obtain more agility experience or some items ye won't find anywhere else!
+P	1	Sounds good!
+P	9	I'd like to trade in my tickets, please.
+N	10	Aye, ye be on the right tack.
+E
+P	12	I have a question about my Achievement Diary.
+P	13	I've done all the easy tasks in my Karamja Achievement Diary.
+N	14	Arr, ye have that, I see yer list. I s'pose ye'll be wantin' yer reward then!
+P	15	Yes please.
+N	16	These 'ere Karamja gloves be a symbol of yer explorin' on the island. I'll 'ave a word with some of the seafarin' folk who sail to Port Sarim and Ardougne, so they'll take ye on board half price if ye be wearin' them.
+E
+C	Select an Option	3	What potions do these new herbs make?	18	See you later.	23	BACK	17
+P	19	What potions do these new herbs make?
+N	20	I be no herbalist but I were given the recipes to go with these herbs...
+M	21	Toadflax + toad legs &equals; Agility potion.
+M	22	Snapdragon + red spiders' eggs &equals; Super restore potion.
+P	17	Thanks!
+P	24	See you later.
+E
+tree	1	standard
+N	1	'elo... *hic*
+C	Select an Option	4	Can I have another cloak?	2	Who are you?	4	I have a question about my Achievement Diary	17	Bye!	45
+P	3	Can I have another cloak?
+M	1	@@REPLACE@@Two pints gives you another cloak.
+P	5	Who are you?
+N	6	They call me Two pints... I'm the taskmaster for the Ardougne Achievement Diary.
+C	Select an Option	2	Why do they call you Two pints?	7	What is the Achievement Diary?	14
+P	8	Why do they call you Two pints?
+N	9	I'm not too sure really... my memory isn't the greatest... *hic*
+P	10	Maybe you lost a game of Runelink and had to change your name as a forfeit?
+N	11	Perhaps... *hic* I know a great drinking game for that!
+P	12	Suddenly it all makes sense...
+M	13	Two pints mutters incoherently and stumbles away.
+E
+P	15	What is the Achievement Diary?
+N	16	It's a diary that helps you keep track of particular achievements. In and around Ardougne it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+P	18	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	18	What are the rewards?	19	How do I claim the rewards?	42	Bye!	44
+N	20	Well, there are four different Ardougne cloaks, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	21	know more about?
+C	Select an Option	4	Easy Rewards.	22	Medium Rewards.	27	Hard Rewards.	32	Elite Rewards.	37
+P	23	Tell me more about the Easy rewards please!
+N	24	If you complete all of the easy tasks in Ardougne: The Citizen in West Ardougne will buy cats for 200 death runes each, some drops in the Tower of Life will be noted and the cape can teleport you to the Monastery
+N	25	south of Ardougne too.
+P	26	Thanks!
+E
+P	28	Tell me more about the Medium rewards please!
+N	29	In addition to the easy rewards: Wizard Cromperty will give you 100 noted pure essence each day, even more drops will be noted in the Tower of Life, you've got a 10% better chance at pickpocketing in Ardougne, you
+N	30	can toggle the ring of life to teleport to Ardougne, you get three teleports each day to the Ardougne farming patch and you can hold up to 56 coin pouches whilst pickpocketing.
+P	31	Thanks!
+E
+P	33	Tell me more about the Hard rewards please!
+N	34	In addition to the easy and medium benefits: Wizard Cromperty will give you 150 pure essence each day, you can toggle the Watchtower teleport to the centre of Yanille, claim further drops as notes in the Tower of
+N	35	Life, teleports to the farming patch increased to five per day, have a 10% better chance at pickpocketing everywhere and you can hold up to 84 coin pouches whilst pickpocketing.
+P	36	Thanks!
+E
+P	38	Tell me more about the Elite rewards please!
+N	39	In addition to the previous tiers of rewards: Wizard Cromperty will give you 250 pure essence every day, you will catch 50% more fish from the Fishing Trawler and receive 25% more marks of grace on the
+N	40	Ardougne agility course. Your cape will have unlimited teleports to the Ardougne farming patch, Bert will automatically deliver your daily sand and you can hold up to 140 coin pouches whilst pickpocketing.
+P	41	Thanks!
+E
+P	43	How do I claim the rewards?
+N	1	Just complete the tasks in Ardougne so they're ticked off, then come and speak to me for your rewards.
+E
+P	46	Bye!
+N	47	See you later!
+E
+tree	1	easy
+P	1	I've completed all of the easy tasks in my Ardougne achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This cloak is a symbol of your exploration of Ardougne. The Citizen in West Ardougne will buy cats for 200 death runes each, some drops in the Tower of Life will be noted and the cape can teleport you to the
+N	6	Monastery south of Ardougne too.
+P	7	Wow, thanks!
+N	-1	If you ever lose your cloak, come back to me to reclaim it.
+tree	1	medium
+P	1	I've completed all of the medium tasks in my Ardougne achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Ardougne cloak for you. Wizard Cromperty will give you 100 noted pure essence each day, even more drops will be noted in the Tower of Life, you've got a 10% better chance at pickpocketing in
+N	6	Ardougne, you can toggle the ring of life to teleport to Ardougne, you get three teleports each day to the Ardougne farming patch and you can hold up to 56 coin pouches whilst pickpocketing.
+P	7	Wow, thanks!
+E
+tree	1	hard
+P	1	I've completed all of the hard tasks in my Ardougne achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Ardougne cloak for you. Wizard Cromperty will give you 150 pure essence each day, you can toggle the Watchtower teleport to the centre of Yanille, claim further drops as notes in the Tower of
+N	6	Life, teleports to the farming patch increased to five per day, have a 10% better chance at pickpocketing everywhere and you can hold up to 84 coin pouches whilst pickpocketing.
+P	-1	Wow, thanks!
+tree	1	elite
+P	1	I've completed all of the elite tasks in my Ardougne achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in Ardougne! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Ardougne cloak for you. Wizard Cromperty will give you 250 pure essence every day, you will catch 50% more fish from the Fishing Trawler and receive 25% more marks of grace on the
+N	5	Ardougne agility course. Your cape will have unlimited teleports to the Ardougne farming patch, Bert will automatically deliver your daily sand and you can hold up to 140 coin pouches whilst pickpocketing.
+P	-1	Wow, thanks!
+tree	2	standard
+N	1	Hello!
+C	Select an Option	4	Can I have another shield?	2	Who are you?	4	I have a question about my Achievement Diary	10	Bye!	41
+P	3	Can I have another shield?
+M	1	@@REPLACE@@Sir Rebral gives you another shield.
+P	5	Who are you?
+N	6	I'm Sir Rebral of the White Knights and taskmaster for the Falador Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In Falador and the surrounding area it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will
+N	9	reward you.
+E
+P	11	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	12	What are the rewards?	16	How do I claim the rewards?	38	Bye!	40
+P	13	What is the Achievement Diary?
+N	14	It's a diary that helps you keep track of particular achievements. In Falador and the surrounding area it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will
+N	15	reward you.
+E
+N	17	Well, there are four different shields of Falador, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	18	know more about?
+C	Select an Option	4	Easy Rewards.	19	Medium Rewards.	23	Hard Rewards.	28	Elite Rewards.	33
+P	20	Tell me more about the Easy rewards please!
+N	21	If you complete all of the easy tasks in Falador, the shield can restore one quarter of your prayer points once per day and you can access a shortcut to the Chaos temple from Burthorpe.
+P	22	Thanks!
+E
+P	24	Tell me more about the Medium rewards please!
+N	25	In addition to the easy rewards, the shield can restore half of your prayer points once per day and provides a 10% experience boost at Falador farm. You'll get an increased chance of finding a clue scroll from a Guard
+N	26	and can access a shortcut within the Motherlode Mine
+P	27	Thanks!
+E
+P	29	Tell me more about the Hard rewards please!
+N	30	In addition to the easy and medium benefits, the shield will restore all of your prayer points once per day, you can access a bank deposit box at the crafting guild and a shortcut to the Heroes' Guild fountain. The Giant
+N	31	mole becomes much easier to locate and it will drop noted skins and claws.
+P	32	Thanks!
+E
+P	34	Tell me more about the Elite rewards please!
+N	35	In addition to the previous tiers of rewards, the tree patch in Falador park will never become diseased and the shield will restore all of your prayer points twice per day in addition to an increased chance at higher level
+N	36	ores from cleaning Pay-dirt.
+P	37	Thanks!
+E
+P	39	How do I claim the rewards?
+N	1	Just complete the tasks in the Falador area so they're ticked off, then come and speak to me for your rewards.
+E
+P	42	Bye!
+N	43	See you later.
+E
+tree	2	easy
+P	1	I've completed all of the easy tasks in my Falador Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This shield is a symbol of your exploration of Falador. It can restore one quarter of your prayer points once per day and you can now access a shortcut to the Chaos temple from Burthorpe.
+P	6	Wow, thanks!
+N	-1	If you ever lose your shield, come back to me to reclaim it.
+tree	2	medium
+P	1	I've completed all of the medium tasks in my Falador achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Falador shield for you. It can restore half of your prayer points once per day and provides a 10% experience boost at Falador farm. You've got an increased chance of finding a clue scroll
+N	6	from a Guard and can access a shortcut within the Motherlode Mine.
+P	-1	Wow, thanks!
+tree	2	hard
+P	1	I've completed all of the hard tasks in my Falador achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Falador shield for you. It will restore all of your prayer points once per day, you can now access a bank deposit box at the crafting guild and a shortcut to the Heroes' Guild fountain. The Giant
+N	6	mole should now be easier to locate and it will drop noted skins and claws.
+P	-1	Wow, thanks!
+tree	2	elite
+P	1	I've completed all of the elite tasks in my Falador achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in Falador! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Falador shield for you. The tree patch in Falador park will now never become diseased and the shield will restore all of your prayer points twice per day in addition to an increased chance at
+N	5	higher level ores from cleaning Pay-dirt.
+P	-1	Wow, thanks!
+tree	3	standard
+N	1	Hello!
+C	Select an Option	5	Can I have some more boots?	2	Who are you?	4	I have a question about my Achievement Diary	9	About the Dagannoth Kings...	39	Bye!	47
+P	3	Can I have some more boots?
+M	-1	@@REPLACE@@Thorodin gives you another pair of boots.
+P	5	Who are you?
+N	6	Thorodin, taskmaster for the Fremennik Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In the Fremennik lands it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	-1	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	11	What are the rewards?	14	How do I claim the rewards?	35	Bye!	36
+P	12	What is the Achievement Diary?
+N	13	It's a diary that helps you keep track of particular achievements. In the Fremennik lands it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+N	15	Well, there are four different pairs of Fremennik sea boots, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards
+N	16	would you like to know more about?
+C	Select an Option	4	Easy Rewards.	17	Medium Rewards.	21	Hard Rewards.	25	Elite Rewards.	30
+P	18	Tell me more about the Easy rewards please!
+N	19	If you complete all of the easy tasks in the Fremennik Province, Peer the Seer can bank items for you at all times and your enchanted lyre can hold an extra charge.
+P	20	Thanks!
+E
+P	22	Tell me more about the Medium rewards please!
+N	23	In addition to the easy rewards, your boots can teleport you to Rellekka once per day as well as an increased rate of gaining approval with your subjects.
+P	24	Thanks!
+E
+P	26	Tell me more about the Hard rewards please!
+N	27	In addition to the easy and medium benefits, you'll be able to change your lyre teleport location to Waterbirth Island, access two new Lunar spells and you'll receive extra Agility experience from the Rellekka rooftop
+N	28	course.
+P	29	Thanks!
+E
+P	31	Tell me more about the Elite rewards please!
+N	32	In addition to the previous tiers of rewards, your boots now have unlimited teleports to Rellekka, your lyre can be attuned to teleport you to Jatiszo or Neitiznot, you'll no longer need a seal of passage on Lunar Isle,
+N	33	Dagannoth bones will be dropped as notes and your subjects will approve of your kingdom management even faster than before.
+P	34	Thanks!
+E
+N	1	Just complete the tasks in the Fremennik Province so they're ticked off, then come and speak to me for your rewards.
+P	37	Bye!
+N	38	See you later.
+E
+P	40	About the Dagannoth Kings...
+N	41	Ah, yes. Because you've completed the elite tasks for the Fremennik Province, their bones will be noted for you.
+N	42	If you'd prefer, I can change it so they will drop their bones as they normally would?
+C	Select an Option	2	Yes, give me unnoted bones.	43	No, keep the bones noted.	45
+N	44	Very well. In future, when you kill a Dagannoth King, they will drop their bones normally.
+E
+N	46	Very well. If you change your mind, come talk to me again.
+E
+P	48	Bye!
+N	49	See you later.
+E
+tree	3	easy
+P	1	I've completed all of the easy tasks in my Fremennik Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	These boots are a symbol of your exploration of the Fremennik lands. They can teleport you here once per day, Peer the Seer can now bank items for you at all times and your enchanted lyre can hold an extra
+N	6	charge.
+P	7	Wow, thanks!
+N	-1	If you ever lose your boots, come back to me to reclaim them.
+tree	3	medium
+P	1	I've completed all of the medium tasks in my Fremennik achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Fremennik sea boots for you. They can now teleport you here three times per day and have an increased rate of gaining approval with your subjects.
+P	-1	Wow, thanks!
+tree	3	hard
+P	1	I've completed all of the hard tasks in my Fremennik achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Fremennik sea boots for you. They can now teleport you here five times per day, you can now change your lyre teleport location to Waterbirth Island, access two new Lunar spells and you'll receive
+N	6	extra Agility experience from the Rellekka rooftop course.
+P	-1	Wow, thanks!
+tree	3	elite
+P	1	I've completed all of the elite tasks in my Fremennik achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Fremennik Province! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Fremennik sea boots for you. In addition to all of the previous benefits, your boots now have unlimited teleports to Rellekka, your lyre can now teleport you to Jatiszo or Neitiznot, you'll no longer
+N	5	need a seal of passage on Lunar Isle, Dagannoth bones will be dropped as notes and your subjects will approve of your kingdom management even faster than before.
+P	-1	Wow, thanks!
+tree	4	standard
+N	1	Hi there!
+C	Select an Option	4	Can I have some more headgear?	2	Who are you?	4	I have a question about my Achievement Diary	9	Bye!	42
+P	3	Can I have some more headgear?
+M	1	@@REPLACE@@The 'Wedge' gives you some more headgear.
+P	5	Who are you?
+N	6	Call me The 'Wedge', I'm the taskmaster for the Achievement Diary here in Kandarin.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In and around Kandarin it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement Diary.
+C	Select an Option	3	What is the Achievement Diary?	11	What are the rewards?	14	How do I claim the rewards?	40
+P	12	What is the Achievement Diary?
+N	13	It's a diary that helps you keep track of particular achievements. In and around Kandarin it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	10	You can see the list of tasks on the side-panel.
+N	15	Well, there are four different Kandarin headgears, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you
+N	16	like to know more about?
+C	Select an Option	4	Easy Rewards.	17	Medium Rewards.	22	Hard Rewards.	28	Elite Rewards.	34
+P	18	Tell me more about the Easy rewards please!
+N	19	If you complete all of the easy tasks in Kandarin, the headgear functions as a light source and you have a chance of receiving an extra log when cutting normal trees. You can get the flax keeper to convert 30 flax
+N	20	to bowstrings each day, coal trucks hold up to 140 coal and you'll find 5% more marks of grace on Seers' rooftop agility course.
+P	21	Thanks!
+E
+P	23	Tell me more about the Medium rewards please!
+N	24	In addition to the easy rewards, cutting maples in Seers' village provides 10% more experience. You can spin materials 33% faster at the spinning wheel, get the flax keeper to convert 60 flax to bowstrings each day,
+N	25	and the Catherby herb patch provides a 5% higher crop yield. Coal trucks will hold up to 280 coal too. You can also use the rope I left at Baxtorian falls, instead of bringing your own, as long as you have completed the
+N	26	Waterfall quest.
+P	27	Thanks!
+E
+P	29	Tell me more about the Hard rewards please!
+N	30	In addition to the easy and medium benefits, Thormac will enchant battlestaves for 30,000 gold and you can move the Camelot teleport location to outside of Seers' bank. You'll find 15% more marks of grace on Seers'
+N	31	rooftop, receive 10% higher yield from Catherby farming patch, get the flax keeper to convert 120 flax to bowstrings each day, and get 10% more points from Barbarian Assault as well one free daily teleport to
+N	32	Sherlock. Your chances of having an enchanted bolt use it's special attack has increased by 10% too.
+P	33	Thanks!
+E
+P	35	Tell me more about the Elite rewards please!
+N	36	In addition to the previous tiers of rewards, Thormac now enchants battlestaves for 20,000 gold, Otto will provide a 50% discount when converting Zamorakian spears into hastae. You'll get unlimited teleports to
+N	37	Sherlock and 15% increased yield from Catherby herb patch and can get the flax keeper to convert 250 flax to bow strings every day. The first 200 coal placed in coal trucks every day will be automatically transported
+N	38	to your bank too.
+P	39	Thanks!
+E
+P	41	How do I claim the rewards?
+N	10	Just complete the tasks in Kandarin so they're ticked off, then come and speak to me for your rewards.
+P	43	Bye!
+N	44	See you around.
+E
+tree	4	easy
+P	1	I've completed all of the easy tasks in my Kandarin Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This headgear is a symbol of your exploration of Kandarin. It functions as a light source and you now have a chance of receiving an extra log when cutting normal trees. You can get the flax keeper to convert
+N	6	30 flax to bowstrings each day, coal trucks now hold up to 140 coal and you'll find 5% more marks of grace on Seers' rooftop agility course.
+P	7	Wow, thanks!
+N	-1	If you ever lose your headgear, come back to me to reclaim it.
+tree	4	medium
+P	1	I've completed all of the medium tasks in my Kandarin achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Kandarin headgear for you. Cutting maples in Seers' village now provide 10% more experience. You can now spin materials 33% faster at the spinning wheel, get the flax keeper to convert 60
+N	6	flax to bowstrings each day, and the Catherby herb patch provides a 5% higher crop yield. Coal trucks will hold up to 280 coal now too. You can also use the rope I left at Baxtorian falls, instead of bringing your own,
+N	7	as long as you have completed the Waterfall quest.
+P	-1	Wow, thanks!
+tree	4	hard
+P	1	I've completed all of the hard tasks in my Kandarin achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Kandarin headgear for you. Thormac will now enchant battlestaves for 30,000 gold and you can move the Camelot teleport location to outside of Seers' bank. You'll now find 15% more
+N	6	marks of grace on Seers' rooftop, receive 10% higher yield from Catherby farming patch, get the flax keeper to convert 120 flax to bowstrings each day and get 10% more points from Barbarian Assault, as well one
+N	7	free daily teleport to Sherlock. Your chances of having an enchanted bolt use its special attack has increased by 10% too.
+P	-1	Wow, thanks!
+tree	4	elite
+P	1	I've completed all of the elite tasks in my Kandarin achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in Kandarin! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Kandarin headgear for you. Thormac now enchants battlestaves for 20,000 gold, Otto will provide a 50% discount when converting Zamorakian spears into hastae. You've now got
+N	5	unlimited daily teleports to Sherlock and 15% increased yield from Catherby herb patch and can get the flax keeper to convert 250 flax to bowstrings every day. The first 200 coal placed in coal trucks every day will
+N	6	now be automatically transported to your bank too.
+P	-1	Wow, thanks!
+tree	5	standard
+N	1	Hello!
+C	Select an Option	4	Can I have another amulet?	2	Who are you?	4	I have a question about my Achievement Diary	9	Bye!	36
+P	3	Can I have another amulet?
+M	1	@@REPLACE@@Jarr gives you another amulet.
+P	5	Who are you?
+N	6	I'm Jarr, the taskmaster for the Kharidian Desert Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In the Kharidian Desert it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	10	What are the rewards?	11	How do I claim the rewards?	33	Bye!	35
+N	12	Well, there are four different Desert amulets, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	13	know more about?
+C	Select an Option	4	Easy Rewards.	14	Medium Rewards.	18	Hard Rewards.	22	Elite Rewards.	28
+P	15	Tell me more about the Easy rewards please!
+N	16	If you complete all of the easy tasks in the Desert, you can charge a Pharaoh's sceptre with 10 charges, Simon Templeton will purchase artefacts in banknote form and Desert goat horns are dropped as notes.
+P	17	Thanks!
+E
+P	19	Tell me more about the Medium rewards please!
+N	20	In addition to the easy rewards, you can charge a Pharaoh's sceptre with 25 charges and the amulet will teleport you to Nardah once per day.
+P	21	Thanks!
+E
+P	23	Tell me more about the Hard rewards please!
+N	24	In addition to the easy and medium benefits, you can charge a Pharaoh's sceptre with 50 charges, you can adjust your Camulet to teleport you above the temple and the Nardah herbalist will create unfinished potions
+N	25	for you, as well as cleaning noted herbs for the usual herb cleaning fee.
+N	26	All your rides on a magic carpet are free and you'll receive extra Agility experience from the Pollnivneach rooftop course.
+P	27	Thanks!
+E
+P	29	Tell me more about the Elite rewards please!
+N	30	In addition to the previous tiers of rewards, you can charge a Pharaoh's sceptre with 100 charges, the amulet will protect you from desert heat at all times, a shortcut opens up in the Kalphite hive and the amulet will
+N	31	teleport you to Nardah and the kalphite hive to the East of the Shantay Pass as much as you desire. You'll also get completely free passage through the Shantay passes here and at the Ruins of Unkah.
+P	32	Thanks!
+E
+P	34	How do I claim the rewards?
+N	1	Just complete the tasks in the Desert so they're ticked off, then come and speak to me for your rewards.
+E
+P	37	Bye!
+N	38	See you later.
+E
+tree	5	easy
+P	1	I've completed all of the easy tasks in my Desert Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This amulet is a symbol of your exploration of the Kharidian Desert. You can now charge a Pharaoh's sceptre with 10 charges, Simon Templeton will purchase artefacts in banknote form and Desert goat horns are
+N	6	dropped as notes.
+P	7	Wow, thanks!
+N	-1	If you ever lose your amulet, come back to me to reclaim it.
+tree	5	medium
+P	1	I've completed all of the medium tasks in my Desert achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Desert amulet for you. You can now charge a Pharaoh's sceptre with 25 charges and the amulet will teleport you to Nardah once per day.
+P	-1	Wow, thanks!
+tree	5	hard
+P	1	I've completed all of the hard tasks in my Desert achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Desert amulet for you. You can now charge a Pharaoh's sceptre with 50 charges, you can adjust your Camulet to teleport you above the temple and the Nardah herbalist will create unfinished
+N	6	potions for you.
+N	7	All rides on a magic carpet are now free and you'll receive extra Agility experience from the Pollnivneach rooftop course.
+P	-1	Wow, thanks!
+tree	5	elite
+P	1	I've completed all of the elite tasks in my Desert achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Kharidian Desert! Here's your reward!
+M	-1	@@CLAIM@@
+tree	6	standard
+C	Select an Option	4	Can I have another ring?	1	Who are you?	3	I have a question about my Achievement Diary	9	Bye!	34
+P	2	Can I have another ring?
+M	0	@@REPLACE@@Mikasi gives you another ring.
+P	4	Who are you?
+N	5	I'm Mikasi, the taskmaster for the Lumbridge & Draynor Achievement Diary.
+P	6	What is the Achievement Diary?
+N	7	It's a diary that helps you keep track of particular achievements. In the Lumbridge and Draynor area it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will
+N	8	reward you.
+N	0	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	10	What are the rewards?	11	How do I claim the rewards?	31	Bye!	33
+N	12	Well, there are four different Explorer's rings, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	13	know more about?
+C	Select an Option	4	Easy Rewards.	14	Medium Rewards.	18	Hard Rewards.	22	Elite Rewards.	26
+P	15	Tell me more about the Easy rewards please!
+N	16	If you complete all of the easy tasks in Lumbridge and Draynor, your ring can recharge half of your run energy twice per day and cast low level alchemy without runes 30 times per day.
+P	17	Thanks!
+E
+P	19	Tell me more about the Medium rewards please!
+N	20	In addition to the easy rewards, your ring can restore half of your run energy and teleport you to the Draynor cabbage patch three times per day.
+P	21	Thanks!
+E
+P	23	Tell me more about the Hard rewards please!
+N	24	In addition to the easy and medium benefits, the ring will have unlimited cabbage teleports and four charges to restore half your run energy. Collecting Tears of Guthix will provide increased experience.
+P	25	Thanks!
+E
+P	27	Tell me more about the Elite rewards please!
+N	28	In addition to the previous tiers of rewards, you can block an additional slayer target with slayer masters, recharge all of your run energy three times per day and cast high level alchemy thirty times per day. The
+N	29	Culinaromancer's chest is 20% cheaper, you can use Fairy rings without needing a dramen or lunar staff and you'll receive double wire when thieving in Dorgesh-Kaan.
+P	30	Thanks!
+E
+P	32	How do I claim the rewards?
+N	0	You should complete the tasks in Lumbridge and Draynor so they're ticked off, then speak to me to be rewarded.
+E
+P	35	Bye!
+N	0	See you later.
+tree	6	easy
+P	1	I've completed all of the easy tasks in my Lumbridge & Draynor Achievement Diary!
+N	2	Quite... You'll be wanting a reward then.
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This ring is a symbol of your exploration of Lumbridge and Draynor. It can recharge half of your run energy twice per day and cast low level alchemy without runes 30 times per day.
+P	6	Wow, thanks!
+N	-1	If you ever lose your ring, come back to me to reclaim it.
+tree	6	medium
+P	1	I've completed all of the medium tasks in my Lumbridge & Draynor achievement diary!
+N	2	Quite... You'll be wanting a reward then.
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Explorer's ring for you. It can restore half of your run energy and teleport you to the Draynor cabbage patch three times per day.
+P	-1	Wow, thanks!
+tree	6	hard
+P	1	I've completed all of the hard tasks in my Lumbridge & Draynor achievement diary!
+N	2	Quite... You'll be wanting a reward then.
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Explorer's ring for you. It now has unlimited cabbage teleports and four charges to restore half your run energy. Collecting Tears of Guthix will now provide increased experience.
+P	-1	Wow, thanks!
+tree	6	elite
+P	1	I've completed all of the elite tasks in my Lumbridge & Draynor achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Lumbridge & Draynor diary! You've earned another reward.
+M	3	@@CLAIM@@
+N	4	I've upgraded your Explorer's ring for you. In addition to the previous benefits you can now block an additional slayer target with slayer masters, recharge all of your run energy three times per day and cast high
+N	5	level alchemy thirty times per day. The Culinaromancer's chest is now 20% cheaper and you'll receive double wire when thieving in Dorgesh-Kaan.
+P	-1	Wow, thanks!
+tree	7	standard
+N	1	Hello, welcome to Morytania!
+C	Select an Option	4	Can I have another set of Morytania legs?	2	Who are you?	4	I have a question about my Achievement Diary	9	Bye!	37
+P	3	Can I have another set of Morytania legs?
+M	1	@@REPLACE@@Le Sabre gives you another set of Morytania legs.
+P	5	Who are you?
+N	6	My name is Le Sabre and I'm the task master for the Morytania Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. Here in Morytania it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	10	What are the rewards?	11	How do I claim the rewards?	34	Bye!	36
+N	12	Well, there are four different pairs of Morytania platelegs, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of
+N	13	rewards would you like to know more about?
+C	Select an Option	4	Easy Rewards.	14	Medium Rewards.	19	Hard Rewards.	24	Elite Rewards.	29
+P	15	Tell me more about the Easy rewards please!
+N	16	If you complete all of the easy tasks in Morytania, your legs can teleport to the Slime pit beneath the Ectofuntus twice a day, there's a chance Ghasts will ignore you in the swamp, and you'll receive a 2.5%
+N	17	increase in Slayer XP when on assignment in the Slayer Tower too.
+P	18	Thanks!
+E
+P	20	Tell me more about the Medium rewards please!
+N	21	In addition to the easy rewards, you get 5 daily slime pit teleports and a built-in ghostspeak amulet. Robin in Port Phasmatys will exchange some bonemeal for bones for you, and you'll receive a 5% increase in Slayer
+N	22	XP when on assignment in the Slayer Tower too.
+P	23	Thanks!
+E
+P	25	Tell me more about the Hard rewards please!
+N	26	In addition to the easy and medium benefits, you can pick double Mort Myre Fungi in the swamp, get more experience from burning shades, receive more runes from Barrows, Robin will exchange more bonemeal for
+N	27	bones each day and you'll receive a 7.5% increase in Slayer XP when on assignment in the Slayer Tower. The disciples at the Ectofuntus will give you a bonecrusher too!
+P	28	Thanks!
+E
+P	30	Tell me more about the Elite rewards please!
+N	31	In addition to the previous tiers of rewards, Robin will exchange even more bonemeal for bones, you'll receive a 10% increase in Slayer XP when on assignment in the Slayer Tower, there's a new herb farming patch on
+N	32	Harmony Island, you'll receive 50% more experience when cremating shade remains and the experience provided by the Bonecrusher is increased too.
+P	33	Thanks!
+E
+P	35	How do I claim the rewards?
+N	1	Just complete the tasks in Morytania so they're ticked off, then come and speak to me for your rewards.
+E
+P	38	Bye!
+N	39	See you later!
+E
+tree	7	easy
+P	1	I've completed all of the easy tasks in my Morytania Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	These platelegs are a symbol of your exploration of Morytania. You can use them to teleport to the Slime pit beneath the Ectofuntus twice a day, there's a chance Ghasts will ignore you in the swamp, and you'll receive
+N	6	a 2.5% increase in Slayer XP when on assignment in the Slayer Tower too.
+P	7	Wow, thanks!
+N	-1	If you ever lose them, come back to me to reclaim them.
+tree	7	medium
+P	1	I've completed all of the medium tasks in my Morytania achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Morytania legs for you. They've now got 5 daily slime pit teleports and a built-in ghostspeak amulet. Robin in Port Phasmatys will exchange some bonemeal for bones for you, and you'll
+N	6	receive a 5% increase in Slayer XP when on assignment in the Slayer Tower too.
+P	-1	Wow, thanks!
+tree	7	hard
+P	1	I've completed all of the hard tasks in my Morytania achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Morytania legs for you. You can now pick double Mort Myre Fungi in the swamp, get more experience from burning shades, receive more runes from Barrows, Robin will exchange more
+N	6	bonemeal for bones each day and you'll receive a 7.5% increase in Slayer XP when on assignment in the Slayer Tower. The disciples at the Ectofuntus have something for you too.
+P	-1	Wow, thanks!
+tree	7	elite
+P	1	I've completed all of the elite tasks in my Morytania achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in Morytania! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Morytania legs for you. Robin will exchange even more bonemeal for bones, you'll receive a 10% increase in Slayer XP when on assignment in the Slayer Tower, there's a new herb farming patch on
+N	5	Harmony Island, you'll receive 50% more experience when cremating shade remains and the experience provided by the Bonecrusher has been increased too.
+P	-1	Wow, thanks!
+tree	8	standard
+N	1	Hello!
+C	Select an Option	4	Can I have another Varrock platebody?	2	Who are you?	4	I have a question about my Achievement Diary	10	Bye!	41
+P	3	Can I have another Varrock platebody?
+M	1	@@REPLACE@@Toby gives you another Varrock platebody.
+P	5	Who are you?
+N	6	I'm Toby, the taskmaster for the Varrock Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In Varrock and the surrounding area it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will
+N	9	reward you.
+E
+P	11	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	12	What are the rewards?	13	How do I claim the rewards?	36	Bye!	38
+P	11	What is the Achievement Diary?
+N	14	Well, there are four different Varrock armours, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	15	know more about?
+C	Select an Option	4	Easy Rewards.	16	Medium Rewards.	21	Hard Rewards.	26	Elite Rewards.	31
+P	17	Tell me more about the Easy rewards please!
+N	18	If you complete all of the easy tasks in Varrock, you have a 10% chance of mining two ores at once up to coal and a 10% chance of smelting 2 bars at once up to steel, when using the Edgeville furnace. Zaff will
+N	19	stock 15 Battlestaves per day.
+P	20	Thanks!
+E
+P	22	Tell me more about the Medium rewards please!
+N	23	In addition to the easy rewards, you have a 10% chance of mining two ores at once up to mithril and a 10% chance of smelting 2 bars at once up to mithril, when using the Edgeville furnace. Zaff will stock 30
+N	24	Battlestaves per day
+P	25	Thanks!
+E
+P	27	Tell me more about the Hard rewards please!
+N	28	In addition to the easy and medium benefits, you have a 10% chance of mining two ores at once up to adamant and a 10% chance of smelting 2 bars at once up to adamant, when using the Edgeville furnace. Zaff
+N	29	will stock 60 Battlestaves per day and you can access the bank at the Cooking guild.
+P	30	Thanks!
+E
+P	32	Tell me more about the Elite rewards please!
+N	33	In addition to the previous tiers of rewards, you have a 10% chance of mining two ores at once up to runite and a 10% chance of smelting 2 bars at once up to runite, when using the Edgeville furnace. Zaff will stock
+N	34	120 Battlestaves per day and the plate functions as a Prospector top.
+P	35	Thanks!
+E
+P	37	How do I claim the rewards?
+N	1	Just complete the tasks in the Varrock area so they're ticked off, then come and speak to me for your rewards.
+P	39	Bye!
+N	40	See you later.
+E
+P	42	Bye!
+N	43	See you later.
+E
+tree	8	easy
+P	1	I've completed all of the easy tasks in my Varrock Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This armour is a symbol of your exploration of Varrock. You now have a 10% chance of mining two ores at once up to coal and a 10% chance of smelting 2 bars at once up to steel, when using the Edgeville
+N	6	furnace. Zaff will stock 15 Battlestaves per day.
+P	-1	Wow, thanks!
+tree	8	medium
+P	1	I've completed all of the medium tasks in my Varrock achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Varrock armour for you. You now have a 10% chance of mining two ores at once up to mithril and a 10% chance of smelting 2 bars at once up to mithril, when using the Edgeville furnace. Zaff will
+N	6	stock 30 Battlestaves per day.
+P	-1	Wow, thanks!
+tree	8	hard
+P	1	I've completed all of the hard tasks in my Varrock achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Varrock armour for you. You now have a 10% chance of mining two ores at once up to adamant and a 10% chance of smelting 2 bars at once up to adamant, when using the Edgeville furnace. Zaff
+N	6	will stock 60 Battlestaves per day and you can now access the bank at the Cooking guild.
+P	-1	Wow, thanks!
+tree	8	elite
+P	1	I've completed all of the elite tasks in my Varrock achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Varrock area! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Varrock armour for you. You now have a 10% chance of mining two ores at once up to runite and a 10% chance of smelting 2 bars at once up to runite, when using the Edgeville furnace. Zaff will
+N	5	stock 120 Battlestaves per day and the plate functions as a Prospector top.
+P	-1	Wow, thanks!
+tree	9	standard
+N	1	Hello!
+C	Select an Option	3	Can I have another sword?	2	I have a question about my Achievement Diary.	4	Bye!	33
+P	3	Can I have another sword?
+M	1	@@REPLACE@@Jeffery gives you another sword.
+P	5	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	5	What are the rewards?	6	How do I claim the rewards?	30	Bye!	32
+N	7	Well, there are four different Wilderness Swords, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	8	know more about?
+C	Select an Option	4	Easy Rewards.	9	Medium Rewards.	13	Hard Rewards.	18	Elite Rewards.	25
+P	10	Tell me more about the Easy rewards please!
+N	11	If you complete all of the easy tasks in the Wilderness, you can speak to Lundail at the Mage Arena every day to receive 40 free runes and you can teleport to either Edgeville or Ardougne from the Wilderness lever.
+P	12	Thanks!
+E
+P	14	Tell me more about the Medium rewards please!
+N	15	In addition to the easy rewards, Mandrith will give you a 20% discount off entry to the Resource Area, you'll cut Ents faster, you can access a shortcut in the deep Wilderness dungeon. You can also own 4 ecumenical
+N	16	keys at once and receive 80 runes a day from Lundail, and you can find loot in the chests at the Rogues' Castle. Finally, you can access the lairs of Callisto, Venenatis and Vet'ion, three fearsome Wilderness
+N	17	bosses.
+E
+P	19	Tell me more about the Hard rewards please!
+N	20	In addition to the easy and medium benefits, the sword can teleport you to the Fountain of Rune once per day, you'll get 50% more lava shards when grinding scales and even cheaper access to the Resource Area.
+N	21	You can own 5 ecumenical keys, Lundail will give you 120 free runes each day, and you'll get increased loot from the chests at the Rogues' Castle. You can also telegrab Wine of Zamorak from spawns in the
+N	22	Wilderness in banknote form, and control which Obelisk you want to travel to. Also, I'll be willing to buy ecumenical keys off you for 61,500 coins each. Finally, you can access the lairs of Artio, Spindel and Calvar'ion,
+N	23	three fearsome Wilderness bosses.
+P	24	Thanks!
+E
+P	26	Tell me more about the Elite rewards please!
+N	27	In addition to the previous tiers of rewards, access to the Resource Area is free and the sword will now give you unlimited teleports to the Fountain of Rune. All dragon bone drops in the Wilderness become noted and
+N	28	Lundail will give you 200 free runes per day and the rate at which you catch Dark Crabs is increased.
+P	29	Thanks!
+E
+P	31	How do I claim the rewards?
+N	1	Just complete the tasks in the Wilderness so they're ticked off, then come and speak to me for your rewards.
+E
+P	34	Bye!
+N	35	See you later.
+E
+tree	9	easy
+P	1	I've completed all of the easy tasks in my Wilderness Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This sword is a symbol of your exploration of the Wilderness. Speak to Lundail at the Mage Arena every day to receive 40 free runes and you can teleport to either Edgeville or Ardougne from the Wilderness lever.
+P	6	Wow, thanks!
+N	-1	If you ever lose your sword, come back to me to reclaim it.
+tree	9	medium
+P	1	I've completed all of the medium tasks in my Wilderness Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Wilderness Sword for you. Mandrith will give you a 20% discount off entry to the Resource Area, you'll cut Ents faster, you can access a shortcut in the deep Wilderness dungeon. You'll also
+N	6	receive increase rewards from the chests in Rogues' Castle, and you can also now own 4 ecumenical keys and receive 80 runes a day from Lundail.
+P	-1	Wow, thanks!
+tree	9	hard
+P	1	I've completed all of the hard tasks in my Wilderness Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Wilderness Sword for you. It can now teleport you to the Fountain of Rune once per day.
+N	6	You'll also get 50% more lava shards when grinding scales and even cheaper access to the Resource Area.
+N	7	You can now own 5 ecumenical keys, and Lundail will give you 120 free runes each day.
+N	8	You can also telegrab Wine of Zamorak from spanws in the Wilderness in banknote for, and control which Obelisk you want to travel to.
+N	9	You'll also receive further increased rewards from the chests in Rogues' Castle. Finally, I'll be willing to buy ecumenical keys off you for 61,500 coins each.
+N	10	Finally, you can now access the lairs of Artio, Spindel and Calvar'ion, three fearsome Wilderness bosses, without requiring a Slayer assignment.
+P	11	Wow, thanks!
+N	-1	Now, would you like to talk about the Wilderness Achievement Diary? Or would you like to sell me ecumenical keys?
+tree	9	elite
+P	1	I've completed all of the elite tasks in my Wilderness achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Wilderness! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Wilderness Sword for you. Access to the Resource Area is now free and the sword will now give you unlimited teleports to the Fountain of Rune. All dragon bone drops in the Wilderness are now
+N	5	noted and Lundail will give you 200 free runes per day and the rate at which you catch Dark Crabs has been increased.
+P	6	Wow, thanks!
+N	-1	Now, would you like to talk about the Wilderness Achievement Diary? Or would you like to sell me ecumenical keys?
+tree	10	standard
+N	1	Hello!
+C	Select an Option	4	Can I have another banner?	2	Who are you?	4	I have a question about my Achievement Diary	9	Bye!	37
+P	3	Can I have another banner?
+M	1	@@REPLACE@@The child-shaped entity gives you another banner.
+P	5	Who are you?
+N	6	I'm the eldest of the Gnome children and master of tasks for the Western Provinces Achievement Diary.
+P	7	What is the Achievement Diary?
+N	8	It's a diary that helps you keep track of particular achievements. In the Western Provinces it can help you discover some quite useful things. Eventually, with enough exploration, the inhabitants will reward you.
+N	1	You can see the list of tasks on the side-panel.
+P	10	I have a question about my Achievement diary.
+C	Select an Option	4	What is the Achievement Diary?	10	What are the rewards?	11	How do I claim the rewards?	34	Bye!	36
+N	12	Well, there are four different Western banners, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too... which tier of rewards would you like to
+N	13	know more about?
+C	Select an Option	4	Easy Rewards.	14	Medium Rewards.	18	Hard Rewards.	23	Elite Rewards.	29
+P	15	Tell me more about the Easy rewards please!
+N	16	If you complete all of the easy tasks in the Western Diary, you have a 25% chance of 2 Chompy birds appearing when hunting and Rantz will provide you with 25 free ogre arrows every day.
+P	17	Thanks!
+E
+P	19	Tell me more about the Medium rewards please!
+N	20	In addition to the easy rewards, the Crystal saw will last for twice as long before reverting to seed, you have a 50% chance of 2 Chompy birds appearing when hunting and Rantz will provide you with 50 free ogre
+N	21	arrows every day.
+P	22	Thanks!
+E
+P	24	Tell me more about the Hard rewards please!
+N	25	In addition to the easy and medium benefits, Ilfeen of the Elves can enchant your crystal seed into a Halberd, a locked door under Ape Atoll becomes unlocked, The Void Knights can upgrade your Void armour, the
+N	26	Hunter master in the Feldip hills will allow you to hunt in his private hunting ground, teleport crystals can now hold 5 charges, Rantz will provide you with 100 ogre arrows every day and the banner will teleport you to
+N	27	Piscatoris once per day.
+P	28	Thanks!
+E
+P	30	Tell me more about the Elite rewards please!
+N	31	In addition to the previous tiers of rewards, two Chompy birds will always appear and they have a chance of dropping a pet, Nieve will reward your slayer assignments with more points and Rantz will provide
+N	32	you with 150 free ogre arrows every day. The banner will teleport you to Piscatoris as much as you desire and you may resurrect once per day while battling Zulrah.
+P	33	Thanks!
+E
+P	35	How do I claim the rewards?
+N	1	Just complete the tasks in the Western provinces so they're ticked off, then come and speak to me for your rewards.
+E
+P	38	Bye!
+N	39	Goodbye adventurer.
+E
+tree	10	easy
+P	1	I've completed all of the easy tasks in my Western Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This banner is a symbol of your exploration of the Western Provinces. You now have a 25% chance of 2 Chompy birds appearing when hunting and Rantz will provide you with 25 free ogre arrows every day.
+P	6	Wow, thanks!
+N	-1	If you ever lose your banner, come back to me to reclaim it.
+tree	10	medium
+P	1	I've completed all of the medium tasks in my Western achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Western banner for you. The Crystal saw will now last for twice as long before reverting to seed, you now have a 50% chance of 2 Chompy birds appearing when hunting and Rantz will
+N	6	provide you with 50 free ogre arrows every day.
+P	-1	Wow, thanks!
+tree	10	hard
+P	1	I've completed all of the hard tasks in my Western achievement diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Western banner for you. Ilfeen of the Elves can now enchant your crystal seed into a Halberd, a locked door under Ape Atoll has been unlocked, The Void Knights can now upgrade your
+N	6	Void armour, the Hunter master in the Feldip hills will allow you to hunt in his private hunting ground, teleport crystals can now hold 5 charges, Rantz will provide you with 100 ogre arrows every day and the banner will
+N	7	teleport you to Piscatoris once per day.
+P	-1	Wow, thanks!
+tree	10	elite
+P	1	I've completed all of the elite tasks in my Western achievement diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Western Provinces! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Western banner for you. Two Chompy birds will now always appear and they have a chance of dropping a pet, Nieve will reward your slayer assignments with more points and Rantz will provide
+N	5	you with 150 free ogre arrows every day. The banner will teleport you to Piscatoris as much as you desire and you may resurrect once per day while battling Zulrah.
+P	-1	Wow, thanks!
+tree	11	standard
+N	1	Hello!
+C	Select an Option	4	Can I have another Rada's blessing?	2	Who are you?	5	I have a question about my Achievement Diary.	11	Bye!	46
+P	3	Can I have another Rada's blessing?
+M	4	@@REPLACE@@Elise gives you another Rada's blessing.
+E
+P	6	Who are you?
+N	7	I'm Elise, the taskmaster for the Kourend & Kebos Achievement Diary.
+P	8	What is the Achievement Diary?
+N	9	It's a diary that helps you keep track of particular achievements. In Great Kourend and the Kebos Lowlands, it can help you discover some quite useful things.
+N	10	Eventually, with enough exploration, you'll be rewarded.
+N	1	You can see the list of tasks on the side-panel.
+P	12	I have a question about my Achievement Diary.
+C	Select an Option	4	What is the Achievement Diary?	13	What are the rewards?	17	How do I claim the rewards?	43	Bye!	45
+P	14	What is the Achievement Diary?
+N	15	It's a diary that helps you keep track of particular achievements. In Great Kourend and the Kebos Lowlands, it can help you discover some quite useful things.
+N	16	Eventually, with enough exploration, you'll be rewarded.
+N	12	You can see the list of tasks on the side-panel.
+N	18	Well, there are four different blessings, which match up with the four levels of difficulty. Each has the same rewards as the previous level and some additional benefits too...
+N	19	which tier of rewards would you like to know more about?
+C	Select an Option	4	Tell me more about the easy rewards please.	20	Tell me more about the medium rewards please.	26	Tell me more about the hard rewards please.	30	Tell me more about the elite rewards please.	36
+P	21	Tell me more about the Easy rewards please.
+N	22	If you complete all of the easy tasks, you'll get a 2% chance of catching two fish at once while using the blessing. It will also provide 3 daily teleports to the Kourend Woodland. On top of that, you'll be able to
+N	23	access Crabclaw Island for half the price, lizardmen will be more likely to drop a Xeric's talisman,, the people of Hosidius will protect your farming patches for free, you'll be able to use the Hosidius Kitchens and Eodan
+N	24	in the Forthos Dungeon will now tan hide for you at 8 times the normal price down from 10 times.
+P	25	Thanks!
+E
+N	27	In addition to the easy rewards, you'll get a 4% chance of catching two fish at once while using the blessing. It will also provide 5 daily teleports to the Kourend Woodland. On top of that, you'll have a 5% chance to
+N	28	mine two dense essence blocks at once, Thirus will give you 20 free Dynamite per day and Eodan in the Forthos Dungeon will now tan hide for you at 6 times the normal price down from 8 times.
+P	29	Thanks!
+E
+P	31	Tell me more about the Hard rewards please.
+N	32	In addition to the easy and medium benefits, you'll get a 6% chance of catching two fish at once while using the blessing. It will also provide unlimited teleports to the Kourend Woodland and 3 daily teleports to Mount
+N	33	Karuulm. On top of that, Captain Cleive will show you how to use a Slayer helmet in place of a Shayzien helm, you'll get a 5% increase in yield from the Hosidius and Farming Guild Herb patches, Thirus will give you 40
+N	34	free Dynamite per day and Eodan in the Forthos Dungeon will now tan hide for you at 4 times the normal price down from 6 times. Tyss at the Dark Altar will give you an ash sanctifier too!
+P	35	Thanks!
+E
+P	37	Tell me more about the Elite rewards please.
+N	38	In addition to the previous tiers of rewards, you'll get an 8% chance of catching two fish at once while using the blessing. It will also provide unlimited teleports to the Kourend Woodland and to Mount Karuulm. On top of
+N	39	that, Konar quo Maten will give you 20 Slayer Points per task rather than 18, you'll be 10% less likely to burn food at the Hosidius City Kitchens, you'll get 10% more Blood runes when Runecrafting, you'll no longer
+N	40	need to wear heat protection inside of the Karuulm Slayer Dungeon, Thirus will give you 80 free Dynamite per day, Eodan in the Forthos Dungeon will now tan hide for you at 2 times the normal price down
+N	41	from 4 times and the experience provided by the ash sanctifier is increased too.
+P	42	Thanks!
+E
+P	44	How do I claim the rewards?
+N	12	Just complete the tasks in Kourend & Kebos area so they're ticked off, then come and speak to me for your rewards.
+E
+P	47	Bye!
+N	48	See you later.
+E
+tree	11	easy
+P	1	I've completed all of the easy tasks in my Kourend & Kebos Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	This blessing is a symbol of your exploration of Great Kourend and the Kebos Lowlands. You now have a 2% chance of catching two fish at once while using the blessing. It also provides 3 daily teleports to the
+N	6	Kourend Woodland. On top of that, you can access Crabclaw Island for half the price, lizardmen are more likely to drop a Xeric's talisman, the people of Hosidius will protect your farming patches for free, you'll be able
+N	7	to use the Hosidius Kitchens and Eodan in the Forthos Dungeon will now tan hide for you at 8 times the normal price down from 10 times.
+P	8	Wow, thanks!
+N	-1	If you ever lose your blessing, come back to me to reclaim it.
+tree	11	medium
+P	1	I've completed all of the medium tasks in my Kourend & Kebos Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Rada's blessing for you. You now have a 4% chance of catching two fish at once while using the blessing. It also provides 5 daily teleports to the Kourend Woodland. On top of that, you'll have a
+N	6	5% chance to mine two dense essence blocks at once, Thirus will give you 20 free Dynamite per day and Eodan in the Forthos Dungeon will now tan hide for you at 6 times the normal price down from 8 times.
+P	-1	Wow, thanks!
+tree	11	hard
+P	1	I've completed all of the hard tasks in my Kourend & Kebos Achievement Diary!
+N	2	I can see that, well done! You'll be wanting your reward then!
+P	3	Yes please!
+M	4	@@CLAIM@@
+N	5	I've upgraded your Rada's blessing for you. You now have a 6% chance of catching two fish at once while using the blessing. It also provides unlimited teleports to the Kourend Woodland and 3 daily teleports to Mount
+N	6	Karuulm. On top of that, Captain Cleive will show you how to use a Slayer helmet in place of a Shayzien helm, you'll get a 5% increase in yield from the Hosidius and Farming Guild Herb patches, Thirus will give you 40
+N	7	free Dynamite per day, Eodan in the Forthos Dungeon will now tan hide for you at 4 times the normal price down from 6 times and Tyss at the Dark Altar will give you an ash sanctifier too.
+P	-1	Wow, thanks!
+tree	11	elite
+P	1	I've completed all of the elite tasks in my Kourend & Kebos Achievement Diary!
+N	2	I can see that, well done! You've completed all of the tasks in the Kourend & Kebos area! Here's your reward!
+M	3	@@CLAIM@@
+N	4	I've upgraded your Rada's blessing for you. You now have an 8% chance of catching two fish at once while using the blessing. It also provides unlimited teleports to the Kourend Woodland and to Mount Karuulm. On
+N	5	top of that, Konar quo Maten will give you 20 Slayer Points per task rather than 18, you'll be 10% less likely to burn food at the Hosidius City Kitchens, you'll get 10% more Blood runes when Runecrafting, you'll no
+N	6	longer need to wear heat protection inside the Karuulm Slayer Dungeon, Thirus will give you 80 free Dynamite per day, Eodan in the Forthos Dungeon will now tan hide for you at 2 times the normal price down
+N	7	from 4 times and the experience provided by the ash sanctifier is increased too, and finally you'll be more likely to gain higher tiered ores from Blast Mining.
+P	-1	Wow, thanks!

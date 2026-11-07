@@ -4,9 +4,14 @@ import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.DeathEvent
+import tp.plugin.ItemsCreated
+import tp.plugin.LocInteraction
+import tp.plugin.NpcInteraction
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
+import tp.plugin.TimerId
+import tp.plugin.XpGained
 import tp.plugin.chatNpc
 import tp.plugin.choice
 import tp.symbols.Components
@@ -31,18 +36,31 @@ public class AchievementDiaries : ContentPlugin {
 
     @Volatile private var lamps: DiaryLamps? = null
 
+    @Volatile private var triggers: DiaryTriggers? = null
+
+    @Volatile private var dialogue: DiaryDialogue? = null
+
     @Volatile private var killIndex: Map<String, List<Pair<KillHook, Int>>> = emptyMap()
 
     override fun ContentScope.register() {
         onWorldStart {
-            val diaries = Diaries(DiaryData.load())
+            val diaries = Diaries(DiaryData.load(), QuestGate.load())
             DiaryHooks.verify(diaries.data)
             killIndex = DiaryHooks.index()
+            triggers = DiaryTriggers(diaries, DiaryTriggerData.load(diaries.data))
+            dialogue = DiaryDialogue.load()
             loaded = diaries
             lamps = DiaryLamps(diaries, enumInts(DiaryLamps.COMPONENT_STAT_ENUM)).also { it.verify() }
         }
-        onLogin { loaded?.syncAll(this) }
+        onLogin {
+            loaded?.syncAll(this)
+            timer(WATCH, DiaryTriggers.POLL_TICKS, soft = true) { triggers?.poll(this) }
+        }
         events.on<DeathEvent> { e -> kill(e) }
+        events.on<LocInteraction> { e -> triggers?.loc(e) }
+        events.on<NpcInteraction> { e -> triggers?.npc(e) }
+        events.on<ItemsCreated> { e -> triggers?.items(e) }
+        events.on<XpGained> { e -> triggers?.xp(e) }
         // The rows are children of the list layer; which layer holds them is not in the cache's decoded fields, so every
         // layer of the interface answers (OPEN-AD10). The row index is the area's index in cache enum 595.
         for (component in LIST_COMPONENTS) onButton(component, JOURNAL_OP) { c -> journalClick(c) }
@@ -76,8 +94,10 @@ public class AchievementDiaries : ContentPlugin {
     private fun kill(e: DeathEvent) {
         val diaries = loaded ?: return
         val npc = e.entity as? NpcRef ?: return
-        val matches = killIndex[DiaryHooks.key(npc.displayName)] ?: return
         val player = DiaryHooks.creditedTo(e) ?: return
+        val at = npc.coord
+        triggers?.kill(player, npc.displayName, at.x, at.z, at.level)
+        val matches = killIndex[DiaryHooks.key(npc.displayName)] ?: return
         DiaryHooks.apply(diaries, player, matches)
     }
 
@@ -128,11 +148,57 @@ public class AchievementDiaries : ContentPlugin {
     // ---- taskmaster
 
     /**
-     * Talk-to on a taskmaster (AD5, AD6): claim the next finished tier, ask for the tier item again, or hear how claiming works.
-     * This replaces the Wiki transcript the generic Talk-to would play (OPEN-AD12).
+     * Talk-to on a taskmaster (AD5, AD6, OPEN-AD12): with a tier to claim, the Wiki's "<Tier> tasks completed" conversation, which
+     * hands the reward over where the transcript says so; otherwise the Wiki's standard conversation, whose "Can I have another"
+     * option gives the tier item again. A taskmaster whose transcript has no such part (Karamja's claim) gets the claim menu.
      */
     private suspend fun PlayerScript.talk(areaIndex: Int, master: NpcRef) {
         val diaries = loaded ?: return
+        val script = dialogue ?: return
+        val claimable = diaries.claimable(player, areaIndex)
+        val actions = TaskmasterActions(diaries, player, areaIndex, claimable)
+        when {
+            claimable != null && script.has(areaIndex, TIER_NAMES[claimable]) -> {
+                with(script) { play(areaIndex, TIER_NAMES[claimable], master, actions) }
+            }
+
+            claimable == null && script.has(areaIndex, STANDARD) -> {
+                with(script) { play(areaIndex, STANDARD, master, actions) }
+            }
+
+            else -> {
+                menuTalk(diaries, areaIndex, master)
+            }
+        }
+    }
+
+    /** What one conversation can do to the diary: hand over the claimable tier, give the tier item again. */
+    private class TaskmasterActions(
+        private val diaries: Diaries,
+        private val player: PlayerRef,
+        private val area: Int,
+        private val tier: Int?,
+    ) : DiaryDialogue.Actions {
+        override fun claim(): Boolean = tier != null && diaries.claim(player, area, tier)
+
+        override fun replace(): String? {
+            val owned = diaries.highestClaimed(player, area) ?: return NOTHING_TO_REPLACE
+            val item =
+                diaries.data.areas[area]
+                    .rewards[owned]
+                    .item
+            return when {
+                diaries.owns(player, area, owned) -> "You already have your $item."
+                diaries.replace(player, area, owned) -> null
+                else -> "You haven't got room for it. Make space in your backpack and come back."
+            }
+        }
+
+        override fun hasClaimed(): Boolean = diaries.highestClaimed(player, area) != null
+    }
+
+    /** The claim menu (claim / another item / how to claim / bye) for a part the transcript does not have. */
+    private suspend fun PlayerScript.menuTalk(diaries: Diaries, areaIndex: Int, master: NpcRef) {
         val area = diaries.data.areas[areaIndex]
         val claimable = diaries.claimable(player, areaIndex)
         val owned = diaries.highestClaimed(player, areaIndex)
@@ -219,6 +285,14 @@ public class AchievementDiaries : ContentPlugin {
         const val WRAP_WIDTH = 70
         const val DONE_COLOUR = "00ff00"
         const val OPEN_COLOUR = "ff0000"
+
+        const val STANDARD = "standard"
+
+        /** Said when "another item" is chosen before any tier was claimed (the option is not offered then). */
+        const val NOTHING_TO_REPLACE = "You haven't claimed anything from me yet."
+
+        /** Soft timer that looks for entered areas and arrived spells (docs/mechanics/achievement-diaries.md, "Triggers"). */
+        val WATCH = TimerId("diary_watch")
 
         const val ACTION_CLAIM = 0
         const val ACTION_REPLACE = 1

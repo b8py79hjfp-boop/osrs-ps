@@ -1,0 +1,89 @@
+area	tier	index	label	parts
+1	1	4	Ardougne Teleport	cast;stat=Magic;xp=61.0;dest=2660,3303,2664,3307
+1	2	5	Watchtower	cast;stat=Magic;xp=68.0;dest=2544,3112,2548,3116
+2	1	14	Falador	cast;stat=Magic;xp=48.0;dest=2962,3376,2966,3380
+3	2	1	Trollheim	cast;stat=Magic;xp=68.0;dest=2888,3677,2892,3681
+3	2	8	Waterbirth	cast;stat=Magic;xp=71.0;dest=2544,3753,2548,3757
+4	1	6	Camelot	cast;stat=Magic;xp=55.5;dest=2755,3477,2759,3481
+4	3	7	Catherby	cast;stat=Magic;xp=92.0;dest=2799,3448,2803,3452
+6	1	5	Lumbridge	cast;stat=Magic;xp=41.0;dest=3220,3216,3224,3220
+8	1	8	Varrock	cast;stat=Magic;xp=35.0;dest=3211,3422,3215,3426
+8	2	4	Paddewwa	cast;stat=Magic;xp=64.0;dest=3095,9879,3099,9883
+9	3	2	Ghorrock	cast;stat=Magic;xp=106.0;dest=2974,3870,2978,3874
+10	2	12	Ape Atoll	cast;stat=Magic;xp=74.0;dest=2796,2797,2800,2801
+0	2	4	nature runes	item;names=Nature rune;reason=runecraft
+0	3	1	56 Nature runes	item;names=Nature rune;reason=runecraft;min=56
+1	2	12	Death runes	item;names=Death rune;reason=runecraft
+2	2	1	140 Mind runes	item;names=Mind rune;reason=runecraft;min=140
+2	3	1	252 Air Runes	item;names=Air rune;reason=runecraft;min=252
+6	0	4	water runes	item;names=Water rune;reason=runecraft
+6	2	3	56 Cosmic runes	item;names=Cosmic rune;reason=runecraft;min=56
+6	3	5	140 or more Water runes	item;names=Water rune;reason=runecraft;min=140
+8	0	12	Earth runes	item;names=Earth rune;reason=runecraft
+8	3	5	100 or more earth runes	item;names=Earth rune;reason=runecraft;min=100
+0	2	9	Slayer Master in Shilo Village	npc;names=Duradel;op=Assignment
+6	1	10	Chaeldar	npc;names=Chaeldar;op=Assignment
+7	0	3	Slayer Master in Canifis	npc;names=Mazchna;op=Assignment
+8	1	9	Vannaka	npc;names=Vannaka;op=Assignment
+0	2	10	metal dragon	kill;names=Bronze dragon|Iron dragon|Steel dragon;in=2560,9400,2720,9530
+2	0	6	duck	kill;names=Duck;in=2980,3360,3030,3400
+2	2	7	Blue Dragon	kill;names=Blue dragon;in=2890,9860,2960,9930
+3	0	3	Rock crabs	kill;names=Rock Crab;in=2590,3550,2800,3800;count=5
+4	1	10	Fire Giant	kill;names=Fire giant;in=2500,9850,2650,9950
+7	3	5	Abyssal demon	kill;names=Abyssal demon;in=3400,3520,3460,3590
+11	2	6	Zombie	kill;names=Zombie;in=1380,9850,1520,10150
+1	3	3	Pickpocket a Hero	item;names=*;reason=pickpocket;target=Hero
+1	1	8	master farmer	item;names=*;in=2600,3300,2700,3400;reason=pickpocket;target=Master Farmer
+2	1	8	Falador guard	item;names=*;in=2930,3330,3080,3430;reason=pickpocket;target=Guard
+10	2	13	Pickpocket a Gnome	item;names=*;in=2380,3395,2520,3530;reason=pickpocket;target=Gnome
+6	0	6	man or woman	item;names=*;in=3190,3190,3280,3290;reason=pickpocket;target=Man|Woman
+8	0	1	Thessalia	npc;ids=10477,10478;op=Trade
+11	0	5	Warrens General Store	npc;ids=7913;op=Trade
+4	0	2	candle	item;names=Candle;in=2790,3425,2815,3450;reason=shop buy
+1	0	2	cake	item;names=Cake;in=2640,3290,2680,3325;reason=stall
+8	0	14	Tea stall	item;names=Cup of tea;in=3260,3405,3275,3416;reason=stall
+6	0	1	Draynor	seq;seq=11404,11405,11406,11430,11630,11631,11632
+6	1	1	Al Kharid	seq;seq=11633,14398,14402,14403,14404,11634,14409,14399
+8	1	13	Varrock Agility	seq;seq=14412,14413,14414,14832,14833,14834,14835,14836,14841
+10	0	4	Gnome agility	seq;seq=23145,23134,23559,23557/23558,23560,23135,23138/23139
+9	0	10	Iron ore in the Wilderness	item;names=Iron ore;reason=mining;wild=1
+9	1	1	Mithril ore in the wilderness	item;names=Mithril ore;reason=mining;wild=1
+6	0	11	Iron ore at the Al Kharid mine	item;names=Iron ore;in=3270,3270,3330,3335;reason=mining
+8	0	3	south-east mining patch	item;names=Iron ore;in=3270,3350,3305,3380;reason=mining
+11	3	2	Redwood logs	item;names=Redwood logs;reason=woodcutting
+7	1	3	Bark	item;names=Bark;reason=woodcutting
+6	1	8	willow logs in Draynor	item;names=Willow logs;in=3070,3220,3100,3260;reason=woodcutting
+8	0	7	dying tree	item;names=Logs;in=3285,3478,3320,3515;reason=woodcutting
+2	3	6	Saradomin brew	item;names=Saradomin brew(3);in=3005,3350,3022,3362;reason=herblore
+3	2	3	super defence	item;names=Super defence(3);in=2590,3590,2780,3730|2300,3770,2430,3830;reason=herblore
+4	1	2	Super Antipoison	item;names=Superantipoison(3);in=2680,3450,2745,3510|2780,3410,2860,3470;reason=herblore
+4	1	7	Maple shortbow	item;names=Maple shortbow;in=2718,3486,2734,3497;reason=fletching
+10	0	10	Oak Shortbow	item;names=Oak shortbow;in=2380,3395,2520,3530;reason=fletching
+6	1	7	coif	item;names=Coif;in=3240,3255,3265,3298;reason=crafting
+7	3	4	Black dragonhide body	item;names=Black d'hide body;in=3500,3470,3522,3490;reason=crafting
+8	0	4	normal plank	item;names=Plank;in=3285,3478,3320,3515;reason=sawmill
+8	1	10	20 Mahogany Planks	item;names=Mahogany plank;in=3285,3478,3320,3515;reason=sawmill;min=20
+8	3	2	Lunar magic to make 20 mahogany planks	item;names=Mahogany plank;in=3285,3478,3320,3515;reason=lunar batch;min=20
+1	1	3	strawberries	item;names=Strawberry;in=2650,3355,2685,3390;reason=farming-harvest
+1	3	6	Torstol	item;names=Grimy torstol;in=2650,3355,2685,3390;reason=farming-harvest
+4	1	8	Limpwurt root	item;names=Limpwurt root;in=2790,3450,2830,3480;reason=farming-harvest
+4	3	2	Dwarf weed	item;names=Grimy dwarf weed;in=2790,3450,2830,3480;reason=farming-harvest
+9	1	7	Earth Orb	item;names=Earth orb;reason=charge orb;wild=1
+9	2	2	Air Orb	item;names=Air orb;reason=charge orb;wild=1
+6	2	1	Bones to Peaches	item;names=Peach;in=3280,3158,3300,3178;reason=bones to fruit
+3	0	10	oak logs	item;names=Oak logs;in=2590,3590,2780,3730|2300,3770,2430,3830;reason=woodcutting && xp;stat=Firemaking;xp=60.0;in=2590,3590,2780,3730|2300,3770,2430,3830
+6	0	7	oak logs	item;names=Oak logs;in=3190,3190,3280,3290;reason=woodcutting && xp;stat=Firemaking;xp=60.0;in=3190,3190,3280,3290
+10	1	5	teak logs	item;names=Teak logs;in=2690,2690,2830,2830;reason=woodcutting && xp;stat=Firemaking;xp=105.0;in=2690,2690,2830,2830
+10	2	6	Mahogany logs	item;names=Mahogany logs;in=2690,2690,2830,2830;reason=woodcutting && xp;stat=Firemaking;xp=157.5;in=2690,2690,2830,2830
+7	2	4	Mos Le'Harmless	item;names=Mahogany logs;in=3640,2960,3720,3010;reason=woodcutting && xp;stat=Firemaking;xp=157.5;in=3640,2960,3720,3010
+6	0	10	Bread	item;names=Bread;in=3205,3210,3216,3219,0;reason=cooking
+8	0	10	pottery wheel	item;names=Unfired bowl;in=3070,3400,3115,3450;reason=crafting && item;names=Bowl;in=3070,3400,3115,3450;reason=crafting
+2	0	7	mind tiara	item;names=Mind tiara;reason=tiara
+3	0	1	Cerulean twitch	item;names=Blue feather;reason=hunter
+5	0	1	Golden Warbler	item;names=Yellow feather;reason=hunter
+10	0	1	Copper Longtail	item;names=Orange feather;reason=hunter
+1	2	2	Magic Guild	area;in=2585,3078,2596,3098
+2	2	10	Warriors' Guild	area;in=2833,3534,2880,3558
+4	1	3	Ranging guild	area;in=2655,3416,2678,3446
+8	1	2	Champions' Guild	area;in=3188,3352,3202,3370
+11	1	5	Farming Guild	area;in=1230,3695,1275,3755
