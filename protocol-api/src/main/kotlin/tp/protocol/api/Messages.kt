@@ -8,6 +8,9 @@ sealed interface ClientCommand {
     /** `::command` typed in the chatbox (dev commands). */
     data class Cheat(val text: String) : ClientCommand
 
+    /** The report-abuse window's submit (SEND_SNAPSHOT): reported [name], [rule] id, [mute] (staff only). Hostile input. */
+    data class ReportAbuse(val name: String, val rule: Int, val mute: Boolean) : ClientCommand
+
     /** Client finished loading the map after a rebuild. */
     data object MapBuildComplete : ClientCommand
 

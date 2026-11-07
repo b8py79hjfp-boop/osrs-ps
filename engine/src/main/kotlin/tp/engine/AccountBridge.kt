@@ -67,6 +67,9 @@ class WorldAddress(val host: String, val flags: Int)
 interface AccountBridge {
     fun authorize(request: LoginRequest, world: World)
 
+    /** G7: [player] reported [name] for [rule] ([mute]: a staff member asked for a 48-hour mute). Default: logged only. */
+    fun reported(player: Player, name: String, rule: Int, mute: Boolean) {}
+
     fun saved(player: Player, save: String, final: Boolean)
 
     /** The hub accepted the login but the world refused it (world full, ...): release the account. */

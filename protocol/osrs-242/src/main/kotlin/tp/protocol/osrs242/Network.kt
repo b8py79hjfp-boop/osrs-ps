@@ -34,6 +34,7 @@ import net.rsprot.protocol.game.incoming.misc.user.ClientCheat
 import net.rsprot.protocol.game.incoming.misc.user.CloseModal
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.misc.user.MoveMinimapClick
+import net.rsprot.protocol.game.incoming.misc.user.SendSnapshot
 import net.rsprot.protocol.game.incoming.npcs.OpNpcT
 import net.rsprot.protocol.game.incoming.npcs.OpNpcV2
 import net.rsprot.protocol.game.incoming.objs.OpObjV2
@@ -417,6 +418,7 @@ class Osrs242Network(
         b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
         b.addListener(ResumePStringDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeString(m.string)) }
         b.addListener(ResumePCountDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeCount(m.count)) }
+        b.addListener(SendSnapshot::class.java) { s, m -> s.deliver(ClientCommand.ReportAbuse(m.name, m.ruleId, m.mute)) }
         b.addListener(ResumePObjDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeObj(m.obj)) }
         b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }
         b.addListener(WindowStatus::class.java) { s, m ->

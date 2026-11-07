@@ -513,6 +513,14 @@ class World(
                 if (!player.resumeInput(command.text)) content.onDialogAnswer(player, command.text)
             }
 
+            is ClientCommand.ReportAbuse -> {
+                // G7: names are at most 12 characters; rules are the client's list (ids < 64); only staff may mute.
+                if (command.name.length > MAX_NAME_LENGTH || command.rule !in 0 until MAX_REPORT_RULE) return invalid(player, command)
+                val mute = command.mute && player.staffLevel > 0
+                logger.info { "report: ${player.username} reported '${command.name}' rule ${command.rule} mute=$mute" }
+                accounts?.reported(player, command.name, command.rule, mute)
+            }
+
             is ClientCommand.ResumeCount -> {
                 if (!player.resumeInput(command.count)) content.onDialogAnswer(player, command.count)
             }
@@ -1254,6 +1262,9 @@ class World(
 
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */
         const val MAX_CHAT_LENGTH = 80
+
+        /** G7: report rule ids fit the client's list (CS 5095; well under 64). */
+        const val MAX_REPORT_RULE = 64
 
         /** Display names are at most 12 characters (OSRS Wiki "Display name"). */
         private const val MAX_NAME_LENGTH = 12

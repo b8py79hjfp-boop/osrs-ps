@@ -954,3 +954,10 @@ the digits. Four digits cannot resist a search by someone holding the save, so t
 protection is the server-side lockout (BP4). Lockouts, the recovery delay and the 5-minute logout grace run on wall-clock seconds
 (`PlayerRef.epochSeconds`), because the Wiki states them in real time and they must survive logout. "Same place" for the grace is a
 SHA-256 hash of the login address (`PlayerRef.loginAddressHash`); the address itself never reaches content or the save.
+
+## D-068 Abuse reports go to the world log
+
+The report window (G7) sends SEND_SNAPSHOT (name, rule, mute). The world validates it and logs one line per report, which ops can
+grep; there is no report queue in the hub yet, because nothing reviews one. A staff member's "mute" is the only report that acts: it
+calls the hub's audit-logged `ModerationService.apply(MUTE, 48 h)`. A hub report table is a later addition when a review tool exists.
+

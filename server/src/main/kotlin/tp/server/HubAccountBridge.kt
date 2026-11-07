@@ -247,6 +247,29 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
+    /**
+     * G7: a staff member's report with "mute" mutes the reported player for 48 hours through the hub's audit-logged
+     * moderation (OSRS "Mute for 48 hours"); other reports stay in the world log for review (DECISIONS D-068).
+     */
+    override fun reported(player: Player, name: String, rule: Int, mute: Boolean) {
+        val account = player.accountId
+        if (!mute || account == 0L || player.staffLevel == 0) return
+        io.execute {
+            val error =
+                call("report mute") {
+                    hub.moderation.apply(account, name, Sanction.MUTE, REPORT_MUTE_MINUTES, "report rule $rule")
+                        ?: ""
+                }
+            val reply =
+                when (error) {
+                    null -> "The hub did not answer."
+                    "" -> "$name has been muted for 48 hours."
+                    else -> error
+                }
+            world.execute { world.playerByAccount(account)?.session?.send(ServerMessage.GameMessage(reply)) }
+        }
+    }
+
     override fun channelConfig(player: Player, update: ChannelConfig?, reply: (Player, ChannelConfig?) -> Unit) {
         val account = player.accountId
         if (account == 0L) return reply(player, null)
@@ -348,6 +371,9 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         runCatching { runBlocking { block() } }.onFailure { logger.warn(it) { "hub $what call failed" } }.getOrNull()
 
     private companion object {
+        /** OSRS report window: "Mute for 48 hours" (staff option). */
+        const val REPORT_MUTE_MINUTES = 48 * 60
+
         const val ADMIN_LEVEL = 2
         val SANCTIONS =
             mapOf(

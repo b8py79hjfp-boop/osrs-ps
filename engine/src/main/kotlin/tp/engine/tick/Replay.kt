@@ -51,6 +51,7 @@ object CommandCodec {
         when (c) {
             is ClientCommand.MoveClick -> "move ${c.x} ${c.z} ${c.ctrl} ${c.minimap}"
             is ClientCommand.Cheat -> "cheat ${str(c.text)}"
+            is ClientCommand.ReportAbuse -> "report ${str(c.name)} ${c.rule} ${c.mute}"
             ClientCommand.MapBuildComplete -> "mapbuilt"
             is ClientCommand.OpLoc -> "oploc ${c.option} ${c.id} ${c.x} ${c.z} ${c.ctrl}"
             is ClientCommand.OpNpc -> "opnpc ${c.option} ${c.index} ${c.ctrl}"
@@ -90,6 +91,10 @@ object CommandCodec {
 
             "cheat" -> {
                 ClientCommand.Cheat(unstr(parts[1]))
+            }
+
+            "report" -> {
+                ClientCommand.ReportAbuse(unstr(parts[1]), i(2), b(3))
             }
 
             "mapbuilt" -> {

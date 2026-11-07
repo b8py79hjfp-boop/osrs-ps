@@ -15,6 +15,15 @@ import tp.symbols.Varbits
 public class Gameframe : ContentPlugin {
     override fun ContentScope.register() {
         onLogin { openGameframe() }
+        // G7: the chatbox "Report" button opens the report window (`reportabuse` 875, init script 5084 (reports available 1, no
+        // name, "")); its submit arrives as SEND_SNAPSHOT (engine).
+        onButton(Components.Chatbox.REPORTABUSE, OP_REPORT_ABUSE) {
+            openModal(Components.Toplevel.MAINMODAL, Interfaces.REPORTABUSE)
+            clientScript(CS_REPORT_INIT, REPORTS_AVAILABLE, 0, "")
+            // The rule rows are children of `reportabuse:rules` built by script 5103; their op 1 only reaches the
+            // client's own handler (which sends SEND_SNAPSHOT) when transmitted.
+            ifEvents(Components.Reportabuse.RULES, 0..REPORT_RULE_ROWS, IfEvents.op(1))
+        }
         // G8: the "Game client layout" dropdown (1 fixed, 2 resizable classic, 3 resizable modern).
         onButton(Components.Settings_Side.DISPLAY_DYNAMIC_SETTING_1_BUTTONS) { click -> changeLayout(click.slot) }
         // Logout tab <-> World Switcher (same side slot; the client closes the old sub on IF_OPENSUB).
@@ -79,6 +88,18 @@ public class Gameframe : ContentPlugin {
 
     private companion object {
         const val CS_SIDEBUTTON_SWITCH = 915
+
+        /** `chatbox:reportabuse` op 2 "Report abuse" (op 4 "Report game bug" has no window in rev 242, OPEN-G7). */
+        const val OP_REPORT_ABUSE = 2
+
+        /** Varc 224 for script 5105: 0 answers "System unavailable", anything else sends the report. */
+        const val REPORTS_AVAILABLE = 1
+
+        /** Rule rows created under `reportabuse:rules` (5 children per rule, < 30 rules). */
+        const val REPORT_RULE_ROWS = 255
+
+        /** `reportabuse` init (varc 224 = source, flag + name to prefill). */
+        const val CS_REPORT_INIT = 5084
 
         /** `settings_client_mode` (RS Mod `runClientScript(3998, clientMode)`): 0 fixed, 1 resizable, 2 resizable modern. */
         const val CS_CLIENT_MODE = 3998
