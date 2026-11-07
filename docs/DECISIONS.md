@@ -642,3 +642,23 @@ Mod, RSProt, RSProx) covers. The opcode table comes from the rev-242 client: the
 `net.runelite.api.WorldEntityConfig` is constructed from the config buffer, and each `case` of its opcode switch was
 matched to the buffer read it performs (byte, signed/unsigned short, string, 2-or-4-byte smart). Field meanings beyond
 the RuneLite API names (id, category, bounds) are kept as neutral `opN` names until content needs them, OPEN.
+
+## D-047: Player-owned houses as content on instances (construction agent)
+
+The house is `content/skills` only (`PlayerOwnedHouse`, `HouseMenus`, `HouseBuilder`, `House`, `Poh*`); no engine, protocol or
+plugin-api change. Rules and OPEN items: docs/mechanics/construction.md H1-H9, OPEN-CO2..CO11.
+- **Locs are read back from the instance, not from a data table.** After a room zone is copied, `PlayerRef.locAt` is asked for the
+  four loc layers of each of its 64 tiles; locs whose cache name marks a hotspot or doorway are grouped (same name, touching tiles)
+  and keyed by their lowest template tile, so a saved layout does not depend on a room's rotation. This avoids a generated hotspot
+  table that would go stale with the cache; the cost is one scan per room per visit.
+- **Only the template zone table is data** (`PohRooms.ALL`, found by scanning the template map for each room's hotspot names, see
+  construction.md). The room type is its index there (append only), as in the saved layout.
+- **The layout is saved in the player's `saved` Longs** (three 18-bit room slots per Long, one furniture entry per Long), no
+  persistence change; encoding in construction.md H8.
+- **Hotspots are hidden by the server** outside building mode (loc deletion) because the cache gives the client no way to do it that
+  was found (OPEN-CO8). Switching building mode reverts or deletes them in place, with no house reload.
+- **Floors are instance levels** (basement 0, ground 1, upper 2) and the template level equals the floor, but only the ground floor is
+  buildable until stairs exist (OPEN-CO6). The pickers are chatbox menus (OPEN-CO4): the cache interfaces that would replace them
+  could not be driven from the disassembled client scripts.
+- **Worlds hold the houses** in a world attribute keyed by owner; the last player out destroys the instance. A soft timer per
+  visitor (2 ticks) notices teleports out.

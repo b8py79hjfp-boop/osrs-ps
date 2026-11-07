@@ -11,9 +11,9 @@ import tp.symbols.Objs
 
 /**
  * Construction, the part that needs no player-owned house (docs/mechanics/construction.md): the sawmill operator's
- * "Buy-plank" option turns unnoted logs and coins into planks. The house itself (instanced map, build mode, hotspots, rooms,
- * furniture) needs dynamic regions the engine does not have yet (construction.md "Engine gap"); its data tables
- * (`construction-furniture.tsv`, `construction-rooms.tsv`) are checked here at start so a bad import fails early.
+ * "Buy-plank" option turns unnoted logs and coins into planks. The house itself (instance, build mode, hotspots, rooms,
+ * furniture) is [PlayerOwnedHouse]; its data tables (`construction-furniture.tsv`, `construction-rooms.tsv`) are checked here at
+ * start so a bad import fails early.
  */
 public class Construction : ContentPlugin {
     override fun ContentScope.register() {
