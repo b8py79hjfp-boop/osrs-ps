@@ -90,8 +90,59 @@ internal object Consumables {
                 for (id in world.objIdsNamed("$name($dose)")) table[id] = potion to (next.firstOrNull() ?: Objs.VIAL_EMPTY)
             }
         }
+        // E10 barbarian mixes (Wiki "Barbarian Training#Herblore"): the base potion's effect plus 3 or 6 Hitpoints per dose,
+        // two doses, and the food attack delay.
+        for ((mix, base, heal) in MIXES) {
+            val effect = potionsByName[base]
+            val potion = Potion { p -> mixDose(p, effect, heal) }
+            val one = world.objIdsNamed("$mix(1)")
+            for (id in one) table[id] = potion to Objs.VIAL_EMPTY
+            for (id in world.objIdsNamed("$mix(2)")) table[id] = potion to (one.firstOrNull() ?: Objs.VIAL_EMPTY)
+        }
         potions = table
     }
+
+    private fun mixDose(p: PlayerRef, base: Potion?, heal: Int) {
+        base?.effect?.invoke(p)
+        p.hitpoints = maxOf(p.hitpoints, minOf(p.maxHitpoints, p.hitpoints + heal))
+        val attack = p.attackClock()
+        if (attack > p.tick) p.setAttackClock(attack + STANDARD_DELAY)
+    }
+
+    /** Mix name, the potion whose effect it has (as named in [potionsByName]; missing = heal only, OPEN-E6), heal. */
+    @Suppress("MagicNumber") // the Wiki table's heal column
+    private val MIXES: List<Triple<String, String, Int>> =
+        listOf(
+            Triple("Attack mix", "Attack potion", 3),
+            Triple("Antipoison mix", "Antipoison", 3),
+            Triple("Relicym's mix", "Relicym's balm", 3),
+            Triple("Strength mix", "Strength potion", 3),
+            Triple("Restore mix", "Restore potion", 3),
+            Triple("Energy mix", "Energy potion", 3),
+            Triple("Defence mix", "Defence potion", 6),
+            Triple("Agility mix", "Agility potion", 6),
+            Triple("Combat mix", "Combat potion", 3),
+            Triple("Prayer mix", "Prayer potion", 6),
+            Triple("Superattack mix", "Super attack", 6),
+            Triple("Anti-poison supermix", "Superantipoison", 6),
+            Triple("Fishing mix", "Fishing potion", 6),
+            Triple("Super energy mix", "Super energy", 6),
+            Triple("Hunting mix", "Hunter potion", 6),
+            Triple("Super str. mix", "Super strength", 6),
+            Triple("Magic essence mix", "Magic essence", 6),
+            Triple("Super restore mix", "Super restore", 6),
+            Triple("Super def. mix", "Super defence", 6),
+            Triple("Antidote+ mix", "Antidote+", 6),
+            Triple("Antifire mix", "Antifire potion", 6),
+            Triple("Ranging mix", "Ranging potion", 6),
+            Triple("Magic mix", "Magic potion", 6),
+            Triple("Zamorak mix", "Zamorak brew", 6),
+            Triple("Stamina mix", "Stamina potion", 6),
+            Triple("Extended antifire mix", "Extended antifire", 6),
+            Triple("Ancient mix", "Ancient brew", 6),
+            Triple("Super antifire mix", "Super antifire potion", 6),
+            Triple("Extended super antifire mix", "Extended super antifire", 6),
+        )
 
     /** Whether [obj] is a potion (for "Empty"). */
     fun isPotion(obj: Int): Boolean = obj in potions

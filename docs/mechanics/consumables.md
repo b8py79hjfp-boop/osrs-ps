@@ -16,6 +16,7 @@ Sources: OSRS Wiki "Food" (FO), "Food/Fast foods" (FF), "Cooked karambwan" (CK),
 | E7 | Heals: lobster 12, swordfish 14, monkfish 16, shark 20, manta ray 22, dark crab 22, tuna potato 22; anglerfish ⌊x/10⌋ + 2⌊x/25⌋ + 5⌊x/93⌋ + 2 by Hitpoints level and may overheal by that amount. | item pages |
 | E8 | Super restore: 8 + ⌊base/4⌋ to each lowered stat except Hitpoints (Prayer included). Prayer potion: 7 + ⌊Prayer level/4⌋. | Super restore, Prayer potion |
 | E9 | Boosts: super attack/strength/defence and super combat ⌊L × 15/100⌋ + 5; ranging ⌊L/10⌋ + 4; bastion ranged ⌊L/10⌋ + 4 and defence ⌊15%⌋ + 5; magic potion +4; stamina +20% run energy. | potion pages |
+| E10 | Barbarian mixes (two doses): the base potion's effect plus 3 or 6 Hitpoints per dose (Wiki table), and the food attack delay (+3 ticks while the attack clock runs). | Wiki "Barbarian Training#Herblore" |
 
 Items are matched by cache name; potion dose chains come from the names "X(4)" … "X(1)" → vial (229).
 
@@ -25,4 +26,5 @@ Items are matched by cache name; potion dose chains come from the names "X(4)" �
 - **OPEN-E2:** overheal cap for brews (HP + ⌊HP × 15/100⌋ + 2). Implemented as that cap.
 - **OPEN-E5:** a boost doesn't lower a higher current level and is computed from the base level (pages say "SkillLevel").
 - **OPEN-E3:** brew drain base level: formula uses the current level (SB:115) vs the table's "Overall level"
+- **OPEN-E6:** a mix whose base potion has no effect in the potion table here (e.g. Relicym's balm, Fishing / Hunter / Agility potion, Zamorak and Ancient brew) only heals.
   (SB:117-135). Using the current level.
