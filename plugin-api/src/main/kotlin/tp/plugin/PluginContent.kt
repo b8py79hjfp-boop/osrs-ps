@@ -223,6 +223,12 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref(player).handler(from, clanName)
     }
 
+    override fun onWorldTick(world: World) {
+        if (h.worldTick.isEmpty()) return
+        val ref = worldRef?.takeIf { it.w === world } ?: WorldRef(world).also { worldRef = it }
+        for (handler in h.worldTick) ref.handler()
+    }
+
     override fun onHeading(player: Player, heading: Int) {
         val handler = h.heading ?: return
         ref(player).handler(heading)

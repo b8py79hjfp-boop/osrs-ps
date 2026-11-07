@@ -86,6 +86,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.heading = handler
     }
 
+    /**
+     * Every tick after NPCs and players (tick.md: before post-tick), for world-level clocks: minigame rounds, moving
+     * fishing spots. Any number of handlers, run in registration order. Keep them cheap (tick hot path).
+     */
+    public fun onWorldTick(handler: WorldRef.() -> Unit) {
+        handlers.worldTick += handler
+    }
+
     /** Every tick, after input and before NPCs, while the world has world entities; one handler (the sailing plugin). */
     public fun onWorldEntityTick(handler: WorldRef.() -> Unit) {
         check(handlers.worldEntityTick == null) { "duplicate handler: world entity tick" }
@@ -279,6 +287,7 @@ internal class Handlers {
     var examine: (PlayerRef.(Examined) -> Unit)? = null
     var heading: (PlayerRef.(Int) -> Unit)? = null
     var clanInvite: (PlayerRef.(String, String) -> Unit)? = null
+    val worldTick = ArrayList<WorldRef.() -> Unit>()
     var worldEntityTick: (WorldRef.() -> Unit)? = null
     var opWorldEntity: (PlayerRef.(WorldEntityRef, Int) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

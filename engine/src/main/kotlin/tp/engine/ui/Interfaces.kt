@@ -29,6 +29,13 @@ class Interfaces {
         player.session.send(ServerMessage.OpenSub(destination, interfaceId, overlay = true))
     }
 
+    /** Closes the overlay in [destination] (a HUD left behind on leaving an area). */
+    fun closeOverlay(player: Player, destination: Int) {
+        val s = states[player.slot] ?: return
+        if (s.subs.remove(destination) == null || destination == s.modalDestination) return
+        player.session.send(ServerMessage.CloseSub(destination))
+    }
+
     /** Opens a modal (closing any current one first: Q7). */
     fun openModal(player: Player, destination: Int, interfaceId: Int) {
         player.closeModal()

@@ -66,3 +66,6 @@ public class Equipped(public val player: PlayerRef, public val obj: Int, public 
 
 /** [player] used the emote named [name] in the emote tab (e.g. "Cheer"); locked emotes are refused after this. */
 public class EmotePerformed(public val player: PlayerRef, public val name: String) : Event
+
+/** [player] ate ([drink] false) or drank a dose of [obj] (content/combat food and potions; e.g. Wintertodt warmth). */
+public class Consumed(public val player: PlayerRef, public val obj: Int, public val drink: Boolean) : Event

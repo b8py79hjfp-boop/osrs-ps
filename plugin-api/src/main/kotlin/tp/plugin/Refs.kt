@@ -308,6 +308,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.interfaces.openOverlay(p, destination, interfaceId)
     }
 
+    /** Closes the overlay open in [destination] (not the modal). */
+    public fun closeOverlay(destination: Int) {
+        p.world.interfaces.closeOverlay(p, destination)
+    }
+
     public fun openModal(destination: Int, interfaceId: Int) {
         p.world.interfaces.openModal(p, destination, interfaceId)
     }

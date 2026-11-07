@@ -69,6 +69,9 @@ interface ContentHandlers {
     /** World-entity phase of [world]'s tick (world-entities.md WE10): content moves its boats. */
     fun onWorldEntityPhase(world: tp.engine.World) {}
 
+    /** Every tick, after NPCs and players, before post-tick (world timers: minigame rounds, moving spots). */
+    fun onWorldTick(world: tp.engine.World) {}
+
     /** The player at a boat's helm chose [heading] (0..15; sailing-movement.md). */
     fun onHeading(player: Player, heading: Int) {}
 

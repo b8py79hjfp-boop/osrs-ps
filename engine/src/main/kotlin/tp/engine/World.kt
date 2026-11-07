@@ -255,6 +255,7 @@ class World(
         worldEntityPhase()
         npcPhase()
         playerPhase()
+        content.onWorldTick(this)
         postTick()
         val logicEnd = System.nanoTime()
         infoPass()

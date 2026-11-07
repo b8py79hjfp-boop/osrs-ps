@@ -128,6 +128,7 @@ internal object Consumables {
         player.hitpoints = maxOf(player.hitpoints, minOf(cap, player.hitpoints + heal))
         player.anim(Seqs.HUMAN_EAT)
         player.message("You eat the ${player.objName(obj).lowercase()}.")
+        player.events.publish(tp.plugin.Consumed(player, obj, drink = false))
     }
 
     private fun drink(player: PlayerRef, slot: Int, obj: Int, next: Int, potion: Potion) {
@@ -139,6 +140,7 @@ internal object Consumables {
         potion.effect(player)
         player.anim(Seqs.HUMAN_EAT) // potions use the eat animation (seq 829)
         player.message("You drink some of your ${player.objName(obj).substringBefore('(').lowercase()}.")
+        player.events.publish(tp.plugin.Consumed(player, obj, drink = true))
     }
 
     /** E6 Saradomin brew: heal ⌊base HP × 15/100⌋ + 2 (overheal), Defence +⌊base/5⌋ + 2, others −(⌊current/10⌋ + 2). */
