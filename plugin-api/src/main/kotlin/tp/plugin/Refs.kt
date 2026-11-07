@@ -767,6 +767,11 @@ public class WorldRef internal constructor(internal val w: World) {
         w.locs.add(id, at, shape, angle, w.tick, duration)
     }
 
+    /** Removes the loc of [shape]'s layer on the tile for this world; reverts after [duration] ticks if positive. */
+    public fun deleteLoc(at: CoordGrid, shape: Int, duration: Int = -1) {
+        w.locs.delete(at, shape, w.tick, duration)
+    }
+
     /** Obj ids with exactly this cache name (unnoted, not placeholders). */
     public fun objIdsNamed(name: String): List<Int> = w.objIdsNamed(name)
 

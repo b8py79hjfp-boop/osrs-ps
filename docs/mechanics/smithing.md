@@ -74,6 +74,15 @@ production batches): skilling.md SK, MU, PR.
   arrowtips 1 (5), scimitar 2 (5), longsword 2 (6), limbs 1 (6), full helm 2 (7), knives 1 (7), square shield 2 (8), warhammer 3
   (9), battleaxe 3 (10), chainbody 3 (11), kiteshield 3 (12), claws 2 (13), 2h sword 3 (14), platelegs 3 (16), plateskirt 3 (16),
   platebody 5 (18), nails 1 (4). The cache holds the complete table (`config enum 845` / `846`).
+- **SM12: coal bag.** When a recipe needs coal the backpack lacks, the coal comes out of the coal bag first-in-line after the backpack's
+  coal (Wiki "Coal bag"; motherlode.md ML10).
+- **SM13: Smiths' uniform and Varrock armour.** Each uniform piece (tunic, trousers, boots, gloves or Smiths gloves (i)) gives a 20%
+  chance that an anvil smith takes 4 ticks instead of 5, 100% with four pieces (Wiki "Smiths' uniform"; one roll per smith). Varrock
+  armour 1..4 worn on the body gives 10% for 2 bars at the Edgeville furnace (x 3105..3111, z 3496..3502): up to steel with 1, mithril
+  with 2, adamantite with 3, any bar with 4 (Wiki "Varrock armour 1..4").
+- **SM14: cannonballs.** An ammo mould (or double ammo mould) and steel bars used on a furnace open the make-X menu; level 35, 4 balls
+  per bar (8 per two bars with the double mould), 25.6 xp per bar (51.2 for two), first set after 8 ticks and every following one
+  10 ticks later (Wiki "Steel cannonball": "ticks 8; Make-X is 8, then 10"). Animation `human_furnace`.
 
 ## OPEN
 
@@ -81,9 +90,16 @@ production batches): skilling.md SK, MU, PR.
 - **OPEN-SM2:** how the live anvil takes a quantity. The cache shows the quantity row on interface 312 but no client script
   uses it; the make-X menu reuses the shared, verified `skillmulti` flow instead of guessing the row's server protocol.
 - **OPEN-SM3:** which metal opens when the anvil is clicked while carrying several bar types (highest tier is used).
-- **OPEN-SM4:** Varrock armour (chance of 2 bars at the Edgeville furnace) and the Smiths' uniform (20% per piece to take 1 tick
-  off anvil smithing) are not modelled; neither are the Blast Furnace, cannonballs, elemental / lovakite / lead /
-  cupronickel bars, the dragon-tier smithing and the Sailing items.
+- **OPEN-SM4:** done now: the Smiths' uniform and Varrock armour (SM13). Not modelled: elemental / lovakite / lead / cupronickel
+  bars, the dragon-tier smithing and the Sailing items (their ore recipes are not in `recipes.tsv`), the Blast Furnace is
+  blast-furnace.md.
+- **OPEN-SM9:** the Dwarf Cannon quest is not in `content/quests`, so cannonballs are gated on holding an ammo mould (obtainable only through
+  the quest), not on the quest varp (varp 0 `mcannon`); read it once the quest exists.
+- **OPEN-SM10:** a Varrock armour double bar gives the xp of one bar; the Wiki does not say.
+- **OPEN-SM11:** "Make-X is 8, then 10" is read as first cannonball set at 8 ticks, the rest every 10; a single set takes 8.
+- **OPEN-SM12:** Giants' Foundry (Foundry reputation, preforms, the trip hammer / grindstone / polishing wheel, the double ammo mould
+  reward, the Smiths' uniform preform bonus) is not implemented; 0 of its mechanics. Needs: the minigame page's heat / temperature
+  tables, the three tools' progress per action, and the reward shop rows.
 - **OPEN-SM5:** message texts "The ore is too impure and you fail to refine it." and "You hammer the X and make Y." are from
   memory of the live game; only "You retrieve a bar of X." and the ring messages are sourced (RuneLite).
 - **OPEN-SM6:** ring of forging Check / Break ops; charges are a saved content value and are not shown by the item.

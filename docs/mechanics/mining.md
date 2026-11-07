@@ -76,6 +76,18 @@ comes from the Wiki pages named in the rule. Shared rules (success roll, clocks,
   - Only the empty-rock text is sourced; the others are the game's wording as the Wiki leaves them out (OPEN-MN5).
 - **MN11: locs.** Rock loc ids and the empty rock each leaves come from the cache (`COPPERROCK1/2`, `TINROCK1/2`, ... `Locs`
   symbols), plus the Tutorial Island (`NEWBIE*`, `TUT2_*`) and Prifddinas (`PRIF_MINE_*`) rocks, which share their ore's data.
+- **MN12: extra ore (Varrock armour, Mining cape).** After a successful roll of a standard rock the player gets a second ore (and
+  its xp) with probability 1/10 per Varrock armour piece worn on the body whose tier reaches the rock (tier 1 up to gold, 2 up
+  to mithril plus sandstone and granite, 3 up to adamantite, 4 everything including runite and amethyst) and 1/20 with the Mining
+  cape on rocks up to adamantite (Wiki "Mining enhancers", "Varrock armour 1..4"). The two stack. Not for gem rocks, essence or pay-dirt veins.
+- **MN13: amulet of glory.** A charged glory (any (1)..(6), trimmed, eternal) adds a second 3-in-256 roll to the gem drop table when
+  the first 1-in-256 fails (about 1/64, Wiki "Mining gem drop table"), and raises the gem rock success chart from 28 / 70 to
+  84 / 210 (Wiki "Gem rocks").
+- **MN14: mining gloves.** Mining gloves skip the first depletion of copper, tin, iron, silver, coal and gold rocks; superior gloves
+  two there and one for mithril and adamantite; expert gloves three, two (mithril, adamantite) and one for sandstone, runite and amethyst
+  (Wiki "Mining enhancers"). The player keeps mining until the rock finally depletes.
+- **MN15: prospector outfit.** Every Mining xp is multiplied by the outfit's bonus (motherlode.md ML12), through `MiningOutfit`.
+- **MN16: Motherlode veins and rockfalls** are rock kinds `VEIN` and `ROCKFALL` of this table (motherlode.md ML1, ML9).
 
 ## OPEN
 
@@ -87,9 +99,13 @@ comes from the Wiki pages named in the rule. Shared rules (success roll, clocks,
 - **OPEN-MN4:** amethyst's 2-or-3 choice is assumed uniform and drawn when the first amethyst is mined.
 - **OPEN-MN5:** message texts other than the empty-rock one are not from a cited source.
 - **OPEN-MN7:** blurite rocks (level 10, 17.5 xp, 42-tick respawn; Wiki "Blurite ore") use copper's success rates (100 / 350); the Wiki has no blurite curve.
-- **OPEN-MN6:** not implemented: the amulet of glory (gem table 1/64.2 and the gem rock rates 84 / 210), mining gloves, Varrock
-  armour, mining cape, prospector outfit xp, celestial ring/signet, bracelet of clay and soft clay, gem/coal bags, clue geodes and
-  the unidentified minerals / golden nugget / pet tertiary drops, Mining Guild and Wilderness respawn reductions (adamantite 2 min,
-  runite 6 min, iron/coal faster), the per-skill Infernal and Crystal pickaxe charges and extra requirements (Smithing 85,
-  Song of the Elves, Agility 50), 3rd age/gilded pickaxe special rules, the ore veins, Motherlode Mine, Volcanic Mine and other
-  minigame rocks (limestone, blurite, barronite, daeyalt, lovakite, nickel, salt, calcified, sunstone, lunar, ...).
+- **OPEN-MN6:** not implemented: the celestial ring/signet (charges), bracelet of clay and soft clay, clue geodes and the unidentified
+  minerals / pet tertiary drops, the Mining Guild and Wilderness respawn reductions (adamantite 2 min, runite 6 min, iron/coal faster),
+  the per-skill Infernal and Crystal pickaxe charges and extra requirements (Smithing 85, Song of the Elves, Agility 50), 3rd
+  age/gilded pickaxe special rules, Volcanic Mine and the other minigame rocks (limestone, blurite, barronite, daeyalt, lovakite,
+  nickel, salt, calcified, sunstone, lunar, ...). Done now: prospector outfit, glory, gloves, Varrock armour, Mining cape, gem rock
+  rates with glory, coal / gem bags (MN12-MN15), Motherlode Mine (motherlode.md).
+- **OPEN-MN8:** the gloves' saved depletions are counted per player and rock tile; the Wiki does not say whether they belong to the rock.
+- **OPEN-MN9:** with Varrock armour 3 / 4 a gem table hit rolls the table twice (Wiki "Varrock armour"); only the extra ore is done.
+- **OPEN-MN10:** clay (level 1) and blurite are taken as tier-1 standard rocks for the Varrock armour (the Wiki's rock table lists clay
+  for the armour; blurite is not listed).

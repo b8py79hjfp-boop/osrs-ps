@@ -22,6 +22,12 @@ internal enum class RockKind {
 
     /** One roll for the amethyst; the rock depletes after 2 or 3 of them. */
     AMETHYST,
+
+    /** A Motherlode Mine ore vein: one roll for pay-dirt, depleted by its timer ([Motherlode], docs/mechanics/motherlode.md ML1). */
+    VEIN,
+
+    /** A Motherlode Mine rockfall: every attempt succeeds, 10 xp, no item (docs/mechanics/motherlode.md ML9). */
+    ROCKFALL,
 }
 
 /** One product of a rock: [obj], [xp], and the success rates out of 256 at level 1 and 99 ([low], [high]). */
@@ -81,6 +87,16 @@ internal val PICKAXES: Map<Int, Pickaxe> =
 
 private fun ore(level: Int, xp: Double, obj: Int, low: Int, high: Int, respawn: Int, mined: String, noun: String = "$mined ore"): Rock =
     Rock(RockKind.ORE, level, listOf(Yield(obj, xp, low, high)), respawn, true, "mine", mined, noun)
+
+/**
+ * Motherlode Mine ore vein: level 30, 60 xp, pay-dirt rolled at 60 / 105 (Wiki "Ore vein", "Pay-dirt" success chart); the
+ * respawn is 100 ticks (Wiki "Ore vein": "respawn after 100 ticks or 60 seconds"). The gem table is rolled before each attempt
+ * (Wiki "Ore vein" > Pre roll drops).
+ */
+private val VEIN = Rock(RockKind.VEIN, 30, listOf(Yield(Objs.PAYDIRT, 60.0, 60, 105)), 100, true, "mine", "pay-dirt", "pay-dirt")
+
+/** Motherlode rockfall: no requirement, 10 xp, 18 s = 30 ticks to fall again (Wiki "Rockfall" Mining info). */
+private val ROCKFALL = Rock(RockKind.ROCKFALL, 1, listOf(Yield(-1, 10.0, 0, 0)), 30, false, "mine", "rocks", "rocks")
 
 /** Mining level 30 swaps rune essence for pure essence (Wiki "Rune Essence Mine", "Rune Essence (rock)"). */
 internal const val PURE_ESSENCE_LEVEL = 30
@@ -266,6 +282,16 @@ internal val ROCKS: Map<Int, RockLoc> =
         put(Locs.ENAKH_SANDSTONE_ROCKS, RockLoc(SANDSTONE, EMPTY_1))
         put(Locs.ENAKH_GRANITE_ROCKS, RockLoc(GRANITE, EMPTY_1))
         put(Locs.BLANKRUNESTONE, RockLoc(ESSENCE_ROCK, 0))
+        putAll(
+            locs(
+                VEIN,
+                Locs.MOTHERLODE_ORE_SINGLE to Locs.MOTHERLODE_DEPLETED_SINGLE,
+                Locs.MOTHERLODE_ORE_LEFT to Locs.MOTHERLODE_DEPLETED_LEFT,
+                Locs.MOTHERLODE_ORE_MIDDLE to Locs.MOTHERLODE_DEPLETED_MIDDLE,
+                Locs.MOTHERLODE_ORE_RIGHT to Locs.MOTHERLODE_DEPLETED_RIGHT,
+            ),
+        )
+        putAll(locs(ROCKFALL, Locs.MOTHERLODE_ROCKFALL_1 to -1, Locs.MOTHERLODE_ROCKFALL_2 to -1))
     }
 
 /** Empty rocks: mining one only prints the Wiki's "no ore available" message ("Rocks (empty)"). */

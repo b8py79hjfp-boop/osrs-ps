@@ -59,6 +59,7 @@ public class Smithing : ContentPlugin {
     }
 
     private fun startSmelt(p: PlayerRef, r: Recipe, quantity: Int) {
+        pullCoal(p, r)
         Production.shortfall(p, r)?.let { return p.message(it) }
         val first = if (quantity == 1) SMELT_SINGLE_TICKS else SMELT_FIRST_TICKS
         Production.start(p, Batch(quantity, Seqs.HUMAN_FURNACE, SMELT_TICKS) { smeltOne(this, r) }, first)
@@ -66,6 +67,7 @@ public class Smithing : ContentPlugin {
 
     /** One smelt: the ores go, the bar comes (iron fails half the time without a ring of forging, SM3). */
     private fun smeltOne(p: PlayerRef, r: Recipe): Boolean {
+        pullCoal(p, r)
         Production.shortfall(p, r)?.let {
             // PR3: running out of materials ends an "All" batch silently; anything else says why.
             if (Production.hasMaterials(p, r)) p.message(it)
@@ -73,7 +75,8 @@ public class Smithing : ContentPlugin {
         }
         val forging = r.output == Objs.IRON_BAR && p.inv(Invs.WORN).obj(SmithingData.RING_SLOT) == Objs.RING_OF_FORGING
         val success = r.output != Objs.IRON_BAR || forging || p.random(IRON_FAIL_ODDS) == 0
-        val done = p.transaction("smelting") { take(r.inputs) && (!success || add(Invs.INV, r.output, 1)) }
+        val bars = if (success && SmithingExtras.varrockDouble(p, r)) 2 else 1
+        val done = p.transaction("smelting") { take(r.inputs) && (!success || add(Invs.INV, r.output, bars)) }
         if (!done) return false
         if (!success) {
             p.message("The ore is too impure and you fail to refine it.")
@@ -82,6 +85,12 @@ public class Smithing : ContentPlugin {
         p.message("You retrieve a bar of ${p.objName(r.output).removeSuffix(" bar").lowercase()}.")
         val alive = !forging || useForgingCharge(p)
         return Production.award(p, Stats.SMITHING, smeltXp(p, r)) && alive
+    }
+
+    /** SM12: coal the recipe needs but the backpack lacks comes out of the coal bag (Wiki "Coal bag"). */
+    private fun pullCoal(p: PlayerRef, r: Recipe) {
+        val coal = r.inputs.firstOrNull { it.obj == Objs.COAL } ?: return
+        Bags.topUpCoal(p, coal.count)
     }
 
     private fun smeltXp(p: PlayerRef, r: Recipe): Double {
@@ -159,7 +168,13 @@ public class Smithing : ContentPlugin {
 
     private fun startSmith(p: PlayerRef, metal: AnvilBar, product: Int, quantity: Int) {
         if (!canSmith(p, metal, product)) return
-        Production.start(p, Batch(quantity, Seqs.HUMAN_SMITHING, SMITH_TICKS) { smithOne(this, metal, product) }, SMITH_TICKS)
+        Production.start(
+            p,
+            Batch(quantity, Seqs.HUMAN_SMITHING, SMITH_TICKS) { smithOne(this, metal, product) }.also {
+                it.intervalFor = { player -> SmithingExtras.smithTicks(player, SMITH_TICKS) }
+            },
+            SmithingExtras.smithTicks(p, SMITH_TICKS),
+        )
     }
 
     private fun canSmith(p: PlayerRef, metal: AnvilBar, product: Int): Boolean {

@@ -15,7 +15,10 @@ internal class Batch(
     val anim: Int,
     val interval: Int,
     val action: PlayerRef.() -> Boolean,
-)
+) {
+    /** The ticks until the next action when it varies per action (the Smiths' uniform shortens an anvil smith by one tick). */
+    var intervalFor: (PlayerRef) -> Int = { interval }
+}
 
 internal object Production {
     /**
@@ -41,7 +44,7 @@ internal object Production {
         batch.remaining--
         if (batch.remaining <= 0) return
         play(p, batch)
-        queue(p, batch, batch.interval)
+        queue(p, batch, batch.intervalFor(p))
     }
 
     /**
