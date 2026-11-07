@@ -6,6 +6,8 @@ package tp.content.quests
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.DeathEvent
+import tp.plugin.HitEvent
+import tp.plugin.LethalHitEvent
 import tp.plugin.LocRef
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
@@ -20,7 +22,7 @@ import tp.symbols.Objs
  * Moon Inn for a stake; Count Draynor, in the coffin of Draynor Manor's cellar, dies for the quest only with a stake and a hammer in
  * the backpack. The quest variable (varp 178) is 0 / 1 started / 2 Harlow gave the stake (ours, OPEN-QU1) / 3 finished (cache
  * `endstate`). Morgan is a multi-NPC on varbit 15611 (0 before, 1 after). The Count's regeneration without a stake and the garlic
- * weakening need combat hooks the plugin API lacks (OPEN-QUA16, OPEN-QUA18). Dialogue is the Wiki "Transcript:Vampyre Slayer",
+ * weakening use plugin-api `LethalHitEvent` / `HitEvent`. Dialogue is the Wiki "Transcript:Vampyre Slayer",
  * "Transcript:Morgan" and "Transcript:Dr Harlow".
  */
 public class VampyreSlayer : ContentPlugin {
@@ -51,6 +53,22 @@ public class VampyreSlayer : ContentPlugin {
             if (count.type != Npcs.COUNT_DRAYNOR) return@on
             val killer = (e.killer as? PlayerRef) ?: e.lootFor ?: return@on
             slain(killer)
+        }
+        // VS: he can be hurt but not killed without a stake and a hammer: at 0 he heals to full (Wiki "Count Draynor").
+        events.on<LethalHitEvent> { e ->
+            if (e.npc.type != Npcs.COUNT_DRAYNOR) return@on
+            val p = e.source as? PlayerRef
+            if (p != null && canStake(p)) return@on
+            // OPEN-QUA16: no message is sourced for the heal.
+            e.surviveWith = e.npc.maxHitpoints
+        }
+        // VS: garlic in the backpack: at full health the Count takes 10 damage; full Attack / Strength drop by 10 and
+        // Defence by 40 (Mod Ash via Wiki "Count Draynor"); "The vampyre seems to weaken." with the Attack drain.
+        events.on<HitEvent> { e ->
+            val count = e.target as? NpcRef ?: return@on
+            val p = e.source as? PlayerRef ?: return@on
+            if (count.type != Npcs.COUNT_DRAYNOR || !p.has(Objs.GARLIC) || count.hitpoints <= 0) return@on
+            garlic(p, count)
         }
         events.on<JournalRequest> {
             if (it.quest == Quests.VAMPYRE_SLAYER) it.lines += journal(it.quest.stage(it.player))
@@ -398,6 +416,21 @@ public class VampyreSlayer : ContentPlugin {
         count.queueHit(COUNT_LIFETIME, strong = false) { if (count.isInWorld) count.despawn() }
     }
 
+    private fun canStake(p: PlayerRef): Boolean = p.stage == STAKE_GIVEN && p.has(Objs.STAKE) && p.has(Objs.HAMMER)
+
+    private fun garlic(p: PlayerRef, count: NpcRef) {
+        if (count.level(ATTACK) >= count.baseLevel(ATTACK)) {
+            count.setLevel(ATTACK, count.level(ATTACK) - GARLIC_DRAIN)
+            p.message(WEAKEN)
+        }
+        if (count.level(STRENGTH) >= count.baseLevel(STRENGTH)) count.setLevel(STRENGTH, count.level(STRENGTH) - GARLIC_DRAIN)
+        if (count.level(DEFENCE) >= count.baseLevel(DEFENCE)) count.setLevel(DEFENCE, count.level(DEFENCE) - GARLIC_DEFENCE_DRAIN)
+        if (count.hitpoints >= count.maxHitpoints) {
+            count.hitpoints = count.maxHitpoints - GARLIC_DAMAGE
+            count.hitsplat(p, GARLIC_DAMAGE, HITMARK_DAMAGE, HITMARK_DAMAGE, HITMARK_DAMAGE_TINT)
+        }
+    }
+
     /** Count Draynor died: with a stake and a hammer in the backpack the quest is done (Wiki "Slaying Count Draynor"). */
     private fun slain(killer: PlayerRef) {
         if (killer.stage != STAKE_GIVEN) return
@@ -412,6 +445,22 @@ public class VampyreSlayer : ContentPlugin {
     }
 
     private companion object {
+        /** Wiki "Count Draynor" (Mod Ash): garlic's drains and damage. */
+        const val GARLIC_DRAIN = 10
+        const val GARLIC_DEFENCE_DRAIN = 40
+        const val GARLIC_DAMAGE = 10
+
+        /** NPC stat order (cache NpcType levels): attack, defence, strength. */
+        const val ATTACK = 0
+        const val DEFENCE = 1
+        const val STRENGTH = 2
+
+        /** Hitmark types for a damage splat (as content/combat: lit 16, tinted 17). */
+        const val HITMARK_DAMAGE = 16
+        const val HITMARK_DAMAGE_TINT = 17
+
+        const val WEAKEN = "The vampyre seems to weaken."
+
         const val OP_TALK = 1
         const val OP_SEARCH = 1
         const val OP_OPEN = 1

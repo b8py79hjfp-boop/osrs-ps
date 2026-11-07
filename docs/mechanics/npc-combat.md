@@ -17,6 +17,7 @@ Sources:
 | N3 | Player attacks on NPCs use the NPC's defence bonus for the attack type; magic uses the NPC's Magic level and magic defence. | IM, F6/F7 |
 | N4 | Player ranged attacks use the NPC's light, standard or heavy ranged defence by weapon: thrown → light, crossbow (and chinchompa) → heavy, bow and anything else → standard. | RW |
 | N5 | A melee-only NPC walks into reach. An NPC with ranged or magic attacks from range (OPEN-N5) and stays there; if it also has a melee style it keeps closing in and melees once in reach. | IM (styles), OPEN-N5 |
+| N12 | When an NPC reaches 0 hitpoints, plugin-api `LethalHitEvent` lets content keep it alive at a set hitpoint value (quest NPCs that need a special killing blow, e.g. Count Draynor). | content rule |
 | N6 | Respawn after death uses the infobox `respawn` ticks; NPCs without one use 25 ticks. | IM |
 
 ## Timeline

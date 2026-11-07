@@ -8,6 +8,7 @@ import tp.plugin.DeathEvent
 import tp.plugin.EntityRef
 import tp.plugin.HitEvent
 import tp.plugin.HitStyle
+import tp.plugin.LethalHitEvent
 import tp.plugin.NpcRef
 import tp.plugin.NpcScript
 import tp.plugin.PlayerRef
@@ -204,6 +205,7 @@ internal object CombatSystem {
             if (target.hitpoints <= 0 && boss.onLethal(target)) return
             if (target.hitpoints > 0) boss.afterHit(target, source)
         }
+        lethalCheck(target, source)
         if (target.hitpoints <= 0) {
             die(target, source)
         } else if (source != null) {
@@ -247,6 +249,14 @@ internal object CombatSystem {
         npc[Attr.NPC_ATTACK_SPEED] ?: NpcCombatTable.of(npc.type)?.speed?.takeIf { it > 0 } ?: DEFAULT_SPEED
 
     // ---- death
+
+    /** N12: content may keep an NPC alive at 0 hitpoints (quest NPCs that need a special killing blow). */
+    private fun lethalCheck(target: EntityRef, source: EntityRef?) {
+        if (target !is NpcRef || target.hitpoints > 0) return
+        val lethal = LethalHitEvent(target, source)
+        target.events.publish(lethal)
+        if (lethal.surviveWith > 0) target.hitpoints = minOf(lethal.surviveWith, target.maxHitpoints)
+    }
 
     private fun die(target: EntityRef, killer: EntityRef?) {
         target[Attr.DYING] = true

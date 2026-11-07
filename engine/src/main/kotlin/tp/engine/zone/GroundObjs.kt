@@ -83,7 +83,8 @@ class GroundObjs internal constructor() {
     internal fun add(obj: GroundObj) {
         val zone = ZoneKey.of(obj.coord).packed
         byZone.getOrPut(zone) { ArrayList() } += obj
-        live += obj
+        // Static spawns (G6) never reveal or despawn, so the per-tick timer loop skips them.
+        if (obj.respawn == 0) live += obj
         event(zone, ZoneEvent(ZoneEvent.Kind.ADD, obj, obj.owner))
     }
 
@@ -92,7 +93,7 @@ class GroundObjs internal constructor() {
         obj.removed = true
         val zone = ZoneKey.of(obj.coord).packed
         byZone[zone]?.remove(obj)
-        live.remove(obj)
+        if (obj.respawn == 0) live.remove(obj)
         event(zone, ZoneEvent(ZoneEvent.Kind.DEL, obj, obj.owner))
         if (obj.respawn > 0) respawning[obj] = obj.respawn
     }

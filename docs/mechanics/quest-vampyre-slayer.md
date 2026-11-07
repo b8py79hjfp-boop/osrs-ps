@@ -12,7 +12,4 @@ state 3, 3 quest points, (0, 48250 tenths) Attack XP.
 | VS4 | Opening the coffin (loc 46237, 3077,9775) spawns Count Draynor (npc 3481) beside it, hunting within 5 tiles; he leaves after 500 ticks (the Wiki: "returns to his coffin and heals"; no time given). |
 | VS5 | When Count Draynor dies to a player at stage 2 with the stake and a hammer in the backpack the quest completes ("You hammer the stake into the vampyre's chest!"): 3 quest points, 4,825 Attack XP (cache). Without a hammer: "You're unable to push the stake far enough in!" and no completion. |
 
-OPEN-QUA16: the Wiki's regeneration ("The vampyre seems to regenerate!") when the Count would die without a stake needs a combat hook
-(death prevention until a condition; proposal in the report): today he can be killed without one, but then the quest does not complete.
-OPEN-QUA17: the Count's 500 tick lifetime and hunt range are ours. OPEN-QUA18: the garlic weakening (10 damage at the start, Attack and
-Strength -10, Defence -40 for 30 s) is not applied. Maris (Morgan's wife) is not spawned.
+OPEN-QUA16: without a stake and hammer the Count heals to full at 0 hitpoints (plugin-api `LethalHitEvent`, Wiki "Count Draynor"); no message for it is sourced, so none is shown. OPEN-QUA17: the Count's 500 tick lifetime and hunt range are ours. Garlic in the backpack (on each hit that lands): at full health 10 damage; full Attack and Strength -10, full Defence -40; "The vampyre seems to weaken." with the Attack drain (Wiki "Count Draynor", Mod Ash). OPEN-QUA18: garlic's +1 damage on every hit, the 30-second wear-off and the Count's 20x health regeneration are not modelled.

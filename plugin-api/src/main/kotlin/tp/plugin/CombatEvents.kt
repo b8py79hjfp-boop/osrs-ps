@@ -61,6 +61,15 @@ public class SpellAccuracyRoll(public val caster: PlayerRef, public val target: 
     public var hit: Boolean = true
 }
 
+/**
+ * An NPC was just brought to 0 hitpoints by [source] (npc-combat.md N12). A subscriber that sets [surviveWith] > 0 keeps
+ * it alive at that many hitpoints (a quest NPC that only dies to its special weapon, e.g. Count Draynor without a
+ * stake); otherwise it dies as usual. Published before [DeathEvent].
+ */
+public class LethalHitEvent(public val npc: NpcRef, public val source: EntityRef?) : Event {
+    public var surviveWith: Int = 0
+}
+
 /** [entity] died; published when the death sequence completes, before respawn (items kept on death, Retribution). */
 public class DeathEvent(
     public val entity: EntityRef,
