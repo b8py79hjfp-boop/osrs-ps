@@ -5,6 +5,7 @@ import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.IfEvents
+import tp.plugin.OpenShopRequest
 import tp.plugin.PlayerRef
 import tp.plugin.TimerId
 import tp.symbols.Components
@@ -32,8 +33,12 @@ public class Shops : ContentPlugin {
 
     override fun ContentScope.register() {
         onOpNpcOption("Trade") { npc ->
-            val def = catalog.forNpc(npc.type)
+            val def = catalog.forNpc(npc.type) ?: catalog.forNpc(player.seenType(npc))
             if (def == null) player.message("This shop isn't available yet.") else player.open(def)
+        }
+        events.on<OpenShopRequest> { e ->
+            val def = e.shopName?.let { n -> catalog.shops.firstOrNull { it.name == n } } ?: catalog.forNpc(e.npcType)
+            if (def == null) e.player.message("This shop isn't available yet.") else e.player.open(def)
         }
         onButton(Components.Shopmain.ITEMS) { click -> shopItem(click) }
         onButton(Components.Shopside.ITEMS) { click -> sideItem(click) }

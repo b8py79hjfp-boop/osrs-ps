@@ -26,3 +26,9 @@ public class LoginEvent(public val player: PlayerRef) : Event
 
 /** Published before the player leaves the world. */
 public class LogoutEvent(public val player: PlayerRef) : Event
+
+/**
+ * Opens a shop for [player] from a dialogue answer ("Yes please!"): the shop of NPC type [npcType] as its "Trade" op
+ * would, or, for shops no NPC trades from, the one named [shopName] (its Wiki name). The shops plugin handles it.
+ */
+public class OpenShopRequest(public val player: PlayerRef, public val npcType: Int = -1, public val shopName: String? = null) : Event

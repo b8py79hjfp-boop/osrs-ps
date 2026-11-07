@@ -13,5 +13,5 @@ end state 100, 5 quest points, no stat XP.
 | RJ5 | Giving Juliet the potion plays the cutscene dialogue (Phillipa, Draul); stage 70. Telling Romeo then plays the crypt dialogue and finishes the quest. |
 | RJ6 | Reward: 5 quest points (cache). The Wiki's antique lamp is OPEN-QU9. |
 
-OPEN: OPEN-QU8 (cutscenes), OPEN-QU9, OPEN-QU14 (bushes do not deplete), OPEN-QU15 (Apothecary's potion shop). Drinking the
+OPEN: OPEN-QU8 (cutscenes), OPEN-QU9, OPEN-QU14 (bushes do not deplete), the Apothecary's potion shop opens from his dialogue. Drinking the
 cadava potion has no special handling (Wiki: outside the Apothecary the player "dares not"; at the Apothecary's they black out).

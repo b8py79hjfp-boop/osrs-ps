@@ -13,6 +13,6 @@ Code: `content/quests` `RuneMysteries`. Sources: OSRS Wiki /w/Rune_Mysteries, /w
 | RM4 | Sedridor takes the notes: quest complete. Reward: 1 quest point, 500 Runecraft XP (cache), the air talisman back, "Rune Essence Mine Access". Kudos (5) not implemented. |
 | RM5 | After the quest Sedridor's menu offers the information branches (Wiki "after Rune Mysteries"). |
 
-OPEN: OPEN-QU7 (essence mine teleport), OPEN-QU15 (Aubury's shop). The Duke's old standard text ("head wizard") differs from the
+OPEN: OPEN-QU7 (essence mine teleport). The Duke's old standard text ("head wizard") differs from the
 quest transcript; the quest transcript is used for the steps and the standard text for the unrelated options. Dragon-shield branch
 (Dragon Slayer I) of the Duke is not implemented.

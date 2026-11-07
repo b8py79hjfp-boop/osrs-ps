@@ -746,19 +746,43 @@ class World(
                 }
 
                 else -> {
-                    scriptsFor(target, option)
+                    scriptsFor(player, target, option)
                 }
             }
         player.interaction = Interaction(target, option, op, ap)
     }
 
-    private fun scriptsFor(target: InteractionTarget, option: Int): Pair<Script<Player>?, Script<Player>?> =
+    private fun scriptsFor(player: Player, target: InteractionTarget, option: Int): Pair<Script<Player>?, Script<Player>?> =
         when (target) {
             is InteractionTarget.Loc -> content.opLoc(target.id, option) to content.apLoc(target.id, option)
             is InteractionTarget.Obj -> content.opObj(target.id, option) to content.apObj(target.id, option)
-            is InteractionTarget.OfNpc -> content.opNpc(target.npc.type, option) to content.apNpc(target.npc.type, option)
+            is InteractionTarget.OfNpc -> player.npcScripts(target.npc.type, option)
             is InteractionTarget.OfPlayer -> content.opPlayer(option) to content.apPlayer(option)
         }
+
+    /** NPC op scripts: those of the type this player sees ([seenNpcType]) first, then the parent type's. */
+    private fun Player.npcScripts(type: Int, option: Int): Pair<Script<Player>?, Script<Player>?> {
+        val seen = seenNpcType(this, type)
+        val op = (if (seen != type && seen >= 0) content.opNpc(seen, option) else null) ?: content.opNpc(type, option)
+        val ap = (if (seen != type && seen >= 0) content.apNpc(seen, option) else null) ?: content.apNpc(type, option)
+        return op to ap
+    }
+
+    /**
+     * The NPC type [player] sees for [type]: a multi-NPC resolves through its varbit / varp (out of range = the last
+     * entry; -1 = invisible), as the client does (NpcType `multinpc`).
+     */
+    fun seenNpcType(player: Player, type: Int): Int {
+        val t = data.configs.npcs[type] ?: return type
+        val multi = t.multiNpcs ?: return type
+        val value =
+            when {
+                t.multiVarbit >= 0 -> player.vars.getBit(t.multiVarbit)
+                t.multiVarp >= 0 -> player.vars[t.multiVarp]
+                else -> -1
+            }
+        return if (value in 0 until multi.size - 1) multi[value] else multi.last()
+    }
 
     /**
      * Runs [block] as one atomic item transaction for [player] (brief §12). If [block] returns false or any step fails,

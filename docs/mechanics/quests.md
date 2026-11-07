@@ -44,9 +44,4 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 - **OPEN-QU12:** the ghost only moves the quest on once the quest has been started.
 - **OPEN-QU13:** Father Aereck's "Could you tell me more about Saradomin?" branch after the quest is not transcribed.
 - **OPEN-QU14:** picked wheat and cadava bushes do not deplete or respawn (Wiki wheat respawn 20).
-- **OPEN-QU15:** dialogues that open a shop ("Yes please!" at Aubury, "Can you make potions for me?") cannot: plugin-api has no
-  open-shop call; Aubury's Trade op is not reachable either, since the multi-NPC parent 2886 has no ops (engine has no multi-NPC
-  resolution).
-- Static ground spawns do not exist (`GroundObjs` only changes through item transactions), so the egg in the chicken coop, the
-  bucket in the cellar and the pot in the kitchen are missing: buy a bucket and pot at the general store; eggs have no source.
-- Not done: Cook-o-matic 100 range gate (Cooking), Recipe for Disaster hand-off, Kudos (Rune Mysteries reward), speedruns.
+- **QU15 (resolved):** dialogue answers that open a shop publish plugin-api `OpenShopRequest` (by NPC type, or by shop name for the Apothecary).

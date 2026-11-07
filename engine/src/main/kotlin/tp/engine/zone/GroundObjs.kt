@@ -38,6 +38,8 @@ class GroundObj internal constructor(
     owner: String?,
     internal val publicAt: Long,
     internal val despawnAt: Long,
+    /** Static spawn (G6): ticks until it reappears after being taken; 0 = an ordinary drop. */
+    internal val respawn: Int = 0,
 ) {
     var owner: String? = owner
         internal set
@@ -61,6 +63,15 @@ class GroundObjs internal constructor() {
     internal val events = HashMap<Int, MutableList<ZoneEvent>>()
     private val live = ArrayList<GroundObj>()
 
+    /** G6: taken static spawns and the ticks left until each reappears. */
+    private val respawning = LinkedHashMap<GroundObj, Int>()
+
+    /** G6: a world-owned obj that is always there (public, never despawns) and reappears [respawn] ticks after a take. */
+    fun spawnStatic(id: Int, count: Int, coord: CoordGrid, respawn: Int) {
+        require(respawn > 0) { "static spawns respawn" }
+        add(GroundObj(id, count, coord, null, -1, Long.MAX_VALUE, respawn))
+    }
+
     fun at(coord: CoordGrid): List<GroundObj> = byZone[ZoneKey.of(coord).packed]?.filter { it.coord == coord }.orEmpty()
 
     internal fun inZone(zone: ZoneKey): List<GroundObj> = byZone[zone.packed].orEmpty()
@@ -83,16 +94,19 @@ class GroundObjs internal constructor() {
         byZone[zone]?.remove(obj)
         live.remove(obj)
         event(zone, ZoneEvent(ZoneEvent.Kind.DEL, obj, obj.owner))
+        if (obj.respawn > 0) respawning[obj] = obj.respawn
     }
 
     /** Re-adds an obj removed in a rolled-back transaction. */
     internal fun restore(obj: GroundObj) {
+        respawning.remove(obj)
         obj.removed = false
         add(obj)
     }
 
     /** Timers: reveal private objs, despawn expired ones. Runs once per tick in post-tick. */
     internal fun process(tick: Long) {
+        if (respawning.isNotEmpty()) respawnDue()
         var i = 0
         while (i < live.size) {
             val obj = live[i]
@@ -107,6 +121,21 @@ class GroundObjs internal constructor() {
             }
             i++
         }
+    }
+
+    private fun respawnDue() {
+        val entries = respawning.entries.iterator()
+        val due = ArrayList<GroundObj>(0)
+        while (entries.hasNext()) {
+            val e = entries.next()
+            if (e.value > 1) {
+                e.setValue(e.value - 1)
+            } else {
+                entries.remove()
+                due += e.key
+            }
+        }
+        for (o in due) add(GroundObj(o.id, o.count, o.coord, null, -1, Long.MAX_VALUE, o.respawn))
     }
 
     private fun event(zone: Int, e: ZoneEvent) {

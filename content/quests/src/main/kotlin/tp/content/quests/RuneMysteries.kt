@@ -5,7 +5,9 @@ package tp.content.quests
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.EventBus
 import tp.plugin.NpcRef
+import tp.plugin.OpenShopRequest
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
@@ -21,7 +23,10 @@ import tp.symbols.Objs
  * Aubury, 6 finished (OPEN-QU1: only 0 and 6 are cache values). Dialogue is the Wiki "Transcript:Rune Mysteries".
  */
 public class RuneMysteries : ContentPlugin {
+    private lateinit var bus: EventBus
+
     override fun ContentScope.register() {
+        bus = events
         onOpNpc(Npcs.DUKE_OF_LUMBRIDGE, OP_TALK) { duke ->
             player.stopInteraction()
             dukeTalk(duke)
@@ -562,9 +567,8 @@ public class RuneMysteries : ContentPlugin {
         val pick = choice("Select an option", *options)
         when {
             pick == 1 -> {
-                // OPEN-QU15: no plugin-api call opens a shop from a dialogue; the shop plugin only answers the Trade op.
                 me("Yes please!")
-                p.message("Use the Trade option to buy runes.")
+                bus.publish(OpenShopRequest(p, Npcs.AUBURY_2OP))
             }
 
             deliver && pick == 2 -> {

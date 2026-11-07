@@ -5,7 +5,9 @@ package tp.content.quests
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.EventBus
 import tp.plugin.NpcRef
+import tp.plugin.OpenShopRequest
 import tp.plugin.PlayerScript
 import tp.plugin.choice
 import tp.symbols.Npcs
@@ -19,7 +21,10 @@ import tp.symbols.Objs
  * staged (OPEN-QU8): their dialogue plays in place.
  */
 public class RomeoAndJuliet : ContentPlugin {
+    private lateinit var bus: EventBus
+
     override fun ContentScope.register() {
+        bus = events
         onOpNpc(Npcs.ROMEO, OP_TALK) { romeo ->
             player.stopInteraction()
             romeoTalk(romeo)
@@ -1036,11 +1041,10 @@ public class RomeoAndJuliet : ContentPlugin {
     private suspend fun PlayerScript.apothecaryTalk(apothecary: NpcRef) {
         npc(apothecary, "I am the Apothecary. I brew potions. Do you need anything specific?")
         while (true) {
-            // OPEN-QU15: "Can you make potions for me?" opens a shop, which no plugin-api call does from a dialogue.
             when (choice("Select an option", "Can you make potions for me?", "Talk about something else.")) {
                 1 -> {
                     me("Can you make potions for me?")
-                    player.message("Use the Potions option to see what he sells.")
+                    bus.publish(OpenShopRequest(player, shopName = "Apothecary's Potions"))
                     return
                 }
 

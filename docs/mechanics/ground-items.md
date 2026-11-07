@@ -22,6 +22,7 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
 | G3 | Untradeable: never visible to others ("tradeable items appear to other players"); disappears after 300 ticks. | D |
 | G4 | Wilderness: non-consumables are public immediately; consumables despawn after 15 s = 25 ticks. **Not implemented** (needs the wilderness area check, Phase 4). | D |
 | G5 | Every drop and pick-up is an item transaction (atomic, journaled; brief §12). | brief |
+| G6 | Static item spawns (eggs, buckets, quest items lying around) are public, never despawn, and reappear a fixed time after being taken (per item; OPEN-G6: the Wiki rarely gives the time, so spawn data carries one, default 100 ticks). They are world-owned, so they are the one obj not created by a transaction; taking one is a normal transaction. | Wiki item spawn tables |
 
 Not modelled yet (D): the untradeable timer pauses while logged out and the obj follows the player between worlds;
 a dropped item becomes visible only to players who were logged in before it was dropped and stayed logged in.

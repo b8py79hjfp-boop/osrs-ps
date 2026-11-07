@@ -108,6 +108,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         bridge.clan(p, action.request()) { player, err -> PlayerRef(player).reply(err) }
     }
 
+    /** The NPC type this player sees [npc] as: a multi-NPC (Aubury, quest NPCs) resolves through the player's vars. */
+    public fun seenType(npc: NpcRef): Int = p.world.seenNpcType(p, npc.n.type)
+
     /** Sends a staff command to the hub (moderation, broadcasts, system update); the reply arrives as a game message. */
     public fun staffCommand(command: String, args: List<String>) {
         val bridge = p.world.accounts
@@ -725,6 +728,11 @@ public class WorldRef internal constructor(internal val w: World) {
         w.data.configs.dbRows
             .filter { it.tableId == table }
             .map { DbRowRef(it) }
+
+    /** A static ground item spawn (ground-items.md G6): always there, back [respawnTicks] after someone takes it. */
+    public fun spawnGroundObj(obj: Int, count: Int, at: CoordGrid, respawnTicks: Int) {
+        w.ground.spawnStatic(obj, count, at, respawnTicks)
+    }
 
     /** Spawns NPC [type] at [at], wandering up to [wanderRange] tiles from it (random-walk.md). */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
