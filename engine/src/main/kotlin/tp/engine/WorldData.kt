@@ -16,6 +16,8 @@ class WorldData(
     val locs: StaticLocs,
     /** Glyph advances (256) of the dialogue font `q8_full` (RuneLite `FontID.QUILL_8`); empty if absent. */
     val dialogueFont: IntArray = IntArray(0),
+    /** Obj gameval names (cache archive 24 group 0: file id = obj id, UTF-8 name), e.g. 440 -> `iron_ore`; empty if absent. */
+    val objGamevals: Map<Int, String> = emptyMap(),
 ) {
     companion object {
         /** Cache archive of font metrics (RuneLite `FontLoader`: 256 advance bytes + ascent). */
@@ -31,11 +33,29 @@ class WorldData(
 
         private const val BYTE_MASK = 0xFF
 
+        /** Cache archive of gameval names and its obj group (symbol-gen `FLAT`: group 0 = `Objs`). */
+        private const val GAMEVALS_ARCHIVE = 24
+        private const val GAMEVAL_OBJS = 0
+
+        fun objGamevals(cache: Js5Cache): Map<Int, String> {
+            val files = cache.readFiles(GAMEVALS_ARCHIVE, GAMEVAL_OBJS) ?: return emptyMap()
+            return (0 until files.size).associate { files.ids[it] to String(files.data[it], Charsets.UTF_8) }
+        }
+
+        /** The dialogue font's glyph advances ([dialogueFont]). */
+        fun dialogueFont(cache: Js5Cache): IntArray = font(cache, QUILL_8)
+
         /** Decodes configs, map, collision and the loc index from an open cache (keys.json beside the disk dir). */
         fun load(cache: Js5Cache, cacheDir: Path): WorldData {
             val configs = Configs.load(cache)
             val map = GameMap.load(cache, MapKeysLoader.load(cacheDir.resolveSibling("keys.json")))
-            return WorldData(configs, CollisionBuilder.build(map, configs.locs), StaticLocs.build(map, configs.locs), font(cache, QUILL_8))
+            return WorldData(
+                configs,
+                CollisionBuilder.build(map, configs.locs),
+                StaticLocs.build(map, configs.locs),
+                dialogueFont(cache),
+                objGamevals(cache),
+            )
         }
     }
 }

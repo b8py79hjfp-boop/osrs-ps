@@ -108,7 +108,12 @@ object WorldNode {
                         .of(".data", "runelite-static"),
                 )
         }.onFailure { logger.warn(it) { "could not write RuneLite static data" } }
-        return BootData(cache, configs, WorldData(configs, collision, StaticLocs.build(map, configs.locs)))
+        val locs = StaticLocs.build(map, configs.locs)
+        return BootData(
+            cache,
+            configs,
+            WorldData(configs, collision, locs, WorldData.dialogueFont(cache), WorldData.objGamevals(cache)),
+        )
     }
 
     /**

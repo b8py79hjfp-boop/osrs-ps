@@ -625,6 +625,26 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objName(obj: Int): String = p.world.objType(obj)?.name ?: "null"
 
+    /** The cache gameval name of [obj] (e.g. `iron_ore`), or "" when the cache has none. */
+    public fun objGameval(obj: Int): String =
+        p.world.data.objGamevals[obj]
+            .orEmpty()
+
+    /** Number of obj types in the cache (ids `0 until objTypeCount`). */
+    public val objTypeCount: Int get() = p.world.data.configs.objs.size
+
+    /** The stack-size variants of [obj] (cache `countobj`, e.g. coin piles); empty if none. */
+    public fun objCountVariants(obj: Int): IntArray =
+        p.world
+            .objType(obj)
+            ?.countObj
+            ?.filter { it > 0 && it != obj }
+            ?.toIntArray() ?: IntArray(0)
+
+    /** Whether [obj] is a note or a bought/placeholder template copy rather than a real item definition. */
+    public fun objIsTemplateCopy(obj: Int): Boolean =
+        p.world.objType(obj)?.let { it.isNoted || it.isPlaceholder || it.boughtTemplate != -1 } ?: true
+
     /** Cache name of NPC type [npc]. */
     public fun npcName(npc: Int): String =
         p.world.data.configs.npcs[npc]

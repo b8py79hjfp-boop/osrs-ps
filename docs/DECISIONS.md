@@ -1046,3 +1046,17 @@ Not available anywhere we can read: the names of the other ~7,900 cache scripts,
 script that needs one adds a line to the pack's own `cs2/symbols/*.sym` (types `varp`, `varc`, `param`, `if_script`, `dbcolumn`, ...) or
 extends `legacy.*` / `commands.*` here. `if_script` symbols are the server-side script crc as a signed int (the spawn menu needs
 `-880770536 ifscript_3414196760 int,int,string`).
+
+## D-075 `::spawn` is OpenRune's spawn menu, server side adapted to our plugin-api
+
+`content/dev/SpawnMenu.kt` adapts OpenRune `SpawnMenuScript` (ISC, attribution in the file header and the pack's NOTICE.md); the
+interface and client scripts are OpenRune's pack unchanged. Same rules: administrators only (staff level 2; `--admins` on the
+embedded hub), search on exact / prefix / substring of name or gameval with shortest label first, stack-size variants and
+note / placeholder copies left out (OpenRune also drops its server-only "dummy" items; the 242 cache has no such flag, so we
+additionally drop bought-template copies), quantity 1 / 100 / 1000 / X, note, bank and include-nulls toggles, auto-note when a
+non-stackable stack does not fit the backpack, and only what fits is added. Two deliberate differences: a card click is
+resolved by card index against the server's own result list rather than the obj the client names (§12), and only the click on
+the card's icon sub counts, since the card's onop script re-triggers op 1 on the icon and each click otherwise arrives twice
+(OpenRune ignores the obj-less one the same way). The gameval labels need obj gameval names at runtime, so `WorldData` now loads
+cache archive 24 group 0; `WorldNode` also now passes the dialogue font, which it had left empty (dialogue paging fell back to
+one page).
