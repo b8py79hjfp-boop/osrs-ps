@@ -200,7 +200,7 @@ def levels_of(v):
 # Callisto, Venenatis, Vet'ion (both forms), Artio, Calvar'ion (both forms), Spindel: content/pvp Lairs spawns them.
 # Misthalin Mystery's visible forms of Mandy (kitchen, outside) and the shady figure: content/quests QuestSpawnsB spawns their
 # multi-NPCs (7433, 7434, 7435) so the quest variable shows and hides them.
-CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638}
+CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638, 10570, 10571, 10576, 10612, 10613}  # last five: Tempoross plugin
 
 
 def main():

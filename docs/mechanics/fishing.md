@@ -146,7 +146,7 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
     (random 0 to X-1: 82+ greater siren, 67+ mottled eel, 52+ common tench, else bluegill, each if the levels allow), 1/2/3 ticks by
     distance, frenzied spots, golden tench and pearls. Needs the cormorant NPC and glove equipment, not present.
   - *Drift net fishing* (Fossil Island): needs the shoal NPCs, net locs and the tidal swim; not present.
-  - *Tempoross*: a full minigame (instanced boat area, waves, fires, totem poles, harpoonfish, Spirit pool); not started.
+  - *Tempoross*: implemented, see tempoross.md.
   - *Fishing Trawler* (sea turtle, manta ray), Sailing trawling/boat fishing, Leechfin, Chambers of Xeric fish: minigames and Sailing
     systems absent.
   - Sacred eel dissecting (Zulrah's scales), infernal eel hammering (onyx bolt tips), barehanded fishing, the dragon harpoon's
