@@ -3,8 +3,10 @@ package tp.content.gameframe
 import tp.content.gameframe.BankLayout.MAIN
 import tp.plugin.AppearanceChanged
 import tp.plugin.ButtonClick
+import tp.plugin.ConsumeRequest
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.EquipRequest
 import tp.plugin.EventBus
 import tp.plugin.IfEvents
 import tp.plugin.InvView
@@ -13,7 +15,9 @@ import tp.plugin.PlayerRef
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
+import tp.symbols.Objs
 import tp.symbols.Varbits
+import tp.symbols.Varps
 
 /**
  * The bank (docs/mechanics/bank.md): `bankmain` (12) as the main modal with `bankside` (15) over the backpack, inv 95.
@@ -44,35 +48,37 @@ public class Bank : ContentPlugin {
         registerSettings()
         onButtonDrag(Components.Bankmain.ITEMS) { d -> dragItem(d) }
         onButtonDrag(Components.Bankmain.TABS) { d ->
-            if (d.toComponent == Components.Bankmain.TABS) BankDrag.moveTab(this, d.fromSlot - TAB_CHILD_FIRST, d.toSlot - TAB_CHILD_FIRST)
+            // Only a numbered tab (children 11..19) can be dragged, and only onto another tab (script 506 builds them).
+            val from = d.fromSlot - TAB_CHILD_FIRST
+            val to = d.toSlot - TAB_CHILD_FIRST
+            if (d.toComponent == Components.Bankmain.TABS) BankDrag.moveTab(this, from, to)
         }
         onButtonDrag(Components.Bankside.ITEMS) { d ->
-            if (d.toComponent ==
-                Components.Bankside.ITEMS
-            ) {
-                swapInv(Invs.INV, d.fromSlot, d.toSlot)
-            }
+            if (d.toComponent == Components.Bankside.ITEMS) swapInv(Invs.INV, d.fromSlot, d.toSlot)
         }
     }
 
     /**
-     * B10–B12 (RS Mod `dragMainInv` / `dragIntoTab`): onto another item -> swap or insert by `bank_insertmode`; onto a
-     * tab's "extended" slot past the last bank slot or onto a tab button -> move to the end of that tab.
+     * B10-B12 (client scripts 506 and 278; RS Mod `dragMainInv` / `dragIntoTab`): onto another slot of the grid -> swap or
+     * insert by `bank_insertmode`; onto a tab button (`bankmain:tabs` child 10 = main, 11..19 = tabs 1..9) -> move to the
+     * end of that tab. Slots and children come from the client and are checked by [BankDrag].
      */
     private fun PlayerRef.dragItem(d: tp.plugin.ButtonDrag) {
-        val last = inv(Invs.BANK, stackAll = true).size - 1
         when (d.toComponent) {
             Components.Bankmain.TABS -> {
-                val tab = d.toSlot - TAB_CHILD_FIRST
-                BankDrag.intoTab(this, d.fromSlot, if (d.toSlot == TAB_CHILD_MAIN) MAIN else tab)
+                val tab =
+                    when (d.toSlot) {
+                        TAB_CHILD_MAIN -> MAIN
+                        in TAB_CHILD_FIRST..TAB_CHILD_LAST -> d.toSlot - TAB_CHILD_FIRST
+                        else -> return
+                    }
+                BankDrag.intoTab(this, d.fromSlot, tab)
             }
 
+            // A drop on no slot (-1) does nothing; a drop on an empty slot past the last item is [BankDrag]'s "move to the end".
             Components.Bankmain.ITEMS -> {
-                val extended = last + EXTENDED_FIRST..last + EXTENDED_LAST
-                if (d.toSlot in extended) {
-                    // RS Mod: tab index = target - first extended slot; 0 = main, n = numbered tab n.
-                    val index = d.toSlot - extended.first
-                    BankDrag.intoTab(this, d.fromSlot, if (index == 0) MAIN else index - 1)
+                if (d.toSlot < 0) {
+                    return
                 } else if (varbit(Varbits.BANK_INSERTMODE) == 1) {
                     BankDrag.insert(this, d.fromSlot, d.toSlot)
                 } else {
@@ -85,8 +91,8 @@ public class Bank : ContentPlugin {
     /** Swaps two backpack slots (bank side drag; RS Mod `dragSideInv` / `invMoveToSlot`). */
     private fun PlayerRef.swapInv(invId: Int, from: Int, to: Int) {
         val size = inv(invId).size
-        if (from !in 0 until size || to !in 0 until size || from == to) return
-        transaction("inv drag") { swap(invId, from, to) }
+        val valid = from in 0 until size && to in 0 until size && from != to
+        if (bankOpen() && valid) transaction("inv drag") { swap(invId, from, to) }
     }
 
     private fun ContentScope.registerSettings() {
@@ -105,6 +111,14 @@ public class Bank : ContentPlugin {
         onButton(Components.Bankmain.DEPOSITINV_TOGGLE) { toggle(Varbits.BANK_HIDEDEPOSITINV) }
         onButton(Components.Bankmain.DEPOSITWORN_TOGGLE) { toggle(Varbits.BANK_HIDEDEPOSITWORN) }
         onButton(Components.Bankmain.RELEASE_PLACEHOLDERS) { releasePlaceholders(0, Int.MAX_VALUE) }
+        // Bank fillers: the amount buttons set `bank_fillermode` (client script 2210 / enum 1907: children 1, 10, 50, X = 1..4,
+        // All = anything else, RS Mod `BankFillerMode` 0), "Fill" adds them.
+        onButton(Components.Bankmain.BANK_FILLER_1) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_ONE) }
+        onButton(Components.Bankmain.BANK_FILLER_10) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_TEN) }
+        onButton(Components.Bankmain.BANK_FILLER_50) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_FIFTY) }
+        onButton(Components.Bankmain.BANK_FILLER_X) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_X) }
+        onButton(Components.Bankmain.BANK_FILLER_ALL) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_ALL) }
+        onButton(Components.Bankmain.BANK_FILLER_CONFIRM) { fill() }
     }
 
     // ---- opening and closing
@@ -119,22 +133,87 @@ public class Bank : ContentPlugin {
         SideInventory.openPair(this, Interfaces.BANKMAIN, Interfaces.BANKSIDE)
         enableEvents()
         ifText(Components.Bankmain.CAPACITY, capacity(inv(Invs.BANK, stackAll = true)).toString())
-        ModalWatch.start(this, Interfaces.BANKMAIN, onClose = { SideInventory.restore(this) })
+        // RS Mod `onBankOpen`: the capacity tooltip (client script 1495 takes the text, the hover layer and the tooltip box).
+        clientScript(CS_TOOLTIP, CAPACITY_TOOLTIP, Components.Bankmain.CAPACITY_LAYER, Components.Bankmain.TOOLTIP)
+        // The extra backpack ops and the worn items page follow the backpack and the worn items, which change while the
+        // bank is open (wield from the bank, eating, deposits): they are compared once per tick and redone on a change.
+        val seen = IntArray(inv(Invs.INV).size + WornBonusPanel.WORN_SLOTS)
+        refreshView(seen, force = true)
+        ModalWatch.start(
+            this,
+            Interfaces.BANKMAIN,
+            whileOpen = { refreshView(seen, force = false) },
+            onClose = { SideInventory.restore(this) },
+        )
     }
 
-    /** IF_SETEVENTS of every bank component with item ops, as RS Mod `BankOpenScript.setBankIfEvents` sends them. */
+    /**
+     * Sets the backpack column's extra-op bits (varps `if2` = wear, `if3` = eat / drink, read by client script 2576 for
+     * the ninth op) and the worn items page texts, if the backpack or the worn items differ from [seen].
+     */
+    private fun PlayerRef.refreshView(seen: IntArray, force: Boolean) {
+        val backpack = inv(Invs.INV)
+        val worn = inv(Invs.WORN)
+        var changed = force
+        for (i in 0 until backpack.size) {
+            if (seen[i] != backpack.obj(i)) {
+                seen[i] = backpack.obj(i)
+                changed = true
+            }
+        }
+        for (i in 0 until WornBonusPanel.WORN_SLOTS) {
+            if (seen[backpack.size + i] != worn.obj(i)) {
+                seen[backpack.size + i] = worn.obj(i)
+                changed = true
+            }
+        }
+        if (!changed) return
+        setBanksideExtraOps(backpack)
+        WornBonusPanel.show(this, WORN_PAGE)
+    }
+
+    /**
+     * Script 2576, per backpack slot: bit n of varp 262 = a wearable obj whose wear op (obj param 148, default 2) is a
+     * Wield / Wear / Equip text; bit n of varp 263 = food or a potion (iop1 "Eat" / "Drink"). Varps 261 (rune and essence
+     * pouches, coal bag: "Empty" / "Fill") and 264 ("Fill") stay clear: OPEN-B4b.
+     */
+    private fun PlayerRef.setBanksideExtraOps(backpack: InvView) {
+        var wear = 0
+        var consume = 0
+        for (slot in 0 until backpack.size) {
+            val obj = backpack.obj(slot)
+            if (obj < 0) continue
+            if (wearOp(obj)) {
+                wear = wear or (1 shl slot)
+            } else if (consumeOp(obj)) {
+                consume = consume or (1 shl slot)
+            }
+        }
+        setVarp(Varps.IF1, 0)
+        setVarp(Varps.IF2, wear)
+        setVarp(Varps.IF3, consume)
+        setVarp(Varps.IF4, 0)
+    }
+
+    private fun PlayerRef.wearOp(obj: Int): Boolean {
+        if (objWearPos(obj) < 0) return false
+        val index = objParam(obj, PARAM_WEAR_OP_INDEX, DEFAULT_WEAR_OP_INDEX) - 1
+        return objIop(obj, index)?.lowercase() in WEAR_VERBS
+    }
+
+    private fun PlayerRef.consumeOp(obj: Int): Boolean = objIop(obj, 0)?.lowercase() in CONSUME_VERBS
+
+    /** IF_SETEVENTS of every bank component with item ops (client scripts 278, 297, 506, 507; RS Mod `setBankIfEvents`). */
     private fun PlayerRef.enableEvents() {
         val bankSize = inv(Invs.BANK, stackAll = true).size
         val last = bankSize - 1
-        ifEvents(Components.Bankmain.ITEMS, 0..last, ALL_OPS or IfEvents.DEPTH2 or IfEvents.DRAG_TARGET)
-        // The client builds extra drop targets after the last slot: one per tab to drop into, and the "new tab" slots.
-        ifEvents(Components.Bankmain.ITEMS, last + TAB_OP_SLOTS_FIRST..last + TAB_OP_SLOTS_LAST, IfEvents.op(1))
-        ifEvents(Components.Bankmain.ITEMS, last + EXTENDED_FIRST..last + EXTENDED_LAST, IfEvents.DRAG_TARGET)
+        // The grid's children are exactly the inv's slots; nothing is created after the last one in rev 242 (OPEN-B8).
+        ifEvents(Components.Bankmain.ITEMS, 0..last, MAIN_OPS or IfEvents.DEPTH2 or IfEvents.DRAG_TARGET)
         val mainTab = IfEvents.op(1) or IfEvents.op(OP_RELEASE) or IfEvents.DRAG_TARGET
         ifEvents(Components.Bankmain.TABS, TAB_CHILD_MAIN..TAB_CHILD_MAIN, mainTab)
         val otherTabs = mainTab or IfEvents.op(OP_COLLAPSE) or IfEvents.DEPTH1
         ifEvents(Components.Bankmain.TABS, TAB_CHILD_FIRST..TAB_CHILD_LAST, otherTabs)
-        ifEvents(Components.Bankside.ITEMS, 0 until inv(Invs.INV).size, ALL_OPS or IfEvents.DEPTH1 or IfEvents.DRAG_TARGET)
+        ifEvents(Components.Bankside.ITEMS, 0 until inv(Invs.INV).size, SIDE_OPS or IfEvents.DEPTH1 or IfEvents.DRAG_TARGET)
         ifEvents(Components.Bankmain.INCINERATOR_CONFIRM, 1..bankSize, IfEvents.op(1))
         ifEvents(Components.Bankmain.DROPDOWN_CONTENT, 0..DROPDOWN_LAST, IfEvents.op(1))
     }
@@ -155,6 +234,7 @@ public class Bank : ContentPlugin {
         }
         if (!validSlot(bank, slot, obj)) return
         if (isPlaceholder(obj)) return clearSlots("bank release placeholder", listOf(slot))
+        if (obj == Objs.BANK_FILLER) return fillerOp(click.op, slot)
         val have = bank.count(slot)
         when (click.op) {
             OP_LEFT -> withdraw(slot, obj, leftClickQuantity(), placeholder = false)
@@ -235,12 +315,38 @@ public class Bank : ContentPlugin {
         if (!validSlot(inv(Invs.INV), slot, obj)) return
         when (click.op) {
             OP_SIDE_LEFT -> depositOne(slot, obj, leftClickQuantity())
+
             OP_SIDE_ONE -> depositOne(slot, obj, 1)
+
             OP_SIDE_FIVE -> depositOne(slot, obj, FIVE)
+
             OP_SIDE_TEN -> depositOne(slot, obj, TEN)
+
             OP_SIDE_LAST_X -> depositOne(slot, obj, lastQuantity())
+
             OP_SIDE_X -> askQuantity { n -> depositOne(slot, obj, n) }
+
             OP_SIDE_ALL -> depositOne(slot, obj, Int.MAX_VALUE)
+
+            OP_SIDE_EXTRA -> extraOp(slot, obj)
+
+            // Op 10 is "Lock-slot" while deposit locks are on (script 297); they are not implemented, so it is Examine.
+            OP_SIDE_EXAMINE -> Examines.item(this, obj, inv(Invs.INV).count(slot))
+        }
+    }
+
+    /**
+     * The backpack column's ninth op (script 2576 shows the obj's wear or eat / drink text): the request goes to
+     * content/combat as [EquipRequest] / [ConsumeRequest], which must act without closing the bank (OPEN-B4). A request
+     * nobody handles does nothing.
+     */
+    private fun PlayerRef.extraOp(slot: Int, obj: Int) {
+        if (!bankOpen() || varbit(Varbits.BANK_HIDESIDEOPS) == 1) return
+        val events = bus ?: return
+        if (wearOp(obj)) {
+            events.publish(EquipRequest(this, Invs.INV, slot, obj))
+        } else if (consumeOp(obj)) {
+            events.publish(ConsumeRequest(this, Invs.INV, slot, obj))
         }
     }
 
@@ -379,6 +485,8 @@ public class Bank : ContentPlugin {
         val obj = worn.obj(wornSlot)
         if (obj < 0 || !bankOpen()) return
         when (click.op) {
+            OP_WORN_EXAMINE -> Examines.item(this, obj, worn.count(wornSlot))
+
             // Op 1 removes to the backpack through the worn tab's own handler; op 2 deposits into the bank.
             1 -> dispatchButton(WORN_COMPONENTS.first { it.slot == wornSlot }.wornTab, 1)
 
@@ -427,6 +535,49 @@ public class Bank : ContentPlugin {
         val slots = (from until last).filter { isPlaceholder(bank.obj(it)) }
         if (slots.isEmpty()) return message("You don't have any placeholders to release.")
         clearSlots("bank release placeholders", slots)
+    }
+
+    // ---- bank fillers
+
+    /** A bank filler's ops (script 278): "Clear" removes this one, "Clear-All" every filler of the bank. */
+    private fun PlayerRef.fillerOp(op: Int, slot: Int) {
+        val bank = inv(Invs.BANK, stackAll = true)
+        when (op) {
+            OP_FILLER_CLEAR -> {
+                clearSlots("bank clear filler", listOf(slot))
+            }
+
+            // OPEN-B9: RS Mod asks "Clear all fillers?" first (popup overlay + client script 4212), which needs a callback API.
+            OP_FILLER_CLEAR_ALL -> {
+                clearSlots("bank clear fillers", (0 until BankLayout.used(bank)).filter { bank.obj(it) == Objs.BANK_FILLER })
+            }
+        }
+    }
+
+    /** The "Fill" button: adds the fillers of the selected amount (RS Mod `addBankFillers`). */
+    private fun PlayerRef.fill() {
+        if (!bankOpen()) return
+        when (varbit(Varbits.BANK_FILLERMODE)) {
+            FILLER_ONE -> addFillers(1)
+            FILLER_TEN -> addFillers(TEN)
+            FILLER_FIFTY -> addFillers(FIFTY)
+            FILLER_X -> countDialog("Enter amount:") { n -> addFillers(n) }
+            else -> addFillers(Int.MAX_VALUE)
+        }
+    }
+
+    /**
+     * Puts up to [requested] fillers, one per slot, into the free slots after the last item of the main tab, within the
+     * capacity ("Bank fillers will now fill only the accessible part of your bank", Wiki "Bank", 5 October 2017).
+     */
+    private fun PlayerRef.addFillers(requested: Int) {
+        if (!bankOpen() || requested <= 0) return
+        val bank = inv(Invs.BANK, stackAll = true)
+        val used = BankLayout.used(bank)
+        val count = minOf(requested, capacity(bank) - used)
+        if (count <= 0) return message("Your bank is already full, so there is no reason to add any bank fillers.")
+        if (!transaction("bank fillers") { (0 until count).all { setAt(Invs.BANK, used + it, Objs.BANK_FILLER, 1) } }) return
+        message("You add $count bank ${if (count == 1) "filler" else "fillers"} to your bank.")
     }
 
     // ---- tabs
@@ -537,8 +688,9 @@ public class Bank : ContentPlugin {
         const val QTY_ALL = 4
 
         /**
-         * Withdraw ops on the bank grid (RS Mod `mainInvWithdraw`): left-click quantity, 1, 5, 10, last X, X, All,
-         * All-but-1, All and leave a placeholder.
+         * Withdraw ops on the bank grid, numbered as client script 278 / 669 set them (rev 242 has "Configure-Charges" as op 9,
+         * which moves the placeholder op to 10 and Examine to 11 against RS Mod): left-click quantity, 1, 5, 10, last X, X,
+         * All, All-but-1.
          */
         const val OP_LEFT = 1
         const val OP_ONE = 2
@@ -548,7 +700,13 @@ public class Bank : ContentPlugin {
         const val OP_X = 6
         const val OP_ALL = 7
         const val OP_ALL_BUT_ONE = 8
-        const val OP_PLACEHOLDER = 9
+
+        /** Op 9 "Configure-Charges" (bank item options, `bank_bankops_toggle_on`): OPEN-B14, not handled. */
+        const val OP_PLACEHOLDER = 10
+
+        /** A bank filler's own ops (script 278): "Clear" one, "Clear-All". */
+        const val OP_FILLER_CLEAR = 7
+        const val OP_FILLER_CLEAR_ALL = 8
 
         /** Deposit ops on the backpack grid (RS Mod `sideInvOp`): left-click quantity, 1, 5, 10, last X, X, All. */
         const val OP_SIDE_LEFT = 2
@@ -559,8 +717,13 @@ public class Bank : ContentPlugin {
         const val OP_SIDE_X = 7
         const val OP_SIDE_ALL = 8
 
-        /** Button op 10 on item grids is "Examine" (RS Mod `BankInvScript`). */
-        const val OP_EXAMINE = 10
+        /** "Examine" is op 11 on the bank grid (script 278) and op 10 on the backpack column and the worn column (script 297). */
+        const val OP_EXAMINE = 11
+        const val OP_SIDE_EXAMINE = 10
+        const val OP_WORN_EXAMINE = 10
+
+        /** The backpack column's ninth op (script 297 / 2576): wield, wear, eat or drink without leaving the bank. */
+        const val OP_SIDE_EXTRA = 9
 
         /** Tab ops: 6 collapses a tab, 7 releases its placeholders (RS Mod `selectTab`). */
         const val OP_COLLAPSE = 6
@@ -571,18 +734,62 @@ public class Bank : ContentPlugin {
         const val TAB_CHILD_FIRST = 11
         const val TAB_CHILD_LAST = 19
 
-        /** Sub-components after the last bank slot that carry ops / drag targets (RS Mod `setBankIfEvents`). */
-        const val TAB_OP_SLOTS_FIRST = 10
-        const val TAB_OP_SLOTS_LAST = 18
-        const val EXTENDED_FIRST = 19
-        const val EXTENDED_LAST = 28
-
         /** Rows of the tab display dropdown (`bankmain:dropdown_content` children 0..8; RS Mod `setBankIfEvents`). */
         const val DROPDOWN_LAST = 8
         val TAB_DISPLAY_CHILDREN = setOf(1, 3, 5)
 
-        /** Ops 1..10 (RS Mod `setBankIfEvents` enables Op1..Op10 on the item grids). */
-        val ALL_OPS: Long = (1..10).fold(0L) { acc, op -> acc or IfEvents.op(op) }
+        /** Ops 1..11 of the bank grid (scripts 278 / 669 set up to op 11) and 1..10 of the backpack column (script 297). */
+        val MAIN_OPS: Long = (1..OP_EXAMINE).fold(0L) { acc, op -> acc or IfEvents.op(op) }
+        val SIDE_OPS: Long = (1..OP_SIDE_EXAMINE).fold(0L) { acc, op -> acc or IfEvents.op(op) }
+
+        /**
+         * `bank_fillermode` values: client script 2213 shows 1..4 as "1", "10", "50", "X" and anything else as "All"
+         * (RS Mod `BankFillerMode`).
+         */
+        const val FILLER_ALL = 0
+        const val FILLER_ONE = 1
+        const val FILLER_TEN = 2
+        const val FILLER_FIFTY = 3
+        const val FILLER_X = 4
+
+        /** Amounts of the filler modes that have a fixed one (the wiki: "quantities of 1, 10, 50, X or All"). */
+        const val FIFTY = 50
+
+        /** Client script `tooltip` (cache script 1495: text, hover layer, tooltip box; RS Mod `ClientScripts.tooltip`). */
+        const val CS_TOOLTIP = 1495
+
+        /** RS Mod `BankOpenScript.onBankOpen` (members' 800, up to 400 more from a banker: OPEN-B1). */
+        const val CAPACITY_TOOLTIP = "Members' capacity: 800<br>A banker can sell you up to 400 more."
+
+        /** Obj param 148 `wear_op_index`: the 1-based iop that equips the obj (cache default 2); script 2576. */
+        const val PARAM_WEAR_OP_INDEX = 148
+        const val DEFAULT_WEAR_OP_INDEX = 2
+        val WEAR_VERBS = setOf("wield", "wear", "equip")
+        val CONSUME_VERBS = setOf("eat", "drink")
+
+        /** The bank's worn items page (`bankmain:stabatt` ...; names as RS Mod `BankInterfaces`, defence lines named as their text). */
+        val WORN_PAGE =
+            BonusComponents(
+                stab = Components.Bankmain.STABATT,
+                slash = Components.Bankmain.SLASHATT,
+                crush = Components.Bankmain.CRUSHATT,
+                magic = Components.Bankmain.MAGICATT,
+                range = Components.Bankmain.RANGEATT,
+                speedBase = Components.Bankmain.ATTACKSPEEDBASE,
+                speedActual = Components.Bankmain.ATTACKSPEEDACTUAL,
+                defStab = Components.Bankmain.STABDEF,
+                defSlash = Components.Bankmain.SLASHDEF,
+                defCrush = Components.Bankmain.CRUSHDEF,
+                defMagic = Components.Bankmain.MAGICDEF,
+                defRange = Components.Bankmain.RANGEDEF,
+                meleeStrength = Components.Bankmain.MELEESTRENGTH,
+                rangedStrength = Components.Bankmain.RANGESTRENGTH,
+                magicDamage = Components.Bankmain.MAGICDAMAGE,
+                prayer = Components.Bankmain.PRAYER,
+                undead = Components.Bankmain.TYPEMULTIPLIER,
+                slayer = Components.Bankmain.SLAYERMULTIPLIER,
+                tooltip = Components.Bankmain.TOOLTIP,
+            )
 
         /** Worn slot (inv 94 position), its component in `bankmain` and its slot component in the worn tab. */
         class WornSlot(val slot: Int, val bankTab: Int, val wornTab: Int)

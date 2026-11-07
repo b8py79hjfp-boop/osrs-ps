@@ -64,6 +64,25 @@ public class Teleported(public val player: PlayerRef, public val from: tp.util.C
 /** [player] wielded / wore [obj] into worn slot [slot]. */
 public class Equipped(public val player: PlayerRef, public val obj: Int, public val slot: Int) : Event
 
+/**
+ * Asks the equipment module to wield / wear / equip [obj] from [slot] of inventory [invId] without closing the interface
+ * the request came from (the bank's backpack column, where a modal must stay open). The handler checks that [slot]
+ * holds [obj], does what the backpack "Wield" op would, but skips the interrupt that closes the modal, and sets [handled].
+ */
+public class EquipRequest(public val player: PlayerRef, public val invId: Int, public val slot: Int, public val obj: Int) : Event {
+    /** Set by the handler; false after publishing means nobody handles equip requests. */
+    public var handled: Boolean = false
+}
+
+/**
+ * As [EquipRequest] for eating or drinking [obj] in [slot] of inventory [invId] (the food / potion module; the backpack
+ * "Eat" / "Drink" op without the modal-closing interrupt).
+ */
+public class ConsumeRequest(public val player: PlayerRef, public val invId: Int, public val slot: Int, public val obj: Int) : Event {
+    /** Set by the handler; false after publishing means nobody handles consume requests. */
+    public var handled: Boolean = false
+}
+
 /** [player] used the emote named [name] in the emote tab (e.g. "Cheer"); locked emotes are refused after this. */
 public class EmotePerformed(public val player: PlayerRef, public val name: String) : Event
 

@@ -398,9 +398,9 @@ files; each KDoc names the RS Mod function it follows.
   world start into id-keyed maps, so a click is one lookup; an id-specific handler wins; `onOpNpcNamed` wins over
   `onOpNpcOption`), `IfEvents.DEPTH2`, and `PlayerRef.objStackable / isPlaceholder / placeholderOf / placeholderTarget`. The
   cache has no content groups for "bank booth", so names stand in for RS Mod's `content.bank_booth` / `content.banker`.
-- **Not ported** (bank.md "Not implemented"): wear/eat extra ops (content/combat's wield interrupts and would close the
-  modal), fillers, potion store, tags, PIN, confirmation popups, sold slots, worn-bonus texts. Drag operations are written but
-  unreachable until IF_BUTTOND is delivered to content (OPEN-B7).
+- **Not ported at first** (bank.md "Not implemented"): potion store, PIN, confirmation popups, sold slots. Later done: drags
+  (onButtonDrag), fillers, worn-bonus texts, wear / eat / drink from the bank (plugin-api EquipRequest / ConsumeRequest,
+  handled by content/combat without closing the bank).
 
 ## D-030 — Teleports in their own module; backpack item ops by text; chatbox option menu
 

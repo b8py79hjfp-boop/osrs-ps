@@ -168,24 +168,38 @@ internal object Consumables {
     /** Whether [obj] is a potion (for "Empty"). */
     fun isPotion(obj: Int): Boolean = obj in potions
 
-    fun consume(player: PlayerRef, slot: Int, obj: Int): Boolean {
+    fun consume(player: PlayerRef, slot: Int, obj: Int, interrupts: Boolean = true): Boolean {
         val food = foods[obj]
         if (food != null) {
-            if (player.duelRule(tp.plugin.DuelRules.NO_FOOD)) player.message(DuelChecks.NO_FOOD) else eat(player, slot, obj, food)
+            if (player.duelRule(
+                    tp.plugin.DuelRules.NO_FOOD,
+                )
+            ) {
+                player.message(DuelChecks.NO_FOOD)
+            } else {
+                eat(player, slot, obj, food, interrupts)
+            }
             return true
         }
         val (potion, next) = potions[obj] ?: return false
-        if (player.duelRule(tp.plugin.DuelRules.NO_DRINKS)) player.message(DuelChecks.NO_DRINKS) else drink(player, slot, obj, next, potion)
+        if (player.duelRule(
+                tp.plugin.DuelRules.NO_DRINKS,
+            )
+        ) {
+            player.message(DuelChecks.NO_DRINKS)
+        } else {
+            drink(player, slot, obj, next, potion, interrupts)
+        }
         return true
     }
 
-    private fun eat(player: PlayerRef, slot: Int, obj: Int, food: Food) {
+    private fun eat(player: PlayerRef, slot: Int, obj: Int, food: Food, interrupts: Boolean) {
         val now = player.tick
         // E3: a karambwan uses its own clock (it can follow other food in the same tick); other food the food clock.
         val clock = if (food.karambwan) Attr.KARAMBWAN_CLOCK else Attr.FOOD_CLOCK
         if ((player[clock] ?: 0L) > now) return
         if (!player.transaction("eat") { removeAt(Invs.INV, slot, obj, 1) }) return
-        player.interrupt() // interactions.md I7: inventory item actions interrupt
+        if (interrupts) player.interrupt() // interactions.md I7: inventory item actions interrupt (not from the bank)
         player[Attr.FOOD_CLOCK] = now + EAT_DELAY
         if (food.karambwan) {
             // E3b (brief §8): a karambwan blocks food, potions and karambwans for 3 ticks.
@@ -203,11 +217,11 @@ internal object Consumables {
         player.events.publish(tp.plugin.Consumed(player, obj, drink = false))
     }
 
-    private fun drink(player: PlayerRef, slot: Int, obj: Int, next: Int, potion: Potion) {
+    private fun drink(player: PlayerRef, slot: Int, obj: Int, next: Int, potion: Potion, interrupts: Boolean) {
         val now = player.tick
         if ((player[Attr.POTION_CLOCK] ?: 0L) > now) return
         if (!player.transaction("drink") { replaceAt(Invs.INV, slot, obj, next) }) return
-        player.interrupt()
+        if (interrupts) player.interrupt()
         player[Attr.POTION_CLOCK] = now + POTION_DELAY
         potion.effect(player)
         player.anim(Seqs.HUMAN_EAT) // potions use the eat animation (seq 829)

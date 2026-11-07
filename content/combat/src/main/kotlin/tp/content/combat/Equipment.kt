@@ -23,6 +23,7 @@ internal fun unequip(player: PlayerRef, slot: Int): Boolean {
 
 /** Weapon-dependent state and the appearance after worn slot [pos] changed. */
 internal fun PlayerRef.afterChange(pos: Int) {
+    this[LAST_WEAPON] = worn(Wear.WEAPON)
     if (pos == Wear.WEAPON || pos == Wear.SHIELD) {
         setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
         // Switching weapons turns the special attack bar off (RS Mod `resetSpecialAttack` on weapon change).
@@ -33,6 +34,9 @@ internal fun PlayerRef.afterChange(pos: Int) {
     }
     Appearance.refresh(this)
 }
+
+/** The weapon the weapon state was last computed for (bank.md B6). */
+internal val LAST_WEAPON = tp.plugin.AttrKey<Int>("last_weapon_obj")
 
 /** Appearance = worn objs + combat level + icons; sent whenever any of them change. */
 internal object Appearance {
@@ -53,8 +57,21 @@ internal object Appearance {
 public class Equipment : ContentPlugin {
     override fun ContentScope.register() {
         events.on<AppearanceChanged> {
+            // A weapon changed by another module (worn deposit from the bank) refreshes the weapon state (bank.md B6).
+            if (it.player.worn(Wear.WEAPON) != it.player[LAST_WEAPON]) it.player.afterChange(Wear.WEAPON)
             Appearance.refresh(it.player)
             RunEffects.graceful(it.player)
+        }
+        // bank.md B4: Wear / Eat / Drink from the bank's backpack column, without closing the bank.
+        events.on<tp.plugin.EquipRequest> { r ->
+            val p = r.player
+            if (r.invId != Invs.INV || p.inv(Invs.INV).obj(r.slot) != r.obj || p.objWearPos(r.obj) < 0) return@on
+            r.handled = true
+            p.wield(r.slot, r.obj, interrupts = false)
+        }
+        events.on<tp.plugin.ConsumeRequest> { r ->
+            if (r.invId != Invs.INV || r.player.inv(Invs.INV).obj(r.slot) != r.obj) return@on
+            r.handled = Consumables.consume(r.player, r.slot, r.obj, interrupts = false)
         }
         onWorldStart { Consumables.load(this) }
         onLogin {
@@ -88,8 +105,9 @@ public class Equipment : ContentPlugin {
         if (transaction("empty") { replaceAt(Invs.INV, slot, obj, Objs.VIAL_EMPTY) }) message("You empty the vial.")
     }
 
-    private fun PlayerRef.wield(slot: Int, obj: Int) {
-        interrupt()
+    private fun PlayerRef.wield(slot: Int, obj: Int, interrupts: Boolean = true) {
+        // Wielding from the bank's backpack column (bank.md B4) keeps the bank open.
+        if (interrupts) interrupt()
         val pos = objWearPos(obj)
         val twoHanded = pos == Wear.WEAPON && objWearPos2(obj) == Wear.SHIELD
         if (!meetsRequirements(obj)) return

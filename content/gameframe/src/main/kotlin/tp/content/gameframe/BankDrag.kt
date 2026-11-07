@@ -11,9 +11,10 @@ import kotlin.math.abs
  * Rearranging the bank by dragging (docs/mechanics/bank.md B10-B12). The operations act on the packed layout of
  * [BankLayout]: a drag moves slots with swaps inside one item transaction and then updates the tab sizes. Slots come
  * straight from a client packet, so each operation re-checks them against the occupied range.
- * Called from IF_BUTTOND in [Bank] as RS Mod's `onIfModalDrag` maps it: `bankmain:items` onto `bankmain:items` ->
- * [swap] or [insert] by varbit `bank_insertmode`; onto a slot past the last bank slot or onto `bankmain:tabs` ->
- * [intoTab]; `bankmain:tabs` onto `bankmain:tabs` -> [moveTab].
+ * Called from `Bank`'s `onButtonDrag` handlers (the client's IF_BUTTOND; client scripts 278 and 506 create the draggable
+ * grid slots and tab buttons): `bankmain:items` onto `bankmain:items` -> [swap] or [insert] by varbit `bank_insertmode`;
+ * `bankmain:items` onto `bankmain:tabs` (child 10 = main, 11..19 = tabs 1..9, the first empty one is the "New tab" slot)
+ * -> [intoTab]; `bankmain:tabs` onto `bankmain:tabs` -> [moveTab].
  */
 internal object BankDrag {
     /** Swap mode: the two slots trade places; tab sizes do not change (RS Mod `dragMainInvSwap`). */
