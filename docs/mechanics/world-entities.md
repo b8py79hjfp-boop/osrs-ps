@@ -34,7 +34,7 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
 
 ## Verified
 
-In the real client: a raft (config 1, deck copied from the template zone at (1496, 4512), level 1) spawned in the sea
+In the real client: a boat deck (config 1, deck copied from the template zone at (1496, 4512), level 1 — that zone is the Pandemonium intro boat, "Will and Anne's boat"; the player raft is at x 3843, z 6458..6460, see docs/plans/sailing.md §2.4) spawned in the sea
 off Port Sarim with the player on board. Moving it north and west carried the player and camera along, and the sail
 turned with the angle. A loc added to the deck after it was shown (WE6) and an NPC spawned on the deck (WE7) both
 showed on the raft.
