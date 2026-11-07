@@ -13,10 +13,12 @@ import tp.plugin.HitEvent
 import tp.plugin.HitStyle
 import tp.plugin.PlayerRef
 import tp.plugin.SharedAttrs
+import tp.plugin.SpellRunes
 import tp.plugin.TimerId
 import tp.symbols.Components
 import tp.symbols.Invs
 import tp.symbols.Objs
+import tp.symbols.Varbits
 
 /**
  * Wilderness PvP rules (docs/mechanics/wilderness.md): single-way PJ timers, skulls, the combat logout lock, Tele Block,
@@ -34,6 +36,10 @@ public class PvpCombat : ContentPlugin {
         onButton(Components.Worldswitcher.LOGOUT) { requestLogout() }
         onButton(Components.Worldswitcher.BUTTONS) { click -> requestHop(click.slot) }
         onButton(Components.Magic_Spellbook.VENGEANCE) { castVengeance() }
+        onApPlayerT(Components.Magic_Spellbook.VENGEANCE_OTHER) { target ->
+            if (currentApRange != VENG_OTHER_RANGE) return@onApPlayerT apRange(VENG_OTHER_RANGE)
+            player.castVengeanceOther(target)
+        }
         onApPlayerT(Components.Magic_Spellbook.TELEPORT_BLOCK) { target ->
             if (currentApRange != SPELL_RANGE) {
                 apRange(SPELL_RANGE)
@@ -182,25 +188,42 @@ public class PvpCombat : ContentPlugin {
     // ---- spells
 
     private fun PlayerRef.castVengeance() {
-        if (baseLevel(MAGIC) < VENG_LEVEL) {
-            message("You need a Magic level of $VENG_LEVEL to cast this spell.")
-            return
+        if (!payVengeance(VENG_LEVEL, VENG_RUNES, VENG_XP)) return
+        this[VENGEANCE] = true
+    }
+
+    /**
+     * Vengeance Other (Wiki "Vengeance Other": Magic 93, astral 3 + death 2 + earth 10, 108 xp, the shared 30-second
+     * cooldown): gives [target] the same reflection, if their Accept Aid setting is on and they have none yet.
+     */
+    private fun PlayerRef.castVengeanceOther(target: PlayerRef) {
+        // Wiki: not in a single-combat part of the Wilderness (OPEN text); the player-owned-house rule is OPEN-VO1.
+        if (this[SharedAttrs.IN_WILDERNESS] == true && this[SharedAttrs.IN_MULTI] != true) return message("You can't cast that here.")
+        if (target.varbit(Varbits.OPTION_ACCEPTAID) == 0) return message("That player is not accepting aid.")
+        if (target[VENGEANCE] == true) return message("That player already has vengeance cast on them.")
+        if (!payVengeance(VENG_OTHER_LEVEL, VENG_OTHER_RUNES, VENG_OTHER_XP)) return
+        face(target)
+        target[VENGEANCE] = true
+        target.message("You have the power of vengeance!")
+    }
+
+    /** Level, the shared cooldown (W9) and the runes (staves and combination runes count); true once paid. */
+    private fun PlayerRef.payVengeance(level: Int, runes: List<Pair<Int, Int>>, xp: Double): Boolean {
+        if (baseLevel(MAGIC) < level) {
+            message("You need a Magic level of $level to cast this spell.")
+            return false
         }
         if ((this[VENG_COOLDOWN_UNTIL] ?: 0L) > tick) {
             message("You can only cast vengeance spells every 30 seconds.")
-            return
+            return false
         }
-        val paid =
-            transaction("vengeance") {
-                remove(Invs.INV, Objs.ASTRALRUNE, 4) && remove(Invs.INV, Objs.DEATHRUNE, 2) &&
-                    remove(Invs.INV, Objs.EARTHRUNE, 10)
-            }
-        if (!paid) {
+        if (!transaction("vengeance") { SpellRunes.take(this, this@payVengeance, runes) }) {
             message("You do not have enough runes to cast this spell.")
-            return
+            return false
         }
-        this[VENGEANCE] = true
         this[VENG_COOLDOWN_UNTIL] = tick + VENG_COOLDOWN
+        addXp(MAGIC, xp)
+        return true
     }
 
     /**
@@ -267,6 +290,16 @@ public class PvpCombat : ContentPlugin {
         /** Vengeance: 30 s cooldown = 50 ticks; Magic 94 (Vengeance page). */
         const val VENG_COOLDOWN = 50
         const val VENG_LEVEL = 94
+        val VENG_RUNES = listOf(Objs.ASTRALRUNE to 4, Objs.DEATHRUNE to 2, Objs.EARTHRUNE to 10)
+
+        /** Wiki "Vengeance": 112 xp. */
+        const val VENG_XP = 112.0
+
+        /** Wiki "Vengeance Other": Magic 93, astral 3 + death 2 + earth 10, 108 xp; cast like a spell at range 10. */
+        const val VENG_OTHER_LEVEL = 93
+        val VENG_OTHER_RUNES = listOf(Objs.ASTRALRUNE to 3, Objs.DEATHRUNE to 2, Objs.EARTHRUNE to 10)
+        const val VENG_OTHER_XP = 108.0
+        const val VENG_OTHER_RANGE = 10
         const val MAGIC = 6
 
         const val RECOIL_TOTAL = 40

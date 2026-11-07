@@ -109,7 +109,7 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 - **OPEN-MU14:** Enchant Crossbow Bolt: the Wiki says the spell opens an interface to choose among up to 10 bolt spells; the cache's interface symbols have no such interface and the chatbox menu is capped at 6 options. Not implemented.
 - **OPEN-MU15:** Stat Spy (interface 523 `dream_player_stats`, client scripts not traced).
 - **OPEN-MU16:** whether a combination rune is consumed when only one of its two elements is needed (SP2).
-- **OPEN-MU17:** Vengeance is handled by content/pvp (`PvpCombat`); Vengeance Other is not implemented (needs the same hook for another player).
+- **OPEN-MU17:** resolved: Vengeance Other is in content/pvp (`PvpCombat`, wilderness.md W9a); its refusal messages are ours (the Wiki gives none).
 - **OPEN-MU18:** Heal Group (level 95, divides up to 75% of the healer's hitpoints between up to five injured players, 90 second cooldown shared with Heal Other).
 - **OPEN-MU19:** Resurrect Crops (level 78; success 50% at 78 Magic to 75% at 99; failure clears the patch) needs farming patch internals in content/skills.
 - **OPEN-MU20:** Mark of Darkness, the demonbanes, Ward of Arceuus, the grasps, corruption spells, Vile Vigour, Dark Lure, Death Charge, Skeletal / Ghostly / Undead Grasp and the thrall spells: combat or timers outside this task. Degrime and the Sinister / Demonic Offerings (Arceuus utility spells) are also not done.
