@@ -1,0 +1,508 @@
+npc	name	mode
+239	King Black Dragon	1
+304	Salarin the twisted	1
+319	Corporeal Beast	1
+494	Kraken	1
+499	Thermonuclear smoke devil	1
+600	Barrelchest	1
+625	Evil spirit	1
+642	Arrg	1
+643	Arrg	1
+682	Damis	1
+683	Damis	1
+763	Giant Roc	1
+785	Me	1
+786	Me	1
+797	Giant Scarab	1
+798	Giant Scarab	1
+817	Elvarg	1
+823	Melzar the Mad	1
+882	Slash Bash	1
+891	Moss Guardian	1
+911	Agrith Naar	1
+963	Kalphite Queen	1
+965	Kalphite Queen	1
+980	Dagannoth mother	1
+981	Dagannoth mother	1
+982	Dagannoth mother	1
+983	Dagannoth mother	1
+984	Dagannoth mother	1
+985	Dagannoth mother	1
+986	Dagannoth mother	1
+987	Dagannoth mother	1
+988	Dagannoth mother	1
+990	Sigmund	1
+991	Sigmund	1
+992	Sigmund	1
+993	Sigmund	1
+994	Sigmund	1
+1075	Tolna	1
+1076	Tolna	1
+1077	Tolna	1
+1101	Giant Sea Snake	1
+1213	General Khazard	1
+1224	Bouncer	1
+1227	Arzinian Avatar of Strength	1
+1228	Arzinian Avatar of Strength	1
+1229	Arzinian Avatar of Strength	1
+1230	Arzinian Avatar of Ranging	1
+1231	Arzinian Avatar of Ranging	1
+1232	Arzinian Avatar of Ranging	1
+1233	Arzinian Avatar of Magic	1
+1234	Arzinian Avatar of Magic	1
+1235	Arzinian Avatar of Magic	1
+1362	Slagilith	1
+1364	Slagilith	1
+1443	Jungle Demon	1
+1672	Ahrim the Blighted	1
+1673	Dharok the Wretched	1
+1674	Guthan the Infested	1
+1675	Karil the Tainted	1
+1676	Torag the Corrupted	1
+1677	Verac the Defiled	1
+2042	Zulrah	1
+2043	Zulrah	1
+2044	Zulrah	1
+2054	Chaos Elemental	1
+2205	Commander Zilyana	1
+2215	General Graardor	1
+2265	Dagannoth Supreme	1
+2266	Dagannoth Prime	1
+2267	Dagannoth Rex	1
+2642	King Black Dragon	1
+3127	TzTok-Jad	1
+3129	K'ril Tsutsaroth	1
+3162	Kree'arra	1
+3400	Culinaromancer	1
+3456	Fareed	1
+3458	Kamil	1
+3459	Dessous	1
+3460	Dessous	1
+3473	The Inadequacy	1
+3474	The Everlasting	1
+3475	The Untouchable	1
+3476	The Illusive	1
+3481	Count Draynor	1
+3482	Count Draynor	1
+3508	Bouncer	1
+3509	Bouncer	1
+3527	Sir Mordred	1
+3616	Treus Dayth	1
+3897	Koschei the deathless	1
+3898	Koschei the deathless	1
+3899	Koschei the deathless	1
+3900	Koschei the deathless	1
+3922	The Draugen	1
+3962	Nezikchened	1
+4067	Black Knight Titan	1
+4130	Dad	1
+4303	Kalphite Queen	1
+4304	Kalphite Queen	1
+4315	Sea Troll Queen	1
+4328	Sigmund	1
+4483	Gadderanks	1
+4484	Gadderanks	1
+4485	Gadderanks	1
+4500	Ulfric	1
+4682	Sir Leye	1
+4742	Black golem	1
+4743	White golem	1
+4744	Grey golem	1
+4797	Slug Prince	1
+4849	Culinaromancer	1
+4872	Culinaromancer	1
+4873	Culinaromancer	1
+4874	Culinaromancer	1
+4875	Culinaromancer	1
+4876	Culinaromancer	1
+4877	Culinaromancer	1
+4878	Culinaromancer	1
+4879	Culinaromancer	1
+4880	Agrith-Na-Na	1
+4881	Flambeed	1
+4882	Karamel	1
+4883	Dessourt	1
+4884	Gelatinnoth Mother	1
+4885	Gelatinnoth Mother	1
+4886	Gelatinnoth Mother	1
+4887	Gelatinnoth Mother	1
+4888	Gelatinnoth Mother	1
+4889	Gelatinnoth Mother	1
+4987	Chronozon	1
+5079	Delrith	1
+5129	Glod	1
+5139	Sigmund	1
+5142	Sigmund	1
+5143	Sigmund	1
+5144	Sigmund	1
+5145	Sigmund	1
+5146	Sigmund	1
+5329	Sigmund	1
+5775	Penance Queen	1
+5779	Giant Mole	1
+5822	Ice Troll King	1
+5862	Cerberus	1
+5863	Cerberus	1
+5866	Cerberus	1
+5886	Abyssal Sire	1
+5887	Abyssal Sire	1
+5888	Abyssal Sire	1
+5889	Abyssal Sire	1
+5890	Abyssal Sire	1
+5891	Abyssal Sire	1
+5908	Abyssal Sire	1
+6342	Barrelchest	1
+6343	Giant Scarab	1
+6344	Dessous	1
+6345	Kamil	1
+6346	Damis	1
+6347	Damis	1
+6348	Fareed	1
+6349	Elvarg	1
+6350	The Inadequacy	1
+6351	The Everlasting	1
+6352	The Untouchable	1
+6354	Chronozon	1
+6355	Bouncer	1
+6356	Ice Troll King	1
+6358	Glod	1
+6359	Treus Dayth	1
+6360	Black Knight Titan	1
+6361	Dagannoth mother	1
+6362	Dagannoth mother	1
+6363	Dagannoth mother	1
+6364	Dagannoth mother	1
+6365	Dagannoth mother	1
+6366	Dagannoth mother	1
+6368	Culinaromancer	1
+6369	Agrith-Na-Na	1
+6370	Flambeed	1
+6371	Karamel	1
+6372	Dessourt	1
+6373	Gelatinnoth Mother	1
+6374	Gelatinnoth Mother	1
+6375	Gelatinnoth Mother	1
+6376	Gelatinnoth Mother	1
+6377	Gelatinnoth Mother	1
+6378	Gelatinnoth Mother	1
+6379	Nezikchened	1
+6381	Me	1
+6382	Jungle Demon	1
+6384	Giant Roc	1
+6385	Slagilith	1
+6386	Moss Guardian	1
+6388	Agrith Naar	1
+6391	Dad	1
+6392	Arrg	1
+6393	Count Draynor	1
+6476	Tarn	1
+6492	Kree'arra	1
+6493	Commander Zilyana	1
+6494	General Graardor	1
+6495	K'ril Tsutsaroth	1
+6496	Dagannoth Supreme	1
+6497	Dagannoth Prime	1
+6498	Dagannoth Rex	1
+6499	Giant Mole	1
+6500	Kalphite Queen	1
+6501	Kalphite Queen	1
+6502	King Black Dragon	1
+6503	Callisto	1
+6504	Venenatis	1
+6505	Chaos Elemental	1
+6506	TzTok-Jad	1
+6609	Callisto	1
+6610	Venenatis	1
+6611	Vet'ion	1
+6612	Vet'ion	1
+6615	Scorpia	1
+6618	Crazy archaeologist	1
+6619	Chaos Fanatic	1
+7101	Glough	1
+7102	Glough	1
+7103	Glough	1
+7221	Scurrius	1
+7222	Scurrius	1
+7286	Skotizo	1
+7416	Obor	1
+7526	Vanguard	1
+7527	Vanguard	1
+7528	Vanguard	1
+7529	Vanguard	1
+7530	Vespula	1
+7531	Vespula	1
+7532	Vespula	1
+7540	Tekton	1
+7541	Tekton	1
+7542	Tekton	1
+7545	Tekton	1
+7561	Muttadile	1
+7562	Muttadile	1
+7563	Muttadile	1
+7566	Vasa Nistirio	1
+7567	Vasa Nistirio	1
+7584	Ice demon	1
+7585	Ice demon	1
+7706	TzKal-Zuk	1
+7806	Deranged archaeologist	1
+7851	Dusk	1
+7852	Dawn	1
+7853	Dawn	1
+7854	Dusk	1
+7855	Dusk	1
+7883	Dusk	1
+7884	Dawn	1
+7885	Dawn	1
+7886	Dusk	1
+7887	Dusk	1
+7888	Dusk	1
+7889	Dusk	1
+8058	Vorkath	1
+8059	Vorkath	1
+8060	Vorkath	1
+8061	Vorkath	1
+8094	Galvek	1
+8095	Galvek	1
+8096	Galvek	1
+8097	Galvek	1
+8098	Galvek	1
+8177	Galvek	1
+8178	Galvek	1
+8179	Galvek	1
+8195	Bryophyta	1
+8340	Xarpus	1
+8354	Nylocas Vasilias	1
+8355	Nylocas Vasilias	1
+8356	Nylocas Vasilias	1
+8357	Nylocas Vasilias	1
+8359	Pestilent Bloat	1
+8360	The Maiden of Sugadinti	1
+8361	The Maiden of Sugadinti	1
+8362	The Maiden of Sugadinti	1
+8363	The Maiden of Sugadinti	1
+8369	Verzik Vitur	1
+8370	Verzik Vitur	1
+8371	Verzik Vitur	1
+8372	Verzik Vitur	1
+8373	Verzik Vitur	1
+8374	Verzik Vitur	1
+8375	Verzik Vitur	1
+8387	Sotetseg	1
+8388	Sotetseg	1
+8583	Hespori	1
+8615	Alchemical Hydra	1
+8616	Alchemical Hydra	1
+8617	Alchemical Hydra	1
+8618	Alchemical Hydra	1
+8619	Alchemical Hydra	1
+8620	Alchemical Hydra	1
+8621	Alchemical Hydra	1
+8622	Alchemical Hydra	1
+8633	The Mimic	1
+8713	Sarachnis	1
+9021	Crystalline Hunllef	1
+9022	Crystalline Hunllef	1
+9023	Crystalline Hunllef	1
+9024	Crystalline Hunllef	1
+9035	Corrupted Hunllef	1
+9036	Corrupted Hunllef	1
+9037	Corrupted Hunllef	1
+9038	Corrupted Hunllef	1
+9049	Zalcano	1
+9050	Zalcano	1
+9416	Phosani's Nightmare	1
+9417	Phosani's Nightmare	1
+9418	Phosani's Nightmare	1
+9419	Phosani's Nightmare	1
+9420	Phosani's Nightmare	1
+9421	Phosani's Nightmare	1
+9422	Phosani's Nightmare	1
+9424	Phosani's Nightmare	1
+9425	The Nightmare	1
+9426	The Nightmare	1
+9427	The Nightmare	1
+9428	The Nightmare	1
+9429	The Nightmare	1
+9430	The Nightmare	1
+9431	The Nightmare	1
+9432	The Nightmare	1
+9433	The Nightmare	1
+9460	The Nightmare	1
+9635	Gadderanks	1
+10768	Xarpus	1
+10772	Xarpus	1
+10786	Nylocas Vasilias	1
+10787	Nylocas Vasilias	1
+10788	Nylocas Vasilias	1
+10789	Nylocas Vasilias	1
+10807	Nylocas Vasilias	1
+10808	Nylocas Vasilias	1
+10809	Nylocas Vasilias	1
+10810	Nylocas Vasilias	1
+10812	Pestilent Bloat	1
+10813	Pestilent Bloat	1
+10814	The Maiden of Sugadinti	1
+10822	The Maiden of Sugadinti	1
+10830	Verzik Vitur	1
+10831	Verzik Vitur	1
+10832	Verzik Vitur	1
+10833	Verzik Vitur	1
+10834	Verzik Vitur	1
+10835	Verzik Vitur	1
+10836	Verzik Vitur	1
+10847	Verzik Vitur	1
+10848	Verzik Vitur	1
+10849	Verzik Vitur	1
+10850	Verzik Vitur	1
+10851	Verzik Vitur	1
+10852	Verzik Vitur	1
+10853	Verzik Vitur	1
+10864	Sotetseg	1
+10865	Sotetseg	1
+10867	Sotetseg	1
+10868	Sotetseg	1
+10953	Xamphur	1
+10954	Xamphur	1
+10955	Xamphur	1
+10956	Xamphur	1
+11153	Phosani's Nightmare	1
+11154	Phosani's Nightmare	1
+11155	Phosani's Nightmare	1
+11192	Hespori	1
+11246	Revenant maledictus	1
+11278	Nex	1
+11279	Nex	1
+11280	Nex	1
+11281	Nex	1
+11282	Nex	1
+11719	Kephri	1
+11721	Kephri	1
+11730	Zebak	1
+11732	Zebak	1
+11753	Elidinis' Warden	1
+11754	Elidinis' Warden	1
+11755	Elidinis' Warden	1
+11756	Tumeken's Warden	1
+11757	Tumeken's Warden	1
+11758	Tumeken's Warden	1
+11761	Elidinis' Warden	1
+11762	Tumeken's Warden	1
+11763	Elidinis' Warden	1
+11764	Tumeken's Warden	1
+11778	Ba-Ba	1
+11779	Ba-Ba	1
+11780	Ba-Ba	1
+11789	Akkha	1
+11790	Akkha	1
+11791	Akkha	1
+11792	Akkha	1
+11793	Akkha	1
+11794	Akkha	1
+11795	Akkha	1
+11796	Akkha	1
+11992	Artio	1
+11993	Calvar'ion	1
+11994	Calvar'ion	1
+11998	Spindel	1
+12025	General Khazard	1
+12026	General Khazard	1
+12027	General Khazard	1
+12054	General Khazard	1
+12055	General Khazard	1
+12056	General Khazard	1
+12057	General Khazard	1
+12058	General Khazard	1
+12059	General Khazard	1
+12077	Phantom Muspah	1
+12078	Phantom Muspah	1
+12079	Phantom Muspah	1
+12080	Phantom Muspah	1
+12082	Phantom Muspah	1
+12166	Duke Sucellus	1
+12167	Duke Sucellus	1
+12191	Duke Sucellus	1
+12192	Duke Sucellus	1
+12193	Duke Sucellus	1
+12194	Duke Sucellus	1
+12195	Duke Sucellus	1
+12196	Duke Sucellus	1
+12204	The Whisperer	1
+12205	The Whisperer	1
+12206	The Whisperer	1
+12207	The Whisperer	1
+12214	The Leviathan	1
+12215	The Leviathan	1
+12219	The Leviathan	1
+12223	Vardorvis	1
+12224	Vardorvis	1
+12228	Vardorvis	1
+12425	Vardorvis	1
+12426	Vardorvis	1
+12439	Dagannoth Rex	1
+12440	King Black Dragon	1
+12441	Dagannoth Supreme	1
+12442	Dagannoth Prime	1
+12443	Kree'arra	1
+12444	General Graardor	1
+12445	Commander Zilyana	1
+12446	K'ril Tsutsaroth	1
+12447	Dharok the Wretched	1
+12596	Branda the Fire Queen	1
+12821	Sol Heredit	1
+13011	Blood Moon	1
+13012	Eclipse Moon	1
+13013	Blue Moon	1
+13656	Vardorvis	1
+13657	Cerberus	1
+13659	Thermonuclear smoke devil	1
+13661	TzTok-Jad	1
+13668	Araxxor	1
+13685	Amoxliatl	1
+13686	Amoxliatl	1
+14009	The Hueycoatl	1
+14010	The Hueycoatl	1
+14011	The Hueycoatl	1
+14012	The Hueycoatl	1
+14013	The Hueycoatl	1
+14147	Eldric the Ice King	1
+14176	Yama	1
+14707	Doom of Mokhaiotl	1
+14779	Gemstone Crab	1
+14860	Shellbane gryphon	1
+15010	Shellbane gryphon	1
+15548	Scurrius	1
+15549	Phantom Muspah	1
+15551	Tumeken's Warden	1
+15552	Elidinis' Warden	1
+15554	Sol Heredit	1
+15555	Yama	1
+15556	Pestilent Bloat	1
+15618	Kalphite Queen	1
+15626	Brutus	1
+15627	Brutus	1
+15628	Demonic Brutus	1
+15629	Demonic Brutus	1
+15742	Maggot King	1
+16204	Lowerniel Drakan	1
+16305	Mad Angel	1
+16307	Mad Angel	1
+16309	Mad Angel	1
+16311	Mad Angel	1
+16640	Bork	1
+16641	The Smorks	1
+16643	Dagon'hai Elder	1
+16644	Dagon'hai Elder	1
+16645	Dagon'hai Monk	1
+16646	Dagon'hai Monk	1
+16647	Dagon'hai Monk	1
+16648	Dagon'hai Monk	1
+16652	Ezekiel	1
+16659	Archive Guardian	1
+16665	Dreadnoth the Jellied	1
+16667	Moia	1
+16673	Ocellus	1
+16674	Ocellus	1
+16675	Ocellus	1
+16676	Ocellus	1
+16677	Ocellus	1
+16684	Xarth	1

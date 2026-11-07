@@ -49,6 +49,12 @@ public class DevCommands : ContentPlugin {
         onCommand("npc") { args ->
             args.getOrNull(0)?.toIntOrNull()?.let { world?.spawnNpc(it, CoordGrid(coord.x + 1, coord.z, coord.level), 0) }
         }
+        // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
+        onCommand("fight") { args ->
+            val type = args.getOrNull(0)?.toIntOrNull() ?: return@onCommand
+            val npc = npcsWithin(coord, FIGHT_RADIUS).filter { it.type == type }.minByOrNull { it.coord.chebyshev(coord) }
+            if (npc == null) message("No such NPC nearby.") else interact(npc, ATTACK_OP)
+        }
         onCommand("empty") {
             val inv = inv(Invs.INV)
             transaction("dev ::empty") {
@@ -88,6 +94,9 @@ public class DevCommands : ContentPlugin {
     }
 
     private companion object {
+        const val FIGHT_RADIUS = 15
+        const val ATTACK_OP = 2
+
         /** Arceuus, the last spellbook varbit value. */
         const val LAST_SPELLBOOK = 3
         const val STAT_COUNT = 24

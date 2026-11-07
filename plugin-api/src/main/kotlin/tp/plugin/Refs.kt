@@ -467,6 +467,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.InteractionMode(world, tileMode, entityMode))
     }
 
+    /** Sets [component]'s colour to [rgb] (0xRRGGBB; the client keeps 5 bits per channel). */
+    public fun ifColour(component: Int, rgb: Int) {
+        p.session.send(ServerMessage.IfColour(component, rgb))
+    }
+
     /** Shows or hides packed [component]. */
     public fun ifHide(component: Int, hidden: Boolean) {
         p.session.send(ServerMessage.IfHide(component, hidden))

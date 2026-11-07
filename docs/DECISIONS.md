@@ -961,3 +961,9 @@ The report window (G7) sends SEND_SNAPSHOT (name, rule, mute). The world validat
 grep; there is no report queue in the hub yet, because nothing reviews one. A staff member's "mute" is the only report that acts: it
 calls the hub's audit-logged `ModerationService.apply(MUTE, 48 h)`. A hub report table is a later addition when a review tool exists.
 
+## D-069 Code adapted from OpenRune-Server
+
+OpenRune-Server (ISC, Copyright (c) 2025 RS Mod; an RS Mod fork) is a reference repo from now on, cloned outside the repo. The
+boss health bar (`content/combat/BossHpBar.kt`) adapts its `BossHpBarScript` (varps, colours, client script sequence, timings) and
+keeps the ISC notice in the file header. Where the cache disagrees (script 2102's argument order) the cache wins.
+

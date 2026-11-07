@@ -17,6 +17,7 @@ import net.rsprot.protocol.game.outgoing.interfaces.IfCloseSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfMoveSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenTop
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetColour
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetEventsV2
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetHide
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetObject
@@ -403,6 +404,15 @@ internal class RspSession(
                     IfCloseSub(message.destination)
                 }
 
+                is ServerMessage.IfColour -> {
+                    IfSetColour(
+                        message.component,
+                        message.rgb shr RED_SHIFT and BYTE shr TO_5BIT,
+                        message.rgb shr GREEN_SHIFT and BYTE shr TO_5BIT,
+                        message.rgb and BYTE shr TO_5BIT,
+                    )
+                }
+
                 is ServerMessage.MoveSub -> {
                     IfMoveSub(message.from, message.to)
                 }
@@ -701,3 +711,9 @@ private fun scriptArgType(arg: Any): Char =
         is Long -> '\u00CF'
         else -> 'i'
     }
+
+/** IF_SETCOLOUR takes 5 bits per channel: 0xRRGGBB channel >> 3. */
+private const val RED_SHIFT = 16
+private const val GREEN_SHIFT = 8
+private const val BYTE = 0xFF
+private const val TO_5BIT = 3

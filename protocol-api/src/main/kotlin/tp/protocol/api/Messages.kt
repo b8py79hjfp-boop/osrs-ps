@@ -225,6 +225,9 @@ sealed interface ServerMessage {
     /** Moves the interface open in component [from] to component [to] (IF_MOVESUB; a toplevel switch). */
     data class MoveSub(val from: Int, val to: Int) : ServerMessage
 
+    /** IF_SETCOLOUR: [rgb] (0xRRGGBB, sent as 15-bit 5:5:5) on [component]. */
+    data class IfColour(val component: Int, val rgb: Int) : ServerMessage
+
     /** Closes whatever is open in [destination] (packed component). */
     data class CloseSub(val destination: Int) : ServerMessage
 
