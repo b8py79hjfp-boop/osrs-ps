@@ -1,0 +1,193 @@
+salvage	section	item	qty_min	qty_max	num	den
+Small salvage	Pre-roll	Boat bottle (empty)	1	1	1	750
+Small salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	2000
+Small salvage	Pre-roll	Rusty locket	1	1	1	3000
+Small salvage	Shipbuilding	Bronze bar	1	1	200	1721
+Small salvage	Shipbuilding	Bronze nails	1	5	200	1721
+Small salvage	Shipbuilding	Logs	1	1	200	1721
+Small salvage	Shipbuilding	Iron nails	1	5	100	1721
+Small salvage	Shipbuilding	Plank	1	1	100	1721
+Small salvage	Shipbuilding	Oak logs	1	1	100	1721
+Small salvage	Shipbuilding	Sawmill coupon (wood plank)	1	1	100	1721
+Small salvage	Shipbuilding	Iron bar	1	1	50	1721
+Small salvage	Shipbuilding	Oak plank	1	1	50	1721
+Small salvage	Shipbuilding	Sawmill coupon (oak plank)	1	1	50	1721
+Small salvage	Shipbuilding	Steel bar	1	1	1	1721
+Small salvage	Runes and ammunition	Air rune	1	10	100	1721
+Small salvage	Runes and ammunition	Water rune	1	10	100	1721
+Small salvage	Runes and ammunition	Bronze cannonball	2	7	100	1721
+Small salvage	Runes and ammunition	Iron cannonball	2	7	50	1721
+Small salvage	Runes and ammunition	Steel arrow	1	5	20	1721
+Small salvage	Other	Coins	1	200	100	1721
+Small salvage	Other	Bones	1	1	100	1721
+Small salvage	Tertiary	clue:beginner	1	1	1	300
+Small salvage	Tertiary	Soup	1	1	1	800000
+Fishy salvage	Pre-roll	clue:easy	1	1	1	300
+Fishy salvage	Pre-roll	Boat bottle (empty)	1	1	1	750
+Fishy salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	1500
+Fishy salvage	Pre-roll	Mouldy block	1	1	1	3000
+Fishy salvage	Shipbuilding	Oak logs	1	1	40	467
+Fishy salvage	Shipbuilding	Oak plank	1	1	20	467
+Fishy salvage	Shipbuilding	Sawmill coupon (oak plank)	1	1	20	467
+Fishy salvage	Shipbuilding	Logs	1	1	20	467
+Fishy salvage	Shipbuilding	Iron bar	1	1	20	467
+Fishy salvage	Shipbuilding	Iron nails	1	5	20	467
+Fishy salvage	Shipbuilding	Steel nails	1	5	10	467
+Fishy salvage	Shipbuilding	Plank	1	1	10	467
+Fishy salvage	Shipbuilding	Steel bar	1	1	1	467
+Fishy salvage	Fishing	Feather	15	200	40	467
+Fishy salvage	Fishing	Fishing bait	20	100	40	467
+Fishy salvage	Fishing	Raw lobster	1	1	40	467
+Fishy salvage	Fishing	Raw mackerel	1	1	40	467
+Fishy salvage	Fishing	Raw swordfish	1	1	40	467
+Fishy salvage	Fishing	Fishing rod	1	1	2	467
+Fishy salvage	Fishing	Harpoon	1	1	2	467
+Fishy salvage	Fishing	Lobster pot	1	1	2	467
+Fishy salvage	Other	Seaweed	1	1	40	467
+Fishy salvage	Other	Bronze cannonball	2	7	40	467
+Fishy salvage	Other	Iron cannonball	1	5	20	467
+Fishy salvage	Tertiary	Soup	1	1	1	800000
+Barracuda salvage	Pre-roll	Boat bottle (empty)	1	1	1	500
+Barracuda salvage	Pre-roll	Dull knife	1	1	1	3000
+Barracuda salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	1000
+Barracuda salvage	Seeds	Flax seed	1	3	500	28401
+Barracuda salvage	Seeds	Hemp seed	1	3	125	28401
+Barracuda salvage	Shipbuilding	Swamp paste	1	10	5000	28401
+Barracuda salvage	Shipbuilding	Oak logs	1	1	5000	28401
+Barracuda salvage	Shipbuilding	Teak logs	1	1	3750	28401
+Barracuda salvage	Shipbuilding	Steel nails	1	5	2500	28401
+Barracuda salvage	Shipbuilding	Teak repair kit	1	1	2500	28401
+Barracuda salvage	Shipbuilding	Rope	1	1	1250	28401
+Barracuda salvage	Shipbuilding	Oak plank	1	1	1250	28401
+Barracuda salvage	Shipbuilding	Copper ore	1	1	500	28401
+Barracuda salvage	Shipbuilding	Teak plank	1	1	250	28401
+Barracuda salvage	Shipbuilding	Lead ore	1	1	25	28401
+Barracuda salvage	Fish	Raw swordfish	1	1	500	28401
+Barracuda salvage	Fish	Raw shark	1	1	250	28401
+Barracuda salvage	Fish	Raw marlin	1	1	1	28401
+Barracuda salvage	Other	Rum	1	1	2500	28401
+Barracuda salvage	Other	Banana	1	1	1250	28401
+Barracuda salvage	Other	Steel cannonball	2	7	1250	28401
+Barracuda salvage	Tertiary	clue:medium	1	1	1	300
+Barracuda salvage	Tertiary	Soup	1	1	1	800000
+Large salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	500
+Large salvage	Pre-roll	Facility bottle (empty)	1	1	1	1000
+Large salvage	Pre-roll	Broken compass	1	1	1	3000
+Large salvage	Shipbuilding	Steel nails	1	5	200	2218
+Large salvage	Shipbuilding	Teak logs	1	1	200	2218
+Large salvage	Shipbuilding	Oak plank	1	1	50	2218
+Large salvage	Shipbuilding	Mithril nails	1	5	30	2218
+Large salvage	Seeds and frags	Elkhorn frag	1	5	10	2218
+Large salvage	Seeds and frags	Hemp seed	1	5	10	2218
+Large salvage	Seeds and frags	Cotton seed	1	5	5	2218
+Large salvage	Seeds and frags	Pillar frag	1	5	2	2218
+Large salvage	Seeds and frags	Camphor seed	1	1	1	2218
+Large salvage	Jewellery	Gold ring	1	1	300	2218
+Large salvage	Jewellery	Sapphire ring	1	1	300	2218
+Large salvage	Jewellery	Emerald ring	1	1	300	2218
+Large salvage	Jewellery	Diamond ring	1	1	200	2218
+Large salvage	Jewellery	Oyster pearl	1	1	200	2218
+Large salvage	Jewellery	Oyster pearls	1	1	200	2218
+Large salvage	Jewellery	Casket	1	1	100	2218
+Large salvage	Other	Giant seaweed	1	1	50	2218
+Large salvage	Other	Mithril cannonball	2	5	50	2218
+Large salvage	Other	Adamant cannonball	1	7	10	2218
+Large salvage	Tertiary	Soup	1	1	1	800000
+Plundered salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	450
+Plundered salvage	Pre-roll	Rusty coin	1	1	1	3000
+Plundered salvage	Pre-roll	Dragon cannonball	2	3	1	3000
+Plundered salvage	Pre-roll	Facility bottle (empty)	1	1	1	900
+Plundered salvage	Sailing supplies	Rum	1	1	100	1036
+Plundered salvage	Sailing supplies	Mithril cannonball	2	5	50	1036
+Plundered salvage	Sailing supplies	Adamant cannonball	2	5	25	1036
+Plundered salvage	Sailing supplies	Mahogany repair kit	1	1	25	1036
+Plundered salvage	Sailing supplies	Rune cannonball	2	4	10	1036
+Plundered salvage	Weapons	Mithril scimitar	1	1	100	1036
+Plundered salvage	Weapons	Rune scimitar	1	1	1	1036
+Plundered salvage	Jewellery	Oyster pearls	1	1	100	1036
+Plundered salvage	Jewellery	Gold ring	1	1	200	1036
+Plundered salvage	Jewellery	Sapphire ring	1	1	100	1036
+Plundered salvage	Jewellery	Emerald bracelet	1	1	100	1036
+Plundered salvage	Jewellery	Ruby bracelet	1	1	75	1036
+Plundered salvage	Jewellery	Emerald ring	1	1	50	1036
+Plundered salvage	Jewellery	Casket	1	1	50	1036
+Plundered salvage	Jewellery	Diamond bracelet	1	1	25	1036
+Plundered salvage	Jewellery	Diamond ring	1	1	25	1036
+Plundered salvage	Tertiary	Soup	1	1	1	800000
+Martial salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	400
+Martial salvage	Pre-roll	clue:hard	1	1	1	500
+Martial salvage	Pre-roll	Facility bottle (empty)	1	1	1	700
+Martial salvage	Pre-roll	Broken sextant	1	1	1	3000
+Martial salvage	Pre-roll	Dragon cannonball	2	3	1	3000
+Martial salvage	Pre-roll	Salvor's paint	1	1	1	24000
+Martial salvage	Weapons and armour	Mithril longsword	1	1	300	2440
+Martial salvage	Weapons and armour	Adamant longsword	1	1	200	2440
+Martial salvage	Weapons and armour	Adamant 2h sword	1	1	100	2440
+Martial salvage	Weapons and armour	Green d'hide body	1	1	100	2440
+Martial salvage	Weapons and armour	Rune longsword	1	1	10	2440
+Martial salvage	Ammunition and materials	Adamant arrowtips	1	5	300	2440
+Martial salvage	Ammunition and materials	Mithril dart tip	1	5	300	2440
+Martial salvage	Ammunition and materials	Adamant dart tip	1	3	200	2440
+Martial salvage	Ammunition and materials	Adamant arrow	1	3	200	2440
+Martial salvage	Ammunition and materials	Adamant bolts(unf)	1	3	100	2440
+Martial salvage	Ammunition and materials	Rune arrow	1	3	100	2440
+Martial salvage	Ammunition and materials	Adamant cannonball	2	5	100	2440
+Martial salvage	Ammunition and materials	Rune cannonball	2	4	50	2440
+Martial salvage	Seeds and frags	Umbral frag	1	1	10	2440
+Martial salvage	Seeds and frags	Camphor seed	1	1	10	2440
+Martial salvage	Seeds and frags	Ironwood seed	1	1	1	2440
+Martial salvage	Logs	Mahogany logs	1	1	100	2440
+Martial salvage	Logs	Camphor logs	1	1	6	2440
+Martial salvage	Logs	Ironwood logs	1	1	3	2440
+Martial salvage	Other	Amulet of power	1	1	200	2440
+Martial salvage	Other	Adamantite nails	1	3	50	2440
+Martial salvage	Tertiary	Soup	1	1	1	800000
+Fremennik salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	350
+Fremennik salvage	Pre-roll	Facility bottle (empty)	1	1	1	500
+Fremennik salvage	Pre-roll	Smashed mirror	1	1	1	3000
+Fremennik salvage	Fish	Raw salmon	1	1	400	2670
+Fremennik salvage	Fish	Raw tuna	1	1	400	2670
+Fremennik salvage	Fish	Raw lobster	1	1	400	2670
+Fremennik salvage	Fish	Raw monkfish	1	1	400	2670
+Fremennik salvage	Helmets	Archer helm	1	1	8	2670
+Fremennik salvage	Helmets	Berserker helm	1	1	8	2670
+Fremennik salvage	Helmets	Farseer helm	1	1	8	2670
+Fremennik salvage	Helmets	Warrior helm	1	1	8	2670
+Fremennik salvage	Helmets	Fremennik helm	1	1	8	2670
+Fremennik salvage	Materials	Mithril ore	1	1	300	2670
+Fremennik salvage	Materials	Arctic pine logs	1	1	200	2670
+Fremennik salvage	Materials	Adamantite nails	1	3	100	2670
+Fremennik salvage	Materials	Rune nails	1	3	50	2670
+Fremennik salvage	Materials	Mahogany plank	1	1	50	2670
+Fremennik salvage	Materials	Ironwood logs	1	1	6	2670
+Fremennik salvage	Materials	Rosewood logs	1	1	3	2670
+Fremennik salvage	Seeds and frags	Cotton seed	1	3	10	2670
+Fremennik salvage	Seeds and frags	Umbral frag	1	1	5	2670
+Fremennik salvage	Seeds and frags	Ironwood seed	1	1	5	2670
+Fremennik salvage	Seeds and frags	Rosewood seed	1	1	1	2670
+Fremennik salvage	Other	Astral rune	1	3	200	2670
+Fremennik salvage	Other	Ensouled troll head	1	1	50	2670
+Fremennik salvage	Other	Rune cannonball	2	5	50	2670
+Fremennik salvage	Tertiary	Soup	1	1	1	800000
+Opulent salvage	Pre-roll	Sailors' amulet (inert)	1	1	1	300
+Opulent salvage	Pre-roll	Facility bottle (empty)	1	1	1	300
+Opulent salvage	Pre-roll	Dragon nails	1	3	1	2000
+Opulent salvage	Pre-roll	Mouldy doll	1	1	1	3000
+Opulent salvage	Pre-roll	Dragon cannon barrel	1	1	1	20000
+Opulent salvage	Sailing resources	Rune cannonball	2	5	3	424
+Opulent salvage	Sailing resources	Fish offcuts	1	10	30	424
+Opulent salvage	Sailing resources	Ironwood repair kit	1	1	10	424
+Opulent salvage	Sailing resources	Dragon cannonball	2	5	1	424
+Opulent salvage	Other	Uncut opal	1	1	30	424
+Opulent salvage	Other	Uncut jade	1	1	30	424
+Opulent salvage	Other	Uncut red topaz	1	1	30	424
+Opulent salvage	Other	Silver ore	1	1	30	424
+Opulent salvage	Other	Silver bar	1	1	30	424
+Opulent salvage	Other	Tiara	1	1	30	424
+Opulent salvage	Other	Jug of wine	1	1	30	424
+Opulent salvage	Other	Spice	1	1	30	424
+Opulent salvage	Other	Grey wolf fur	1	1	30	424
+Opulent salvage	Other	Silk	1	1	30	424
+Opulent salvage	Other	Coins	1000	5000	20	424
+Opulent salvage	Other	Platinum token	1	5	20	424
+Opulent salvage	Tertiary	Soup	1	1	1	800000

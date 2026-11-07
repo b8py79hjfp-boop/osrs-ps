@@ -10,7 +10,7 @@ import tp.plugin.ContentScope
  * and boarding ([Docking]) and the Pandemonium quest ([Pandemonium]). S3 content: port tasks ([PortTasks]), notice boards and
  * the captain's log task list ([PortBoards]), ledger tables ([PortLedger]), cargo holds ([CargoHold]), port masters
  * ([PortMaster]) and the coin bags ([PortRewards]). S4 content: the Shipyard and boat building ([Shipyard], [BoatBuilder],
- * [Customisation]) and the shipwright services ([BoatServices]). Movement is [BoatMotion].
+ * [Customisation]) and the shipwright services ([BoatServices]). Activities: sea charting ([SeaCharting]) and shipwreck salvaging with sorting ([Salvaging]). Movement is [BoatMotion].
  */
 public class Sailing : ContentPlugin {
     private val state = SailingState()
@@ -21,6 +21,8 @@ public class Sailing : ContentPlugin {
     private val ledger = PortLedger(state, tasks)
     private val hold = CargoHold(state, tasks)
     private val master = PortMaster(tasks)
+    private val charting = SeaCharting(state).also { state.charting = it }
+    private val salvaging = Salvaging(state)
 
     init {
         tasks.quest = pandemonium
@@ -49,5 +51,7 @@ public class Sailing : ContentPlugin {
         with(PortRewards) { registerBags() }
         with(shipyard) { register() }
         with(services) { register() }
+        with(charting) { register() }
+        with(salvaging) { register() }
     }
 }

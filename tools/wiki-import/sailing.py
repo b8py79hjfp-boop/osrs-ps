@@ -269,6 +269,8 @@ def charting_tasks(text):
     rows = []
     for inner in find_templates(text, "SeaChartRow"):
         pos, n = template_args(inner)
+        # The Wiki keeps editor notes in HTML comments inside some cells (the level of three tasks).
+        n = {k: re.sub(r"<!--.*?-->", "", v, flags=re.S).strip() for k, v in n.items()}
         x, z = (n.get("location", ",").split(",") + [""])[:2]
         x2, z2 = (n.get("location2", ",").split(",") + [""])[:2]
         rows.append([n.get("id", ""), n.get("level", ""), n.get("type", ""), n.get("hazard", ""), n.get("sea", ""), n.get("ocean", ""),

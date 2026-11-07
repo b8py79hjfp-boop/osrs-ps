@@ -29,7 +29,12 @@ internal class PortBoards(private val state: SailingState, private val tasks: Po
     }
 
     fun ContentScope.register() {
-        for (loc in PortSites.BOARD_LOCS) onOpLoc(loc, OP_INSPECT) { openBoard(player, state.ports.ofBoard(loc) ?: return@onOpLoc) }
+        for (loc in PortSites.BOARD_LOCS) {
+            onOpLoc(loc, OP_INSPECT) {
+                state.charting.boardOpened(player, it.coord)
+                openBoard(player, state.ports.ofBoard(loc) ?: return@onOpLoc)
+            }
+        }
         onButton(Components.Port_Task_Board.CONTAINER) { click -> select(this, click.slot) }
         onButton(Components.Port_Task_Info.SELECT) { primary(this) }
         onButton(Components.Port_Task_Info.CANCEL) { back(this) }

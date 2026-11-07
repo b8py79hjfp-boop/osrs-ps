@@ -1,6 +1,6 @@
 # Sailing: deep sea trawling
 
-Skeleton for milestone S7. Research: docs/plans/sailing.md section 5.4. Nothing is implemented; the shoal tables (db 190-192) are
+Milestone S7: NOT implemented (blocked, see "Why not"). Research: docs/plans/sailing.md section 5.4. The shoal tables (db 190-192) are
 empty in the shipped cache.
 
 Sources: OSRS Wiki https://oldschool.runescape.wiki/w/Deep_sea_trawling, /Facilities (net rows), /Sailing; cache 2757 locs
@@ -22,3 +22,23 @@ Sources: OSRS Wiki https://oldschool.runescape.wiki/w/Deep_sea_trawling, /Facili
 - **OPEN-TR1:** shoal patrol paths, speeds, stop tables and drop tables (db 190-192 stripped; the Wiki gives per-shoal pages).
 - **OPEN-TR2:** fish per catch distribution and fishing-rod alternative rates (the Wiki states about -2% every 5 ticks).
 - **OPEN-TR3:** pets: Soup 1/360,000 per roll, Heron odds not captured.
+
+## Why not (S7 handed back)
+
+What the cache and Wiki give: the nets (locs 59755-59766, ops Operate / Raise / Lower / Collect-from / Modify; inventory 968), the shoal clickbox locs 59734-59742
+(6 x 6, op 5 "Rod-fish", never placed in the map), the fish and crate objs, the net / chum / locator facilities (already buildable), per-shoal stop
+time (90 s, 72 s, 60 s, 48 s, 42 s, 30 s), depth set, bait, Fishing level, the fish and the Fishing XP per catch (112.5 for giant krill), mixed
+shoal rules and the rare fish odds (Wiki Deep sea trawling, shoal pages).
+
+What is missing, so that no catch could be rolled without inventing it:
+1. **Shoal patrols** (OPEN-TR1): the paths, speeds, stop points and which stop a shoal is at when. The Wiki shows one map pin per area and says the movement
+   is predetermined. Needed: per shoal type a list of (tile, stop) waypoints and a speed in tiles per tick.
+2. **Catch chance** (OPEN-TR2): the Wiki gives no success rate for a roll, only "level and net" shape and that depth halves the quantity. Needed: the
+   `statRandom` low / high pair per shoal.
+3. **An entity that moves on the sea and can be clicked**: the shoal is a 6 x 6 loc. plugin-api has no moving loc and no loc teleport; an NPC cannot
+   path on water. Proposal (engine, main session): `WorldRef.moveLoc(id, from, to)` or a world entity type for shoals that `onWorldEntityTick` can move with
+   `WorldEntityRef.move`; and `WorldRef.locAt(tile, shape)` (EntityRef has it, WorldRef does not).
+4. The Sailing Options side-panel varbits for the net depths (19206-19209) and the fathom stone / pearl hint arrow need the engine's hint-arrow support.
+
+With 1-3 the rest is table work in the style of `Salvaging.kt`: net ops on the deck locs, a depth state per net, the catch roll every 3 ticks (2 with a
+click each tick, 5 for crew), 250-fish shared capacity, bait use, trust-ale extra fish.

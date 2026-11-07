@@ -1,6 +1,6 @@
 # Sailing: Barracuda Trials
 
-Skeleton for milestone S8. Research: docs/plans/sailing.md section 5.3. `content/sailing` reads `Sailing_Bt_Trial_Core` (db 143)
+Milestone S8: NOT implemented (blocked, see "Why not"). Research: docs/plans/sailing.md section 5.3. `content/sailing` reads `Sailing_Bt_Trial_Core` (db 143)
 into `BarracudaTrial` / `BarracudaRank`.
 
 Sources: cache 2757 db 143 (`dbrows 143`); OSRS Wiki https://oldschool.runescape.wiki/w/Barracuda_Trials,
@@ -22,3 +22,23 @@ Sources: cache 2757 db 143 (`dbrows 143`); OSRS Wiki https://oldschool.runescape
   (trial level, start coordinate, boundary and paint odds are stripped from db 143). Source: Wiki tile-marker pages, then RuneLite.
 - **OPEN-BT1:** whether per-player instances are used (the courses are open sea in the cache map).
 - **OPEN-BT2:** crew rule (Tempor requires dismissing crew per the Wiki; `CREWMATES_ALLOWED` is stripped for the others).
+
+## Why not (S8 handed back)
+
+The rank table (R1) and rewards (R3) are known. The courses are not in a form the server can run:
+
+1. **Course rules are on the Wiki as prose and map drawings only.** The three trial pages (The Tempor Tantrum, The Jubbly Jive, The Gwenith Glide) give,
+   per rank, a route as a list of crate tiles plus a delivery tile (Tempor swordfish lap 1: 2994:2891, 2978:2866, 2981:2848, 2978:2828, 2990:2808,
+   3001:2788, 3012:2768, 3057:2792, 3065:2811, 3077:2825, 3078:2863, 3082:2875, 3084:2896, 3053:2920; delivery 3035,2915; boats 3036,2926 and
+   3037,2766), and `Module:Tile markers/The Tempor Tantrum (box locations with labels).json`. They do not state pick-up radius, which crates count for which
+   lap, the order rules, Jubbly pillars or Gwenith crystal / portal sequences. Needed: those rules (OPEN-B2) as data.
+2. **Trial start and state**: the master NPCs 15094-15108 (Talk-to, start, dismiss crew for Tempor), the 10 s leave-area timer, crew refusal, skiff and
+   helm / mast checks, HUD interface 931 and varps 4985-5000 (time start 4987, objectives 4990-4992, performance 4993-4997, completed 4998-5000) and the
+   personal-best varbits (143 `SAILING_BT_*`). All of that is client-visible state to be driven from a trial state machine whose inputs (boat position
+   against crate tiles, delivery tile, boundary buoys 59236) need the boat's footprint in the root world each tick; `ActiveBoat.ref.rootCoord` gives the pivot only.
+3. **Hazards** (rapids stacks, lightning clouds, rocks): speed changes are `BoatMotion`'s, i.e. S2 (main session).
+4. Per-player instances (OPEN-BT1): the courses are open sea; two players in a trial would see each other's crates unless the crates are per-player locs
+   (`PlayerRef` has no per-player loc API).
+
+Proposal: a `Trial` data file (tile lists per rank, delivery tile, boundary rectangle) from the Wiki tile markers once the rules are confirmed, and per-player
+locs or a world entity per trial for the crates.

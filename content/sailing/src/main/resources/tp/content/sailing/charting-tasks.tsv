@@ -120,7 +120,7 @@ task	level	type	hazard	sea	ocean	x	z	x2	z2	hint
 269	22	Current		Pearl Bank	Unquiet Ocean	3337	2179	3414	2134	Test the currents to the south west of the Little Pearl.
 273	38	Diving		Pearl Bank	Unquiet Ocean	3276	2130			With help from a mermaid guide, document the water depth in the south of the Pearl Bank.; Answer to the riddle: 2 woad leaves and 2 onions
 58	57	Weather		Pearl Bank	Bonus charts	3321	2327	3177	2456	Help the meteorologist document the local weather at the south east tip of Cape Conch.
-102	1<!--This one does not require level 60-->	Generic		The Lonely Sea	Unquiet Ocean	2634	2392			Find some dragon scales on Charred Island. It is not necessary to dock onto the island to chart this.
+102	1	Generic		The Lonely Sea	Unquiet Ocean	2634	2392			Find some dragon scales on Charred Island. It is not necessary to dock onto the island to chart this.
 281	12	Crate		The Lonely Sea	Unquiet Ocean	2522	2248			Find a Sealed crate north of the cathedral on Wyrmscraig and sample the contents.
 75	22	Current		The Lonely Sea	Unquiet Ocean	2624	2415	2534	2515	Test the currents west of Charred Island.
 274	38	Diving		The Lonely Sea	Unquiet Ocean	2528	2149			With help from a mermaid guide, document the water depth in the far south of the Lonely Sea.; Answer to the riddle: Swamp weed
@@ -173,7 +173,7 @@ task	level	type	hazard	sea	ocean	x	z	x2	z2	hint
 129	38	Diving		Soul Bay	Shrouded Ocean	2012	2874			With help from a mermaid guide, document the water depth west of the Isle of Souls.; Answer to the riddle: Dwellberries
 106	57	Weather		Soul Bay	Shrouded Ocean	2140	2806	2021	2681	Help the meteorologist document the local weather on the south western coast of the Isle of Souls.
 88	1	Generic		Barracuda Belt	Shrouded Ocean	2149	2615			Find a spool of Barracuda grade rope east of Wintumber Island.
-95	1<!--This one does not require level 63-->	Generic		Barracuda Belt	Shrouded Ocean	2066	2608			Find an odd statue on Wintumber Island.
+95	1	Generic		Barracuda Belt	Shrouded Ocean	2066	2608			Find an odd statue on Wintumber Island.
 89	1	Generic		Barracuda Belt	Shrouded Ocean	2281	2447			Find the wreck of a Barracuda ship north east of Sunbleak Island.
 61	12	Crate		Barracuda Belt	Shrouded Ocean	2282	2506			Find a Sealed crate near the bank boat in the Barracuda Belt and sample the contents.
 48	38	Diving		Barracuda Belt	Shrouded Ocean	2276	2598			With help from a mermaid guide, document the water depth north of the bank boat in the Barracuda Belt.; Answer to the riddle:Vial, avantoe, snape grass, and caviar
@@ -273,7 +273,7 @@ task	level	type	hazard	sea	ocean	x	z	x2	z2	hint
 177	1	Spyglass		Piscatoris Sea	Western Ocean	2303	3700			Use your spyglass to get a good view of the Piscatoris Fishing Colony from the north west.
 334	12	Crate		Piscatoris Sea	Western Ocean	2248	3744			Find a Sealed crate north west of the Piscatoris Fishing Colony and sample the contents.
 171	66	Diving	Crystal-flecked waters	Piscatoris Sea	Western Ocean	2236	3593			With help from a mermaid guide, document the water depth south west of Kraken Cove.; Answer to the riddle: Gold ore
-186	1<!--This one does not require level 66 or an adamant hull-->	Generic		Vagabonds Rest	Western Ocean	2133	3589			Find a crate of discarded goods north of Drumstick Isle.
+186	1	Generic		Vagabonds Rest	Western Ocean	2133	3589			Find a crate of discarded goods north of Drumstick Isle.
 161	1	Generic		Vagabonds Rest	Western Ocean	2026	3669			Find a half-built ship west of Buccaneers' Haven.
 320	1	Spyglass		Vagabonds Rest	Western Ocean	2101	3702			Use your spyglass to get a good view of Buccaneers' Haven from the north.
 181	12	Crate		Vagabonds Rest	Western Ocean	2079	3655			Find a Sealed crate near Buccaneers' Haven and sample the contents.

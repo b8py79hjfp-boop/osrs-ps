@@ -11,5 +11,6 @@ internal class SailingState {
     lateinit var catalog: PortCatalog
     lateinit var shipyard: Shipyard
     lateinit var services: BoatServices
+    lateinit var charting: SeaCharting
     val sites: DockSites get() = boats.sites
 }

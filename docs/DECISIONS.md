@@ -936,3 +936,13 @@ read to extract which varbit joins which search objects (docs/mechanics/hunter.m
 header is needed, but the reading is logged here as the brief asks. The puzzle stays unimplemented: the start-to-first-spot mapping, the tunnel
 of each ending and the varbit values the server writes (the cache's multi-locs show footprints at 3 / 4, RuneLite compares 1 / 2) are not in
 any source. The number D-065 is a placeholder if another branch used it first.
+
+## D-066: Sailing activities: the cache map and the type ops give the sites; unsourced numbers are named constants; trawling and Barracuda stay open
+
+Sea charting, salvaging and sorting use only plugin-api. Sites come from the cache wherever it has them: the 92 charting locs and the 186 wreck stumps
+stand at the Wiki's tiles in the map, so tasks are matched by tile (no name reflection) and wrecks swap between their stump and wreck locs. What the cache
+strips (spyglass zones, duck routes, drinks, troll-to-task links, success rates, sort cadence, pre-roll rule) is a named constant or a plain rule marked
+OPEN in docs/mechanics/sailing-charting.md and sailing-salvaging.md (OPEN-C3..C12, OPEN-SV1..SV8), not a config flag, because nothing else reads them.
+Deep sea trawling (no shoal paths, no catch chance, nothing that moves on the sea) and the Barracuda Trials (course rules only as map drawings) are not
+implemented: a plausible stand-in would invent the mechanic. Their needs and the S10 hook list are in sailing-trawling.md, sailing-barracuda.md and
+sailing-combat.md. Wiki tables were imported with python scripts under tools/wiki-import in the repo's pattern (`sailing_charting.py`, `sailing_salvage.py`).
