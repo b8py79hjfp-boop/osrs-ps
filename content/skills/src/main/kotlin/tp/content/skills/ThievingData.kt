@@ -23,6 +23,24 @@ internal class Pickable(
 /** A thievable stall (docs/mechanics/thieving.md TH6), read from `stalls.tsv` (tools/wiki-import/thieving_stalls.py). */
 internal class Stall(val name: String, val level: Int, val xp: Double, val respawn: Int, val loot: List<LootRow>)
 
+/**
+ * A thievable chest (docs/mechanics/thieving.md TH11), read from `thieving-chests.tsv` (tools/wiki-import/thieving_chests.py).
+ * [rate] / [lockpickRate] are the Wiki "Skilling success chart" `low` / `high` of the unlock without and with a lockpick in the
+ * backpack; [teleportRate] the chance chart of being teleported out on a failure; the chest shows [openLoc] for [ticks] ticks.
+ */
+internal class Chest(
+    val name: String,
+    val closedLoc: Int,
+    val openLoc: Int,
+    val level: Int,
+    val xp: Double,
+    val ticks: Int,
+    val rate: Rate,
+    val lockpickRate: Rate,
+    val teleportRate: Rate,
+    val loot: List<LootRow>,
+)
+
 /** The thieving data tables, parsed once from the resource files. */
 internal object ThievingData {
     /** Seconds per game tick (Wiki "Game tick"), to turn the Wiki's respawn seconds into ticks. */
@@ -55,6 +73,28 @@ internal object ThievingData {
     private const val S_QTY = 7
     private const val S_NUM = 8
     private const val S_DEN = 9
+
+    private const val CHEST_COLUMNS = 17
+
+    /** Columns of `thieving-chests.tsv` (the header of tools/wiki-import/thieving_chests.py). */
+    private const val C_CLOSED = 1
+    private const val C_OPEN = 2
+    private const val C_LEVEL = 3
+    private const val C_XP = 4
+    private const val C_TICKS = 5
+    private const val C_LOW = 6
+    private const val C_HIGH = 7
+    private const val C_PLOW = 8
+    private const val C_PHIGH = 9
+    private const val C_TLOW = 10
+    private const val C_THIGH = 11
+    private const val C_ITEM = 12
+    private const val C_QTY = 14
+    private const val C_NUM = 15
+    private const val C_DEN = 16
+
+    /** Chests by closed loc id. */
+    val CHESTS: Map<Int, Chest> by lazy { loadChests() }
 
     /** Pickpocketable NPCs by Wiki page name. */
     val PICKPOCKETS: Map<String, Pickable> by lazy { loadPickpockets() }
@@ -116,6 +156,29 @@ internal object ThievingData {
     private fun loadPouches(): Map<Int, IntRange> {
         val out = HashMap<Int, IntRange>()
         for (cols in rows("pickpocket.tsv")) if (cols[P_POUCH] != "-") out[cols[P_ITEM].toInt()] = range(cols[P_POUCH])
+        return out
+    }
+
+    private fun loadChests(): Map<Int, Chest> {
+        val out = HashMap<Int, Chest>()
+        for ((_, lines) in rows("thieving-chests.tsv").groupBy { it[0] }) {
+            val head = lines.first()
+            check(head.size == CHEST_COLUMNS) { "thieving-chests.tsv: bad column count" }
+            val loot = lines.map { cols -> row(cols[C_ITEM], cols[C_QTY], cols[C_NUM], cols[C_DEN], null) }
+            out[head[C_CLOSED].toInt()] =
+                Chest(
+                    name = "chest",
+                    closedLoc = head[C_CLOSED].toInt(),
+                    openLoc = head[C_OPEN].toInt(),
+                    level = head[C_LEVEL].toInt(),
+                    xp = head[C_XP].toDouble(),
+                    ticks = head[C_TICKS].toInt(),
+                    rate = Rate(head[C_LOW].toInt(), head[C_HIGH].toInt()),
+                    lockpickRate = Rate(head[C_PLOW].toInt(), head[C_PHIGH].toInt()),
+                    teleportRate = Rate(head[C_TLOW].toInt(), head[C_THIGH].toInt()),
+                    loot = loot,
+                )
+        }
         return out
     }
 

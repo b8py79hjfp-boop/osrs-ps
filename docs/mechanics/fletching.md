@@ -32,6 +32,7 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
 | FL9 | **Gem bolts.** A chisel on a cut gem gives bolt tips (opal 11 / 1.5, jade 26 / 2, pearl 41 / 3.2, topaz 48 / 3.9, sapphire 56 / 4, emerald 58 / 5.5, ruby 63 / 6.3, diamond 65 / 7, dragonstone 71 / 8.2 for 12 tips; onyx 73 / 9.4 for 24; an oyster pearl gives 6 and oyster pearls 24). 10 tips on 10 bolts (opal on bronze, jade on blurite, pearl on iron, topaz on steel, sapphire and emerald on mithril, ruby and diamond on adamant, dragonstone and onyx on runite) give gem bolts at the tip's level and 16 / 24 / 32 / 39 / 47 / 55 / 63 / 70 / 82 / 94 xp; the same tips on dragon bolts give the dragon versions at level 84 with the xp of the tip. | R |
 | FL10 | **Each action** re-checks level, tool and materials (the menu is only a request, MU4), then removes the materials and adds the product in one item transaction, then adds xp. A missing level, tool or material ends the batch with the message of `Production.shortfall`. A level-up ends the batch (PR3). If the backpack cannot take the product the batch ends silently. | PR |
 | FL11 | **Animations** (cache seqs): knife 1248; headless arrow `add_feather` 8481; arrowtips `add_arrow_tips` 8480; darts and bolts with feathers per metal (`human_fletching_add_dart_feathers_*` 8482-8488 and 9108, `add_bolt_feathers_*` 8463-8471); tipped bolts per plain bolt metal (`add_bolt_tips_*` 8472-8479); crossbows (u) and crossbow stringing per metal (`xbows_fletching_*` 4436-4442 and 7860, `xbows_stringing_*` 6671-6677 and 7961); strung bows per wood and kind (`stringing_*` 6678-6689). The names say what each is for; no source gives the pairing with the Wiki recipes beyond the names. | L |
+| FL12 | **Shields and staves (2026-11-07).** Knife on two logs: oak shield 27 / 50 xp, willow 42 / 83, maple 57 / 116.5, yew 72 / 150, magic 87 / 183, redwood 92 / 216 (7 ticks, the Wiki Recipe `ticks`; "Fletching wooden shields grants the same experience as a full longbow of the same level"); they join the knife-on-logs menu. Knife on celastrus bark (obj 22935): battlestaff, level 40, 80 xp, 4 ticks. Knife on redwood logs: redwood hiking staff, level 90, 10.5 xp, 3 ticks. | T (Wiki "Wooden Shields", "Celastrus bark", "Redwood hiking staff") |
 
 ## Not modelled / OPEN
 
@@ -44,8 +45,11 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
 - **OPEN-FL4:** the fletching knife (2 ticks per bow instead of 3, T) and the jeweller's chisel (faster bolt tips) are not modelled; only the
   plain knife and chisel work.
 - **OPEN-FL5:** not implemented: broad arrows and broad bolts (Slayer unlock), ogre arrows and other quest items, bone and other
-  special tips, the redwood hiking staff, battlestaves (Crafting), unfinished bolts, arrowtips and limbs (Smithing), the log basket
+  special tips, battlestaves (Crafting, CR9), unfinished bolts, arrowtips and limbs (Smithing), the log basket
   and bow string spool.
 - **OPEN-FL6:** the Wiki recipe for crossbow (u) lists a hammer; if the real game needs none (this was not checked), remove the tool column from those rows.
 - **OPEN-FL7:** quest, diary and unlock requirements of some recipes are not in the `{{Recipe}}` data and are not checked (members worlds only; no
   free-to-play restriction is applied).
+- **OPEN-FL8:** the shield rows' 7 ticks are the Recipe `ticks` of the shield pages (bows take 3); the celastrus battlestaff's "4-tick cycle"
+  trick and the fletching knife (31043) speed-up are not modelled. Amethyst bolt tips and broad bolts / arrows (Slayer unlock) stay missing for
+  Fletching: bolt tips are Crafting (CR10) and the Wiki lists no unlock-free "amethyst bolts" Fletching row; the Slayer unlock state does not exist.

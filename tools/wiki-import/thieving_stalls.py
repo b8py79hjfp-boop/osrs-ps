@@ -29,6 +29,9 @@ from thieving_pickpocket import fields, load_objs, quantity, rarity, templates, 
 PAGES = [
     "Bakery stall", "Tea stall", "Crafting stall", "Silk stall", "Fruit Stall", "Seed stall", "Fur stall", "Fish stall",
     "Crossbow stall", "Silver stall", "Spice stall", "Gem stall",
+    # Added 2026-11-07 (Wiki "Stall/Thievable"): vegetable / wine / Ape Atoll / Gu'Tanoth stalls. The Port Roberts variants are
+    # left out (the market guards behave uniquely, the pages give no respawn: OPEN-TH14 in docs/mechanics/thieving.md).
+    "Vegetable stall", "Wine stall", "Monkey general stall", "Food Stall", "Magic stall", "Scimitar stall", "Counter (Gu'Tanoth)",
 ]
 
 

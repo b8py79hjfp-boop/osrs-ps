@@ -17,7 +17,7 @@ import tp.symbols.SpotAnims
  * Pickpocketing (docs/mechanics/thieving.md). One "Pickpocket" op script per click: the roll is made on the arrival
  * tick ([PlayerRef.statRandom] with the NPC's Wiki rates), then the player is delayed so the next attempt can start two
  * ticks later (TH2). A failed roll makes the NPC strike the player for the sourced damage and stuns them (TH3). Coin
- * pouches stack to [COIN_POUCH_LIMIT] and are opened with "Open" / "Open-all" (TH4).
+ * pouches stack to [ThievingBonuses.pouchLimit] and are opened with "Open" / "Open-all" (TH4).
  */
 public class Pickpocketing : ContentPlugin {
     override fun ContentScope.register() {
@@ -30,6 +30,7 @@ public class Pickpocketing : ContentPlugin {
 
     private suspend fun PlayerScript.pickpocket(npc: NpcRef) {
         val p = player
+        Blackjack.targetOf(npc.type)?.let { return blackjackPickpocket(npc, it) }
         val target = pickable(npc)
         if (target == null) {
             p.message("Nothing interesting happens.")
@@ -41,7 +42,7 @@ public class Pickpocketing : ContentPlugin {
             return
         }
         val pouch = target.always.firstOrNull { it.coins != null } ?: target.main.firstOrNull { it.coins != null }
-        if (pouch != null && p.inv(Invs.INV).total(pouch.obj) >= COIN_POUCH_LIMIT) {
+        if (pouch != null && p.inv(Invs.INV).total(pouch.obj) >= ThievingBonuses.pouchLimit(p)) {
             p.message("You need to open your coin pouches before you can pickpocket again.")
             return
         }
@@ -50,12 +51,11 @@ public class Pickpocketing : ContentPlugin {
         p.face(npc)
         p.anim(Seqs.HUMAN_PICKPOCKET)
         p.message("You attempt to pick the $name's pocket.")
-        val gloves = p.inv(Invs.WORN).obj(GLOVES_SLOT) == Objs.HUNTING_SILENT_GLOVES
-        val rate = if (gloves) target.glovesRate else target.rate
+        val rate = ThievingBonuses.pickpocketRate(p, target.rate, target.glovesRate)
         if (p.statRandom(Stats.THIEVING, rate.low, rate.high)) {
             if (steal(p, target, name)) delay(PICKPOCKET_TICKS)
-        } else if (veilSaves(p)) {
-            // SV1: Shadow Veil spares the stun and the damage; the attempt still fails.
+        } else if (ThievingBonuses.stunAvoided(p)) {
+            // SV1 / TH10: Shadow Veil or the dodgy necklace spares the stun and the damage; the attempt still fails.
             p.message("You fail to pick the $name's pocket.")
             delay(PICKPOCKET_TICKS)
         } else {
@@ -80,8 +80,20 @@ public class Pickpocketing : ContentPlugin {
     private fun steal(p: PlayerRef, target: Pickable, name: String): Boolean {
         val rows = ArrayList<LootRow>(target.always)
         rollMain(p, target)?.let { rows += it }
-        val amounts = rows.map { row -> row.min + p.random(row.max - row.min + 1) }
-        val stored = p.transaction("pickpocket") { rows.indices.all { add(Invs.INV, rows[it].obj, amounts[it]) } }
+        val items = ArrayList<Pair<Int, Int>>(rows.size * 2)
+        for (row in rows) items += row.obj to row.min + p.random(row.max - row.min + 1)
+        if (ThievingBonuses.rogueDoubles(p)) {
+            // TH9: double loot, but a coin pouch becomes one pouch plus the coins it holds (Wiki "Rogue equipment"). Xp is unchanged.
+            for ((i, row) in rows.withIndex()) {
+                val coins = row.coins
+                if (coins != null) {
+                    items += Objs.COINS to coins.first + p.random(coins.last - coins.first + 1)
+                } else {
+                    items[i] = row.obj to items[i].second * 2
+                }
+            }
+        }
+        val stored = p.transaction("pickpocket") { items.all { (obj, amount) -> add(Invs.INV, obj, amount) } }
         if (!stored) {
             p.message("You don't have enough inventory space.")
             return false
@@ -101,10 +113,6 @@ public class Pickpocketing : ContentPlugin {
         }
         return null
     }
-
-    /** SV1 (Wiki "Shadow Veil"): while it lasts, a failed pickpocket has a 15% chance to avoid the stun and damage. */
-    private fun veilSaves(p: PlayerRef): Boolean =
-        (p[tp.plugin.SharedAttrs.SHADOW_VEIL_UNTIL] ?: 0L) > p.tick && p.random(PERCENT) < VEIL_CHANCE
 
     private fun fail(p: PlayerRef, npc: NpcRef, target: Pickable, name: String) {
         p.message("You fail to pick the $name's pocket.")
@@ -142,21 +150,11 @@ public class Pickpocketing : ContentPlugin {
     }
 
     private companion object {
-        /** Worn-inventory slot of gloves (cache wear position 9). */
-        const val GLOVES_SLOT = 9
-
         /** Ticks between pickpockets (Wiki "Pickpocketing": "NPCs may be pickpocketed every two ticks"). */
         const val PICKPOCKET_TICKS = 2
 
         /** Extra ticks a failed pickpocket costs (Wiki "Pickpocketing": further pickpocketing is blocked for eight ticks). */
         const val STUN_TICKS = 8
-
-        /** Wiki "Shadow Veil": a 15% chance to avoid the stun. */
-        const val VEIL_CHANCE = 15
-        const val PERCENT = 100
-
-        /** Coin pouches that stack in the backpack (Wiki "Coin pouch": 28 without the Ardougne diaries, OPEN-TH3). */
-        const val COIN_POUCH_LIMIT = 28
 
         /** Resolution of the loot roll: 2^24 slices, finer than the smallest Wiki rarity (50/463599). */
         const val ROLL_RESOLUTION = 1 shl 24

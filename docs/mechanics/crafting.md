@@ -73,6 +73,15 @@ SK, MU, PR. Levels and xp below are the Wiki's `skill1lvl` / `skill1exp` (rounde
 - **CR8: timeline and ending.** As skilling.md PR: the animation plays at the choice, the first product lands after "first" ticks, then
   every interval; walking, clicking or opening an interface ends it; a missing tool or material ends it with a message; a level-up ends it.
 
+- **CR9: elemental battlestaves and studded leather.** An elemental orb (water 571, earth 575, fire 569, air 573) used on a battlestaff
+  (1391) opens the Make menu: water battlestaff 54 / 100 xp, earth 58 / 112.5, fire 62 / 125, air 66 / 137.5; 2 ticks, the first after 3 ("Make-X is 3t, then
+  2t", Wiki "Water battlestaff"). Steel studs on a leather body or chaps make studded body (41 / 40 xp) and chaps (44 / 42); 3 ticks. Any recipe
+  of two materials with no tool, thread, wool or facility works this way. No animation (none is sourced).
+- **CR10: amethyst.** A chisel on an amethyst (21347) opens the Cut menu: bolt tips (83 / 60 xp, 15), arrowtips (85, 15), javelin tips (87, 5),
+  dart tips (89, 8); 2 ticks each, no animation.
+- **CR11: silver gem jewellery.** Opal, jade and topaz (red topaz) rings, necklaces, bracelets and amulets (u) at a furnace from a silver bar
+  (levels 1 to 38, rows in `recipes.tsv`), their strung amulets with a ball of wool, and the empty fishbowl (42 / 42.5) with the glassblowing pipe.
+
 ## OPEN
 
 - **OPEN-CR1:** the Wiki's Hardleather body Recipe says 2 ticks while every other leather item and the P2P training page say 3; 3 is used.
@@ -88,3 +97,7 @@ SK, MU, PR. Levels and xp below are the Wiki's `skill1lvl` / `skill1exp` (rounde
 - **OPEN-CR7:** success messages ("You cut the opal.") and the "no materials" lines are unsourced; the thread, crush and ring texts are
   sourced above.
 - **OPEN-CR8:** only the first action offset of spinning is sourced (CR4); the others assume one interval (OPEN-PR1).
+- **OPEN-CR9:** the battlestaff rows are used with the plain menu; the Wiki's account setting, orb charging prerequisites and the elemental
+  upgrade to mystic staves are not modelled; the amethyst cutting has no animation. Zenyte jewellery and uncut zenyte, the slayer ring, studded
+  vambraces and the other leather items of OPEN-CR2 are still missing (no importer pages were added for them), as are the golem, goblin lamp and
+  light-orb filling recipes; "Fishbowl (water)" (a Water facility row) has no handler.

@@ -35,6 +35,8 @@ public class Crafting : ContentPlugin {
         glass(recipes)
         furnaceJewellery(recipes)
         stringing(recipes)
+        combining(recipes)
+        amethyst(recipes)
     }
 
     // ---- families
@@ -123,6 +125,29 @@ public class Crafting : ContentPlugin {
         }
     }
 
+    /**
+     * Two items used on each other with no tool, thread or facility: an elemental orb on a battlestaff, steel studs on a leather
+     * body or chaps (CR9). The Wiki's make-X rows have the same menu as the other families.
+     */
+    private fun ContentScope.combining(recipes: List<Recipe>) {
+        val kind = Kind(SkillMulti.MAKE, "What would you like to make?", -1)
+        val options =
+            recipes.filter {
+                it.tools.isEmpty() && it.facility.isEmpty() && !it.thread && it.inputs.size == 2 &&
+                    it.inputs.none { i -> i.obj == Objs.BALL_OF_WOOL }
+            }
+        for ((key, group) in options.groupBy { minOf(it.inputs[0].obj, it.inputs[1].obj) to maxOf(it.inputs[0].obj, it.inputs[1].obj) }) {
+            onUseOnItem(key.first, key.second) { menu(this, kind, group) }
+        }
+    }
+
+    /** A chisel on an amethyst cuts bolt tips, arrowtips, javelin tips or dart tips (CR10); there is no cutting animation in the data. */
+    private fun ContentScope.amethyst(recipes: List<Recipe>) {
+        val kind = Kind(SkillMulti.CUT, "What would you like to cut?", -1)
+        val options = recipes.filter { it.tools == listOf(Objs.CHISEL) && it.inputs.size == 1 && it.inputs.first().obj == AMETHYST }
+        if (options.isNotEmpty()) onUseOnItem(Objs.CHISEL, AMETHYST) { menu(this, kind, options) }
+    }
+
     // ---- the menu and the batch
 
     /** Opens the menu with the products of [options] the player has the materials for now. */
@@ -206,6 +231,9 @@ public class Crafting : ContentPlugin {
     private fun cutChance(level: Int, crush: Crush): Double = (level - 1) * crush.slope / CraftingData.GEM_SLOPE_DIVISOR + crush.base
 
     private companion object {
+        /** Cache obj "Amethyst" (the mined gem; the Wiki's amethyst tip rows in `recipes.tsv`). */
+        const val AMETHYST = 21347
+
         const val FURNACE = "furnace"
         const val SPINNING_WHEEL = "spinning wheel"
         const val POTTERS_WHEEL = "potter's wheel"

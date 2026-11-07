@@ -55,3 +55,27 @@ Gem stall	11731,6162,36571,51935	75	408	60 seconds	1623	Uncut sapphire	1-1	105	1
 Gem stall	11731,6162,36571,51935	75	408	60 seconds	1621	Uncut emerald	1-1	17	128
 Gem stall	11731,6162,36571,51935	75	408	60 seconds	1619	Uncut ruby	1-1	5	128
 Gem stall	11731,6162,36571,51935	75	408	60 seconds	1617	Uncut diamond	1-1	1	128
+Vegetable stall	4706,4708	2	10	1.2 seconds	1942	Potato	1-1	3	10
+Vegetable stall	4706,4708	2	10	1.2 seconds	1965	Cabbage	1-1	1	5
+Vegetable stall	4706,4708	2	10	1.2 seconds	1957	Onion	1-1	1	5
+Vegetable stall	4706,4708	2	10	1.2 seconds	1982	Tomato	1-1	1	5
+Vegetable stall	4706,4708	2	10	1.2 seconds	1550	Garlic	1-1	1	10
+Wine stall	14011	22	27	4.8 seconds	7919	Bottle of wine	1-1	11	100
+Wine stall	14011	22	27	4.8 seconds	1987	Grapes	1-1	17	100
+Wine stall	14011	22	27	4.8 seconds	1935	Jug	1-1	39	100
+Wine stall	14011	22	27	4.8 seconds	1937	Jug of water	1-1	1	5
+Wine stall	14011	22	27	4.8 seconds	1993	Jug of wine	1-1	13	100
+Monkey general stall	4876	5	25	4.8 seconds	2347	Hammer	1-1	1	3
+Monkey general stall	4876	5	25	4.8 seconds	1931	Pot	1-1	1	3
+Monkey general stall	4876	5	25	4.8 seconds	590	Tinderbox	1-1	1	3
+Food Stall	4875	5	16	3.6 seconds	1963	Banana	1-1	1	1
+Magic stall	4877	65	90	7.2 seconds	556	Air rune	1-1	3	10
+Magic stall	4877	65	90	7.2 seconds	557	Earth rune	1-1	3	10
+Magic stall	4877	65	90	7.2 seconds	554	Fire rune	1-1	3	10
+Magic stall	4877	65	90	7.2 seconds	563	Law rune	1-1	1	20
+Magic stall	4877	65	90	7.2 seconds	561	Nature rune	1-1	1	20
+Scimitar stall	4878	65	210	19.2 seconds	1323	Iron scimitar	1-1	23	40
+Scimitar stall	4878	65	210	19.2 seconds	1325	Steel scimitar	1-1	13	40
+Scimitar stall	4878	65	210	19.2 seconds	1329	Mithril scimitar	1-1	3	40
+Scimitar stall	4878	65	210	19.2 seconds	1331	Adamant scimitar	1-1	1	40
+Counter (Gu'Tanoth)	2793,2792	15	6.4	7.2 seconds	2379	Rock cake	1-1	1	1

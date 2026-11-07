@@ -101,6 +101,24 @@ GRIND_PAGES = ["Unicorn horn dust", "Chocolate dust", "Dragon scale dust", "Crus
 NAME_ALIASES = {"bird nest (empty)": "bird nest"}
 # Recipes of these skills on ANY_OUTPUT_PAGES are kept with at most this many consumed materials.
 MAX_ANY_MATERIALS = 2
+# EXTRA_PAGES (added 2026-11-07 for the thieving/prayer/herblore/crafting/fletching gap pass) keep every Crafting, Fletching and
+# Herblore recipe on the page with at most this many consumed materials (super combat potion has four); their rows are written
+# after the main rows, behind a `# extra` comment line that RecipeTable skips.
+MAX_EXTRA_MATERIALS = 4
+EXTRA_PAGES = (
+    # Herblore: potions the main POTIONS list lacks and tar (the barbarian mixes are BarbarianTraining.kt's, with the quest gate).
+    ["Super combat potion", "Sanfew serum", "Guthix rest", "Compost potion", "Relicym's balm", "Serum 207", "Ancient brew",
+     "Forgotten brew", "Divine super combat potion", "Guthix balance", "Cup of hot water"]
+    + [f"{h} tar" for h in ("Guam", "Marrentill", "Tarromin", "Harralander")]
+    # Crafting: elemental battlestaves (orb on battlestaff), silver gem jewellery, studded leather, amethyst tips.
+    + ["Water battlestaff", "Earth battlestaff", "Fire battlestaff", "Air battlestaff"]
+    + [f"{g} {i}" for g in ("Opal", "Jade", "Red topaz") for i in ("ring", "necklace", "bracelet", "amulet (u)")]
+    + ["Topaz amulet (u)", "Opal amulet", "Jade amulet", "Topaz amulet"]
+    + ["Empty fishbowl", "Studded body", "Studded chaps", "Amethyst bolt tips", "Amethyst arrowtips", "Amethyst javelin heads", "Amethyst dart tip"]
+    # Fletching: wooden shields and the celastrus battlestaff.
+    + [f"{w} shield" for w in ("Oak", "Willow", "Maple", "Yew", "Magic", "Redwood")]
+    + ["Battlestaff", "Redwood hiking staff"]
+)
 SKILLS = {"smithing", "crafting", "fletching", "herblore"}
 # Facilities and tools of variants this server does not model as ordinary recipes.
 DROP_FACILITIES = {"blast furnace", "ancient furnace", "lovakite furnace"}
@@ -266,9 +284,11 @@ def main():
         ids = objs.get(NAME_ALIASES.get(name.lower(), name.lower()))
         return ids[0] if ids else None
 
-    pages = [e.split("=") for e in PAGES] + [[t, "*"] for t in ANY_OUTPUT_PAGES] + [[t, "grind"] for t in GRIND_PAGES]
+    pages = ([e.split("=") for e in PAGES] + [[t, "*"] for t in ANY_OUTPUT_PAGES] + [[t, "grind"] for t in GRIND_PAGES]
+             + [[t, "+"] for t in EXTRA_PAGES])
     texts = wikitexts([e[0] for e in pages])
     rows, seen = [], set()
+    extra_at = None
     for entry in pages:
         title = entry[0]
         product = entry[-1]
@@ -277,6 +297,8 @@ def main():
             print("no page:", title, file=sys.stderr)
             continue
         kept = 0
+        if product == "+" and extra_at is None:
+            extra_at = len(rows)
         for body in recipes_in(text):
             p = params_of(body)
             tools = [t.strip() for t in p.get("tools", "").split(",") if t.strip()]
@@ -291,8 +313,11 @@ def main():
             facilities = [f.strip() for f in p.get("facilities", "").split(",") if f.strip()]
             if any(f.lower() in DROP_FACILITIES for f in facilities) or any(t.lower() in DROP_TOOLS for t in tools):
                 continue
-            any_output = product == "*"
-            if any_output and p["skill1"].lower() not in ("fletching", "herblore"):
+            extra = product == "+"
+            any_output = product == "*" or extra
+            if product == "*" and p["skill1"].lower() not in ("fletching", "herblore"):
+                continue
+            if extra and p["skill1"].lower() not in ("crafting", "fletching", "herblore"):
                 continue
             if not any_output and not grind and p.get("output1", "").lower() != product.lower():
                 continue
@@ -303,9 +328,11 @@ def main():
             while f"mat{n}" in p:
                 mats.append((p[f"mat{n}"], num(p.get(f"mat{n}quantity"), 1)))
                 n += 1
-            if any_output and len(mats) > MAX_ANY_MATERIALS:
+            if any_output and len(mats) > (MAX_EXTRA_MATERIALS if extra else MAX_ANY_MATERIALS):
                 continue
             ticks, first, single = ticks_of(p)
+            if extra and ticks == 0:
+                continue  # no tick count on the Wiki (all-in-one summaries of multi-step recipes, quest potions): OPEN, not modelled
             out_id = oid(p["output1"])
             ids = [oid(m) for m, _ in mats]
             tool_ids = [oid(t) for t in tools]
@@ -328,7 +355,9 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "recipes.tsv"), "w") as f:
         f.write("output\tcount\tskill\tlevel\txp\tticks\tfirst_ticks\tsingle_ticks\tmembers\ttools\tfacilities\tmaterials\tname\n")
-        for r in rows:
+        for i, r in enumerate(rows):
+            if i == extra_at:
+                f.write("# extra: gap-pass pages (EXTRA_PAGES in tools/wiki-import/recipes.py)\n")
             f.write("\t".join(str(c) for c in r) + "\n")
     print(f"{len(rows)} recipes", file=sys.stderr)
 

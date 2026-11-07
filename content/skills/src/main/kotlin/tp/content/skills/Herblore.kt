@@ -19,21 +19,25 @@ public class Herblore : ContentPlugin {
 
     override fun ContentScope.register() {
         val recipes = RecipeTable.load().filter { it.stat == Stats.HERBLORE }
-        val crushing = recipes.filter { it.tools == listOf(Objs.PESTLE_AND_MORTAR) }
+        val crushing = recipes.filter { it.tools == listOf(Objs.PESTLE_AND_MORTAR) && it.inputs.size == 1 }
         cleaning = recipes.filter { it.tools.isEmpty() && it.inputs.size == 1 }.associateBy { it.inputs.first().obj }
         onItemOp(CLEAN) { click -> clean(click) }
         for (r in crushing) {
             val material = r.inputs.first().obj
             onUseOnItem(Objs.PESTLE_AND_MORTAR, material) { crush(this, r) }
         }
-        val mixes = recipes.filter { it.tools.isEmpty() && it.inputs.size == 2 }
-        for (options in mixes.groupBy { pair(it) }.values) {
-            val (a, b) = pair(options.first())
-            onUseOnItem(a, b) { mix(this, options) }
-        }
+        // Any two materials of a recipe start it (HB7); recipes of three or four materials (super combat, Guthix rest) have several pairs.
+        val mixes = recipes.filter { it.inputs.size >= 2 && (it.tools.isEmpty() || it.tools == listOf(Objs.PESTLE_AND_MORTAR)) }
+        val byPair = HashMap<Pair<Int, Int>, MutableList<Recipe>>()
+        for (r in mixes) for (key in pairs(r)) byPair.getOrPut(key) { ArrayList() } += r
+        for ((key, options) in byPair) onUseOnItem(key.first, key.second) { mix(this, options) }
     }
 
-    private fun pair(r: Recipe): Pair<Int, Int> = minOf(r.inputs[0].obj, r.inputs[1].obj) to maxOf(r.inputs[0].obj, r.inputs[1].obj)
+    /** Every unordered pair of distinct materials of [r], smaller obj id first. */
+    private fun pairs(r: Recipe): List<Pair<Int, Int>> {
+        val objs = r.inputs.map { it.obj }.distinct()
+        return objs.flatMapIndexed { i, a -> objs.drop(i + 1).map { b -> minOf(a, b) to maxOf(a, b) } }
+    }
 
     // ---- cleaning
 

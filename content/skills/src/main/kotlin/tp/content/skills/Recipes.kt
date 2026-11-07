@@ -35,6 +35,9 @@ internal object RecipeTable {
     private const val COLUMNS = 13
     private const val RETURNS = 13
 
+    /** A line starting with this marks a block of rows in the table (tools/wiki-import/recipes.py writes "# extra: ..."); it is skipped. */
+    private const val COMMENT = "#"
+
     /** The `skill` column of `recipes.tsv` (lower-case Wiki skill names) to stat ids. */
     private val STATS =
         mapOf(
@@ -51,7 +54,7 @@ internal object RecipeTable {
         return text
             .lineSequence()
             .drop(1)
-            .filter { it.isNotBlank() }
+            .filter { it.isNotBlank() && !it.startsWith(COMMENT) }
             .map { line -> parse(line.split('\t')) }
             .toList()
     }

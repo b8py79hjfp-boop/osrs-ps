@@ -87,7 +87,7 @@ public class StallThieving : ContentPlugin {
         const val EMPTY_STALL = 634
 
         /** Stalls that are not 2x2, so the empty 2x2 loc does not fit: they only keep their cooldown (OPEN-TH7). */
-        val NO_EMPTY_VARIANT = setOf(4874, 6945, 27537, 28823)
+        val NO_EMPTY_VARIANT = setOf(4874, 6945, 27537, 28823, 4875, 4876, 4877, 4878, 2792, 2793)
 
         /** Respawn ticks that differ from the stall page's: the Keldagrim bakery, 9.6 s (Wiki "Stall/Thievable"). */
         val RESPAWN_OVERRIDES = mapOf(6163 to 16)

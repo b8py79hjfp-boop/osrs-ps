@@ -468,3 +468,69 @@ output	count	skill	level	xp	ticks	first_ticks	single_ticks	members	tools	facilit
 6693	1	herblore	1	0	0	0	0	yes	233		5075:1	Crushed nest
 10111	1	herblore	1	0	0	0	0	yes	233		10109:1	Kebbit teeth dust
 9736	1	herblore	1	0	0	0	0	yes	233		9735:1	Goat horn dust
+# extra: gap-pass pages (EXTRA_PAGES in tools/wiki-import/recipes.py)
+12695	1	herblore	90	150	2	2	2	yes			2436:1,2442:1,2440:1,269:1	Super combat potion(4)
+12695	1	herblore	90	150	2	2	2	yes			2436:1,2442:1,2440:1,111:1	Super combat potion(4)
+10915	1	herblore	65	28.5	2	2	2	yes			3030:1,235:1	Mixture - step 1(1)
+10913	1	herblore	65	38	2	2	2	yes			3028:1,235:1	Mixture - step 1(2)
+10911	1	herblore	65	47.5	2	2	2	yes			3026:1,235:1	Mixture - step 1(3)
+10909	1	herblore	65	57	2	2	2	yes			3024:1,235:1	Mixture - step 1(4)
+10923	1	herblore	65	31.5	2	2	2	yes			10915:1,1526:1	Mixture - step 2(1)
+10921	1	herblore	65	42	2	2	2	yes			10913:1,1526:1	Mixture - step 2(2)
+10919	1	herblore	65	52.5	2	2	2	yes			10911:1,1526:1	Mixture - step 2(3)
+10917	1	herblore	65	63	2	2	2	yes			10909:1,1526:1	Mixture - step 2(4)
+10931	1	herblore	65	36	2	2	2	yes			10923:1,10937:1	Sanfew serum(1)
+10929	1	herblore	65	48	2	2	2	yes			10921:1,10937:1	Sanfew serum(2)
+10927	1	herblore	65	60	2	2	2	yes			10919:1,10937:1	Sanfew serum(3)
+10925	1	herblore	65	72	2	2	2	yes			10917:1,10937:1	Sanfew serum(4)
+4419	1	herblore	18	59	1	1	1	yes			4460:1,249:2,255:1,251:1	Guthix rest(3)
+6472	1	herblore	22	60	2	2	2	yes			97:1,21622:1	Compost potion(3)
+4844	1	herblore	8	40	1	1	1	yes			737:1,1534:1	Relicym's balm(3)
+26342	1	herblore	85	190	2	2	2	yes			109:1,26368:1	Ancient brew(3)
+27638	1	herblore	91	36	3	3	3	yes			26346:1,27616:20	Forgotten brew(1)
+27635	1	herblore	91	72	3	3	3	yes			26344:1,27616:40	Forgotten brew(2)
+27632	1	herblore	91	108	3	3	3	yes			26342:1,27616:60	Forgotten brew(3)
+27629	1	herblore	91	145	3	3	3	yes			26340:1,27616:80	Forgotten brew(4)
+23694	1	herblore	97	0.5	2	2	2	yes			12701:1,23804:1	Divine super combat potion(1)
+23691	1	herblore	97	1	2	2	2	yes			12699:1,23804:2	Divine super combat potion(2)
+23688	1	herblore	97	1.5	2	2	2	yes			12697:1,23804:3	Divine super combat potion(3)
+23685	1	herblore	97	2	2	2	2	yes			12695:1,23804:4	Divine super combat potion(4)
+10142	15	herblore	19	30	3	3	3	yes	233		1939:15,249:1	Guam tar
+10142	15	herblore	19	30	3	3	3	yes	233		1939:15,6681:1	Guam tar
+10143	15	herblore	31	42.5	3	3	3	yes	233		1939:15,251:1	Marrentill tar
+10144	15	herblore	39	55	3	3	3	yes	233		1939:15,253:1	Tarromin tar
+10145	15	herblore	44	72.5	3	3	3	yes	233		1939:15,255:1	Harralander tar
+1395	1	crafting	54	100	2	2	2	yes			571:1,1391:1	Water battlestaff
+1399	1	crafting	58	112.5	2	2	2	yes			575:1,1391:1	Earth battlestaff
+1393	1	crafting	62	125	2	2	2	yes			569:1,1391:1	Fire battlestaff
+1397	1	crafting	66	137.5	2	2	2	yes			573:1,1391:1	Air battlestaff
+21081	1	crafting	1	10	3	3	3	yes	1592	furnace	1609:1,2355:1	Opal ring
+21090	1	crafting	16	35	3	3	3	yes	1597	furnace	1609:1,2355:1	Opal necklace
+21117	1	crafting	22	45	3	3	3	yes	11065	furnace	1609:1,2355:1	Opal bracelet
+21099	1	crafting	27	55	3	3	3	yes	1595	furnace	2355:1,1609:1	Opal amulet (u)
+21084	1	crafting	13	32	3	3	3	yes	1592	furnace	1611:1,2355:1	Jade ring
+21093	1	crafting	25	54	3	3	3	yes	1597	furnace	1611:1,2355:1	Jade necklace
+21120	1	crafting	29	60	3	3	3	yes	11065	furnace	1611:1,2355:1	Jade bracelet
+21102	1	crafting	34	70	3	3	3	yes	1595	furnace	1611:1,2355:1	Jade amulet (u)
+21087	1	crafting	16	35	3	3	3	yes	1592	furnace	1613:1,2355:1	Topaz ring
+21096	1	crafting	32	70	3	3	3	yes	1597	furnace	1613:1,2355:1	Topaz necklace
+21123	1	crafting	38	75	3	3	3	yes	11065	furnace	1613:1,2355:1	Topaz bracelet
+21105	1	crafting	45	80	3	3	3	yes	1595	furnace	1613:1,2355:1	Topaz amulet (u)
+21108	1	crafting	1	4	2	2	2	yes			21099:1,1759:1	Opal amulet
+21111	1	crafting	1	4	2	2	2	yes			21102:1,1759:1	Jade amulet
+21114	1	crafting	1	4	2	2	2	yes			21105:1,1759:1	Topaz amulet
+6667	1	crafting	42	42.5	3	3	3	yes	1785		1775:1	Empty fishbowl
+1133	1	crafting	41	40	3	3	3	yes			1129:1,2370:1	Studded body
+1097	1	crafting	44	42	3	3	3	yes			1095:1,2370:1	Studded chaps
+21338	15	crafting	83	60	2	2	2	yes	1755		21347:1	Amethyst bolt tips
+21350	15	crafting	85	60	2	2	2	yes	1755		21347:1	Amethyst arrowtips
+21352	5	crafting	87	60	2	2	2	yes	1755		21347:1	Amethyst javelin tips
+25853	8	crafting	89	60	2	2	2	yes	1755		21347:1	Amethyst dart tip
+22251	1	fletching	27	50	7	7	7	yes	946		1521:2	Oak shield
+22254	1	fletching	42	83	7	7	7	yes	946		1519:2	Willow shield
+22257	1	fletching	57	116.5	7	7	7	yes	946		1517:2	Maple shield
+22260	1	fletching	72	150	7	7	7	yes	946		1515:2	Yew shield
+22263	1	fletching	87	183	7	7	7	yes	946		1513:2	Magic shield
+22266	1	fletching	92	216	7	7	7	yes	946		19669:2	Redwood shield
+1391	1	fletching	40	80	4	4	4	yes	946		22935:1	Battlestaff
+31049	1	fletching	90	10.5	3	3	3	yes	946		19669:1	Redwood hiking staff
