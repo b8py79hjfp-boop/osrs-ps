@@ -8,6 +8,7 @@ import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
 import tp.symbols.Invs
+import tp.symbols.Objs
 
 /**
  * Woodcutting (docs/mechanics/woodcutting.md), following RS Mod's `Woodcutting` script tick for tick: the click arms
@@ -19,13 +20,17 @@ public class Woodcutting : ContentPlugin {
     /** Axe -> woodcutting level it needs (cache param `levelrequire`). */
     private var axeLevels: Map<Int, Int> = emptyMap()
 
+    private val extras = WoodcuttingExtras()
+
     /** Forestry tree timers of one world, by packed tile (WC4). */
     private class TreeTimer(var lastCut: Long, var active: Int)
 
     override fun ContentScope.register() {
         onWorldStart {
             axeLevels = AXES.keys.associateWith { objParamInt(it, Skilling.PARAM_LEVEL_REQUIRE) ?: 1 }
+            extras.resolve(this)
         }
+        for (nest in SEARCHABLE_NESTS) onItemOp(nest, "Search") { click -> extras.search(this, click) }
         for ((id, tree) in TREES) {
             onOpLoc(id, OP_CHOP) { loc -> chop(loc, tree) }
             for (axe in AXES.keys) onUseOnLoc(axe, id) { loc -> chop(loc, tree) }
@@ -97,9 +102,12 @@ public class Woodcutting : ContentPlugin {
                 logs && p.random(DEPLETE_RANGE) + 1 > kind.depleteChance
             }
         if (logs) {
-            p.message("You get some ${p.objName(kind.logs).lowercase()}.", Skilling.SPAM)
-            p.transaction("woodcutting") { add(Invs.INV, kind.logs, 1) }
-            p.addXp(Stats.WOODCUTTING, kind.xp)
+            if (!extras.infernalBurn(p, axe, kind.logs)) {
+                p.message("You get some ${p.objName(kind.logs).lowercase()}.", Skilling.SPAM)
+                p.transaction("woodcutting") { add(Invs.INV, kind.logs, 1) }
+            }
+            p.addXp(Stats.WOODCUTTING, kind.xp * extras.xpMultiplier(p))
+            extras.rollNest(p)
         }
         if (fall) {
             p.worldAttr(TIMERS)?.remove(loc.coord.packed)
@@ -128,6 +136,16 @@ public class Woodcutting : ContentPlugin {
 
     private companion object {
         val TIMERS = AttrKey<HashMap<Int, TreeTimer>>("woodcutting.timers")
+
+        /** Bird nests with a "Search" op: three eggs, ring and the post Farming Guild seeds (docs/mechanics/woodcutting.md WC5). */
+        val SEARCHABLE_NESTS =
+            intArrayOf(
+                Objs.BIRD_NEST_EGG_RED,
+                Objs.BIRD_NEST_EGG_BLUE,
+                Objs.BIRD_NEST_EGG_GREEN,
+                Objs.BIRD_NEST_RING,
+                Objs.BIRD_NEST_SEEDS_JAN2019,
+            )
 
         /** Op 1 of every tree ("Chop down"). */
         const val OP_CHOP = 1

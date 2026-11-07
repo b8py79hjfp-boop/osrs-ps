@@ -31,3 +31,25 @@ internal val BURNABLE_LOGS: List<BurnableLog> =
 
 /** The fire a lit log becomes (cache loc `fire`; coloured fires belong to coloured logs, not implemented). */
 internal const val FIRE_LOC: Int = Locs.FIRE
+
+/**
+ * A coloured log (docs/mechanics/firemaking.md FM6): a plain log coated with a gnomish [firelighter] burns with the
+ * matching coloured [fire] loc, never fails to light and gives 50 xp.
+ */
+internal class ColouredLog(val log: Int, val fire: Int, val firelighter: Int, val colour: String)
+
+/** Cache obj ids found with `cache-dump config obj --all`: purple 10326 / white 10327 firelighters, white 10328 / purple 10329 logs. */
+private const val PURPLE_FIRELIGHTER = 10326
+private const val WHITE_FIRELIGHTER = 10327
+private const val WHITE_LOGS = 10328
+private const val PURPLE_LOGS = 10329
+
+/** The five gnomish firelighter colours (Wiki "Gnomish firelighters"); white and purple fire locs are the cache's `trail_*_fire`. */
+internal val COLOURED_LOGS: List<ColouredLog> =
+    listOf(
+        ColouredLog(Objs.RED_LOGS, Locs.RED_FIRE, Objs.GNOMISH_FIRELIGHTER_RED, "red"),
+        ColouredLog(Objs.GREEN_LOGS, Locs.GREEN_FIRE, Objs.GNOMISH_FIRELIGHTER_GREEN, "green"),
+        ColouredLog(Objs.BLUE_LOGS, Locs.BLUE_FIRE, Objs.GNOMISH_FIRELIGHTER_BLUE, "blue"),
+        ColouredLog(WHITE_LOGS, Locs.TRAIL_WHITE_FIRE, WHITE_FIRELIGHTER, "white"),
+        ColouredLog(PURPLE_LOGS, Locs.TRAIL_PURPLE_FIRE, PURPLE_FIRELIGHTER, "purple"),
+    )

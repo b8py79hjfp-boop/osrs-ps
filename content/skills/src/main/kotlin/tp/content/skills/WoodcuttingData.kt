@@ -41,6 +41,12 @@ internal enum class TreeKind(
     YEW(60, 175.0, Objs.YEW_LOGS, 190, 100..100, 0, AxeRates.YEW),
     MAGIC(75, 250.0, Objs.MAGIC_LOGS, 390, 200..200, 0, AxeRates.MAGIC),
     REDWOOD(90, 380.0, Objs.REDWOOD_LOGS, 440, 200..200, 0, AxeRates.REDWOOD),
+
+    // Newer Sailing-update trees. Timers: Wiki "Camphor tree" (2 minutes), "Ironwood tree" (400 ticks), "Rosewood tree" (458 ticks).
+    // Respawn is OPEN-WC6: the Wiki gives none for the wild trees, 200 ticks (two minutes) is RS Mod's value for magic and redwood.
+    CAMPHOR(66, 143.5, Objs.CAMPHOR_LOGS, 200, 200..200, 0, AxeRates.CAMPHOR),
+    IRONWOOD(80, 175.0, Objs.IRONWOOD_LOGS, 400, 200..200, 0, AxeRates.IRONWOOD),
+    ROSEWOOD(92, 212.5, Objs.ROSEWOOD_LOGS, 458, 200..200, 0, AxeRates.ROSEWOOD),
 }
 
 /** A choppable loc: its kind and the stump it becomes. */
@@ -160,6 +166,41 @@ internal enum class AxeRates(vararg val packed: Int) {
         AxeRatePack.r(7, 21),
         AxeRatePack.r(7, 30),
         AxeRatePack.r(8, 35),
+    ),
+
+    // Wiki "Camphor tree" / "Ironwood tree" / "Rosewood tree" cut-chance charts (low, high), bronze .. crystal.
+    CAMPHOR(
+        AxeRatePack.r(8, 23),
+        AxeRatePack.r(11, 36),
+        AxeRatePack.r(15, 47),
+        AxeRatePack.r(17, 71),
+        AxeRatePack.r(19, 59),
+        AxeRatePack.r(23, 71),
+        AxeRatePack.r(27, 83),
+        AxeRatePack.r(32, 89),
+        AxeRatePack.r(34, 93),
+    ),
+    IRONWOOD(
+        AxeRatePack.r(6, 21),
+        AxeRatePack.r(10, 38),
+        AxeRatePack.r(13, 42),
+        AxeRatePack.r(15, 46),
+        AxeRatePack.r(17, 53),
+        AxeRatePack.r(21, 63),
+        AxeRatePack.r(24, 75),
+        AxeRatePack.r(29, 80),
+        AxeRatePack.r(30, 83),
+    ),
+    ROSEWOOD(
+        AxeRatePack.r(6, 18),
+        AxeRatePack.r(9, 28),
+        AxeRatePack.r(12, 37),
+        AxeRatePack.r(13, 40),
+        AxeRatePack.r(15, 47),
+        AxeRatePack.r(18, 56),
+        AxeRatePack.r(21, 66),
+        AxeRatePack.r(25, 70),
+        AxeRatePack.r(27, 73),
     ),
     HOLLOW(
         AxeRatePack.r(18, 26),
@@ -285,6 +326,9 @@ internal val TREES: Map<Int, Tree> =
         Locs.PRIF_TEAKTREE to Tree(TreeKind.TEAK, 36687),
         Locs.TEAKTREE_UPDATE to Tree(TreeKind.TEAK, 40759),
         Locs.TEAKTREE to Tree(TreeKind.TEAK, 9037),
+        Locs.CAMPHOR_TREE to Tree(TreeKind.CAMPHOR, Locs.CAMPHOR_TREE_UPDATE_STUMP),
+        Locs.IRONWOOD_TREE to Tree(TreeKind.IRONWOOD, Locs.IRONWOOD_TREE_UPDATE_STUMP),
+        Locs.ROSEWOOD_TREE to Tree(TreeKind.ROSEWOOD, Locs.ROSEWOOD_TREE_UPDATE_STUMP),
         Locs.WILLOWTREE to Tree(TreeKind.WILLOW, 9711),
         Locs.WILLOW_TREE2 to Tree(TreeKind.WILLOW, 9471),
         Locs.WILLOW_TREE3 to Tree(TreeKind.WILLOW, 9471),
