@@ -23,7 +23,8 @@ private const val DEFAULT_HTTP_PORT = 8080
 /**
  * World-node entry point.
  *
- * Args: `--cache-dir <path>` (default `.data/cache/<rev>/disk`), `--boot-check` (verify data and exit; CI),
+ * Args: `--cache-dir <path>` (default: the packed cache when present, else `.data/cache/<rev>/disk`),
+ * `--boot-check` (verify data and exit; CI),
  * `--port` (first world's game + JS5 port, default 43594), `--worlds <n>` (worlds in this JVM, default 1; world i
  * listens on port + i; with `--loopback-hosts` world i instead binds 127.0.0.(i+1) on the same port, so a real client can
  * hop locally), `--world` (first world id, default 1), `--http-port` (jav_config/worldlist with an embedded
@@ -36,7 +37,15 @@ private const val DEFAULT_HTTP_PORT = 8080
  */
 fun main(args: Array<String>) {
     val options = parseArgs(args)
-    val cacheDir = options["--cache-dir"]?.let(Path::of) ?: Path.of(".data", "cache", Revision.NUMBER.toString(), "disk")
+    // The packed cache (custom interfaces / clientscripts, `./gradlew :symbols:packCache`, D-071) when present.
+    val packedDir = Path.of(".data", "cache", "${Revision.NUMBER}-packed", "disk")
+    val cacheDir =
+        options["--cache-dir"]?.let(Path::of)
+            ?: packedDir.takeIf {
+                java.nio.file.Files
+                    .isDirectory(it)
+            }
+            ?: Path.of(".data", "cache", Revision.NUMBER.toString(), "disk")
     val data = WorldNode.loadData(cacheDir)
     if (data == null) {
         logger.error { "Cache verification failed; refusing to start." }

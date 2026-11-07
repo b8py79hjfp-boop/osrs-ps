@@ -53,7 +53,29 @@ object WorldNode {
                 cache.populatedArchiveCount,
             )
         }
-        if (!CacheSpotChecks.verify(cache) { logger.error { it } }) {
+        val packed =
+            cacheDir
+                .resolveSibling("pack.properties")
+                .takeIf {
+                    java.nio.file.Files
+                        .isRegularFile(it)
+                }?.let { file ->
+                    java.util.Properties().apply {
+                        java.nio.file.Files
+                            .newBufferedReader(file)
+                            .use { load(it) }
+                    }
+                }
+        val groups = packed?.getProperty("groups")?.toIntOrNull()
+        val checked =
+            if (groups !=
+                null
+            ) {
+                CacheSpotChecks.verify(cache, groups) { logger.error { it } }
+            } else {
+                CacheSpotChecks.verify(cache) { logger.error { it } }
+            }
+        if (!checked) {
             cache.close()
             return null
         }

@@ -1,17 +1,13 @@
 [clientscript,trading_post_tick](component $list, string $data, int $mode, int $base)
-// Ages count up once a second (50 client cycles) from the age the server sent.
-def_int $elapsed = calc((clientclock - $base) / 50);
+// Ages count up once a second (50 client cycles) from the ages the server sent in inv tp_ages.
 if (calc((clientclock - $base) % 50) ! 0) {
     return;
 }
+def_int $elapsed = calc((clientclock - $base) / 50);
 def_int $slot = 0;
-def_int $field = 2;
-if ($mode = 1) {
-    $field = 3;
-}
 while ($slot < 60) {
     if (cc_find($list, calc($slot * 8 + 6)) = true) {
-        cc_settext(~trading_post_age(calc(stringtoint(~trading_post_field(~trading_post_row($data, $slot), $field)) + $elapsed)));
+        cc_settext(~trading_post_age(calc(inv_getnum(tp_ages, $slot) + $elapsed)));
     }
     $slot = calc($slot + 1);
 }

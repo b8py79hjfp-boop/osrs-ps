@@ -17,8 +17,11 @@ object CacheSpotChecks {
             Expect(archive = 24, version = 1, crc = -1_931_708_361),
         )
 
-    /** Returns true when every check passes; each failure is reported through [report]. */
-    fun verify(cache: Js5Cache, report: (String) -> Unit): Boolean {
+    /**
+     * Returns true when every check passes; each failure is reported through [report]. A packed cache (tools/cache-pack,
+     * D-071) adds groups to archives 2 / 3 / 12 only, so it passes its own [groups] count (from its `pack.properties`).
+     */
+    fun verify(cache: Js5Cache, groups: Int = GROUPS, report: (String) -> Unit): Boolean {
         var ok = true
 
         fun fail(msg: String) {
@@ -26,7 +29,7 @@ object CacheSpotChecks {
             report(msg)
         }
         if (cache.archiveCount != ARCHIVES) fail("archive count ${cache.archiveCount}, expected $ARCHIVES")
-        if (cache.groupCount != GROUPS) fail("group count ${cache.groupCount}, expected $GROUPS")
+        if (cache.groupCount != groups) fail("group count ${cache.groupCount}, expected $groups")
         for (e in expected) {
             val info = cache.archive(e.archive)
             when {

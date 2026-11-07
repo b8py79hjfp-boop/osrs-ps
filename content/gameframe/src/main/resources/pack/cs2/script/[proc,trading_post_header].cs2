@@ -1,5 +1,5 @@
-[proc,trading_post_header](component $header, string $label, boolean $sorted)
-if ($sorted = true) {
+[proc,trading_post_header](component $header, string $label, int $sortcol, int $col)
+if ($sortcol = $col) {
     if_settext(append(append("<u=ffffff>", $label), "</u>"), $header);
     if_setcolour(0xffffff, $header);
 } else {

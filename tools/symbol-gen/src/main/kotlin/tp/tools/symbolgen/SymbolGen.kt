@@ -27,6 +27,7 @@ object SymbolGen {
     private const val GROUP_IFTYPE = 14
     private const val COMPONENT_END = 0xFFFF
     private const val COMPONENT_SHIFT = 16
+    private const val COMPONENT_MASK = 0xFFFF
 
     /** Flat namespaces: group id -> generated class name. Groups 16-19 are unnamed by every reference (OPEN). */
     private val FLAT: Map<Int, String> =
@@ -51,8 +52,31 @@ object SymbolGen {
 
     data class Report(val namespace: String, val count: Int, val renamed: Int)
 
+    /**
+     * Names added by `tools/cache-pack` (`custom-symbols.tsv`: type, name, id): invs / varps / varbits join their flat
+     * namespace, interfaces and `iface:comp` components join Interfaces / Components, clientscripts and procs go to
+     * Clientscripts (D-074).
+     */
+    class Custom(val rows: List<Triple<String, String, Int>>) {
+        fun of(type: String): List<Pair<Int, String>> = rows.filter { it.first == type }.map { it.third to it.second }
+
+        companion object {
+            fun read(path: Path?): Custom {
+                if (path == null || !Files.isRegularFile(path)) return Custom(emptyList())
+                val rows =
+                    Files.readAllLines(path).filter { it.isNotBlank() && !it.startsWith("#") }.map {
+                        val f = it.split('\t')
+                        Triple(f[0], f[1], f[2].toInt())
+                    }
+                return Custom(rows)
+            }
+        }
+    }
+
+    private val CUSTOM_FLAT = mapOf("Invs" to "inv", "Varps" to "varp", "Varbits" to "varbit")
+
     /** Writes every namespace under [outDir]/tp/symbols and returns a per-namespace report. */
-    fun generate(cache: Js5Cache, outDir: Path): List<Report> {
+    fun generate(cache: Js5Cache, outDir: Path, custom: Custom = Custom(emptyList())): List<Report> {
         val pkgDir = outDir.resolve(PACKAGE.replace('.', '/'))
         Files.createDirectories(pkgDir)
         val index = cache.index(Js5Archive.GAMEVALS)
@@ -63,10 +87,11 @@ object SymbolGen {
             if (group !in present) continue
             val files = cache.readFiles(Js5Archive.GAMEVALS, group) ?: continue
             val entries = (0 until files.size).map { files.ids[it] to String(files.data[it], Charsets.UTF_8) }
-            reports += writeFlat(pkgDir, className, entries)
+            reports += writeFlat(pkgDir, className, entries + CUSTOM_FLAT[className]?.let { custom.of(it) }.orEmpty())
         }
         if (GROUP_DBTABLE in present) reports += writeDbTables(cache, pkgDir)
-        if (GROUP_IFTYPE in present) reports += writeInterfaces(cache, pkgDir)
+        if (GROUP_IFTYPE in present) reports += writeInterfaces(cache, pkgDir, custom)
+        reports += writeClientscripts(pkgDir, custom.of("clientscript") + custom.of("proc"))
         return reports
     }
 
@@ -139,7 +164,22 @@ object SymbolGen {
     }
 
     /** iftype files: name, then (u16 component id, name)* until 0xFFFF. Emits Interfaces (ids) and Components (packed). */
-    private fun writeInterfaces(cache: Js5Cache, dir: Path): List<Report> {
+    private fun writeClientscripts(dir: Path, entries: List<Pair<Int, String>>): Report {
+        val sb = StringBuilder().header().append("public final class Clientscripts {\n    private Clientscripts() {}\n")
+        val names = Names()
+        for ((id, name) in entries.sortedBy { it.first }) {
+            sb
+                .append("    public static final int ")
+                .append(names.unique(name, id))
+                .append(" = ")
+                .append(id)
+                .append(";\n")
+        }
+        Files.writeString(dir.resolve("Clientscripts.java"), sb.append("}\n"))
+        return Report("Clientscripts", entries.size, 0)
+    }
+
+    private fun writeInterfaces(cache: Js5Cache, dir: Path, custom: Custom): List<Report> {
         val files = cache.readFiles(Js5Archive.GAMEVALS, GROUP_IFTYPE) ?: return emptyList()
         val ifNames = Names()
         val ifaces = StringBuilder().header().append("public final class Interfaces {\n    private Interfaces() {}\n")
@@ -168,6 +208,25 @@ object SymbolGen {
                     .append(" = ")
                     .append(packed)
                     .append(";\n")
+                componentCount++
+            }
+            comps.append("    }\n")
+        }
+        val customComps = custom.of("component").groupBy({ it.second.substringBefore(':') }, { it.second.substringAfter(':') to it.first })
+        for ((id, ifName) in custom.of("interface")) {
+            val name = ifNames.unique(ifName, id)
+            ifaces
+                .append("    public static final int ")
+                .append(name)
+                .append(" = ")
+                .append(id)
+                .append(";\n")
+            comps.append("    public static final class ").append(pascal(name)).append(" {\n")
+            comps.append("        private ").append(pascal(name)).append("() {}\n")
+            val compNames = Names()
+            for ((comp, packed) in customComps[ifName].orEmpty()) {
+                comps.append("        public static final int ").append(compNames.unique(comp, packed and COMPONENT_MASK)).append(" = ")
+                comps.append(packed).append(";\n")
                 componentCount++
             }
             comps.append("    }\n")
@@ -220,8 +279,8 @@ object SymbolGen {
 }
 
 fun main(args: Array<String>) {
-    if (args.size != 2) {
-        System.err.println("usage: symbol-gen <cache-dir> <out-dir>")
+    if (args.size !in 2..3) {
+        System.err.println("usage: symbol-gen <cache-dir> <out-dir> [custom-symbols.tsv]")
         exitProcess(2)
     }
     val cacheDir = Path.of(args[0])
@@ -232,6 +291,9 @@ fun main(args: Array<String>) {
     val out = Path.of(args[1])
     out.toFile().deleteRecursively()
     Js5Cache.open(cacheDir).use { cache ->
-        for (r in SymbolGen.generate(cache, out)) println("${r.namespace}: ${r.count} symbols (${r.renamed} renamed for collisions)")
+        val custom = SymbolGen.Custom.read(args.getOrNull(2)?.let { Path.of(it) })
+        for (r in SymbolGen.generate(cache, out, custom)) {
+            println("${r.namespace}: ${r.count} symbols (${r.renamed} renamed for collisions)")
+        }
     }
 }

@@ -63,3 +63,12 @@
 
 // if_runscript* (opcode 2929, see D-072): int crc, component, sub id, then the type string Neptune appends.
 [command,if_runscript*]
+// Trading post additions (RuneLite Opcodes: CC_FIND 200, CC_SETTRANS 1103, CC_SETOBJECT 1200, CC_SETONMOUSEOVER 1403,
+// CC_SETONMOUSELEAVE 1404, INV_GETNUM 3302, TOSTRING 4106).
+[command,cc_find](component $layer, int $subid)(boolean)
+[command,cc_settrans](int $trans)
+[command,cc_setobject](obj $obj, int $count)
+[command,cc_setonmouseover](hook $hook)
+[command,cc_setonmouseleave](hook $hook)
+[command,inv_getnum](inv $inv, int $slot)(int)
+[command,tostring](int $value)(string)

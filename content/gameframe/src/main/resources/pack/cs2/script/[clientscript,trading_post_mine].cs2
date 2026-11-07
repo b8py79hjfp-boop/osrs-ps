@@ -1,5 +1,5 @@
 [clientscript,trading_post_mine](component $mine, component $scrollbar, component $title, component $collect, string $data, int $count, int $max, string $collecttext)
-// The viewer's own listings (inv tp_mine) with "price ea" and "sold/quantity sold" lines; $data rows are price;sold;quantity.
+// The viewer's own listings (inv tp_mine, count = quantity) with "price ea" and "sold/quantity sold" lines; $data rows are price;sold/quantity.
 if_settext(append(append(append("Your listings ", tostring($count)), "/"), tostring($max)), $title);
 ~trading_post_collect_draw($collect, $collecttext);
 cc_deleteall($mine);
@@ -22,10 +22,10 @@ while ($slot < 10) {
         cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
         cc_setgraphicshadow(0x333333);
         cc_setoutline(1);
-        cc_setobject($obj, stringtoint(~trading_post_field($row, 2)));
+        cc_setobject($obj, inv_getnum(tp_mine, $slot));
         ~trading_post_line($mine, calc($id + 1), $y, 0xff981f, ~trading_post_fit($name, 72));
         ~trading_post_line($mine, calc($id + 2), calc($y + 14), 0xffffff, append(~trading_post_field($row, 0), " ea"));
-        ~trading_post_line($mine, calc($id + 3), calc($y + 28), 0x9f8b6b, append(append(append(~trading_post_field($row, 1), "/"), ~trading_post_field($row, 2)), " sold"));
+        ~trading_post_line($mine, calc($id + 3), calc($y + 28), 0x9f8b6b, append(~trading_post_field($row, 1), " sold"));
         cc_create($mine, ^iftype_rectangle, calc($id + 5));
         cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
         cc_setsize(0, 44, ^setsize_minus, ^setsize_abs);

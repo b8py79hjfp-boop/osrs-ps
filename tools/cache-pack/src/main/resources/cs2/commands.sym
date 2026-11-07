@@ -42,3 +42,10 @@
 4101	append
 3300	clientclock
 2929	if_runscript*
+200	cc_find
+1103	cc_settrans
+1200	cc_setobject
+1403	cc_setonmouseover
+1404	cc_setonmouseleave
+3302	inv_getnum
+4106	tostring

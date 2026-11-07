@@ -12,3 +12,10 @@ size = 10
 scope = "Temp"
 stack = "Always"
 protect = false
+
+[[inventory]]
+id = "inv.tp_ages"
+size = 60
+scope = "Temp"
+stack = "Always"
+protect = false
