@@ -57,7 +57,9 @@ internal object DeathRules {
 
     /**
      * Items kept on death (Wiki "Items Kept on Death"): 3 most valuable, 0 when skulled, +1 with Protect Item. Value
-     * = cache `cost`. OPEN-D1: stackables are never kept here; untradeable handling isn't modelled.
+     * = Grand Exchange guide price, else the cache cost. OPEN-D1: stackables are never kept here. A PvP death (killed
+     * by a player in the Wilderness or on a PvP world) drops the rest for the killer, except untradeables, which go to
+     * the grave; any other death puts the rest in the grave (death.md DE1-DE4, DE10).
      */
     fun dropItems(dead: PlayerRef, killer: EntityRef?) {
         val keep = (if (dead[SharedAttrs.SKULL_ICON] != null) 0 else KEPT) + if (dead.hasPrayer("Protect Item")) 1 else 0
@@ -77,15 +79,26 @@ internal object DeathRules {
                 .sortedByDescending { it.third }
                 .take(keep)
                 .toSet()
-        val owner = (killer as? PlayerRef)?.username ?: dead.username
-        val at = dead.coord
+        val lost = units.filter { it !in kept }
+        val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
+        val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
+        // DE3: a death in instance space leaves the grave at the respawn point.
+        val at = if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
+        if (!pvp) return Graves.bury(dead, lost.map { it.first to it.second }, at, inWilderness)
+        val owner = (killer as PlayerRef).username
+        val untradeable = lost.filter { (invId, slot, _) -> !dead.objTradeable(dead.inv(invId).obj(slot)) }
         dead.transaction("death drop") {
-            units.filter { it !in kept }.all { (invId, slot, _) ->
+            (lost - untradeable.toSet()).all { (invId, slot, _) ->
                 val inv = dead.inv(invId)
-                dropAt(invId, slot, inv.obj(slot), inv.count(slot), at, owner)
+                dropAt(invId, slot, inv.obj(slot), inv.count(slot), dead.coord, owner)
             }
         }
+        if (untradeable.isNotEmpty()) Graves.bury(dead, untradeable.map { it.first to it.second }, at, inWilderness)
     }
+
+    /** Instance space starts at map square x 100 (instances.md IN1). */
+    private const val FIRST_INSTANCE_SQUARE = 100
+    private const val SQUARE_SHIFT = 6
 
     private const val KEPT = 3
 }

@@ -96,7 +96,7 @@ internal object CombatSystem {
     private const val WARD_DIVISOR = 10
 
     /** Respawn point: Lumbridge (RS Mod `PlayerDeath` default). */
-    private val RESPAWN = CoordGrid(3222, 3218, 0)
+    val RESPAWN = CoordGrid(3222, 3218, 0)
 
     // ---- interaction entry points
 
