@@ -259,4 +259,11 @@ internal object SailingReaders {
             .dbRows(WhitelistT.ID)
             .flatMap { it.ints(WhitelistT.COL_ENTRY) }
             .toSet()
+
+    /** Obj categories of `Sailing_Boat_Cargohold_Whitelist_Obj` (db 196) that may be stored in a boat's cargo hold. */
+    fun cargoCategories(world: WorldRef): Set<Int> =
+        world
+            .dbRows(WhitelistT.ID)
+            .flatMap { it.ints(WhitelistT.COL_ENTRY_CATEGORY) }
+            .toSet()
 }

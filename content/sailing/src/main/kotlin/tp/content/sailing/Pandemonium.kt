@@ -21,10 +21,15 @@ import tp.util.CoordGrid
  * from Port Sarim and report to Steve. Progress is the cache quest varp `SAILING_INTRO_PRIMARY` (4959): 0 not started, 50 complete
  * (the quest row's end state), the values between are this class's stages (the real ones are server-only, OPEN-PAN6).
  *
- * The shipyard cargo-hold build (S4) and the ledger-table cargo (S3) do not exist yet: the hold is fitted during Jim's
- * conversation (OPEN-PAN1) and [cargoTaken] / [cargoDelivered] are the hooks S3 calls.
+ * The shipyard cargo-hold build (S4) does not exist yet: the hold is fitted during Jim's conversation (OPEN-PAN1). Jim's
+ * delivery is port task 599, given when he sends the player off; the ledger tables ([PortLedger]) call [cargoTaken] and
+ * [cargoDelivered].
  */
-internal class Pandemonium(private val state: SailingState, private val docking: Docking) {
+internal class Pandemonium(
+    private val state: SailingState,
+    private val docking: Docking,
+    private val ports: PortTasks,
+) : QuestCargo {
     private val talk = PandemoniumDialogue(this)
     private val jim = PandemoniumJim(this)
 
@@ -47,6 +52,7 @@ internal class Pandemonium(private val state: SailingState, private val docking:
 
     fun setStage(p: PlayerRef, stage: Int) {
         p.setVarp(Varps.SAILING_INTRO_PRIMARY, stage)
+        if (stage == ERRAND) ports.assignQuest(p, QUEST_TASK)
     }
 
     // ---- the intro boat
@@ -135,25 +141,30 @@ internal class Pandemonium(private val state: SailingState, private val docking:
     fun giveLog(p: PlayerRef): Boolean =
         p.inv(Invs.INV).total(Objs.SAILING_LOG) > 0 || p.transaction("pandemonium log") { add(Invs.INV, Objs.SAILING_LOG, 1) }
 
-    /** Two repair kits and a spyglass; they belong in the cargo hold (S3, OPEN-PAN3) and go to the backpack until it exists. */
+    /** Two repair kits and a spyglass for the cargo hold of the raft (Jim: "chucked some useful bits and bobs in your cargo hold"). */
     fun giveJimsGifts(p: PlayerRef) {
         if (p.varbit(Varbits.SAILING_INTRO_RECEIVED_REPAIRKITS) == 1) return
-        p.transaction("pandemonium gifts") {
-            addOrDrop(Invs.INV, Objs.BOAT_REPAIR_KIT, REPAIR_KITS) && addOrDrop(Invs.INV, Objs.SAILING_CHARTING_SPYGLASS, 1)
+        val hold = Cargo.holdInv(RAFT_SLOT)
+        val stored =
+            p.transaction("pandemonium gifts") {
+                add(hold, Objs.BOAT_REPAIR_KIT, REPAIR_KITS) && add(hold, Objs.SAILING_CHARTING_SPYGLASS, 1)
+            }
+        if (!stored) {
+            p.transaction("pandemonium gifts") {
+                addOrDrop(Invs.INV, Objs.BOAT_REPAIR_KIT, REPAIR_KITS) && addOrDrop(Invs.INV, Objs.SAILING_CHARTING_SPYGLASS, 1)
+            }
         }
         p.setVarbit(Varbits.SAILING_INTRO_RECEIVED_REPAIRKITS, 1)
     }
 
-    /** Hook for S3: the player picked the crate up at the Port Sarim ledger table. */
-    fun cargoTaken(p: PlayerRef) {
-        if (stage(p) == ERRAND) setStage(p, CARGO_TAKEN)
+    /** The player picked Jim's crate up at the Port Sarim ledger table (port task [QUEST_TASK]). */
+    override fun cargoTaken(p: PlayerRef, taskId: Int) {
+        if (taskId == QUEST_TASK && stage(p) == ERRAND) setStage(p, CARGO_TAKEN)
     }
 
-    /** Hook for S3: the crate was delivered on the Pandemonium ledger table; the extra 100 Sailing XP (Wiki rewards). */
-    fun cargoDelivered(p: PlayerRef) {
-        if (stage(p) != CARGO_TAKEN) return
-        setStage(p, CARGO_DELIVERED)
-        p.addXp(Stats.SAILING, DELIVERY_XP)
+    /** The crate was delivered on the Pandemonium ledger table. Its 100 Sailing XP is the task's own (Wiki: task 599). */
+    override fun cargoDelivered(p: PlayerRef, taskId: Int) {
+        if (taskId == QUEST_TASK && stage(p) == CARGO_TAKEN) setStage(p, CARGO_DELIVERED)
     }
 
     /** Steve's finale: the quest is complete. QP and the reward scroll are OPEN-PAN7 (no quest point store yet). */
@@ -220,9 +231,14 @@ internal class Pandemonium(private val state: SailingState, private val docking:
         private const val WATCH_TICKS = 3
         private const val NAME_RANGE = 1 shl 24
 
-        /** Rewards (Wiki Pandemonium): 300 Sailing XP, +100 on delivery, 25 sawmill coupons (wood plank), 2 repair kits. */
+        /** Port task id of Jim's delivery (cache `Port_Task` 599 "Pandemonium ship part delivery"). */
+        const val QUEST_TASK = 599
+
+        /** Boat slot of the raft the quest gives. */
+        private const val RAFT_SLOT = 0
+
+        /** Rewards (Wiki Pandemonium): 300 Sailing XP, 25 sawmill coupons (wood plank), 2 repair kits (the 100 delivery XP is a task's). */
         private const val QUEST_XP = 300.0
-        private const val DELIVERY_XP = 100.0
         private const val COUPONS = 25
         private const val REPAIR_KITS = 2
     }

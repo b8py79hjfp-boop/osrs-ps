@@ -28,14 +28,14 @@ Sources: cache 2757 db 194, 197, 201 and 149; OSRS Wiki https://oldschool.runesc
 
 ## OPEN
 
-- **OPEN-P4:** meaning of the port columns on bounty rows (board port assumed; checked on the Port Sarim rows only).
+- **OPEN-P4:** (closed by S3) on bounty rows all three port columns are the board's dock (checked on rows 465, 486, 512 against the Wiki).
 - **OPEN-T1:** courier / bounty XP formula (imported data used instead).
 - **OPEN-P1:** the Wiki docking-point table has no row for Last Light (cache dock, buoy (2845,2334) in `dock-buoys.tsv`); its land
   coordinate, level facts and facilities are unsourced.
 - **OPEN-P2:** ledger-table and notice-board tile coordinates per dock: only the two quest tasks give ledger pins in the Wiki
   (`courier-tasks.tsv` `ledger_*` columns); the rest come from the cache map (loc placements `LEDGER_TABLE_ICON_*`, `PORT_TASK_BOARD_*`).
-- **OPEN-P3:** guaranteed bounty per board (`PORT_TASK_GAURANTEED_BOUNTY`, stripped): the Wiki says each board has exactly one
-  always-available bounty.
+- **OPEN-P3:** (closed by S3) the guaranteed bounty per board is the `guaranteed` column of `bounty-tasks.tsv` (Wiki `BountyTaskLine`,
+  23 rows, one per board).
 - **OPEN-P5:** the docking radius (15 tiles) and the mooring pose are assumptions.
 - **OPEN-P6:** quest and visit gates of docks other than the level.
 - **OPEN-SEL1:** boat selection interface 934 is replaced by a chatbox menu.

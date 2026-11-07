@@ -28,6 +28,7 @@ internal class Boats(private val data: SailingData, val sites: DockSites) {
         copyDeck(ref, tpl, owned.hull)
         for (part in listOf(helm, sail, keel)) place(ctx, ref, tpl, part?.placement)
         place(ctx, ref, tpl, boat.staticFacility)
+        if (!boat.temporary) place(ctx, ref, tpl, HoldFacility.placement(data, boat))
         val active =
             ActiveBoat(
                 ref = ref,

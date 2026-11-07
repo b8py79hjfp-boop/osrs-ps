@@ -176,7 +176,10 @@ internal class Docking(private val state: SailingState) {
     private fun helm(p: PlayerRef) {
         val boat = ActiveBoats.of(p) ?: return
         val motion = state.boats.motion(p) ?: return
-        if (p.varbit(Varbits.SAILING_BOAT_FACILITY_LOCKEDIN) == 1) {
+        if (p.varbit(Varbits.SAILING_CARRYING_CARGO) == 1 && p.varbit(Varbits.SAILING_BOAT_FACILITY_LOCKEDIN) == 0) {
+            // Wiki Courier crate: without a crewmate the crate must be in the cargo hold before the helm can be operated (OPEN-PT3).
+            p.message("You can't take the helm while carrying cargo. Store it in the cargo hold first.")
+        } else if (p.varbit(Varbits.SAILING_BOAT_FACILITY_LOCKEDIN) == 1) {
             motion.stopNavigating(p)
             p.setVarbit(Varbits.SAILING_BOAT_FACILITY_LOCKEDIN, 0)
         } else if (boat.owner != p.username.lowercase() && boat.slot >= 0) {

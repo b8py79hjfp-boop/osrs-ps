@@ -719,3 +719,27 @@ sailing-pandemonium.md.
 - **Item charges per player** (Iban's staff, slayer's staff (e)) in `saved` counters until an item-charge store exists (OPEN-CM4).
 - **NPC attributes and elemental weakness** were added to the Wiki NPC import (`attributes`, `weak`, `weakpct` columns).
 - **Interactions from a deck into the root world** (WE11): no route, reach while the pivot is within 31 tiles; content checks the real distance.
+## D-052: Sailing S3 - port task state in `saved`, client-built boards, hold sized by `showInv` (S3)
+
+`content/sailing` gains `PortTasks`, `PortBoards`, `PortLedger`, `CargoHold`, `PortMaster`, `PortRewards`, `PortCatalog`, `PortSites`
+and `PortTaskSave`. Rules and OPEN items: docs/mechanics/sailing-port-tasks.md. No plugin-api, engine or protocol change.
+- **Task state is in `saved`, the cache varbits are a mirror.** One Long per slot plus counters (`PortTaskSave`), copied into the
+  `PORT_TASK_*` varbits at login, on every change and on a Sailing level gain; the client scripts of the captain's log read only those.
+  `setBit` throws when a value exceeds the varbit width, so every mirrored value is clamped to the width in the cache (found by running
+  it: `PORT_TASK_LAST_CARGO_TAKEN` is 3 bits, so it holds a slot, not a task id).
+- **The boards are the cache interfaces, driven from the disassembled client scripts.** Unlike the construction pickers (D-047) the
+  scripts for 941/942/935 could be followed: 8912 takes 8 db row ids, 8901 fills the info panel, 8707 builds the log from the slot varbits,
+  and the board's "Select" op is the first of 6 components per task. That mapping and the hold's item grid component are unverified in a
+  real client (OPEN-PT2); a chatbox menu fallback was not built.
+- **Crates are worn, as in the cache.** A crate has wear positions 3 and 5, so "carrying" is the weapon slot; `Cargo` mirrors it into
+  `SAILING_CARRYING_CARGO`, which the ledger-table and hold multi locs resolve through. Taking and handing in are single transactions. Blocking
+  unequip and teleports belongs to `content/combat` / `content/magic` (OPEN-PT3); a 22-tick timer confiscates a crate carried out of port.
+- **The hold is sent with its capacity as size.** The client reads capacity as `inv_size`, so `showInv` sends `CARGOHOLD_SIZE` slots of
+  inventory 963 + slot instead of the cache's 240; the server inventory keeps 240 slots and fills them lowest-first, and moves check the
+  capacity first. Inventories are saved by the existing player save. Until the shipyard (S4) every owned boat gets the cheapest hold its
+  hotspots allow (OPEN-PT5).
+- **Board selection is a pure hash, not the RNG.** Which tasks a board shows is unknown (OPEN-PT1); the pick is a SplitMix64 mix of
+  (account, UTC day, completed / 8, board), stable and replayable; the world RNG is used for bags and paint only.
+- **Bounty tasks use the Wiki's current rewards:** coins equal to the base XP and no bag (2 Sep 2026), not the plan's "+ a coin bag".
+- **Wiki importer:** `bounty-tasks.tsv` gained a `guaranteed` column (the board's always-available bounty).
+- **Pandemonium integration:** Jim's send-off gives port task 599 through `QuestCargo`; its extra 100 XP is the task's, no longer paid by the quest.

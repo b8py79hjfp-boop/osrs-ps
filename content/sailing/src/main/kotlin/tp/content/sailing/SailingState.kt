@@ -7,5 +7,7 @@ package tp.content.sailing
 internal class SailingState {
     lateinit var data: SailingData
     lateinit var boats: Boats
+    lateinit var ports: PortSites
+    lateinit var catalog: PortCatalog
     val sites: DockSites get() = boats.sites
 }

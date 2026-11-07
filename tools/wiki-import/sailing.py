@@ -7,7 +7,7 @@ coordinates, charting locations ...). Everything here comes from machine-readabl
 
   Courier tasks      {{CourierTaskLine|level|xp|noticeBoard|cargoLocation|destination|item|qty|transcript|taskId}} (439) plus the
                      two quest tasks of the first table (ids 599 and 600, with ledger-table map pins)
-  Bounty tasks       {{BountyTaskLine|level|xp|noticeBoard|monster|item|qty|rarity|taskId}} (163)
+  Bounty tasks       {{BountyTaskLine|level|xp|noticeBoard|monster|item|qty|rarity|taskId|guaranteed}} (163)
   Sea charting       {{SeaChartRow|hint|id|level|type|hazard|sea|ocean|location|location2}} (358)
   Level up table     {{Level up table|members<level> = bullet list}}
   Mooring points     the wikitable of "Mooring point" (name, level, requirement, facilities Y/N, map pin x,z)
@@ -17,7 +17,7 @@ coordinates, charting locations ...). Everything here comes from machine-readabl
 
 Output (tab-separated, header first, in the output directory):
   courier-tasks.tsv   task level xp board cargo_port destination item qty ledger_cargo ledger_deposit
-  bounty-tasks.tsv    task level xp board monster item qty rarity
+  bounty-tasks.tsv    task level xp board monster item qty rarity guaranteed
   charting-tasks.tsv  task level type hazard sea ocean x z x2 z2 hint
   level-ups.tsv       level construction text
   docks.tsv           name level requirement shipwright notice_board salvaging_station ledger_table crew_registrar deposit_box x z
@@ -260,7 +260,8 @@ def bounty_tasks(text):
     for inner in find_templates(text, "BountyTaskLine"):
         _, n = template_args(inner)
         rows.append([n.get("taskId", ""), n.get("level", ""), n.get("xp", ""), n.get("noticeBoard", ""), n.get("monster", ""),
-                     n.get("item", ""), n.get("qty", ""), n.get("rarity", "")])
+                     n.get("item", ""), n.get("qty", ""), n.get("rarity", ""),
+                     "yes" if n.get("guaranteed", "").strip().lower() == "yes" else ""])
     return rows
 
 
@@ -328,7 +329,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     tsv(f"{out}/courier-tasks.tsv", ["task", "level", "xp", "board", "cargo_port", "destination", "item", "qty", "ledger_cargo",
                                      "ledger_deposit"], courier_tasks(wikitext("Courier tasks")))
-    tsv(f"{out}/bounty-tasks.tsv", ["task", "level", "xp", "board", "monster", "item", "qty", "rarity"],
+    tsv(f"{out}/bounty-tasks.tsv", ["task", "level", "xp", "board", "monster", "item", "qty", "rarity", "guaranteed"],
         bounty_tasks(wikitext("Bounty tasks")))
     tsv(f"{out}/charting-tasks.tsv", ["task", "level", "type", "hazard", "sea", "ocean", "x", "z", "x2", "z2", "hint"],
         charting_tasks(wikitext("Sea charting")))

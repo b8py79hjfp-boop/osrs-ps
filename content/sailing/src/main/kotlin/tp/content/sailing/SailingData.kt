@@ -46,6 +46,9 @@ internal class SailingData(world: WorldRef) {
     /** Objs a boat's cargo hold accepts besides crates (db 196). */
     val cargoWhitelist: Set<Int> = SailingReaders.cargoWhitelist(world)
 
+    /** Obj categories a boat's cargo hold accepts (db 196 `ENTRY_CATEGORY`: crates, bounty parts and so on). */
+    val cargoCategories: Set<Int> = SailingReaders.cargoCategories(world)
+
     private val partsByRow: Map<Int, BoatPart> =
         (hulls + sails + helms + keels + flags + braziers + trims + sailPatterns).associateBy { it.row }
 
