@@ -27,6 +27,9 @@ public class GrandExchange : ContentPlugin {
         onWorldStart { exempt = TAX_EXEMPT.flatMap { objIdsNamed(it) }.toSet() }
         onOpNpcOption("Exchange") { if (with(BankPin) { unlock() }) player.open() }
         events.on<tp.plugin.OpenCollectionBox> { it.player.openCollectionBox() }
+        // The centre desk's "Exchange" booths (loc 10061) work like the clerks; "Collect" on any GE booth opens the box.
+        onOpLocNamed("Grand Exchange booth", "Exchange") { if (with(BankPin) { unlock() }) player.open() }
+        onOpLocNamed("Grand Exchange booth", "Collect") { player.openCollectionBox() }
         onOpNpcOption("History") { player.history() }
         onOpNpcOption("Collect") { player.openCollectionBox() }
         onCommand("geui") { open() }

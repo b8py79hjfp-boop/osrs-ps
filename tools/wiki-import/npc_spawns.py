@@ -230,6 +230,16 @@ CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 763
 
 
 # Banker (cache name "Banker", ops Talk-to / Bank / Collect): the male and the female model, alternating with the tile parity.
+# Grand Exchange centre (Wiki "Grand Exchange": 4 bankers, 4 clerks; "Grand Exchange Clerk" map polygon 3163..3167 x
+# 3488..3492): bankers stand behind the "Bank" booths (loc 10060, west / east sides), clerks behind the "Exchange" booths
+# (loc 10061, south / north sides). The polygon gives no per-NPC tiles, so these are placed here.
+MANUAL_SPAWNS = [
+    (1633, 3163, 3489), (1634, 3163, 3490), (1633, 3166, 3489), (1634, 3166, 3490),
+    (2148, 3164, 3488), (2149, 3165, 3488), (2150, 3164, 3491), (2151, 3165, 3491),
+]
+# Replaced by MANUAL_SPAWNS: the clerk polygon's centre pin.
+MANUAL_REPLACES = {(2148, 3165, 3490)}
+
 BANKER_IDS = (1613, 1618)
 
 # Banker offset from its booth, named as the `open` digits (W, N, E, S) and the `evidence` letter of cache-dump's
@@ -344,6 +354,8 @@ def main():
         wiki = {(r[1], r[2], r[3]) for r in rows if cache.get(r[0], ("",))[0] == "Banker"}
         rows |= banker_rows(sys.argv[3], wiki)
     # Plane 0..3 and coordinates inside the 16384-tile world; anything else is a typo on the Wiki.
+    rows = {r for r in rows if (r[0], r[1], r[2]) not in MANUAL_REPLACES}
+    rows |= {(npc, x, z, 0, 0) for npc, x, z in MANUAL_SPAWNS}
     rows = {r for r in rows if 0 <= r[3] <= 3 and 0 <= r[1] < 16384 and 0 <= r[2] < 16384}
     with open(dest, "w") as f:
         f.write("npc\tx\tz\tlevel\twander\n")

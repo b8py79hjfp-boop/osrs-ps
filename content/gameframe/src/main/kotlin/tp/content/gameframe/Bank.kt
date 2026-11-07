@@ -40,6 +40,7 @@ public class Bank : ContentPlugin {
         events.on<tp.plugin.OpenBankRequest> { it.player.weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
         onOpLocNamed("Bank booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpLocNamed("Bank chest", "Use") { if (with(BankPin) { unlock() }) player.openBank() }
+        onOpLocNamed("Grand Exchange booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcOption("Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
         // The OSRS client keeps "::bank" for itself (it says "Hey, everyone, I just tried to do something very silly!").

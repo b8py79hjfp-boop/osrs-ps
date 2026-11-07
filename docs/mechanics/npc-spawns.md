@@ -30,3 +30,8 @@ Code: `content/world/.../Spawns.kt`; data `npc-spawns.tsv` from `tools/wiki-impo
 - **Keyword maps and bankers.** The map importer ignored `{{Map|x=..|y=..}}`, so NPCs of many pages (Hudo, Vannaka, Olivia,
   Fishmonger, ...) had no spawn at all; with it fixed and bankers added, the table has 24,588 spawns (+4,113, -578; the removals
   are version stacks and multi-pin bounding-box centres, see SP2a).
+
+- **SP5 (Grand Exchange desk):** the Wiki gives the centre's 4 bankers and 4 clerks only as one map polygon, so the importer places
+  them by hand (`MANUAL_SPAWNS`): bankers behind the "Bank" booths (loc 10060, west / east), clerks behind the "Exchange" booths
+  (loc 10061, south / north). The booths' own ops (Bank, Exchange, Collect) are handled like the NPCs' (gameframe Bank / GE).
+
