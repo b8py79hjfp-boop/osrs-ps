@@ -3,6 +3,8 @@ package tp.content.drops
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.DeathEvent
+import tp.plugin.EventBus
+import tp.plugin.LootEvent
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.symbols.Invs
@@ -21,7 +23,7 @@ public class Drops : ContentPlugin {
             // OPEN-D9: no player to give the loot to (killed by another NPC, say), no drop.
             val killer = e.lootFor ?: return@on
             val drops = DropData.of(npc.type) ?: return@on
-            DropRoll(npc, killer).run(drops)
+            DropRoll(npc, killer, events).run(drops)
         }
     }
 }
@@ -30,7 +32,7 @@ public class Drops : ContentPlugin {
 private class Loot(val obj: Int, val count: Int)
 
 /** Rolls one NPC death: the drop kinds in the Wiki's order (D2-D7), then creates the ground objs in one transaction. */
-private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef) {
+private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef, private val events: EventBus) {
     private val loot = ArrayList<Loot>()
     private val ring: Boolean by lazy { wearsRingOfWealth() }
 
@@ -122,7 +124,9 @@ private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef) {
     private fun create() {
         if (loot.isEmpty()) return
         val at = npc.coord
-        killer.transaction("npc drop") { loot.all { createOnGround(it.obj, it.count, at, killer.username) } }
+        val created = killer.transaction("npc drop") { loot.all { createOnGround(it.obj, it.count, at, killer.username) } }
+        // Collection log CLOG3: the killer has "obtained" the loot when it appears, whether or not it is picked up.
+        if (created) for (l in loot) events.publish(LootEvent(killer, l.obj, l.count))
     }
 
     private fun wearsRingOfWealth(): Boolean {

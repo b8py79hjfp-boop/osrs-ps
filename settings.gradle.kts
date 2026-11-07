@@ -44,6 +44,7 @@ include(
     ":content:sailing",
     ":content:magic",
     ":content:drops",
+    ":content:collectionlog",
     ":content:skills",
     ":services",
     ":server",

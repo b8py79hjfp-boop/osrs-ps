@@ -16,6 +16,7 @@ dependencies {
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:magic"))
     runtimeOnly(project(":content:drops"))
+    runtimeOnly(project(":content:collectionlog"))
     runtimeOnly(project(":content:shops"))
     runtimeOnly(project(":content:sailing"))
     runtimeOnly(project(":content:skills"))

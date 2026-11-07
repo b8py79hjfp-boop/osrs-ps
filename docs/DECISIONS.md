@@ -796,3 +796,18 @@ CLANSETTINGS_FULL) instead of deltas: clans are at most 500 members and change r
 for actions through `PlayerRef.clan(ClanAction)`; client packets (clan chat types 3/4, kick, ban) are validated by the engine and go to the
 same hub calls. Founding, recruiting and guest joins are driven from content buttons because the client's own join packet is unconfirmed
 (docs/mechanics/clans.md OPEN-CL8).
+
+## D-057: Collection log keeps counts as saved values; inv 620 is display state
+
+- **Counts are `saved` values** (`clog.<key>`, kill counts `clog.kc.<name>`), not an inventory. The cache's only collection inv,
+  `collection_transmit` (620), has 500 slots, the log has 1,738 distinct slots; the client reads it with `inv_total` per obj, so the
+  server fills it per page click (current page first, then other obtained items while slots remain) and empties it when the log
+  closes. That keeps the save small (no 500-entry inventory per player who ever opened the log).
+- **Layout is read from the cache, not the Wiki**: `collection-log.tsv` is written by `tools/wiki-import/collection_log.py` (cache
+  structs/enums plus the client scripts 2735 and 4103), so the pages and slot lists are the ones the client draws. A revision bump regenerates it.
+- **Redraw by the client's own script** 7797 (the resize handler of the interface, which re-lays out the window, selects the tab and
+  draws the list and page) rather than recreating the layout with several scripts; it is sent one tick after the counts, because vars and
+  invs go out in the info pass at the end of a tick.
+- **`LootEvent`** (plugin-api) is the one hook for "player was given X": published by content/drops after the ground objs exist; other
+  sources (chests, caskets, rewards) publish the same event when they exist.
+- Sources and OPEN items: docs/mechanics/collection-log.md.
