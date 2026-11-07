@@ -46,11 +46,17 @@ object CommandCodec {
     /** Field index of a button's optional sub-op (recordings made before IF_SUBOP have four fields). */
     private const val SUBOP_FIELD = 5
 
+    private fun b64(bytes: ByteArray): String =
+        java.util.Base64
+            .getEncoder()
+            .encodeToString(bytes)
+
     @Suppress("CyclomaticComplexMethod") // one branch per command type
     fun encode(c: ClientCommand): String =
         when (c) {
             is ClientCommand.MoveClick -> "move ${c.x} ${c.z} ${c.ctrl} ${c.minimap}"
             is ClientCommand.Cheat -> "cheat ${str(c.text)}"
+            is ClientCommand.ScriptTrigger -> "trigger ${c.component} ${c.sub} ${c.obj} ${c.crc} ${b64(c.payload)}"
             is ClientCommand.ReportAbuse -> "report ${str(c.name)} ${c.rule} ${c.mute}"
             ClientCommand.MapBuildComplete -> "mapbuilt"
             is ClientCommand.OpLoc -> "oploc ${c.option} ${c.id} ${c.x} ${c.z} ${c.ctrl}"
@@ -91,6 +97,18 @@ object CommandCodec {
 
             "cheat" -> {
                 ClientCommand.Cheat(unstr(parts[1]))
+            }
+
+            "trigger" -> {
+                ClientCommand.ScriptTrigger(
+                    i(1),
+                    i(2),
+                    i(3),
+                    i(4),
+                    java.util.Base64
+                        .getDecoder()
+                        .decode(parts[5]),
+                )
             }
 
             "report" -> {

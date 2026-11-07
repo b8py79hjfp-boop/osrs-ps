@@ -513,6 +513,12 @@ class World(
                 if (!player.resumeInput(command.text)) content.onDialogAnswer(player, command.text)
             }
 
+            is ClientCommand.ScriptTrigger -> {
+                if (command.payload.size > MAX_TRIGGER_BYTES) return invalid(player, command)
+                if (!interfaces.isOpen(player, command.component ushr COMPONENT_SHIFT)) return invalid(player, command)
+                content.onScriptTrigger(player, command.component, command.sub, command.obj, command.crc, command.payload)
+            }
+
             is ClientCommand.ReportAbuse -> {
                 // G7: names are at most 12 characters; rules are the client's list (ids < 64); only staff may mute.
                 if (command.name.length > MAX_NAME_LENGTH || command.rule !in 0 until MAX_REPORT_RULE) return invalid(player, command)
@@ -1262,6 +1268,9 @@ class World(
 
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */
         const val MAX_CHAT_LENGTH = 80
+
+        /** IF_SCRIPTTRIGGER payloads larger than this are rejected (a search string is < 100 bytes). */
+        const val MAX_TRIGGER_BYTES = 512
 
         /** G7: report rule ids fit the client's list (CS 5095; well under 64). */
         const val MAX_REPORT_RULE = 64

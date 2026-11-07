@@ -63,6 +63,9 @@ interface ContentHandlers {
     /** IF button on an open, validated component. */
     fun onButton(player: Player, component: Int, option: Int, slot: Int, obj: Int, subop: Int = -1) {}
 
+    /** IF_SCRIPTTRIGGER from an open interface (the payload is decoded by the handler's signature). */
+    fun onScriptTrigger(player: Player, component: Int, sub: Int, obj: Int, crc: Int, payload: ByteArray) {}
+
     /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
     fun onDialogAnswer(player: Player, value: Any) {}
 

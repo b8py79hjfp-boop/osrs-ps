@@ -219,6 +219,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opObj, key(DEFAULT_ID, op), script, "opobj default/$op")
     }
 
+    /**
+     * A clientscript's `if_runscript*` on [component] (IF_SCRIPTTRIGGER). [types] is the argument signature (`i` int,
+     * `s` string, `I` int array, `S` string array); a payload that doesn't match it exactly is dropped.
+     */
+    public fun onScriptTrigger(component: Int, types: String, handler: PlayerRef.(ScriptTrigger) -> Unit) {
+        handlers.put(handlers.scriptTriggers, component, types to handler, "script trigger $component")
+    }
+
     /** A drag that starts on [fromComponent] (any target; the handler checks [ButtonDrag.toComponent]). */
     public fun onButtonDrag(fromComponent: Int, handler: PlayerRef.(ButtonDrag) -> Unit) {
         handlers.put(handlers.drags, fromComponent, handler, "drag $fromComponent")
@@ -305,6 +313,7 @@ internal class Handlers {
     val opObj = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttons = HashMap<Long, PlayerRef.(ButtonClick) -> Unit>()
     val drags = HashMap<Int, PlayerRef.(ButtonDrag) -> Unit>()
+    val scriptTriggers = HashMap<Int, Pair<String, PlayerRef.(ScriptTrigger) -> Unit>>()
     val itemOps = HashMap<String, PlayerRef.(ButtonClick) -> Unit>()
     val objItemOps = HashMap<String, PlayerRef.(ButtonClick) -> Unit>()
 

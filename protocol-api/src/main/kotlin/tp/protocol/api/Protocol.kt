@@ -103,6 +103,12 @@ interface ClientSession {
     fun send(message: ServerMessage)
 
     /**
+     * Decodes a [ClientCommand.ScriptTrigger] payload against [types] (`i` int, `s` string, `I` int array, `S` string
+     * array): Int / String / IntArray / Array<String>, or null if the bytes don't match the signature exactly.
+     */
+    fun decodeScriptArgs(payload: ByteArray, types: String): List<Any>? = null
+
+    /**
      * Info pass, step 0: push this player's avatar state for the tick. [moveSteps] is 0 (none or teleport),
      * 1 (walk) or 2 (run). [teleported] marks a jump rather than a step.
      */

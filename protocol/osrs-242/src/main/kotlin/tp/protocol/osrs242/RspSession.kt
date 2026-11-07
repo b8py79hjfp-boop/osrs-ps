@@ -4,6 +4,7 @@ import net.rsprot.protocol.api.Session
 import net.rsprot.protocol.api.util.ZonePartialEnclosedCacheBuffer
 import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.game.outgoing.inv.InventoryObject
+import net.rsprot.protocol.game.incoming.buttons.IfScriptTrigger
 import net.rsprot.protocol.game.outgoing.friendchat.MessageFriendChannel
 import net.rsprot.protocol.game.outgoing.friendchat.UpdateFriendChatChannelFull
 import net.rsprot.protocol.game.outgoing.friendchat.UpdateFriendChatChannelFullV2
@@ -116,6 +117,20 @@ internal class RspSession(
 
     /** Zone messages of world entities, held until that world's block of the info packets (WE6). */
     private val worldZones = HashMap<Int, ArrayList<ServerMessage>>()
+
+    override fun decodeScriptArgs(payload: ByteArray, types: String): List<Any>? =
+        runCatching {
+            val trigger =
+                IfScriptTrigger(
+                    net.rsprot.protocol.util.CombinedId(0),
+                    -1,
+                    -1,
+                    0,
+                    io.netty.buffer.Unpooled
+                        .wrappedBuffer(payload),
+                )
+            trigger.decode(IfScriptTrigger.ParameterTypes(types.toCharArray())).args
+        }.getOrNull()
 
     override fun send(message: ServerMessage) {
         val world =

@@ -125,3 +125,6 @@ public class TeleportRequest(public val player: PlayerRef, public val to: tp.uti
 
 /** Poison ([venom] false, starting at [severity]) or envenom [target] from content outside combat (snake bites, traps). */
 public class PoisonRequest(public val target: EntityRef, public val severity: Int, public val venom: Boolean = false) : Event
+
+/** One IF_SCRIPTTRIGGER: [component] / [sub] / [obj] and the decoded [args] (Int, String, IntArray or Array<String>). */
+public class ScriptTrigger(public val component: Int, public val sub: Int, public val obj: Int, public val args: List<Any>)

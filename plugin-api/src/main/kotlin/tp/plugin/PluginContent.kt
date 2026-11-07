@@ -323,6 +323,12 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         h.npcHunt?.invoke(NpcRef(npc))
     }
 
+    override fun onScriptTrigger(player: Player, component: Int, sub: Int, obj: Int, crc: Int, payload: ByteArray) {
+        val (types, handler) = h.scriptTriggers[component] ?: return
+        val args = player.session.decodeScriptArgs(payload, types) ?: return
+        ref(player).handler(ScriptTrigger(component, sub, obj, args))
+    }
+
     override fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {
         val handler = h.drags[fromComponent] ?: return
         ref(player).handler(ButtonDrag(fromComponent, fromSub, toComponent, toSub))

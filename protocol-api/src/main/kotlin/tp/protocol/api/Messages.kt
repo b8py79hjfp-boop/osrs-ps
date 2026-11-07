@@ -8,6 +8,13 @@ sealed interface ClientCommand {
     /** `::command` typed in the chatbox (dev commands). */
     data class Cheat(val text: String) : ClientCommand
 
+    /**
+     * IF_SCRIPTTRIGGER: a clientscript's `if_runscript*` asked server script [crc] to run for [component] / [sub] / [obj]
+     * with typed arguments in [payload] (decoded by [ClientSession.decodeScriptArgs] once the handler knows the types).
+     * Hostile input: the payload is only parsed against the signature the handler registered.
+     */
+    class ScriptTrigger(val component: Int, val sub: Int, val obj: Int, val crc: Int, val payload: ByteArray) : ClientCommand
+
     /** The report-abuse window's submit (SEND_SNAPSHOT): reported [name], [rule] id, [mute] (staff only). Hostile input. */
     data class ReportAbuse(val name: String, val rule: Int, val mute: Boolean) : ClientCommand
 

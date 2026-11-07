@@ -21,6 +21,7 @@ import net.rsprot.protocol.common.client.OldSchoolClientType
 import net.rsprot.protocol.common.loginprot.incoming.codec.shared.JxLayoutStats
 import net.rsprot.protocol.game.incoming.buttons.If3Button
 import net.rsprot.protocol.game.incoming.buttons.IfButtonD
+import net.rsprot.protocol.game.incoming.buttons.IfScriptTrigger
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatJoinLeave
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatKick
 import net.rsprot.protocol.game.incoming.friendchat.FriendChatSetRank
@@ -418,6 +419,11 @@ class Osrs242Network(
         b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
         b.addListener(ResumePStringDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeString(m.string)) }
         b.addListener(ResumePCountDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeCount(m.count)) }
+        b.addListener(IfScriptTrigger::class.java) { s, m ->
+            val bytes = ByteArray(m.buffer.readableBytes()).also { m.buffer.getBytes(m.buffer.readerIndex(), it) }
+            m.buffer.release()
+            s.deliver(ClientCommand.ScriptTrigger(m.combinedId, m.sub, m.obj, m.crc, bytes))
+        }
         b.addListener(SendSnapshot::class.java) { s, m -> s.deliver(ClientCommand.ReportAbuse(m.name, m.ruleId, m.mute)) }
         b.addListener(ResumePObjDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeObj(m.obj)) }
         b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }
