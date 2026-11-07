@@ -26,6 +26,9 @@ import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Objs
+import tp.symbols.Seqs
+import tp.symbols.SpotAnims
+import tp.symbols.Varbits
 import tp.util.CoordGrid
 
 /**
@@ -34,7 +37,8 @@ import tp.util.CoordGrid
  * variable is varp 176; 0 and 10 are the cache's values, the stages between are ours (OPEN-QU1): 1 started, 2 Oziach set the
  * task, 3 the Guildmaster told of the quest, 4 the ship is bought, 5 its hole is patched, 6 Ned has the map, 7 on Crandor,
  * 8 Elvarg is dead. Which lore questions were asked and which map pieces were taken are account flags. Dialogue is the Wiki
- * "Transcript:Dragon Slayer I". The voyage is not staged (OPEN-QUB12) and the sailing cutscene plays as dialogue.
+ * "Transcript:Dragon Slayer I". The sailing cutscene is staged on the landing beach with the plugin-api camera calls (OPEN-QUB12);
+ * the side routes (Wormbrain's piece by Telekinetic Grab, the sawmill, the secret wall) are [CrandorRoutes].
  */
 public class DragonSlayer : ContentPlugin {
     override fun ContentScope.register() {
@@ -1368,6 +1372,9 @@ public class DragonSlayer : ContentPlugin {
     /** Wiki "Reparing the Lady Lumbridge": three planks, 30 steel nails per plank and a hammer. */
     private suspend fun PlayerScript.patchHole() {
         val p = player
+        if (p.varbit(Varbits.DRAGONSLAYER_CRANDOR_FOUND_SECRET_DOOR) != 0) {
+            return p.message("You don't need to mess about with broken ships now that you have found the secret passage from Karamja.")
+        }
         if (stage(p) != SHIP) return p.message("There is nothing to patch.")
         when {
             !p.has(Objs.WOODPLANK) -> return box("You'll need to use wooden planks on this hole to patch it up.")
@@ -1841,7 +1848,7 @@ public class DragonSlayer : ContentPlugin {
         ) {
             1 -> {
                 me("Yes, let's go!")
-                sailToCrandor(ned)
+                sailToCrandor()
             }
 
             2 -> {
@@ -1855,44 +1862,67 @@ public class DragonSlayer : ContentPlugin {
         }
     }
 
-    private suspend fun PlayerScript.sailToCrandor(ned: NpcRef) {
-        crandorCutscene(ned)
+    /**
+     * The voyage. The Lady Lumbridge's deck is not a map the server has, so the scene is staged on the landing beach (OPEN-QUB12):
+     * the player is moved there, the minimap is hidden, the camera looks out to sea, Ned and Cabin Boy Jenkins stand beside the
+     * player and Elvarg's fire rains on the tiles around; the crash shakes the camera.
+     */
+    private suspend fun PlayerScript.sailToCrandor() {
         val p = player
         p.teleport(CRANDOR_BEACH)
+        delay(1)
         QuestsB.DRAGON_SLAYER.advance(p, CRANDOR)
+        scene { scene -> crandorCutscene(scene) }
     }
 
     /** Wiki "Transcript:Dragon Slayer I", section "Sailing to Crandor". */
-    private suspend fun PlayerScript.crandorCutscene(ned: NpcRef) {
-        // ACT: The cutscene begins; the camera pans towards the Lady Lumbridge.
-        npc(ned, "Ah, it's good to feel the salt spray on my face once again!")
-        npc(ned, "And this is a mighty fine ship. She don't look much, but she handles like a dream.")
+    private suspend fun PlayerScript.crandorCutscene(scene: Scene) {
+        val p = player
+        val at = p.coord
+        scene.shot(at.translate(VOYAGE_CAMERA_DX, VOYAGE_CAMERA_DZ), at, CamHeight.HIGH, CamHeight.LOW)
+        val ned = scene.actor(Npcs.NED, at.translate(1, 0))
+        val jenkins = scene.actor(Npcs.DRAGONSLAYER_JENKINS_CUTSCENE, at.translate(-1, 0))
+        npcAs(Npcs.NED, "Captain Ned", "Ah, it's good to feel the salt spray on my face once again!")
+        npcAs(Npcs.NED, "Captain Ned", "And this is a mighty fine ship. She don't look much, but she handles like a dream.")
         me("How much longer until we reach Crandor?")
-        npc(
-            ned,
-            "Not long now! According to the chart, we'd be able to see Crandor if it wasn't for those " +
-                "clouds on the horizon.",
+        npcAs(
+            Npcs.NED,
+            "Captain Ned",
+            "Not long now! According to the chart, we'd be able to see Crandor if it wasn't for those clouds on the horizon.",
         )
         box("Clouds surround the ship.")
+        jenkins.anim(Seqs.DRAGON_SLAYER_QIP_JEN_SCARED)
         npcAs(
-            Npcs.DRAGONSLAYER_JENKINS_THERE,
+            Npcs.DRAGONSLAYER_JENKINS_CUTSCENE,
             "Cabin Boy Jenkins",
             "Looks like there's a storm coming up, cap'n. Soon we won't be able to see anything!",
         )
-        npc(ned, "Oh, well. The weather had been so good up until now.")
-        // ACT: Elvarg flies over the ship.
+        npcAs(Npcs.NED, "Captain Ned", "Oh, well. The weather had been so good up until now.")
+        // Elvarg flies over the ship.
+        p.camShake(0, SHAKE_RANDOM, SHAKE_AMPLITUDE, SHAKE_RATE)
         me("Did you see that?")
-        npc(ned, "See what?")
+        npcAs(Npcs.NED, "Captain Ned", "See what?")
         me("I thought I saw something up above us.")
-        // ACT: Fire rains down on the ship.
-        npc(ned, "It's the dragon!")
-        // Elvarg flies over the ship in circles (cutscene, OPEN-QUB12)
-        npc(ned, "We're going to sink!")
+        // Fire rains down on the ship.
+        rainFire(at)
+        npcAs(Npcs.NED, "Captain Ned", "It's the dragon!")
+        // Elvarg circles and rains more fire; Jenkins is hit and dies instantly.
+        rainFire(at)
+        jenkins.anim(Seqs.HUMAN_DEATH)
+        delay(1)
+        scene.remove(jenkins)
+        npcAs(Npcs.NED, "Captain Ned", "We're going to sink!")
         me("Look! Land ahead!")
-        npc(ned, "We're going to crash!")
-        // {{Colour|#800000|CRASH!}}
+        npcAs(Npcs.NED, "Captain Ned", "We're going to crash!")
+        p.camShake(0, SHAKE_RANDOM, CRASH_AMPLITUDE, SHAKE_RATE)
+        p.message("<col=800000>CRASH!</col>")
         box("You are knocked unconscious and later awake on an ash-strewn beach.")
-        // ACT: The cutscene ends.
+        scene.remove(ned)
+    }
+
+    /** Elvarg's fire on the tiles around [at] (spot animation 1154, `dragon_slayer_qip_fire_spotanim`). */
+    private fun PlayerScript.rainFire(at: CoordGrid) {
+        for ((dx, dz) in FIRE_OFFSETS) player.spotAnimAt(at.translate(dx, dz), SpotAnims.DRAGON_SLAYER_QIP_FIRE_SPOTANIM)
     }
 
     private companion object {
@@ -1976,6 +2006,15 @@ public class DragonSlayer : ContentPlugin {
 
         /** OPEN-QUB12: the beach the voyage ends on (free tile south-west of Crandor's centre, Wiki map 2836,3271). */
         val CRANDOR_BEACH = CoordGrid(2836, 3266, 0)
+
+        /** The voyage camera stands this far from the player (ours, OPEN-QUC5), and the camera shakes (axis, random, amplitude, rate). */
+        const val VOYAGE_CAMERA_DX = 4
+        const val VOYAGE_CAMERA_DZ = -3
+        const val SHAKE_RANDOM = 2
+        const val SHAKE_AMPLITUDE = 3
+        const val CRASH_AMPLITUDE = 8
+        const val SHAKE_RATE = 5
+        val FIRE_OFFSETS = listOf(2 to 0, -2 to 0, 0 to 2, 0 to -2, 2 to 2, -2 to -2)
 
         /** Wiki "Dragon Slayer I" rewards: 2 quest points (cache), 18,650 Strength and 18,650 Defence experience. */
         val REWARD =

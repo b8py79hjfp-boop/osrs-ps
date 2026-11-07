@@ -13,7 +13,8 @@ https://oldschool.runescape.wiki/w/Goblin_Diplomacy, /w/Transcript:Goblin_Diplom
 | GD4 | Aggie (npc 120/121, op 3 "Dyes" on 121): red dye = 3 redberries + 5 coins, yellow = 2 onions + 5 coins, blue = 2 woad leaves + 5 coins (Wiki transcript); the insult fines are 5 coins (21-100 carried), 20 coins (101+), or a pot of flour. |
 | GD5 | After the quest the generals play the five standard dialogues of "Transcript:General Bentnoze" (the three that need Another Slice of H.A.M. are not played). |
 
-OPEN-QUA7: woad leaves come from Wyson the gardener's offer (20 coins for two leaves); his generic tree in `npc-dialogue.tsv` does not
-carry the sale, so blue dye has no source yet. OPEN-QUA8: what the generals say during the quest (after accepting) is not published beyond
+| GD6 | Woad leaves: Wyson the gardener (npc 5422, Falador Park 3027,3379, spawned by `QuestSpawns`; `WysonGardener`) sells them in the Wiki's haggle: "How about 15 coins?" gives one leaf (obj 1793), 20 coins two; 5 and 10 are refused. Aggie then makes blue dye from 2 woad leaves and 5 coins. His "How about ME helping YOU instead?" branch (the mole) is transcribed; the mole skin / claw exchange for bird nests is not implemented (OPEN-QUC4). |
+
+OPEN-QUA7 (resolved by GD6). OPEN-QUA8: what the generals say during the quest (after accepting) is not published beyond
 the wrong-colour lines; the ordering lines are reused. The Grubfoot cutscene (orange/blue Grubfoot npc 672/673, changing room) is told in
 chat boxes only. Aggie's "no coins" line is ours (OPEN-QU4).

@@ -62,6 +62,10 @@ public class QuestSpawns : ContentPlugin {
                 Spawn(Npcs.SIR_PRYSIN, 3203, 3472, 0, 4),
                 Spawn(Npcs.CAPTAIN_ROVIN, 3204, 3497, 2, 4),
                 Spawn(Npcs.TRAIBORN, 3112, 3157, 1, 3),
+                // Goblin Diplomacy's woad leaves (Wiki "Wyson the gardener" map 3027,3379 r=3).
+                Spawn(Npcs.WYSON, 3027, 3379, 0, 3),
+                // Dragon Slayer I's planks: the Varrock sawmill operator (Wiki "Sawmill operator" map 3302,3492 r=4).
+                Spawn(Npcs.POH_SAWMILL_OPP, 3302, 3492, 0, 4),
             )
 
         /** Fred's sheep pen (Wiki "Fred the Farmer" map 3189,3273 and "Sheep (penguins)" map 3203,3267 r=10). */

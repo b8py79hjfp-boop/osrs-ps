@@ -48,8 +48,8 @@ public class WitchsPotion : ContentPlugin {
             player.stopInteraction()
             drink()
         }
-        // The Wiki's Rat page: "Rat's tails is only dropped during Witch's Potion" (always, 1). content/drops attaches the row to
-        // the Stronghold of Security dungeon rats instead (OPEN-QUA4), so the plugin drops it for the quest's rats.
+        // The Wiki's Rat page: "Rat's tails is only dropped during Witch's Potion" (always, 1). this plugin is the only source
+        // (the content/drops importer skips the row, OPEN-QUA4 resolved).
         events.on<DeathEvent> { e ->
             val npc = e.entity as? NpcRef ?: return@on
             val killer = e.lootFor ?: return@on

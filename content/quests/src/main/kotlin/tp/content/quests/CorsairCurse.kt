@@ -29,7 +29,8 @@ import tp.util.CoordGrid
  * quest variable is varbit 6071; 0 and 60 are the cache's values and the multi-NPCs fix more (Tock leaves Port Sarim at 6, Ithoi
  * is gone from 52). Ours (OPEN-QU1): 6 started, 10 Ithoi talked to, 20 the three curses are ruled out, 30 the traitor hunt,
  * 40 Ithoi confessed, 50 the lie is proven, 52 Ithoi dead. Which corsair has been investigated is an account flag
- * `quests.cc.*`. Dialogue is the Wiki "Transcript:The Corsair Curse". The boat trips and cutscenes are not staged (OPEN-QUB15).
+ * `quests.cc.*`. Dialogue is the Wiki "Transcript:The Corsair Curse". The boat trips are short staged scenes (OPEN-QUB15);
+ * the other cutscenes play as dialogue.
  */
 public class CorsairCurse : ContentPlugin {
     override fun ContentScope.register() {
@@ -41,7 +42,7 @@ public class CorsairCurse : ContentPlugin {
         }
         onOpNpc(Npcs.CORSAIR_CAPTAIN_2OPS, OP_TRAVEL) { tock ->
             player.stopInteraction()
-            sail(player, tock)
+            sail(tock)
         }
         for (ithoi in listOf(Npcs.CORSCURS_NAVIGATOR_SICK, Npcs.CORSCURS_NAVIGATOR)) {
             onOpNpc(ithoi, OP_TALK) { npc ->
@@ -122,13 +123,26 @@ public class CorsairCurse : ContentPlugin {
             }
         }
 
-    /** OPEN-QUB15: the boat trip is a plain move (plugin-api has no boat-travel cutscene hook). */
-    private fun sail(p: PlayerRef, tock: NpcRef) {
-        p.teleport(if (tock.coord.x > RIMMINGTON_X) COVE_DOCK else RIMMINGTON_DOCK)
+    private suspend fun PlayerScript.sail(tock: NpcRef) {
+        travelTo(tock, if (tock.coord.x > RIMMINGTON_X) COVE_DOCK else RIMMINGTON_DOCK)
     }
 
+    /**
+     * Captain Tock's boat trip, staged as a short cutscene (OPEN-QUB15): the minimap is hidden and the camera rises over the sea
+     * and pans while the ship sails, then the player is set down at the other dock. There is no ship deck on the map and no Wiki
+     * description of the crossing, so the length and the camera are ours (OPEN-QUC5).
+     */
     private suspend fun PlayerScript.travelTo(tock: NpcRef, to: CoordGrid) {
-        player.teleport(to)
+        val p = player
+        scene { scene ->
+            val from = p.coord
+            scene.shot(from.translate(SAIL_CAMERA_DX, SAIL_CAMERA_DZ), from, CamHeight.EYE, CamHeight.LOW)
+            delay(SAIL_BEAT)
+            scene.shot(from.translate(SAIL_CAMERA_DX, SAIL_CAMERA_DZ), to, CamHeight.HIGH, CamHeight.LOW, SAIL_PAN_RATE)
+            delay(SAIL_BEAT)
+            p.teleport(to)
+            delay(1)
+        }
     }
 
     // ---- Captain Tock
@@ -1844,6 +1858,12 @@ public class CorsairCurse : ContentPlugin {
         const val GNOCCI_ASKED = "quests.cc.gnocci_asked"
         const val GNOCCI_DUG = "quests.cc.gnocci_dug"
         const val GNOCCI_DONE = "quests.cc.gnocci_done"
+
+        /** The sailing scene: camera offset, ticks per beat and the pan rate (ours, OPEN-QUC5). */
+        const val SAIL_CAMERA_DX = 6
+        const val SAIL_CAMERA_DZ = -6
+        const val SAIL_BEAT = 3
+        const val SAIL_PAN_RATE = 20
 
         /** The x of the Rimmington dock (Wiki Captain Tock pins 2910,3226) against the cove (2574,2835). */
         const val RIMMINGTON_X = 2800

@@ -77,9 +77,19 @@ public class QuestSpawnsB : ContentPlugin {
                 Spawn(Npcs.CORSCURS_THIEF_SICK, 2556, 2856, 1, 0),
                 Spawn(Npcs.CORSCURS_CABINBOY_SICK, 2556, 2856, 1, 0),
                 Spawn(Npcs.CORSCURS_COOK_SICK, 2545, 2862, 1, 0),
-                // Misthalin Mystery (Mandy is in the table)
+                // Misthalin Mystery: Abigale and Hewey at the swamp, and the island's multi-NPCs (varbit 3468 shows and hides them;
+                // Wiki NPC maps: Sid 1615,4832, Tayten 1639,4838, Lacey 1629,4850, Mandy 1626,4840 and 1636,4817, shady figure
+                // 1644,4819; the mirror and the unmasked Abigale stand in the showdown room west of the sapphire door).
                 Spawn(Npcs.MISTMYST_ABIGALE, 3236, 3155, 0, 2),
                 Spawn(Npcs.MISTMYST_HEWEY, 3236, 3155, 0, 2),
+                Spawn(Npcs.MISTMYST_SID, 1615, 4832, 0, 2),
+                Spawn(Npcs.MISTMYST_TAYTEN, 1639, 4838, 0, 2),
+                Spawn(Npcs.MISTMYST_LACEY, 1629, 4850, 0, 0),
+                Spawn(Npcs.MISTMYST_MANDY, 1626, 4840, 0, 2),
+                Spawn(Npcs.MISTMYST_MANDY_POST, 1636, 4817, 0, 0),
+                Spawn(Npcs.MISTMYST_KILLER_BACKGROUND, 1644, 4819, 0, 0),
+                Spawn(Npcs.MISTMYST_MIRROR, 1623, 4830, 0, 0),
+                Spawn(Npcs.MISTMYST_ABIGALE_CUTSCENE_MULTI, 1622, 4830, 0, 0),
             )
     }
 }

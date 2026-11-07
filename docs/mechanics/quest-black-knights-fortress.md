@@ -12,7 +12,6 @@ cache `Quest` row 10 (id 12): varp 130, end state 4, 3 quest points, no cache XP
 | BK4 | A normal cabbage (obj 1965) used on the hole (loc 2336, 3031,3507 level 1) after overhearing ruins the potion; a Draynor Manor cabbage (1967) is "the wrong sort"; before overhearing: "Why exactly would I want to do that?". |
 | BK5 | Reporting back: Sir Amik pays 2,500 coins; 3 quest points. |
 
-OPEN-QUA6: no open model for the sturdy doors and fake walls (player is teleported across); the Black Knights, the witch, Greldo and the
-cutscene are not staged; use-any-item on the hole is not intercepted. OPEN-QUA5: the 3 November 2026 antique lamps are not given.
+OPEN-QUA6: no open model for the sturdy doors and fake walls (player is teleported across); the witch's room (witch, Black Knight Captain, Greldo and the cat under the hole at 3031,3507) is staged with `Scene` for the grill and the cabbage cutscenes, the camera is ours (OPEN-QUC5); use-any-item on the hole is not intercepted. OPEN-QUA5: the 3 November 2026 antique lamps are not given.
 OPEN-QUA14: the 12 quest point refusal line is ours (the Wiki gives the requirement, not the words). OPEN-QUA15: Sir Amik's post-quest
 dialogue is not published.

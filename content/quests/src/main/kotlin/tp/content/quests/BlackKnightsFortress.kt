@@ -15,13 +15,15 @@ import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Objs
 import tp.symbols.Varps
+import tp.util.CoordGrid
 
 /**
  * Black Knights' Fortress (docs/mechanics/quest-black-knights-fortress.md): Sir Amik Varze sends the player into the Black Knights'
  * fortress in disguise to learn about, and ruin, their invincibility potion with a cabbage. The quest variable (varp 130) is 0 /
  * 1 started / 2 overheard the witch (ours, OPEN-QU1) / 3 potion ruined (ours) / 4 finished (cache `endstate`). The fortress
  * doors and walls are passed by moving the player across ([stepAcross]); the Black Knights, the witch and the cutscene stages
- * are not staged (OPEN-QUA6). Dialogue is the Wiki "Transcript:Black Knights' Fortress".
+ * are staged with [Scene] where the Wiki describes them (the witch's room, OPEN-QUA6). Dialogue is the Wiki
+ * "Transcript:Black Knights' Fortress".
  */
 public class BlackKnightsFortress : ContentPlugin {
     override fun ContentScope.register() {
@@ -334,19 +336,34 @@ public class BlackKnightsFortress : ContentPlugin {
             witch("'The CAT'? She's not 'THE CAT'!", "She's Maemi... aren't you dear....")
             return
         }
-        captain("So... how's the secret weapon coming along?")
-        witch(
-            "The invincibility potion is almost ready...",
-            "It's taken me FIVE YEARS, but it's almost ready.",
-            "Greldo the Goblin here is just going to fetch the last ingredient for me.",
-            "It's a specially grown cabbage grown by my cousin Helda who lives in Draynor Manor.",
-            "The soil there is slightly magical and it gives the cabbages slight magical properties....",
-            "...not to merntion the trees!",
-            "Now remember Greldo, only a Draynor Manor cabbage will do! Don't get lazy and bring any old cabbage, THAT would " +
-                "ENTIRELY wreck the potion!",
-        )
-        npcAs(Npcs.GRELDO, "Greldo", "Yeth, Mithreth.")
+        scene { scene ->
+            stageWitchRoom(scene, GRILL_CAMERA)
+            captain("So... how's the secret weapon coming along?")
+            witch(
+                "The invincibility potion is almost ready...",
+                "It's taken me FIVE YEARS, but it's almost ready.",
+                "Greldo the Goblin here is just going to fetch the last ingredient for me.",
+                "It's a specially grown cabbage grown by my cousin Helda who lives in Draynor Manor.",
+                "The soil there is slightly magical and it gives the cabbages slight magical properties....",
+                "...not to merntion the trees!",
+                "Now remember Greldo, only a Draynor Manor cabbage will do! Don't get lazy and bring any old cabbage, THAT would " +
+                    "ENTIRELY wreck the potion!",
+            )
+            npcAs(Npcs.GRELDO, "Greldo", "Yeth, Mithreth.")
+        }
         Quests.BLACK_KNIGHTS_FORTRESS.advance(p, OVERHEARD)
+    }
+
+    /**
+     * The room under the hole where the witch brews (Wiki "Listen-at Grill", "Using a normal cabbage on the hole"): the witch, the
+     * Black Knight Captain, Greldo and the cat stand round the cauldron; the camera looks at it from [camera] (OPEN-QUC5).
+     */
+    private fun stageWitchRoom(scene: Scene, camera: CoordGrid) {
+        scene.shot(camera, WITCH_AT, CamHeight.HIGH, CamHeight.LOW)
+        scene.actor(Npcs.FORTWITCH, WITCH_AT)
+        scene.actor(Npcs.GRILLKNIGHT, WITCH_AT.translate(1, 1))
+        scene.actor(Npcs.GRELDO, WITCH_AT.translate(-1, -1))
+        scene.actor(Npcs.BKF_CAT, WITCH_AT.translate(2, 0))
     }
 
     private suspend fun PlayerScript.captain(vararg lines: String) = npcAs(Npcs.GRILLKNIGHT, "Black Knight Captain", *lines)
@@ -367,15 +384,18 @@ public class BlackKnightsFortress : ContentPlugin {
         if (stage < OVERHEARD) return whyWouldI()
         if (stage >= RUINED) return
         if (!p.take(Objs.CABBAGE, 1, "black knights fortress cabbage")) return
-        box("The player throws the cabbage through the hole.")
-        witch("Where has Greldo got to with that magic cabbage!")
-        captain("What's that noise?")
-        witch("Hopefully Greldo with the cabbage... yes, look here it co....NOOOOOoooo!")
-        box("The cabbage falls through the hole in the ceiling and lands in the potion, destroying it.")
-        witch("My potion!")
-        captain("Oh boy, this doesn't look good!")
-        npcAs(Npcs.BKF_CAT, "Black Cat", "Meow!")
-        me("Looks like my work here is done. Seems like that's successfully sabotaged their little secret weapon plan.")
+        scene { scene ->
+            stageWitchRoom(scene, HOLE_CAMERA)
+            box("The player throws the cabbage through the hole.")
+            witch("Where has Greldo got to with that magic cabbage!")
+            captain("What's that noise?")
+            witch("Hopefully Greldo with the cabbage... yes, look here it co....NOOOOOoooo!")
+            box("The cabbage falls through the hole in the ceiling and lands in the potion, destroying it.")
+            witch("My potion!")
+            captain("Oh boy, this doesn't look good!")
+            npcAs(Npcs.BKF_CAT, "Black Cat", "Meow!")
+            me("Looks like my work here is done. Seems like that's successfully sabotaged their little secret weapon plan.")
+        }
         Quests.BLACK_KNIGHTS_FORTRESS.advance(p, RUINED)
     }
 
@@ -394,6 +414,14 @@ public class BlackKnightsFortress : ContentPlugin {
         const val RUINED = 3
 
         const val FLAG_DOSSIER_READ = "quests.bkf.dossier"
+
+        /**
+         * The witch's room: level 0 under the hole at 3031,3507 (cache map 47 54; the grill is at 3026,3507). The NPC positions in it
+         * and the camera placements are ours (OPEN-QUC5).
+         */
+        val WITCH_AT = CoordGrid(3031, 3507, 0)
+        val GRILL_CAMERA = CoordGrid(3027, 3505, 0)
+        val HOLE_CAMERA = CoordGrid(3034, 3505, 0)
 
         /**
          * Cache locs of the fortress (placements from `cache-dump find-locs`): sturdy door 3016,3514, door 3020,3515, hole 3031,3507

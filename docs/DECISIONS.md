@@ -872,3 +872,16 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
   other side of the wall loc (`passDoor`); hook proposal in the quest files (OPEN-QUB1).
 - **Dialogue** was converted from the Wiki transcript wikitext by a throw-away script (not committed); the generated Kotlin was then
   edited by hand where the transcript's "above / below / other" links make loops and where the conditions needed the game's state.
+
+## D-062: Quest cutscenes are staged with a small `Scene` helper; the remaining quest gaps use plugin-api only
+
+- **`Cutscene.kt`** (`content/quests`) wraps the plugin-api camera calls (`camMoveTo`, `camLookAt`, `camReset`, `camShake`, `minimapState`)
+  and temporary scene NPCs (`PlayerRef.spawnNpc`, removed in a `finally`, so a logout mid-scene cleans up). It adds no engine API. The
+  Wiki names scenes, not camera placement, so heights, rates and offsets are ours (OPEN-QUC5, docs/mechanics/quests.md QU13).
+- **Misthalin Mystery's second half** (`MisthalinManor`) takes its stage numbers from the cache's multi-loc / multi-NPC thresholds on
+  varbit 3468 and drives the piano (554) and gem (555) interfaces through `onButton` + `ifEvents`; the showdown's knife game is a
+  2-tick timer with constants of ours (OPEN-QUC6). The island's multi-NPCs are spawned in `QuestSpawnsB`; the Wiki-import rows for their
+  visible forms are excluded in `npc_spawns.py` (CONTENT_SPAWNED) and removed from `npc-spawns.tsv`.
+- **Dragon Slayer I side routes** (`CrandorRoutes`) use `AttackCheck` / `LethalHitEvent` for Wormbrain; the combat module is untouched.
+- **Quest-only drops** (Witch's Potion's rat's tail) are skipped by the drops importer (`QUEST_ONLY_ITEMS`), so the quest plugin is the
+  only source.

@@ -12,13 +12,14 @@ import tp.plugin.PlayerScript
 import tp.plugin.choice
 import tp.symbols.Npcs
 import tp.symbols.Objs
+import tp.symbols.Seqs
 
 /**
  * Romeo & Juliet (docs/mechanics/quest-romeo-and-juliet.md): Romeo, Juliet, Father Lawrence, the Apothecary and the cadava
  * potion. The quest variable is varp 144; 0 and 100 are the cache's values, the stages between are ours (OPEN-QU1): 10 started,
  * 20 message from Juliet, 30 message delivered, 40 sent by Father Lawrence, 50 the Apothecary needs berries, 60 potion made,
- * 70 Juliet drank it. Dialogue is the Wiki "Transcript:Romeo & Juliet" and the NPC transcripts. The two cutscenes are not
- * staged (OPEN-QU8): their dialogue plays in place.
+ * 70 Juliet drank it. Dialogue is the Wiki "Transcript:Romeo & Juliet" and the NPC transcripts. The two cutscenes (Juliet drinking
+ * the potion, Romeo in the crypt) are staged with [Scene] where the NPCs stand (OPEN-QU8: the crypt is not on the map).
  */
 public class RomeoAndJuliet : ContentPlugin {
     private lateinit var bus: EventBus
@@ -497,7 +498,7 @@ public class RomeoAndJuliet : ContentPlugin {
         }
     }
 
-    /** The potion has been drunk: Romeo goes to the crypt and meets Phillipa; the quest ends (cutscene not staged, OPEN-QU8). */
+    /** The potion has been drunk: Romeo goes to the crypt and meets Phillipa; the quest ends (cutscene staged in place, OPEN-QU8). */
     private suspend fun PlayerScript.rescue(romeo: NpcRef) {
         me(
             "Romeo, it's all set. Juliet has drunk the potion and has been taken down into the Crypt...now you just need to pop " +
@@ -510,13 +511,25 @@ public class RomeoAndJuliet : ContentPlugin {
         )
         npc(romeo, "But I'm scared...will you come with me?")
         me("Oh, ok...come on! I think I saw the entrance when I visited there last...")
-        npc(romeo, "This is pretty scary...")
-        me("Oh, be quiet...", "We're here. Look, Juliet is over there!", "You go over to her...and I'll go and wait over here...")
-        npc(romeo, "Ohhh, ok then...", "Hey...Juliet...", "Juliet....?", "Oh dear...you seem to be dead.")
-        npcAs(Npcs.PHILLIPA, "Phillipa", "Hi Romeo...I'm Phillipa!")
-        npc(romeo, "Wow! You're a fox!")
-        npcAs(Npcs.PHILLIPA, "Phillipa", "It's a shame about Juliet...but perhaps we can meet up later?")
-        npc(romeo, "Who's Juliet?")
+        // The crypt's location is not sourced (OPEN-QU8): the scene is staged where the player stands, with a copy of Romeo and Juliet.
+        scene { scene ->
+            val at = player.coord
+            scene.shot(at.translate(CAMERA_DX, CAMERA_DZ), at.translate(CRYPT_DX, 0), CamHeight.HIGH, CamHeight.LOW)
+            val lover = scene.actor(Npcs.ROMEO, at.translate(1, 0))
+            val bride = scene.actor(Npcs.JULIET, at.translate(CRYPT_DX, 0))
+            bride.anim(Seqs.HUMAN_DEATH)
+            npcAs(Npcs.ROMEO, "Romeo", "This is pretty scary...")
+            me("Oh, be quiet...", "We're here. Look, Juliet is over there!", "You go over to her...and I'll go and wait over here...")
+            npcAs(Npcs.ROMEO, "Romeo", "Ohhh, ok then...")
+            walkNpc(lover, at.translate(CRYPT_DX - 1, 0), SCENE_WALK)
+            npcAs(Npcs.ROMEO, "Romeo", "Hey...Juliet...", "Juliet....?", "Oh dear...you seem to be dead.")
+            val cousin = scene.actor(Npcs.PHILLIPA, at.translate(CRYPT_DX - 1, 2))
+            walkNpc(cousin, at.translate(CRYPT_DX - 2, 1), SCENE_BEAT)
+            npcAs(Npcs.PHILLIPA, "Phillipa", "Hi Romeo...I'm Phillipa!")
+            npcAs(Npcs.ROMEO, "Romeo", "Wow! You're a fox!")
+            npcAs(Npcs.PHILLIPA, "Phillipa", "It's a shame about Juliet...but perhaps we can meet up later?")
+            npcAs(Npcs.ROMEO, "Romeo", "Who's Juliet?")
+        }
         QuestCompletion.complete(player, Quests.ROMEO_AND_JULIET, REWARD)
     }
 
@@ -667,21 +680,30 @@ public class RomeoAndJuliet : ContentPlugin {
             "Oh, here's Phillipa, my cousin...she's in on the plot too!",
             "She's going to make it seem even more convincing!",
         )
-        val phillipa = "Phillipa"
-        npcAs(Npcs.PHILLIPA, phillipa, "Yes, I'm quite the actress! Good luck dear cousin!")
-        npc(juliet, "Right...bottoms up!", "Urk!")
-        npcAs(Npcs.PHILLIPA, phillipa, "Oh no...Juliet has...died!")
-        me("You might be more believable if you're not smiling when you say it...")
-        npcAs(Npcs.PHILLIPA, phillipa, "Oh yeah...you might be right...ok, let's try again.", "Oh no...Juliet has...died?")
-        me("Perhaps a bit louder, like you're upset...that your cousin has died!")
-        npcAs(
-            Npcs.PHILLIPA,
-            phillipa,
-            "Right...yes...Ok, ok, I think I'm getting my motivation now. Ok, let's try this again!",
-            "OH NO...JULIET HAS...DIED?.... Oooooohhhhhh....(sob), (sob).Juliet...my poor dead cousin!",
-        )
-        npcAs(Npcs.DRAUL_LEPTOC, "Draul Leptoc", "What's all that screaming?", "Oh no! My poor daughter...what has become of you?")
-        npcAs(Npcs.PHILLIPA, phillipa, "Poor Juliet...make preparations for her body to be placed in the Crypt...")
+        scene { scene ->
+            val phillipa = "Phillipa"
+            val at = juliet.coord
+            scene.shot(at.translate(CAMERA_DX, CAMERA_DZ), at, CamHeight.HIGH, CamHeight.LOW)
+            val cousin = scene.actor(Npcs.PHILLIPA, at.translate(2, 1))
+            walkNpc(cousin, at.translate(1, 1), 1)
+            npcAs(Npcs.PHILLIPA, phillipa, "Yes, I'm quite the actress! Good luck dear cousin!")
+            npc(juliet, "Right...bottoms up!", "Urk!")
+            juliet.anim(Seqs.HUMAN_DEATH)
+            npcAs(Npcs.PHILLIPA, phillipa, "Oh no...Juliet has...died!")
+            me("You might be more believable if you're not smiling when you say it...")
+            npcAs(Npcs.PHILLIPA, phillipa, "Oh yeah...you might be right...ok, let's try again.", "Oh no...Juliet has...died?")
+            me("Perhaps a bit louder, like you're upset...that your cousin has died!")
+            npcAs(
+                Npcs.PHILLIPA,
+                phillipa,
+                "Right...yes...Ok, ok, I think I'm getting my motivation now. Ok, let's try this again!",
+                "OH NO...JULIET HAS...DIED?.... Oooooohhhhhh....(sob), (sob).Juliet...my poor dead cousin!",
+            )
+            val father = scene.actor(Npcs.DRAUL_LEPTOC, at.translate(-2, 0))
+            walkNpc(father, at.translate(-1, 0), SCENE_BEAT)
+            npcAs(Npcs.DRAUL_LEPTOC, "Draul Leptoc", "What's all that screaming?", "Oh no! My poor daughter...what has become of you?")
+            npcAs(Npcs.PHILLIPA, phillipa, "Poor Juliet...make preparations for her body to be placed in the Crypt...")
+        }
         Quests.ROMEO_AND_JULIET.advance(p, DRUNK)
     }
 
@@ -1017,7 +1039,12 @@ public class RomeoAndJuliet : ContentPlugin {
         npc(lawrence, "...and let Saradomin light the way for you... Urgh!", "Can't you see that I'm in the middle of a Sermon?!")
         me("But Romeo sent me!")
         npc(lawrence, "But I'm busy delivering a sermon to my congregation!")
-        box("The camera pans around to face his sleeping congregation.")
+        // The camera pans from the pulpit to the pews (the Wiki gives no direction: south of the pulpit is ours, OPEN-QUC5).
+        scene { scene ->
+            scene.shot(lawrence.coord.translate(0, 1), lawrence.coord.translate(0, -PEWS_DZ), CamHeight.EYE, CamHeight.LOW, SCENE_BEAT)
+            delay(SCENE_WALK)
+            box("Zzzzzzzzz")
+        }
         me("Yes, well, it certainly seems like you have a captive audience!")
         npc(lawrence, "Ok, ok...what do you want so I can get rid of you and continue with my sermon?")
         me("Romeo sent me. He says you may be able to help.")
@@ -1233,6 +1260,14 @@ public class RomeoAndJuliet : ContentPlugin {
         const val OP_TALK = 1
         const val OP_FIRST = 1
         const val INV = tp.symbols.Invs.INV
+
+        /** Camera offset from the scene's centre, the distance to the crypt slab, and scene pacing in ticks (ours, OPEN-QUC5). */
+        const val CAMERA_DX = 3
+        const val CAMERA_DZ = -3
+        const val CRYPT_DX = 4
+        const val SCENE_BEAT = 2
+        const val SCENE_WALK = 3
+        const val PEWS_DZ = 6
 
         /** Cadava bush locs with berries (`fai_varrock_cadavabush_2`, `_1`; the three bushes by the south-east Varrock mine are 23625). */
         val CADAVA_BUSHES = intArrayOf(23625, 23626)

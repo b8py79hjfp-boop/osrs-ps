@@ -24,7 +24,7 @@ import tp.util.CoordGrid
  * the multi-NPCs fix more (Abigale and Hewey are gone above 15, Sid above 19, Mandy's visible forms switch at 89, 130). Ours
  * (OPEN-QU1): 10 started, 16 on the island, 20 Sid dead, 30 manor key found, 130 the killers are beaten, 135 finished. The riddles
  * that follow (Tayten's note, the painting, the fuse, Lacey, the piano, Mandy's kitchen, the gem switches) and the mirror showdown
- * need cutscenes, the piano and gem interfaces and a boss room and are OPEN-QUB16: the quest cannot be completed until they exist.
+ * are [MisthalinManor].
  * Dialogue is the Wiki "Transcript:Misthalin Mystery".
  */
 public class MisthalinMystery : ContentPlugin {
@@ -247,6 +247,8 @@ public class MisthalinMystery : ContentPlugin {
         ) {
             return
         }
+        // The cache shows the drained barrel (loc 30123, "Search") from varbit value 25.
+        QuestsB.MISTHALIN_MYSTERY.advance(p, Mm.DRAINED)
         itemBox(Objs.BUCKET_WATER, "You fill the bucket from the barrel.")
     }
 
@@ -309,12 +311,18 @@ public class MisthalinMystery : ContentPlugin {
                 "Here, I found these in the wardrobe when I was seeing to my wound. I don't want them so " +
                     "please, take them...",
             )
-            // {{Qact|Congratulations! Quest complete!}}
+            QuestCompletion.complete(player, QuestsB.MISTHALIN_MYSTERY, REWARD)
         }
     }
 
     private suspend fun PlayerScript.mandyTalk(mandy: NpcRef) {
-        if (stage(player) in SHOWDOWN_WON until END) mandyFinish(mandy) else npc(mandy, "Thank you for your help.")
+        if (stage(player) in SHOWDOWN_WON until END) {
+            mandyFinish(mandy)
+        } else {
+            // Wiki "Talking to Mandy again".
+            npc(mandy, "Thanks again for your help, $name. Stay safe.")
+            me("You too, Mandy.")
+        }
     }
 
     private companion object {

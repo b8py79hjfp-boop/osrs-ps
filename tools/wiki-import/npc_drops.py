@@ -81,6 +81,9 @@ TABLE_PAGES = {"rare": ("Rare drop table", "Rare drop table"), "gem": ("Gem drop
 DROP_TABLE_NAMES = {"rare drop table": "rare", "gem drop table": "gem", "mega-rare drop table": "megarare"}
 # Names whose lowest cache id is not the item the Wiki means: "Coins" 617 is a members-only unstackable variant.
 NAME_OVERRIDES = {"coins": 995}
+# Drops the Wiki lists as given only during a quest ("Rat's tails is only dropped during Witch's Potion"): the quest plugin owns
+# them (content/quests WitchsPotion), so the importer must not attach them to every player's kills (OPEN-QUA4).
+QUEST_ONLY_ITEMS = {"rat's tail"}
 TINY = Fraction(1, 100000)
 # Main-table rarities of a Wiki page add up to 1 give or take rounding and a few "overall" unique rows (abyssal demon:
 # 1.002); above this the page lists several tables or version variants for one id and the rows roll on their own.
@@ -549,6 +552,9 @@ def row_entry(row, kind, meta, entries, stats):
             return
         stats["worded"] += 1
     key = name.lower()
+    if key in QUEST_ONLY_ITEMS:
+        stats["quest_only"] += 1
+        return
     item = "-" if key == "nothing" else "@" + DROP_TABLE_NAMES[key] if key in DROP_TABLE_NAMES else name
     if chance == "always":
         if kind in ("tertiary", "secondary"):
@@ -753,7 +759,7 @@ def main():
     print(f"rows read {stats['rows']}; npc-drops lines {len(rows_out)} (shared-table refs {stats['sub_refs']}); "
           f"{table_lines} lines in {len(tables)} tables", file=sys.stderr)
     for k in ("region_only", "task_only", "skipped_template_rows", "tertiary_always", "worded", "unknown_rarity",
-              "no_quantity", "unparsed_sub", "tables_off", "main_tables_over_1", "lines_unmatched"):
+              "no_quantity", "unparsed_sub", "tables_off", "main_tables_over_1", "lines_unmatched", "quest_only"):
         print(f"  {k}: {stats[k]}", file=sys.stderr)
     print("unmatched item names: rows", sum(item_missing.values()), "distinct", len(item_missing), file=sys.stderr)
     for n, c in item_missing.most_common(40):

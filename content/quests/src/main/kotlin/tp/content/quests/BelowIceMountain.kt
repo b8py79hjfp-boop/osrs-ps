@@ -25,13 +25,16 @@ import tp.symbols.Interfaces
 import tp.symbols.Invs
 import tp.symbols.Npcs
 import tp.symbols.Objs
+import tp.symbols.Seqs
+import tp.symbols.SpotAnims
 
 /**
  * Below Ice Mountain (docs/mechanics/quest-below-ice-mountain.md): Willow's crew (Checkal, Burntof, Marley), Atlas' training,
  * the Blue Moon Inn cook's steak sandwich and the Ancient Guardian at the ruins of Camdozaal. The quest variable is varbit
  * 12063; 0 and 120 are the cache's values, ours (OPEN-QU1): 10 started, 30 the guardian awake, 40 the guardian dead. Who has been
  * recruited and Atlas' lesson are account flags `quests.bim.*`. Dialogue is the Wiki "Transcript:Below Ice Mountain". The cutscenes
- * (training, unblocking the entrance, the rock paper scissors game's room) are not staged (OPEN-QUB14): their dialogue plays in place.
+ * (unblocking the entrance and the ruins, the rock paper scissors game) are staged with [Scene] (OPEN-QUB14); Atlas' training
+ * session plays as dialogue.
  */
 public class BelowIceMountain : ContentPlugin {
     override fun ContentScope.register() {
@@ -335,114 +338,10 @@ public class BelowIceMountain : ContentPlugin {
         ) {
             1 -> {
                 me("I'm ready as I'll ever be. Let's head in.")
-                // cutscene (OPEN-QUB14)
-                npc(willow, "Right, that's everyone gathered. Thank you, $name, for all your help.")
-                me("Oh it was no pro...")
-                npc(willow, "Okay everyone, we've wasted enough time. Let's crack this door open. Burntof, you're up!")
-                npc(willow, "Try not to blow the entire mountain up this time...")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Yesh ma'am, let'sh get this rock out the way.")
-                // fade (OPEN-QUB14)
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Jusht got to plashe thish here...")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "... little bit of dyn-*hic*-amite here...")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "... and there we go!")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Now we light the fushe!")
-                // fade (OPEN-QUB14)
-                // cutscene (OPEN-QUB14)
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "What are you doin' standin' there?!")
-                me("What do you mean?")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Everyone'sh ran for cover lad. You'd best do the shame.")
-                me("Wait, what?!")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Clock'sh ticking lad!")
-                // fade (OPEN-QUB14)
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Bloomin' 'eck, Burntof!")
-                npcAs(Npcs.BIM_CHECKAL, "Checkal", "That was a tad too explosive I think.")
-                me("My ears are still ringing!")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Quit yer moanin', it did the job didnae it?")
-                npc(willow, "He's right, the rock's been broken up. Checkal, it's your turn.")
-                npcAs(Npcs.BIM_CHECKAL, "Checkal", "Of course ma'am, I will get to work.")
-                // fade (OPEN-QUB14)
-                // cutscene (OPEN-QUB14)
-                // fade (OPEN-QUB14)
-                npcAs(Npcs.BIM_CHECKAL, "Checkal", "The work is done, Willow. My apologies if it took too long.")
-                npc(willow, "Don't be sorry, Checkal. Gotta put those muscles to use somehow.")
-                npc(willow, "Alright Marley, in you go. Let us know if you find anything.")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Right, in I go. Wish me luck $name.")
-                me("Try not to die...")
-                // cutscene (OPEN-QUB14)
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Right, let's see what hidden surprises you have in store for me.")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Hmm...")
-                // cutscene (OPEN-QUB14)
-                npcAs(Npcs.BIM_MARLEY, "Marley", "That would have been nasty.")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Is that it? I thought this place would be better protected.")
-                // cutscene (OPEN-QUB14)
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Now to disarm it...")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Maybe this will work?")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "That got it!")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "Alright guys! It's safe to come in! I think...")
-                // fade (OPEN-QUB14)
-                me("Wow, this place is amazing. I can't believe this was hidden away.")
-                me("I wonder how long it's been left untouched for.")
-                npc(willow, "You're impressed? There's nothing here but dust and fallen rocks.")
-                // overhead: Yaaa*hic*aawn
-                me(
-                    "You don't find it exciting? As an archaeologist, I thought you would be thrilled at this " +
-                        "discovery?",
-                )
-                npc(
-                    willow,
-                    "Thrilled? What's there to be excited about? I don't see any gold, diamonds, rare gems or " +
-                        "piles of lost treasure!",
-                )
-                // overhead: Hmm...
-                me(
-                    "It's not about the money though, right? We've potentially discovered the long lost ruins " +
-                        "of an ancient civilisation!",
-                )
-                npc(willow, "Of course it's about the money. It's always been about money, you fool.")
-                me("I don't understand...")
-                npc(
-                    willow,
-                    "We're not a team of archaeologist, you idiot. We're grave robbers looking for their next " +
-                        "score.",
-                )
-                // overhead: Theshe markings look familiar...
-                me(
-                    "So this entire time, you've just been using me to help break into these ruins in hopes of " +
-                        "finding someone else's treasures.",
-                )
-                npc(
-                    willow,
-                    "Yep, and you were surprisingly easy to convince. I'll admit, you have been a tremendous " +
-                        "help, $name.",
-                )
-                npc(willow, "But your usefulness has come to an end I'm afraid. I can't simply let you leave here.")
-                me("Why not?")
-                npc(
-                    willow,
-                    "I can't risk you running to the authorities and telling them about our little gang. We're " +
-                        "wanted in quite a few large cities across Gielinor.",
-                )
-                // overhead: I've sheen thish before...
-                npc(
-                    willow,
-                    "I'm afraid this is the end of the road for you, $name. This ruin is about to become your " +
-                        "tomb.",
-                )
-                // cutscene (OPEN-QUB14)
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "*hic* Woops...")
-                npc(willow, "What was that noise?")
-                npcAs(Npcs.BIM_BURNTOF, "Burntof", "Uh... it wasn't me!")
-                // cutscene (OPEN-QUB14)
-                npc(willow, "Whats happening?!")
-                // cutscene (OPEN-QUB14)
-                npc(willow, "It feels like the quaking has finally stopped...")
-                // cutscene (OPEN-QUB14)
-                npc(willow, "Holy Zamorak! What is that thing?! Checkal, take it down!")
-                npcAs(Npcs.BIM_CHECKAL, "Checkal", "I'm a muscle man, not a fighter.")
-                npcAs(Npcs.BIM_MARLEY, "Marley", "I think we should get out of here, Willow!")
-                npc(willow, "You're right, Marley. Burntof, we're leaving!")
-                // cutscene (OPEN-QUB14)
-                me("I can't believe they ran so quickly. I suppose I should take care of this thing.")
+                scene { scene ->
+                    breakIn(willow, scene)
+                    me("I can't believe they ran so quickly. I suppose I should take care of this thing.")
+                }
                 awakenGuardian(willow)
             }
 
@@ -455,6 +354,132 @@ public class BelowIceMountain : ContentPlugin {
                 Unit
             }
         }
+    }
+
+    /**
+     * Wiki "Transcript:Below Ice Mountain", section "Talking to Willow" (ready): the crew blasts and clears the entrance, Marley
+     * disarms the traps and Willow shows her hand. The crew are scene NPCs standing round the player; the fades are camera cuts
+     * and the entrance and ruins are tiles near the player (OPEN-QUB14: the ruins' interior is not on the map, camera ours, OPEN-QUC5).
+     */
+    private suspend fun PlayerScript.breakIn(willow: NpcRef, scene: Scene) {
+        val at = player.coord
+        val door = at.translate(DOOR_DX, 0)
+        val ruins = at.translate(RUINS_DX, 0)
+        scene.shot(at.translate(CAMERA_DX, CAMERA_DZ), at, CamHeight.HIGH, CamHeight.LOW)
+        val burntof = scene.actor(Npcs.BIM_BURNTOF, at.translate(1, 1))
+        val marley = scene.actor(Npcs.BIM_MARLEY, at.translate(-1, 1))
+        val checkal = scene.actor(Npcs.BIM_CHECKAL, at.translate(0, 2))
+        npc(willow, "Right, that's everyone gathered. Thank you, $name, for all your help.")
+        me("Oh it was no pro...")
+        npc(willow, "Okay everyone, we've wasted enough time. Let's crack this door open. Burntof, you're up!")
+        npc(willow, "Try not to blow the entire mountain up this time...")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Yesh ma'am, let'sh get this rock out the way.")
+        walkNpc(burntof, door, SCENE_WALK)
+        scene.shot(door.translate(CAMERA_DX, CAMERA_DZ), door, CamHeight.EYE, CamHeight.LOW)
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Jusht got to plashe thish here...")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "... little bit of dyn-*hic*-amite here...")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "... and there we go!")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Now we light the fushe!")
+        burntof.say("Tsssss...")
+        scene.shot(at.translate(CAMERA_DX, CAMERA_DZ), at, CamHeight.HIGH, CamHeight.LOW)
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "What are you doin' standin' there?!")
+        me("What do you mean?")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Everyone'sh ran for cover lad. You'd best do the shame.")
+        me("Wait, what?!")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Clock'sh ticking lad!")
+        player.spotAnimAt(door, SpotAnims.DWARF_ROCK_EXPLOSION)
+        player.camShake(0, SHAKE_RANDOM, SHAKE_AMPLITUDE, SHAKE_RATE)
+        delay(SCENE_BEAT)
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Bloomin' 'eck, Burntof!")
+        npcAs(Npcs.BIM_CHECKAL, "Checkal", "That was a tad too explosive I think.")
+        me("My ears are still ringing!")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Quit yer moanin', it did the job didnae it?")
+        npc(willow, "He's right, the rock's been broken up. Checkal, it's your turn.")
+        npcAs(Npcs.BIM_CHECKAL, "Checkal", "Of course ma'am, I will get to work.")
+        walkNpc(checkal, door, SCENE_WALK)
+        delay(SCENE_WALK)
+        npcAs(Npcs.BIM_CHECKAL, "Checkal", "The work is done, Willow. My apologies if it took too long.")
+        npc(willow, "Don't be sorry, Checkal. Gotta put those muscles to use somehow.")
+        npc(willow, "Alright Marley, in you go. Let us know if you find anything.")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Right, in I go. Wish me luck $name.")
+        me("Try not to die...")
+        // The scene shifts to Marley inside the ruins.
+        walkNpc(marley, ruins, SCENE_WALK)
+        scene.shot(ruins.translate(CAMERA_DX, CAMERA_DZ), ruins, CamHeight.EYE, CamHeight.LOW)
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Right, let's see what hidden surprises you have in store for me.")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Hmm...")
+        marley.anim(Seqs.HUMAN_PICKUPFLOOR)
+        npcAs(Npcs.BIM_MARLEY, "Marley", "That would have been nasty.")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Is that it? I thought this place would be better protected.")
+        marley.anim(Seqs.HUMAN_PICKUPFLOOR)
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Now to disarm it...")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Maybe this will work?")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "That got it!")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "Alright guys! It's safe to come in! I think...")
+        // Everyone is inside the ruins now.
+        scene.shot(ruins.translate(CAMERA_DX, CAMERA_DZ), ruins.translate(-1, 0), CamHeight.HIGH, CamHeight.LOW)
+        me("Wow, this place is amazing. I can't believe this was hidden away.")
+        me("I wonder how long it's been left untouched for.")
+        npc(willow, "You're impressed? There's nothing here but dust and fallen rocks.")
+        // overhead: Yaaa*hic*aawn
+        me(
+            "You don't find it exciting? As an archaeologist, I thought you would be thrilled at this " +
+                "discovery?",
+        )
+        npc(
+            willow,
+            "Thrilled? What's there to be excited about? I don't see any gold, diamonds, rare gems or " +
+                "piles of lost treasure!",
+        )
+        // overhead: Hmm...
+        me(
+            "It's not about the money though, right? We've potentially discovered the long lost ruins " +
+                "of an ancient civilisation!",
+        )
+        npc(willow, "Of course it's about the money. It's always been about money, you fool.")
+        me("I don't understand...")
+        npc(
+            willow,
+            "We're not a team of archaeologist, you idiot. We're grave robbers looking for their next " +
+                "score.",
+        )
+        // overhead: Theshe markings look familiar...
+        me(
+            "So this entire time, you've just been using me to help break into these ruins in hopes of " +
+                "finding someone else's treasures.",
+        )
+        npc(
+            willow,
+            "Yep, and you were surprisingly easy to convince. I'll admit, you have been a tremendous " +
+                "help, $name.",
+        )
+        npc(willow, "But your usefulness has come to an end I'm afraid. I can't simply let you leave here.")
+        me("Why not?")
+        npc(
+            willow,
+            "I can't risk you running to the authorities and telling them about our little gang. We're " +
+                "wanted in quite a few large cities across Gielinor.",
+        )
+        // overhead: I've sheen thish before...
+        npc(
+            willow,
+            "I'm afraid this is the end of the road for you, $name. This ruin is about to become your " +
+                "tomb.",
+        )
+        // cutscene (OPEN-QUB14)
+        player.camShake(0, SHAKE_RANDOM, SHAKE_AMPLITUDE, SHAKE_RATE)
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "*hic* Woops...")
+        npc(willow, "What was that noise?")
+        npcAs(Npcs.BIM_BURNTOF, "Burntof", "Uh... it wasn't me!")
+        npc(willow, "Whats happening?!")
+        npc(willow, "It feels like the quaking has finally stopped...")
+        npc(willow, "Holy Zamorak! What is that thing?! Checkal, take it down!")
+        npcAs(Npcs.BIM_CHECKAL, "Checkal", "I'm a muscle man, not a fighter.")
+        npcAs(Npcs.BIM_MARLEY, "Marley", "I think we should get out of here, Willow!")
+        npc(willow, "You're right, Marley. Burntof, we're leaving!")
+        // The crew runs for the exit; the scene ends with the screen back on the player.
+        for (crew in listOf(burntof, marley, checkal)) crew.walkTo(at.translate(-CREW_FLEE, 0))
+        delay(SCENE_WALK)
     }
 
     /** The cutscene ends with the Ancient Guardian awake; the crew flees (OPEN-QUB14: no arena, it appears beside the player). */
@@ -820,8 +845,19 @@ public class BelowIceMountain : ContentPlugin {
         p.setFlag(BURNTOF_DRINK, true)
     }
 
-    /** Wiki "Rock, paper, scissors": Burntof is too drunk to play properly and the player wins (OPEN-QUB14: no room, no cutscene). */
+    /**
+     * Wiki "Rock, paper, scissors" ("Cutscene starts"): the camera looks at Burntof's table while he is too drunk to play properly
+     * and the player wins (OPEN-QUB14: camera placement ours, OPEN-QUC5).
+     */
     private suspend fun PlayerScript.burntofGame(burntof: NpcRef) {
+        scene { scene ->
+            scene.shot(burntof.coord.translate(CAMERA_DX, CAMERA_DZ), burntof.coord, CamHeight.EYE, CamHeight.LOW)
+            playBurntof(burntof)
+        }
+        me(if (crew(player) < CREW) "That was interesting, but that's Burntof recruited. On to the next person." else RECRUITED_ALL)
+    }
+
+    private suspend fun PlayerScript.playBurntof(burntof: NpcRef) {
         npc(
             burntof,
             "The rulesh are ash followsh. We both pick a shign to show and then shay 'rock, paper, shcissors.' After schissors, we " +
@@ -850,7 +886,6 @@ public class BelowIceMountain : ContentPlugin {
             "But I think I'll need one more drink before I hitsh the road.",
         )
         player.setFlag(BURNTOF, true)
-        me(if (crew(player) < CREW) "That was interesting, but that's Burntof recruited. On to the next person." else RECRUITED_ALL)
     }
 
     /** The sign [sign] beats. */
@@ -1211,6 +1246,18 @@ public class BelowIceMountain : ContentPlugin {
     }
 
     private companion object {
+        /** Staging of the break-in (ours, OPEN-QUC5): the blast site and the ruins east of the player, camera offset, crew flight. */
+        const val DOOR_DX = 3
+        const val RUINS_DX = 7
+        const val CAMERA_DX = 4
+        const val CAMERA_DZ = -4
+        const val CREW_FLEE = 5
+        const val SCENE_BEAT = 2
+        const val SCENE_WALK = 3
+        const val SHAKE_RANDOM = 3
+        const val SHAKE_AMPLITUDE = 4
+        const val SHAKE_RATE = 5
+
         const val OP_TALK = 1
 
         /** Steak sandwich obj (Wiki "Steak sandwich": id 25631). */

@@ -10,6 +10,4 @@ Code: `content/quests` `WitchsPotion`, `QuestSpawns`. Sources: OSRS Wiki https:/
 | WP3 | The rat's tail drops from rats (levels 1: npc 2854, 2855, 13624 and the Stronghold of Security rats 2492, 2513) only while the quest is in progress (Wiki "Rat": "Rat's tails is only dropped during Witch's Potion", always, 1). It is created on the ground at the rat's tile, private to the killer. |
 | WP4 | Drinking from the cauldron (loc 2024, op 1 "Drink-from") with the potion ready gives the reward: 1 quest point, 325 Magic XP (cache). Otherwise "As nice as that looks, I think I'll give it a miss for now." |
 
-OPEN-QUA3: the Wiki has no transcript for Hetty after the quest; she only repeats the witch lines. OPEN-QUA4: content/drops attaches the Wiki
-row "Rat's tail, always" to npc 2866, 2867, 3607-3609 (dungeon rats) for all players; the importer matched the wrong infobox version, and
-the regular rats have no row, hence the quest plugin's own drop.
+OPEN-QUA3: the Wiki has no transcript for Hetty after the quest; she only repeats the witch lines. OPEN-QUA4 (resolved): the Wiki row "Rat's tail, always" is skipped by the drops importer (`tools/wiki-import/npc_drops.py` QUEST_ONLY_ITEMS) and removed from `npc-drops.tsv`, so the quest plugin's drop (WP3) is the only source.

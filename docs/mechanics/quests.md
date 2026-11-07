@@ -22,6 +22,7 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 | QU9 | Quest NPCs missing from `npc-spawns.tsv` are spawned by `QuestSpawns` at the Wiki infobox position (cook, Fred, The Thing, Millie, Gillie, Aereck, Romeo, Juliet, Phillipa, Draul, Lawrence, Archmage Sedridor's multi-NPC 5034, and the NPCs of Imp Catcher, Doric's Quest, Witch's Potion, Ernest the Chicken, Goblin Diplomacy, The Knight's Sword, Black Knights' Fortress, Vampyre Slayer and Demon Slayer). Fred's pen sheep are spawned there as the sheared variant; `QuestSpawns` turns them into the unsheared sheep. | Wiki NPC pages, npc-spawns.md SP1-SP2 |
 | QU10 | Ingredient sources (`FarmSupplies`): milk (empty bucket on a dairy cow, op "Milk"), grain (op "Pick" on wheat), the windmill (grain into the hopper "Fill", hopper controls "Operate" moves one grain to the flour bin, bin op "Empty" or an empty pot on it gives a pot of flour; the bin holds 30; bin content is varbit `mill_showflour` 5325), shearing (op "Shear" or shears on a sheep gives 1 wool, 100% success, the sheep is sheared and regrows after 50 ticks). | Wiki Dairy cow, Wheat, Windmill, Hopper, Flour bin, Sheep |
 | QU11 | `::quest` lists the stage of the implemented quests, `::quest <row> <stage>` sets any quest row's variable (administrators). | - |
+| QU13 | Cutscenes (`Cutscene.kt`): `scene { }` hides the minimap (`PlayerRef.minimapState(2)`), `Scene.shot` places the camera (`camMoveTo` + `camLookAt`), `Scene.actor` spawns a temporary NPC (visible to everyone near it, removed by `end`), `walkNpc` moves it, and the camera and minimap are restored in a `finally` (also on logout). Used for Misthalin Mystery (MM5-MM10), the Dragon Slayer I voyage, Romeo & Juliet, Black Knights' Fortress, Below Ice Mountain and the Corsair Curse boat trips. The Wiki names the scenes, not the camera; heights, rates and offsets are ours (OPEN-QUC5). | Wiki transcripts, plugin-api `PlayerRef.cam*` |
 | QU12 | The F2P quests Imp Catcher, Doric's Quest, Witch's Potion, Ernest the Chicken, Goblin Diplomacy, The Knight's Sword, Black Knights' Fortress, Vampyre Slayer and Demon Slayer follow the same pattern (`quest-<name>.md`). Locked or secret walls are passed by `stepAcross` (the player is moved to the other side; OPEN-QUA6). Combat-bound steps use plugin-api events only: `AttackCheck` (Delrith needs Silverlight), `DeathEvent` (Count Draynor, Delrith, the rat's tail). | quest-*.md |
 
 ## OPEN
@@ -36,7 +37,7 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 - **OPEN-QU6:** quest journal wording per stage is not published (no source); journal lines are short Wiki-walkthrough summaries.
   The scroll size of `questjournal` is the interface's own; not seen on a real client.
 - **OPEN-QU7:** the teleport to the Rune Essence Mine (Sedridor, Aubury) is not implemented.
-- **OPEN-QU8:** the Romeo & Juliet cutscenes (camera, Juliet drinking, the crypt) are not staged; their dialogue plays in place.
+- **OPEN-QU8:** the Romeo & Juliet cutscenes are staged in place with `Scene` (QU13); the crypt's location is not sourced.
 - **OPEN-QU9:** the Wiki's antique lamp for Romeo & Juliet (added 3 November 2026) has no obj in cache 2757 and is not given.
 - **OPEN-QU10:** the restless ghost's appearance and removal: it appears when the coffin is searched and is removed for good when
   the skull is placed (visibility per player is not modelled; the coffin opens for everyone).
@@ -48,13 +49,13 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 - **QU15 (resolved):** dialogue answers that open a shop publish plugin-api `OpenShopRequest` (by NPC type, or by shop name for the Apothecary).
 ## OPEN (quests added with D-060; numbered OPEN-QUA to stay apart from the parallel QU list)
 
-- **OPEN-QUA1:** Ernest the Chicken's basement lever puzzle (oil can) is not implemented; door/lever locs 137-151 cannot be mapped to the Wiki's labels.
+- **OPEN-QUA1 (resolved):** Ernest the Chicken's basement lever puzzle is `ErnestBasement` (quest-ernest-the-chicken.md EC6-EC9).
 - **OPEN-QUA2:** Doric's anvils are not gated before the quest.
 - **OPEN-QUA3:** Hetty has no published post-quest dialogue.
-- **OPEN-QUA4:** content/drops attaches the rat's tail row to the dungeon rats for every player; the quest plugin drops it for the regular rats.
+- **OPEN-QUA4 (resolved):** the importer skips the quest-only rat's tail row; the quest plugin is the only source.
 - **OPEN-QUA5:** the antique lamps added on 3 November 2026 (Ernest, Black Knights' Fortress, Demon Slayer) are not given.
 - **OPEN-QUA6:** locked / secret walls (closet door, sturdy doors, fake walls, meeting door) have no open model and cutscenes are told in chat boxes.
-- **OPEN-QUA7:** blue dye has no woad leaf source (Wyson's sale is not in his generic tree).
+- **OPEN-QUA7 (resolved):** Wyson the gardener sells woad leaves (`WysonGardener`, quest-goblin-diplomacy.md GD6).
 - **OPEN-QUA8:** what the goblin generals say during the quest is not published beyond the wrong-colour lines.
 - **OPEN-QUA9:** Sir Vyvin catching the player at the cupboard is not modelled.
 - **QUA10 (resolved):** blurite rocks are minable (mining.md, OPEN-MN7 success rates).
@@ -64,9 +65,18 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 - **OPEN-QUA14:** Black Knights' Fortress refusal below 12 quest points: the wording is ours.
 - **OPEN-QUA15:** Sir Amik Varze's post-quest dialogue is not published.
 - **OPEN-QUA16:** Count Draynor regenerates without a stake: needs a plugin-api death-prevention hook.
-- **OPEN-QUA17:** Count Draynor's lifetime (500 ticks) and hunt range are ours.
+- **OPEN-QUA17:** Count Draynor's lifetime (500 ticks) and hunt range are ours (checked: the Wiki gives neither).
 - **OPEN-QUA18:** garlic weakening of Count Draynor is not applied.
 - **OPEN-QUA19:** Demon Slayer's stone circle entry is polled (no area-entry event); bounds from the dark wizards' spawns.
 - **OPEN-QUA20:** Sir Prysin's drain key is handed out by the drain; the sewer's muddy patch loc is unidentified.
 - **OPEN-QUA21:** Silverlight repurchase price: 500 (quest page) vs 1,000 (dialogue).
 - **OPEN-QUA22:** Wizard Traiborn's non-quest conversation is not transcribed.
+
+## OPEN (quest gaps closed with D-062; numbered OPEN-QUC)
+
+- **OPEN-QUC1:** Draynor Manor basement table cells the Wiki marks "?" are taken as printed.
+- **OPEN-QUC2:** secret doors, bookcase and ladders of the manor basement have no open model (the player is moved across).
+- **OPEN-QUC3:** messages the Wiki does not publish (Pay-toll click, Wormbrain / secret wall refusals, plank count).
+- **OPEN-QUC4:** Wyson's mole skin / claw exchange for bird nests, holy moleys and clue scroll lines are not implemented.
+- **OPEN-QUC5:** camera heights, rates, offsets and scene NPC positions of every staged cutscene.
+- **OPEN-QUC6 - OPEN-QUC8:** Misthalin Mystery's knife game, puzzle interfaces and polled triggers (quest-misthalin-mystery.md).
