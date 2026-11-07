@@ -19,6 +19,7 @@ Non-obvious choices go in `docs/DECISIONS.md`; phase plans in `docs/plans/phase-
 | Real client | docs/CLIENT.md (RuneLite via RSProx) |
 | Boot check (CI) | `./gradlew :server:run --args=--boot-check` |
 | Test 1 (cache smoke) | `./gradlew :tools:symbol-gen:test` |
+| Content progress report (Wiki vs code, writes `PROGRESS.md`; `--refresh` re-downloads the Wiki) | `python3 -I tools/progress/content_progress.py` |
 | Inspect cache data | `./gradlew :tools:cache-dump:run --args="summary"` (also `config obj 4151`, `map 50 50`, `collision 3222 3218 0`) |
 
 JDK toolchain comes from `osrs.javaVersion` in `gradle.properties` (25). A machine without JDK 25 can override it in
