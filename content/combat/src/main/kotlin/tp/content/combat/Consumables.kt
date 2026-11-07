@@ -54,6 +54,25 @@ internal object Consumables {
             "Prayer potion" to Potion { p -> restore(p, Stat.PRAYER, 7 + p.baseLevel(Stat.PRAYER) / 4) },
             // ⌊level × 15/100⌋ + 5 to Attack, Strength and Defence.
             "Super combat potion" to Potion { p -> for (s in intArrayOf(Stat.ATTACK, Stat.STRENGTH, Stat.DEFENCE)) boost(p, s, 15, 5) },
+            // E11 (Wiki potion pages): divine super combat boosts like super combat (OPEN-E7: the 5-minute no-drain is not
+            // modelled); Sanfew restores 4 + 30% of base in every skill but Hitpoints with 6 minutes of poison immunity
+            // (20 units; disease isn't modelled); the brews raise Magic, restore Prayer and drain Attack/Strength/Defence.
+            "Divine super combat potion" to
+                Potion { p -> for (s in intArrayOf(Stat.ATTACK, Stat.STRENGTH, Stat.DEFENCE)) boost(p, s, 15, 5) },
+            "Sanfew serum" to
+                Potion { p ->
+                    restoreAll(p) { base -> 4 + base * 30 / 100 }
+                    Poison.cure(p, immunity = 20, antiVenom = false)
+                },
+            // Guthix rest (a tea, 4 doses from a cup): 5 Hitpoints (up to 5 over the maximum) and 5% run energy; OPEN-E8:
+            // its poison / venom reduction is not modelled.
+            "Guthix rest" to
+                Potion { p ->
+                    p.hitpoints = maxOf(p.hitpoints, minOf(p.maxHitpoints + GUTHIX_HEAL, p.hitpoints + GUTHIX_HEAL))
+                    p.runEnergy += GUTHIX_ENERGY
+                },
+            "Ancient brew" to Potion { p -> ancientBrew(p, magicPercent = 5, magicFlat = 2) },
+            "Forgotten brew" to Potion { p -> ancientBrew(p, magicPercent = 8, magicFlat = 3) },
             "Super attack" to Potion { p -> boost(p, Stat.ATTACK, 15, 5) },
             "Super strength" to Potion { p -> boost(p, Stat.STRENGTH, 15, 5) },
             "Super defence" to Potion { p -> boost(p, Stat.DEFENCE, 15, 5) },
@@ -86,7 +105,9 @@ internal object Consumables {
         val table = HashMap<Int, Pair<Potion, Int>>()
         for ((name, potion) in potionsByName) {
             for (dose in 1..MAX_DOSES) {
-                val next = if (dose == 1) listOf(Objs.VIAL_EMPTY) else world.objIdsNamed("$name(${dose - 1})")
+                // Guthix rest is drunk from a cup (Wiki "Guthix rest"); every other potion leaves a vial.
+                val empty = if (name == "Guthix rest") Objs.CUP_EMPTY else Objs.VIAL_EMPTY
+                val next = if (dose == 1) listOf(empty) else world.objIdsNamed("$name(${dose - 1})")
                 for (id in world.objIdsNamed("$name($dose)")) table[id] = potion to (next.firstOrNull() ?: Objs.VIAL_EMPTY)
             }
         }
@@ -216,6 +237,23 @@ internal object Consumables {
         if (player.level(stat) < target) player.setLevel(stat, target)
     }
 
+    /**
+     * E11 ancient / forgotten brew: Magic +flat + percent of base; Prayer +2 + 10% of base, up to 5% over base; Attack,
+     * Strength and Defence drained by 2 + 10% of their current levels (Wiki "Ancient brew", "Forgotten brew").
+     */
+    @Suppress("MagicNumber")
+    private fun ancientBrew(p: PlayerRef, magicPercent: Int, magicFlat: Int) {
+        boost(p, Stat.MAGIC, magicPercent, magicFlat)
+        val prayerBase = p.baseLevel(Stat.PRAYER)
+        val cap = prayerBase + prayerBase * 5 / PERCENT
+        val prayer = p.level(Stat.PRAYER)
+        if (prayer < cap) p.setLevel(Stat.PRAYER, minOf(cap, prayer + 2 + prayerBase * 10 / PERCENT))
+        for (stat in intArrayOf(Stat.ATTACK, Stat.STRENGTH, Stat.DEFENCE)) {
+            val current = p.level(stat)
+            p.setLevel(stat, maxOf(0, current - (2 + current * 10 / PERCENT)))
+        }
+    }
+
     /** Restores [stat] by [amount], up to its base level. */
     private fun restore(player: PlayerRef, stat: Int, amount: Int) {
         val base = player.baseLevel(stat)
@@ -234,6 +272,10 @@ internal object Consumables {
 
     /** E1: standard food blocks food for 3 ticks and adds 3 to a running attack clock. */
     private const val EAT_DELAY = 3
+
+    /** Wiki "Guthix rest": heals 5 per dose, restores 5% (500 units) run energy. */
+    private const val GUTHIX_HEAL = 5
+    private const val GUTHIX_ENERGY = 500
     private const val STANDARD_DELAY = 3
 
     /** E1: karambwan, halibut, gnome foods add 2. */

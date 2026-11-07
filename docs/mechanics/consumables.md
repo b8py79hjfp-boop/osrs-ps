@@ -17,6 +17,7 @@ Sources: OSRS Wiki "Food" (FO), "Food/Fast foods" (FF), "Cooked karambwan" (CK),
 | E8 | Super restore: 8 + ⌊base/4⌋ to each lowered stat except Hitpoints (Prayer included). Prayer potion: 7 + ⌊Prayer level/4⌋. | Super restore, Prayer potion |
 | E9 | Boosts: super attack/strength/defence and super combat ⌊L × 15/100⌋ + 5; ranging ⌊L/10⌋ + 4; bastion ranged ⌊L/10⌋ + 4 and defence ⌊15%⌋ + 5; magic potion +4; stamina +20% run energy. | potion pages |
 | E10 | Barbarian mixes (two doses): the base potion's effect plus 3 or 6 Hitpoints per dose (Wiki table), and the food attack delay (+3 ticks while the attack clock runs). | Wiki "Barbarian Training#Herblore" |
+| E11 | Divine super combat: as super combat. Sanfew serum: 4 + ⌊30% base⌋ to every lowered skill but Hitpoints, 6 min poison immunity. Ancient / forgotten brew: Magic +2 + 5% / +3 + 8% of base, Prayer +2 + 10% of base up to 5% over base, Attack/Strength/Defence −(2 + 10% current). Guthix rest (cup, 4 doses): +5 Hitpoints up to 5 over max, +5% run energy. | Wiki potion pages |
 
 Items are matched by cache name; potion dose chains come from the names "X(4)" … "X(1)" → vial (229).
 
@@ -27,4 +28,6 @@ Items are matched by cache name; potion dose chains come from the names "X(4)" �
 - **OPEN-E5:** a boost doesn't lower a higher current level and is computed from the base level (pages say "SkillLevel").
 - **OPEN-E3:** brew drain base level: formula uses the current level (SB:115) vs the table's "Overall level"
 - **OPEN-E6:** a mix whose base potion has no effect in the potion table here (e.g. Relicym's balm, Fishing / Hunter / Agility potion, Zamorak and Ancient brew) only heals.
+- **OPEN-E7:** divine potions' 5-minute no-drain period and their 10 Hitpoint cost are not modelled.
+- **OPEN-E8:** Guthix rest's poison / venom reduction and Sanfew's disease immunity are not modelled (no disease system).
   (SB:117-135). Using the current level.
