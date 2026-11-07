@@ -743,3 +743,31 @@ and `PortTaskSave`. Rules and OPEN items: docs/mechanics/sailing-port-tasks.md. 
 - **Bounty tasks use the Wiki's current rewards:** coins equal to the base XP and no bag (2 Sep 2026), not the plan's "+ a coin bag".
 - **Wiki importer:** `bounty-tasks.tsv` gained a `guaranteed` column (the board's always-available bounty).
 - **Pandemonium integration:** Jim's send-off gives port task 599 through `QuestCargo`; its extra 100 XP is the task's, no longer paid by the quest.
+## D-053: Sailing S4 - the shipyard is a build-space boat per player, interface 939 is driven for real, extras are new saved keys (S4)
+
+Rules, tick timelines and OPEN items: docs/mechanics/sailing-building.md. New files in `content/sailing`: `Shipyard` (session, island locs, shipwright
+Customise-boat), `BoatBuilder` (checks, build, removal), `Customisation` (interface 939), `BoatServices` (buy, recover, destroy, repair, rename, bottles,
+summon), `BoatStats`, `ShipbuildingData`, `BoatItems`; `Boats` gained `rebuild`; `Docking` got two hooks. No engine, protocol or plugin-api change.
+- **The shipyard is a per-player build space, not an instance copy.** "Customise-boat" despawns the live boat of the port and spawns the same boat as a
+  motion-less world entity at the dry dock of the island (pseudo dock id 62, `Shipyard.DOCK`); the owner boards it with the normal boat op, hotspot
+  placeholders show on its empty hotspots. The island coordinates are chosen from the collision (OPEN-SY1) because db 174 is stripped. `Docking.escape` and
+  `Docking.leave` call the shipyard (get off the deck / end the session on logout) so the boat is never saved with dock 62.
+- **Interface 939 is driven, not replaced by a menu.** The client builds the screen; the server writes varp 5190, varbits 19523-19525 and the
+  `SAILING_BOAT_n_*` varbits of the slot (encodings read from client scripts 9067/8798-8805: parts are option indices, flag/brazier/hotspots +1) and handles
+  the Build button, whose cc sub id is the db row (script 8832). The row is validated against the option lists. The boat selection interface 934 is still the
+  chatbox stand-in (OPEN-SEL1) used by every picker here.
+- **Saved layout stays; extras are new keys.** `sailing.boatx.s` and `sailing.boatf.s.0/.1` hold cosmetics, facilities, bottled and capsized flags;
+  `OwnedBoat` got defaulted fields so every existing constructor call and save is unchanged. Facility bottles are a list under `sailing.fbottle.*` because
+  the item carries no data.
+- **Wiki-only costs are a checked-in TSV.** `shipbuilding.tsv` (Construction XP, shipwright fees) is written by `tools/wiki-import/sailing_build.py` from
+  `part-stats.tsv` plus the fee pages; `ShipbuildingData.check()` fails the world start if a cache facility has no entry or a facility loc is not in
+  `Shipyard.FACILITY_LOCS` (locs are registered by id before the db tables exist).
+- **Boost rule.** Build levels use the current level (crystal saw +3 Construction); the cargo hold is the one support facility with no level on use,
+  `ShipbuildingData.canOperate` is the check for S6/S7/S9/S10. Shipwright fee only replaces the Construction level, gives no XP.
+- **NPC and loc scripts call `stopInteraction()`** first, as the thieving and hunter content does, because a chat menu leaves the interaction running and
+  the op would run twice.
+- **BoatRelocated event** tells the cargo content (S3) to drop crates and salvage on recover, destroy, summon and unbottle; S3 subscribes, nothing here
+  touches the hold inventories except the emptiness checks.
+- Not done: Bank PIN (OPEN-SY2), Seb's shop, dialogue text of the shipwrights, schematic discovery (`LOST_SCHEMATIC_*` are only read), Pandemonium's cargo hold
+  still bypasses the builder (OPEN-PAN1).
+

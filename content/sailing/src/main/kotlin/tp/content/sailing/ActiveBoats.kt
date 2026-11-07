@@ -18,29 +18,39 @@ internal class ActiveBoat(
     val slot: Int,
     /** `Sailing_Boat` row (db 166). */
     val boat: Boat,
-    val hull: BoatPart,
-    val sail: BoatPart,
-    val helm: BoatPart,
-    val keel: BoatPart?,
-    val hullStats: FacilityStats?,
-    val sailStats: FacilityStats?,
-    val helmStats: FacilityStats?,
-    val keelStats: FacilityStats?,
+    var hull: BoatPart,
+    var sail: BoatPart,
+    var helm: BoatPart,
+    var keel: BoatPart?,
+    var hullStats: FacilityStats?,
+    var sailStats: FacilityStats?,
+    var helmStats: FacilityStats?,
+    var keelStats: FacilityStats?,
     /** Deck tile (instance coordinates, level 1) of the helm loc. */
-    val helmTile: CoordGrid,
+    var helmTile: CoordGrid,
     /** Deck tile (instance coordinates, level 1) where boarding players appear. */
     val entry: CoordGrid,
     /** Hull tier 0..6 (index into the db option lists). */
-    val tier: Int,
+    var tier: Int,
 ) {
+    /** Cosmetic parts and the built facilities, refreshed by [Boats.rebuild] after every change (S4). */
+    var flag: BoatPart? = null
+    var trim: BoatPart? = null
+    var brazier: BoatPart? = null
+    var pattern: BoatPart? = null
+    var facilities: List<BuiltFacility> = emptyList()
+
+    /** Stats of the boat as it is built now ([BoatStats], sailing-building.md ST1); replaced on every change. */
+    var stats: BoatStats = BoatStats.EMPTY
+
     /** Dock id the boat is moored at, or [BoatSave.AT_SEA] while it sails. */
     var dock: Int = BoatSave.AT_SEA
 
     /** Current hitpoints (persisted when the boat is moored). */
     var hp: Int = 0
 
-    /** Sum of the mounted parts' maximum hitpoints (combination rule OPEN-B3: plain sum). */
-    val maxHp: Int get() = (hullStats?.hpMax ?: 0) + (sailStats?.hpMax ?: 0) + (helmStats?.hpMax ?: 0) + (keelStats?.hpMax ?: 0)
+    /** Sum of the mounted parts' maximum hitpoints (combination rule OPEN-B3: plain sum, see [BoatStats]). */
+    val maxHp: Int get() = stats.maxHp
 
     /** Whether players other than the owner may be aboard right now: the boat is moored. */
     val isDocked: Boolean get() = dock != BoatSave.AT_SEA

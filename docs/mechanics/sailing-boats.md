@@ -1,7 +1,7 @@
 # Sailing: boats, parts and facilities
 
-Skeleton for milestones S1 (raft, boarding) and S4 (building, facilities). Implementation: `content/sailing` (`SailingData`
-reads the tables; no behaviour yet). Research and full tables: docs/plans/sailing.md sections 2 and 6.2. Rule ids are
+Skeleton for milestones S1 (raft, boarding) and S4 (building, facilities; the rules of S4 are in sailing-building.md).
+Implementation: `content/sailing` (`SailingData` reads the tables). Research and full tables: docs/plans/sailing.md sections 2 and 6.2. Rule ids are
 referenced from the KDoc of the readers.
 
 Sources: cache 2757 db tables 164-166, 175-186, 230 (`./gradlew :tools:cache-dump:run --args="dbrows 166"`); OSRS Wiki
@@ -24,6 +24,7 @@ https://oldschool.runescape.wiki/w/Boat, /Raft, /Hull, /Mast_and_sails, /Helm, /
 | B10 | **Ownership** is stored per boat slot (0..4) in one `saved` Long `sailing.boat.<slot>`: bit 0 owned; bits 1-2 type (0 raft, 1 skiff, 2 sloop); 3-8 dock id (63 = at sea); 9-11 hull tier; 12-14 sail tier; 15-17 helm tier; 18-20 keel tier; 21-36 hitpoints; 37-60 name (three 8-bit word indices, not shown yet, OPEN-B8). `sailing.lastboat` is the slot boarded last, `sailing.lastdock` the dock id last disembarked / docked at (the escape / capsize destination). Tier = index into the db option lists (wooden .. rosewood). Slots available: 1 / 2 / 3 / 4 / 5 at Sailing 1 / 15 / 50 / 78 / 91. | plan 2.1; `BoatSave` |
 | B11 | **Templates** (`BoatTemplates`): the deck is level 1 of template zones, tier t at x + 8t. Raft: zone (3840,6456), deck x 3843, z 6458..6460, 1x1 zones, config 1. Skiff: zone (3840,6448), deck x 3843..3844, interior z 6450..6453, 1x1, config 2. Sloop: zones (3840,6432)+(3840,6440), interior x 3842..3844 z 6437..6442, 1x2, config 3. Will and Anne's boat: zone (3840,6400) (not per tier), config 10 (OPEN-W1). Hull ring tiles block walking; part locs are added by the server at the db coordinates (tier-0 template coordinates, level 1, relative to the zone origin). Boarding players appear on a free interior tile: raft (3843,6459), skiff (3844,6450), sloop (3843,6440), W&A (3844,6403). Only level 1 is copied (level 0 is open sea and draws a dark rectangle). | cache map + `collision` dumps; plan 2.4 |
 | B12 | **Live boats**: one world entity per owner, tracked in `ActiveBoats` (world attribute). Spawned when the owner boards at the dock the boat is moored at, removed when the owner logs out (guests are put ashore) or boards another boat. Stats come from the mounted parts' db 164 rows; motion stats: hull base speed / speed cap, sail acceleration (default 32 = Wiki 0.5, OPEN-S3), footprint from the config bounds, turn 256 per tick (sloop 128, OPEN-M1). Hitpoints are the sum of the parts' maximum (OPEN-B3). | `Boats` |
+| B13 | **S4 additions.** `OwnedBoat` also carries flag, trim, brazier, sail pattern, one facility option per hotspot, and the bottled / capsized flags, saved in two further keys per slot (`sailing.boatx.s`, `sailing.boatf.s.0/.1`) so the B10 layout is unchanged. `Boats.spawn` places flag, trim, brazier and the built facilities as well; `Boats.rebuild` swaps them on a live boat and recomputes `BoatStats` and the motion stats. Details, shipyard and shipwright rules: sailing-building.md. | `BoatSave`, `Boats` |
 
 ## OPEN
 
@@ -39,4 +40,4 @@ https://oldschool.runescape.wiki/w/Boat, /Raft, /Hull, /Mast_and_sails, /Helm, /
   `CONTENT_RESTRICT_SAILING_SERVERSIDE` (varbit 18166): purpose unknown.
 - **OPEN-B5:** where the gangplank puts a boarding player on the deck (the entry tiles above are chosen free interior tiles) and the pivot of the deck inside the config bounds (OPEN-WE3).
 - **OPEN-B6:** whether the hull is drawn by level-1 locs of the copied template (assumed; verify in the client).
-- **OPEN-B8:** boat names (db 187 word lists) are stored but not shown; the shipwright (buy, repair, recover, rename) is S4.
+- **OPEN-B8:** boat names (db 187 word lists) are stored but not shown; the shipwright (buy, repair, recover, rename) is done in S4 (sailing-building.md SW1-SW6), names stay random 24-bit values.

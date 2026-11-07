@@ -9,7 +9,8 @@ import tp.plugin.ContentScope
  * of failing in a player's boat; then the boat factory is built. S1 content: boat ownership and spawning ([Boats]), docking
  * and boarding ([Docking]) and the Pandemonium quest ([Pandemonium]). S3 content: port tasks ([PortTasks]), notice boards and
  * the captain's log task list ([PortBoards]), ledger tables ([PortLedger]), cargo holds ([CargoHold]), port masters
- * ([PortMaster]) and the coin bags ([PortRewards]). Movement is [BoatMotion].
+ * ([PortMaster]) and the coin bags ([PortRewards]). S4 content: the Shipyard and boat building ([Shipyard], [BoatBuilder],
+ * [Customisation]) and the shipwright services ([BoatServices]). Movement is [BoatMotion].
  */
 public class Sailing : ContentPlugin {
     private val state = SailingState()
@@ -25,6 +26,9 @@ public class Sailing : ContentPlugin {
         tasks.quest = pandemonium
     }
 
+    private val shipyard = Shipyard(state).also { state.shipyard = it }
+    private val services = BoatServices(state).also { state.services = it }
+
     override fun ContentScope.register() {
         onWorldStart {
             val data = SailingData(this)
@@ -33,6 +37,7 @@ public class Sailing : ContentPlugin {
             state.boats = Boats(data, DockSites(data.docks))
             state.ports = PortSites(data.docks)
             state.catalog = PortCatalog(data)
+            state.boats.build.check()
         }
         with(docking) { register() }
         with(pandemonium) { register() }
@@ -42,5 +47,7 @@ public class Sailing : ContentPlugin {
         with(hold) { register() }
         with(master) { register() }
         with(PortRewards) { registerBags() }
+        with(shipyard) { register() }
+        with(services) { register() }
     }
 }

@@ -31,8 +31,8 @@ public class BoatMotion : ContentPlugin {
         val turnPerTick: Int,
     )
 
-    /** Live motion of one boat. */
-    internal class Motion(val boat: WorldEntityRef, val stats: Stats) {
+    /** Live motion of one boat. [stats] is replaced when the boat is customised ([Boats.rebuild], S4). */
+    internal class Motion(val boat: WorldEntityRef, var stats: Stats) {
         var heading: Int = boat.angle
         var angle: Int = boat.angle
         var speed: Int = 0

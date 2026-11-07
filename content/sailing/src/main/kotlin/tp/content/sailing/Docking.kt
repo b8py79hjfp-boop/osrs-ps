@@ -194,6 +194,7 @@ internal class Docking(private val state: SailingState) {
     /** Helm option 4, Escape: abandon the boat for the dock of the last disembark (OPEN-ESC: no recovery fee, cargo kept). */
     private fun escape(p: PlayerRef) {
         val boat = ActiveBoats.of(p) ?: return
+        if (state.shipyard.owns(boat)) return state.shipyard.leaveDeck(p)
         if (boat.slot < 0) return p.message("You can't leave the boat yet.")
         val dockId = (p.saved(BoatSave.LAST_DOCK_KEY) ?: DEFAULT_DOCK.toLong()).toInt()
         val site = state.sites.of(dockId) ?: return
@@ -250,6 +251,7 @@ internal class Docking(private val state: SailingState) {
 
     /** Logout: [p] leaves its boat; if [p] owns a live boat everyone aboard is put ashore and the boat is removed. */
     private fun leave(p: PlayerRef) {
+        state.shipyard.logout(p)
         val own = ActiveBoats.ownedBy(p, p.username.lowercase())
         val aboard = ActiveBoats.of(p)
         if (aboard != null) ashore(p, aboard)

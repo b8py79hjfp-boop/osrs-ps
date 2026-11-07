@@ -1,0 +1,130 @@
+kind	boat	index	name	xp	fee
+hull	0	0		19	-1
+hull	0	1		27	560
+hull	0	2		41	4200
+hull	0	3		46	27000
+hull	0	4		70	-1
+hull	0	5		84	-1
+hull	0	6		93	-1
+hull	1	0		128	-1
+hull	1	1		238	560
+hull	1	2		345	4200
+hull	1	3		588	27000
+hull	1	4		881	-1
+hull	1	5		1771	-1
+hull	1	6		2839	-1
+hull	2	0		199	-1
+hull	2	1		373	560
+hull	2	2		538	4200
+hull	2	3		919	27000
+hull	2	4		1380	-1
+hull	2	5		2779	-1
+hull	2	6		4474	-1
+sail	0	0		20	-1
+sail	0	1		28	920
+sail	0	2		41	5800
+sail	0	3		55	41000
+sail	0	4		85	-1
+sail	0	5		152	-1
+sail	0	6		175	-1
+sail	1	0		24	-1
+sail	1	1		36	920
+sail	1	2		49	5800
+sail	1	3		70	41000
+sail	1	4		110	-1
+sail	1	5		197	-1
+sail	1	6		231	-1
+sail	2	0		31	-1
+sail	2	1		46	920
+sail	2	2		65	5800
+sail	2	3		90	41000
+sail	2	4		139	-1
+sail	2	5		250	-1
+sail	2	6		291	-1
+helm	0	0		76	-1
+helm	0	1		160	1400
+helm	0	2		260	8900
+helm	0	3		400	50000
+helm	0	4		480	-1
+helm	0	5		650	-1
+helm	0	6		780	-1
+helm	1	0		114	-1
+helm	1	1		240	1400
+helm	1	2		390	8900
+helm	1	3		600	50000
+helm	1	4		720	-1
+helm	1	5		975	-1
+helm	1	6		1410	-1
+helm	2	0		152	-1
+helm	2	1		320	1400
+helm	2	2		520	8900
+helm	2	3		800	50000
+helm	2	4		960	-1
+helm	2	5		1300	-1
+helm	2	6		1560	-1
+keel	1	0		100	-1
+keel	1	1		200	2100
+keel	1	2		311	11000
+keel	1	3		511	68000
+keel	1	4		761	-1
+keel	1	5		1511	-1
+keel	1	6		2511	-1
+keel	2	0		160	-1
+keel	2	1		320	2100
+keel	2	2		491	11000
+keel	2	3		811	68000
+keel	2	4		1211	-1
+keel	2	5		2411	-1
+keel	2	6		4011	-1
+facility	-1	0	Bronze cannon	157	3400
+facility	-1	0	Iron cannon	328	7200
+facility	-1	0	Steel cannon	526	22000
+facility	-1	0	Mithril cannon	816	68000
+facility	-1	0	Adamant cannon	986	-1
+facility	-1	0	Rune cannon	1359	-1
+facility	-1	0	Dragon cannon	1586	-1
+facility	-1	0	Anchor	176	-1
+facility	-1	0	Ballistic attractor	2141	-1
+facility	-1	0	Teleport focus	2154	-1
+facility	-1	0	Fathom stone	1652	-1
+facility	-1	0	Greater teleport focus	3582	-1
+facility	-1	0	Fathom pearl	2307	-1
+facility	-1	0	Bronze salvaging hook	151	-1
+facility	-1	0	Iron salvaging hook	312	680
+facility	-1	0	Steel salvaging hook	499	2400
+facility	-1	0	Mithril salvaging hook	769	8900
+facility	-1	0	Adamant salvaging hook	919	-1
+facility	-1	0	Rune salvaging hook	1233	-1
+facility	-1	0	Dragon salvaging hook	1537	-1
+facility	-1	0	Range	90	-1
+facility	-1	0	Keg	313	-1
+facility	-1	0	Inoculation station	765	-1
+facility	-1	0	Salvaging station	366	-1
+facility	-1	0	Chum station	1522	-1
+facility	-1	0	Bosun's workbench	1003	-1
+facility	-1	0	Advanced chum station	1738	-1
+facility	-1	0	Chum spreader	2028	-1
+facility	-1	0	Cargo hold	232	-1
+facility	-1	0	Oak cargo hold	491	920
+facility	-1	0	Teak cargo hold	738	3400
+facility	-1	0	Mahogany cargo hold	1153	27000
+facility	-1	0	Camphor cargo hold	1326	-1
+facility	-1	0	Ironwood cargo hold	1492	-1
+facility	-1	0	Rosewood cargo hold	1634	-1
+facility	-1	0	Rope trawling net	458	-1
+facility	-1	0	Linen trawling net	783	-1
+facility	-1	0	Hemp trawling net	1003	-1
+facility	-1	0	Cotton trawling net	1289	-1
+facility	-1	0	Wind catcher	741	-1
+facility	-1	0	Crystal extractor	3066	-1
+facility	-1	0	Gale catcher	1517	-1
+brazier	-1	0		1373	-1
+flag	-1	0		34	-1
+pattern	-1	0		1	-1
+pattern	-1	1		10	-1
+pattern	-1	2		10	-1
+pattern	-1	3		10	-1
+pattern	-1	4		10	-1
+pattern	-1	5		10	-1
+pattern	-1	6		10	-1
+pattern	-1	7		10	-1
