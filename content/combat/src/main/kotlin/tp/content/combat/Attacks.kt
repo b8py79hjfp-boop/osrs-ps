@@ -13,6 +13,10 @@ internal object Attacks {
         val (stance, type) = player.stanceAndType()
         val category = player.weaponCategory()
         if (category === Weapons.CHINCHOMPA) return Chinchompas.attack(player, target, stance, type)
+        PoweredStaves.of(player.worn(Wear.WEAPON))?.let { staff ->
+            if (!PoweredStaves.attack(player, target, staff, stance)) player.stopInteraction()
+            return
+        }
         val now = player.tick
         val spec = Specials.take(player)
         if (spec?.instant != true) player.setAttackClock(now + player.attackSpeed())
@@ -58,7 +62,7 @@ internal object Attacks {
 
     private fun WeaponCategory.usesAmmo(): Boolean = this === Weapons.BOW || this === Weapons.CROSSBOW
 
-    fun attackRoll(player: PlayerRef, stance: Stance, type: AttackType): Int =
+    fun attackRoll(player: PlayerRef, stance: Stance, type: AttackType, magicBonusMultiplier: Int = 1): Int =
         when (type.style) {
             CombatStyle.MELEE -> {
                 val eff = Formulas.effectiveLevel(player.level(Stat.ATTACK), player.prayerPercent { it.attack }, stance.attackBonus)
@@ -72,7 +76,7 @@ internal object Attacks {
 
             CombatStyle.MAGIC -> {
                 val eff = Formulas.effectiveLevel(player.level(Stat.MAGIC), player.prayerPercent { it.magic }, stance.magicBonus)
-                Formulas.roll(eff, player.bonus(Param.ATTACK_MAGIC))
+                Formulas.roll(eff, player.bonus(Param.ATTACK_MAGIC) * magicBonusMultiplier)
             }
         }
 

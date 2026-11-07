@@ -29,6 +29,10 @@ content/pvp (`PvpCombat`). Formulas F12-F16 are in `combat-formulas.md`; multi-t
 | CM17 | Ward of Arceuus (73, cosmic 1 + nature 2 + soul 4, 83 xp, cooldown 50 ticks): lasts Magic level ticks; immune to corruption, grasps bind for 1 tick, demons deal 10% less damage (the reduction is ⌊damage / 10⌋). | Wiki "Ward of Arceuus" |
 | CM18 | Lesser / Greater Corruption (64 / 85; death 1 + soul 2 / blood 1 + soul 3; 75 / 95 xp; cooldown 50 ticks): the caster's next successful hit on a player has a 50% chance (100% with Mark of Darkness) to corrupt: three Prayer drains 10 ticks apart (5 with Mark of Darkness) of 1, 2, 3 (lesser) or 2, 4, 6 (greater). Not on a corrupted player or one under Ward of Arceuus (the buff then waits). | Wiki "Lesser Corruption", "Greater Corruption", "Corruption (status)" |
 | CM19 | Death Charge (80; cooldown 100 ticks): for 100 ticks, the caster's next NPC kill within 16 tiles restores 15% special attack energy, once; not if the caster was in PvP combat in the last 10 ticks. | Wiki "Death Charge" |
+| CM20 | Powered staves cast their own spell on every attack (range 7, their own speed: 4, Tumeken's shadow 5, Eye of Ayak 3), with no base xp: 2 Magic per damage (defensive: 1.33 Magic + 1 Defence), 1.33 Hitpoints. Not on players, except Thammaron's and the accursed sceptre. They can't autocast. | Wiki "Powered staff" |
+| CM21 | Max hits: trident of the seas ⌊Magic/3⌋−5 (≥1), swamp ⌊Magic/3⌋−2, Sanguinesti ⌊Magic/3⌋ (≥6), Tumeken's shadow ⌊Magic/3+1⌋, warped sceptre ⌊(8·Magic+96)/37⌋, Thammaron's ⌊Magic/3⌋−8, accursed Magic/3−6, Eye of Ayak ⌊Magic/3⌋−6, bone staff ⌊Magic/3⌋+5; then the magic damage bonus. Swamp: 25% venom on a hit. Sanguinesti: 1 in 5 on a hit +8 damage and heals half the hit. Shadow: worn magic attack and damage ×3 (damage ≤100%). | each staff's Wiki page |
+| CM22 | One charge per cast; charges come from using the cost items on the staff (trident death 1 + chaos 1 + fire 5 + 10 coins, swamp + 1 Zulrah's scale; Sanguinesti blood 2; shadow soul 2 + chaos 5; warped chaos 2 + earth 5; sceptres 1 revenant ether; Ayak death 2 + chaos 1; bone staff chaos 1) up to the capacity (2,500 / 20,000 (e) / 16,000 / 50,000). An uncharged staff becomes charged; at 0 it turns back. Charges are per player and staff kind (OPEN-CM4); messages are ours (OPEN-CM10). | Wiki "Powered staff" charge table |
+| CM23 | OPEN-CM11: Thammaron's / accursed sceptre and bone staff graphics are stand-ins (revenant magic, trident); crystal staves and the starter staff are not implemented. | - |
 
 ## Tick timeline (manual cast)
 
@@ -48,4 +52,5 @@ content/pvp (`PvpCombat`). Formulas F12-F16 are in `combat-formulas.md`; multi-t
 - **OPEN-CM5:** the Mage Arena 100-cast unlock of the god spells (varp `magearena_charge` 272 is a likely counter).
 - **OPEN-CM6:** the message when a drain spell's stat is already lowered.
 - **OPEN-CM7:** the tick of "The holding effect is beginning to fade."
+- **OPEN-CM10:** powered staff charge messages.
 - **OPEN-CM8:** the corruption chat messages ("a message ... for both the caster and target"; no text on the Wiki).

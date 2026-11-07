@@ -30,6 +30,12 @@ public class Magic : ContentPlugin {
         onButton(Components.Magic_Spellbook.LESSER_CORRUPTION, OP_CAST) { corruption(LESSER) }
         onButton(Components.Magic_Spellbook.GREATER_CORRUPTION, OP_CAST) { corruption(GREATER) }
         onButton(Components.Magic_Spellbook.DEATH_CHARGE, OP_CAST) { deathCharge() }
+        // CM22: runes used on a powered staff charge it; "Check" tells the charges.
+        for (obj in PoweredStaves.allObjs) {
+            val staff = PoweredStaves.ofAny(obj) ?: continue
+            for ((rune, _) in staff.runes) onUseOnItem(rune, obj) { use -> PoweredStaves.charge(this, use.toSlot, use.toObj) }
+            onItemOp(obj, "Check") { PoweredStaves.check(this, obj) }
+        }
         events.on<HitEvent> { corrupt(it) }
         events.on<DeathEvent> { deathCharged(it) }
     }

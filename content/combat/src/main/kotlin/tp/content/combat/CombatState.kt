@@ -88,6 +88,7 @@ internal fun PlayerRef.attackSpeed(): Int {
 /** Attack range in tiles: melee 1; ranged param 13 (+2 longrange, max 10: F11). */
 internal fun PlayerRef.attackRange(): Int {
     val (stance, type) = stanceAndType()
+    if (type.style == CombatStyle.MAGIC) return POWERED_STAFF_RANGE
     if (type.style != CombatStyle.RANGED) return 1
     val weapon = worn(Wear.WEAPON)
     val base = if (weapon < 0) 1 else objParam(weapon, Param.ATTACK_RANGE, WeaponData.of(weapon)?.range?.takeIf { it > 0 } ?: 1)
@@ -96,6 +97,9 @@ internal fun PlayerRef.attackRange(): Int {
 
 internal const val DEFAULT_SPEED = 4
 internal const val MAX_RANGE = 10
+
+/** Wiki "Powered staff": the built-in spells reach 7 tiles. */
+internal const val POWERED_STAFF_RANGE = 7
 
 /** Combat level from base levels (F21). */
 internal fun PlayerRef.combatLevel(): Int =
