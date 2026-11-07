@@ -345,6 +345,16 @@ class Osrs242Network(
         }
     }
 
+    /** IF_SCRIPTTRIGGER (payload copied, decoded later by signature) and SEND_SNAPSHOT (abuse reports). */
+    private fun reportAndScriptListeners(b: GameMessageConsumerRepositoryBuilder<RspSession>) {
+        b.addListener(IfScriptTrigger::class.java) { s, m ->
+            val bytes = ByteArray(m.buffer.readableBytes()).also { m.buffer.getBytes(m.buffer.readerIndex(), it) }
+            m.buffer.release()
+            s.deliver(ClientCommand.ScriptTrigger(m.combinedId, m.sub, m.obj, m.crc, bytes))
+        }
+        b.addListener(SendSnapshot::class.java) { s, m -> s.deliver(ClientCommand.ReportAbuse(m.name, m.ruleId, m.mute)) }
+    }
+
     /** Decoded packets -> [ClientCommand]s, delivered to the session currently being polled. */
     private fun consumers(): GameMessageConsumerRepositoryProvider<RspSession> {
         val b = GameMessageConsumerRepositoryBuilder<RspSession>()
@@ -419,12 +429,7 @@ class Osrs242Network(
         b.addListener(ResumePauseButton::class.java) { s, m -> s.deliver(ClientCommand.ResumePause(m.combinedId, m.sub)) }
         b.addListener(ResumePStringDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeString(m.string)) }
         b.addListener(ResumePCountDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeCount(m.count)) }
-        b.addListener(IfScriptTrigger::class.java) { s, m ->
-            val bytes = ByteArray(m.buffer.readableBytes()).also { m.buffer.getBytes(m.buffer.readerIndex(), it) }
-            m.buffer.release()
-            s.deliver(ClientCommand.ScriptTrigger(m.combinedId, m.sub, m.obj, m.crc, bytes))
-        }
-        b.addListener(SendSnapshot::class.java) { s, m -> s.deliver(ClientCommand.ReportAbuse(m.name, m.ruleId, m.mute)) }
+        reportAndScriptListeners(b)
         b.addListener(ResumePObjDialog::class.java) { s, m -> s.deliver(ClientCommand.ResumeObj(m.obj)) }
         b.addListener(CloseModal::class.java) { s, _ -> s.deliver(ClientCommand.CloseModal) }
         b.addListener(WindowStatus::class.java) { s, m ->

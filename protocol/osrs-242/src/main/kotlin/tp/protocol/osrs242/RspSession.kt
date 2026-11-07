@@ -122,7 +122,8 @@ internal class RspSession(
         runCatching {
             val trigger =
                 IfScriptTrigger(
-                    net.rsprot.protocol.util.CombinedId(0),
+                    net.rsprot.protocol.util
+                        .CombinedId(0),
                     -1,
                     -1,
                     0,
