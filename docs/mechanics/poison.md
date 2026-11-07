@@ -26,6 +26,6 @@ way the client's HP orb does.
 
 - **OPEN-PO1:** an NPC's chance to poison per attack. Implemented: 1/4 (the melee weapon chance).
 - **OPEN-PO2:** whether the first poison hit lands immediately or one interval later. Implemented: one interval later.
-- **OPEN-PO3:** venom from magic (trident, toxic staff spells) and smoke spells aren't wired yet (no magic hook).
+- **PO3 (resolved):** the trident of the swamp envenoms 25% of its hits (combat-magic.md CM21), combat spells cast with the toxic staff of the dead roll the PO10 venom chance, smoke spells poison (CM11).
 - **OPEN-PO4:** serpentine helm charges (Zulrah's scales) aren't tracked; any worn serpentine helm counts.
-- Not modelled: HP-orb click to cure, Guthix rest/sanfew/strange fruit, poison message variants.
+- Not modelled: HP-orb click to cure, Guthix rest's poison reduction, strange fruit, poison message variants (Sanfew's antipoison: consumables.md E11).

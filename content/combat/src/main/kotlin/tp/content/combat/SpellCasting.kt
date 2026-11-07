@@ -117,7 +117,11 @@ internal object SpellCasting {
             }
         val style = if (spell.effect is SpellEffect.Debuff) HitStyle.TYPELESS else HitStyle.MAGIC
         if (spell.effect !is SpellEffect.Debuff) {
-            CombatSystem.queueHit(target, player, damage, style, delay) { SpellEffects.land(player, target, spell, damage) }
+            CombatSystem.queueHit(target, player, damage, style, delay) {
+                SpellEffects.land(player, target, spell, damage)
+                // PO10: spells cast with the toxic staff of the dead can envenom (the staff is a venom weapon).
+                Toxic.onPlayerHit(player, target, CombatStyle.MAGIC, damage)
+            }
         } else {
             target.queueHit(delay) { SpellEffects.land(player, target, spell, damage) }
         }
