@@ -1016,7 +1016,9 @@ the commands the pack scripts use. **`if_runscript*` = 2929** is in neither Rune
 (injected-client jar, obfuscated): the handler for opcode 2929 pops three ints (crc, component, sub id) and a type string, builds the typed
 argument array and calls the method that sends client packet 14, which is `IF_SCRIPT_TRIGGER` in `GameClientProtId`. One reading of
 flattened bytecode, so treat it as the first thing to confirm in the client (OPEN-CP1: a search keystroke must reach the server as
-`IfScriptTrigger` with the crc given in the `if_script` symbol).
+`IfScriptTrigger` with the crc given in the `if_script` symbol). **Confirmed in the client (OPEN-CP1 closed):** the packet is only sent if
+the target component's server-set events have **bit 23** (`(events >> 23) & 1`); without it the opcode silently does nothing. Content
+sets it with `ifEvents(component, -1..-1, IfEvents.SCRIPT_TRIGGER)`; the Trading Post search box filters live with it.
 
 ## D-073 `.if3` format, click mask, fonts
 

@@ -192,10 +192,9 @@ height = 24
 [[component]]
 name = "searchtext"
 type = "text"
-parent = "searchbar"
-x = 0
-y = 0
-width = 180
+x = 86
+y = 288
+width = 168
 height = 24
 options = ["Search"]
 text = "Search item..."

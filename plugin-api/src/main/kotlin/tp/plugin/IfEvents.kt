@@ -20,6 +20,12 @@ public object IfEvents {
     public const val DRAG_TARGET: Long = 1L shl 20
     public const val TARGET: Long = 1L shl 21
 
+    /**
+     * Lets the component's clientscripts send IF_SCRIPTTRIGGER (`if_runscript*`): the rev 242 client checks
+     * `(events >> 23) & 1` before sending (injected client `is.ft`, D-072); without it the call does nothing.
+     */
+    public const val SCRIPT_TRIGGER: Long = 1L shl 23
+
     /** Op [n] (1..32). */
     public fun op(n: Int): Long {
         require(n in 1..32) { "op $n" }

@@ -34,6 +34,7 @@ public class TradingPost : ContentPlugin {
         onButton(Components.Trading_Post.SHOWALL) {
             state().query = ""
             state().history = false
+            clientScript(Clientscripts.TRADING_POST_SEARCH_CLEAR, Components.Trading_Post.SEARCHTEXT)
             refresh()
         }
         onButton(Components.Trading_Post.HDR_ITEM) { sort(SORT_ITEM) }
@@ -60,6 +61,10 @@ public class TradingPost : ContentPlugin {
         var history = false
         var rows: List<TpListingView> = emptyList()
         var mine: List<TpListingView> = emptyList()
+
+        /** Request counters: hub replies arrive asynchronously, so only the newest request of each kind draws. */
+        var tableSeq = 0
+        var mineSeq = 0
     }
 
     private fun PlayerRef.state(): View = this[STATE] ?: View().also { this[STATE] = it }
@@ -70,6 +75,7 @@ public class TradingPost : ContentPlugin {
             openModal(Components.Toplevel.MAINMODAL, Interfaces.TRADING_POST)
             ifEvents(Components.Trading_Post.LIST, 0..LIST_SUBS, IfEvents.op(1))
             ifEvents(Components.Trading_Post.MINE, 0..MINE_SUBS, IfEvents.op(1))
+            ifEvents(Components.Trading_Post.SEARCHTEXT, -1..-1, IfEvents.SCRIPT_TRIGGER)
         }
         refresh()
     }
@@ -98,11 +104,15 @@ public class TradingPost : ContentPlugin {
     private fun PlayerRef.showListings(v: View) {
         val query = v.query.lowercase()
         val objs = if (query.isEmpty() || v.byPlayer) null else matchingObjs(query)
-        if (objs != null && objs.isEmpty()) return drawRows(emptyList(), "", MODE_LISTINGS)
+        if (objs != null && objs.isEmpty()) {
+            v.tableSeq++
+            return drawRows(emptyList(), "", MODE_LISTINGS)
+        }
 
         val seller = if (v.byPlayer && query.isNotEmpty()) query else null
+        val seq = ++v.tableSeq
         tradingPost(TpRequest.Search(objs, seller, MAX_ROWS)) { reply ->
-            val view = this[STATE] ?: return@tradingPost
+            val view = this[STATE]?.takeIf { it.tableSeq == seq } ?: return@tradingPost
             view.rows = sorted(reply?.listings.orEmpty(), view)
             val now = System.currentTimeMillis()
             val data =
@@ -112,8 +122,9 @@ public class TradingPost : ContentPlugin {
     }
 
     private fun PlayerRef.showHistory() {
+        val seq = ++state().tableSeq
         tradingPost(TpRequest.History) { reply ->
-            val view = this[STATE] ?: return@tradingPost
+            val view = this[STATE]?.takeIf { it.tableSeq == seq } ?: return@tradingPost
             view.rows = emptyList()
             val trades = reply?.trades.orEmpty().take(MAX_ROWS)
             val now = System.currentTimeMillis()
@@ -143,9 +154,10 @@ public class TradingPost : ContentPlugin {
     }
 
     private fun PlayerRef.showMine() {
+        val seq = ++state().mineSeq
         tradingPost(TpRequest.Mine) { mine ->
             tradingPost(TpRequest.Pending) { box ->
-                val view = this[STATE] ?: return@tradingPost
+                val view = this[STATE]?.takeIf { it.mineSeq == seq } ?: return@tradingPost
                 view.mine = mine?.listings.orEmpty()
                 val l = view.mine
                 showInv(Invs.TP_MINE, IntArray(l.size) { l[it].obj }, IntArray(l.size) { l[it].quantity })
