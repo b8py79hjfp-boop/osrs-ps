@@ -33,6 +33,49 @@ class ExchangeOffer(
     val tax: Long = 0,
 )
 
+/** Trading post (docs/mechanics/trading-post.md) requests a world sends to the hub for a player. */
+sealed interface TradingPostRequest {
+    class Listing(val obj: Int, val quantity: Int, val price: Int, val maxListings: Int) : TradingPostRequest
+
+    class Cancel(val id: Long) : TradingPostRequest
+
+    /** [objs] / [seller] null = any. */
+    class Search(val objs: Set<Int>?, val seller: String?, val limit: Int) : TradingPostRequest
+
+    data object Mine : TradingPostRequest
+
+    class Buy(val id: Long, val quantity: Int, val price: Int) : TradingPostRequest
+
+    data object Collect : TradingPostRequest
+
+    data object Pending : TradingPostRequest
+
+    data object History : TradingPostRequest
+}
+
+class TpListingRow(
+    val id: Long,
+    val accountId: Long,
+    val seller: String,
+    val obj: Int,
+    val quantity: Int,
+    val sold: Int,
+    val price: Int,
+    val listedAtMs: Long,
+)
+
+class TpTradeRow(val obj: Int, val quantity: Int, val price: Int, val bought: Boolean, val other: String, val atMs: Long)
+
+/** One reply: whichever parts the request fills (listings, a buy count / error, a collection box, trades). */
+class TradingPostReply(
+    val listings: List<TpListingRow> = emptyList(),
+    val bought: Int = 0,
+    val error: String? = null,
+    val coins: Long = 0,
+    val items: Map<Int, Int> = emptyMap(),
+    val trades: List<TpTradeRow> = emptyList(),
+)
+
 /** Grand Exchange requests (hub skeleton). Items and coins move only through the world's item transactions. */
 sealed interface ExchangeRequest {
     data object Offers : ExchangeRequest
@@ -100,6 +143,11 @@ interface AccountBridge {
      * the player is still online.
      */
     fun exchange(player: Player, request: ExchangeRequest, reply: (Player, List<ExchangeOffer>?) -> Unit) {
+        reply(player, null)
+    }
+
+    /** Trading post call; [reply] runs on the world thread (null = no hub / failure). */
+    fun tradingPost(player: Player, request: TradingPostRequest, reply: (Player, TradingPostReply?) -> Unit) {
         reply(player, null)
     }
 

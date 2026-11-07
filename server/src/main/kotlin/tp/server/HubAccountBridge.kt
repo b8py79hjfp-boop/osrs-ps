@@ -8,6 +8,10 @@ import tp.engine.ChannelConfig
 import tp.engine.ClanRequest
 import tp.engine.ExchangeOffer
 import tp.engine.ExchangeRequest
+import tp.engine.TpListingRow
+import tp.engine.TpTradeRow
+import tp.engine.TradingPostReply
+import tp.engine.TradingPostRequest
 import tp.engine.World
 import tp.engine.entity.Player
 import tp.engine.stat.PlayerStats
@@ -292,6 +296,60 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
             val answer = call("clan") { java.util.Optional.ofNullable(hub.social.clan(account, request)) }
             val err = if (answer == null) AccountBridge.NO_HUB else answer.orElse(null)
             world.execute { world.playerByAccount(account)?.let { reply(it, err) } }
+        }
+    }
+
+    override fun tradingPost(player: Player, request: TradingPostRequest, reply: (Player, TradingPostReply?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply(player, null)
+        val name = player.username
+        io.execute {
+            val result = call("trading post") { tradingPostCall(account, name, request) }
+            world.execute { world.playerByAccount(account)?.let { reply(it, result) } }
+        }
+    }
+
+    private suspend fun tradingPostCall(account: Long, name: String, request: TradingPostRequest): TradingPostReply {
+        val tpost = hub.tradingPost
+
+        fun rows(ls: List<tp.services.TpListing>) =
+            ls.map { TpListingRow(it.id, it.accountId, it.seller, it.obj, it.quantity, it.sold, it.price, it.listedAtMs) }
+        return when (request) {
+            is TradingPostRequest.Listing -> {
+                val l = tpost.list(account, name, request.obj, request.quantity, request.price, request.maxListings)
+                if (l == null) TradingPostReply(error = "You can't list any more items.") else TradingPostReply(listings = rows(listOf(l)))
+            }
+
+            is TradingPostRequest.Cancel -> {
+                TradingPostReply(listings = rows(listOfNotNull(tpost.cancel(account, request.id))))
+            }
+
+            is TradingPostRequest.Search -> {
+                TradingPostReply(listings = rows(tpost.search(request.objs, request.seller, request.limit)))
+            }
+
+            TradingPostRequest.Mine -> {
+                TradingPostReply(listings = rows(tpost.mine(account)))
+            }
+
+            is TradingPostRequest.Buy -> {
+                val r = tpost.buy(account, name, request.id, request.quantity, request.price)
+                TradingPostReply(listings = rows(listOfNotNull(r.listing)), bought = r.bought, error = r.error)
+            }
+
+            TradingPostRequest.Collect -> {
+                tpost.collect(account).let { TradingPostReply(coins = it.coins, items = it.items) }
+            }
+
+            TradingPostRequest.Pending -> {
+                tpost.pending(account).let { TradingPostReply(coins = it.coins, items = it.items) }
+            }
+
+            TradingPostRequest.History -> {
+                TradingPostReply(
+                    trades = tpost.history(account).map { TpTradeRow(it.obj, it.quantity, it.price, it.bought, it.other, it.atMs) },
+                )
+            }
         }
     }
 
