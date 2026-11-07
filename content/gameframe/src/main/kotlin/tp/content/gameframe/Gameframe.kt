@@ -37,9 +37,17 @@ public class Gameframe : ContentPlugin {
         EmoteTab.enableEvents(this)
         // The side journal opens empty; fill its active sub-tab (RS Mod `JournalTabScript.onIfOpen`).
         with(JournalTab) { open(varbit(Varbits.SIDE_JOURNAL_TAB)) }
+        // G11: the backpack tab is the selected side tab after login (client script 915 `toplevel_sidebutton_switch`
+        // sets varc `toplevel_panel` 171; RS Mod `focusTab`). Without it a fresh client shows no side panel.
+        clientScript(CS_SIDEBUTTON_SWITCH, PANEL_INVENTORY)
     }
 
     private companion object {
+        const val CS_SIDEBUTTON_SWITCH = 915
+
+        /** Side panel index of the backpack (varc `toplevel_panel`: 0 combat, 1 skills, 2 quests, 3 inventory). */
+        const val PANEL_INVENTORY = 3
+
         /** Highest world id the switcher can send (world ids are u16 in LOGOUT_TRANSFER; OSRS uses up to ~600). */
         const val MAX_WORLD_ID = 2047
 
