@@ -974,3 +974,73 @@ docs/mechanics/trading-post.md as our own (TP1..TP6), not as sourced mechanics. 
 lock in the hub serialises list / buy / cancel / collect so a listing is never oversold, and worlds move every coin and item
 through item transactions on their side before (list, buy) or after (collect) the hub call, refunding on failure.
 
+
+## D-071 Cache packing: `tools/cache-pack` writes a copy of the cache, Neptune compiles the ClientScripts
+
+Custom client content (interfaces, clientscripts, inv / varp / varbit configs) is packed from `content/<module>/src/main/resources/pack/`
+(`cs2/script`, `cs2/symbols`, `interfaces`, `configs`) into `.data/cache/242-packed/disk` by `./gradlew :tools:cache-pack:run --args="pack"`.
+The source cache `.data/cache/242/disk` is only read. Options considered for the compiler: write our own (no), depend on Neptune from Maven
+(not published; its build needs a jitpack repository for 4koma), vendor it. **Vendored** under `tools/cache-pack/neptune/` (MIT, same
+pattern as routefinder / rsprot; `NOTICE.md` has the commit). Three modules (parser with its ANTLR grammar, compiler, clientscript-compiler),
+no source edits; the CLI wrapper (clikt, gson, toml) is replaced by `ScriptPacker`, which drives `ClientScriptCompiler` and throws instead of
+exiting the JVM on diagnostics. New catalog entries: `antlr` 4.13.1 and `guava` 33.6.0-android (Neptune's `MoreObjects`, `HashBasedTable`,
+`HashMultimap`), both already in the local Gradle cache.
+
+Writing: generic and small parts went to `cache/` (`Js5Container.encode`, `Js5DiskStoreWriter`: append sectors to `dat2`, point the `idx`
+entry at them); the rest is in the tool. Groups are gzip containers with the 2-byte version trailer, which the client accepts like the
+cache's own. A rewritten group gets CRC, compressed / uncompressed length (the archives' `lengths` flag) and version + 1 in its archive
+index; the index is re-encoded losslessly (`IndexTable`, proven by re-encoding all 22 archive indexes byte for byte) and stored as
+`255/<archive>`, which is where `Js5Responses` builds the 255/255 checksum table from. Archives 0 and 24 are never touched, so the CRC /
+version spot checks still pass; only the group count differs (`pack.properties` records it). Name hashes: scripts are named, and the cache
+hashes `"[trigger,name]"` (e.g. `[clientscript,stoneborder]`), so new scripts do the same.
+
+Ids: everything new goes above the cache's maximum (scripts 10316+, interface 993 = highest group id + 1 rather than a gap, inv / varp /
+varbit above the config group maximum and the gameval maximum), assigned in name order so a rerun gives the same ids. They are written to
+`custom-symbols.tsv` (`type name id attributes`; components are `interface:component` with the packed id; the attributes column carries
+server-only config keys such as inv `scope` / `stack` that the cache cannot hold). The server's symbol generation is deliberately not wired
+to it yet: a build whose output depends on an optional packed cache would not be reproducible.
+
+## D-072 Neptune against the rev 242 client: opcode table, script format, `if_runscript`
+
+Checked by `cache-pack verify` on every run (Verifier.opcodeTable): all 10,303 scripts of cache 2757 walk cleanly (instruction stream ends
+exactly at the trailer, instruction count equals the trailer's), every core opcode (< 100) the cache uses exists in Neptune's
+`ClientScriptOpcode` with the operand width the cache needs (46 opcodes, no mismatch; 64 / 65 / 74 / 76 included), and the trailer layout
+(counts incl. long locals / args, switch tables, length) is the one Neptune writes. Against RuneLite 1.13.6's `Opcodes.java` every shared
+core id agrees (ICONST 0 ... GET_VARCLAN 76; ADD 4000, SUB 4001, MULTIPLY 4002, DIV 4003, MOD 4011, AND 4014, OR 4015). End to end: a
+Neptune compile of `if ($colour = -1) { $colour = 0xffffff; } if_setcolour($colour, $text);` produces script bytes with the same
+instruction sequence and the same 74 bytes as the cache's own script 3874 (`searchbar_mouseleave`). No fix to Neptune was needed.
+Not verifiable from the cache, left as Neptune has them: `POP_LONG_DISCARD` (62; Neptune writes a 1-byte operand, RuneLite's loader
+would read 4, and no cache script uses it), and the long arithmetic opcodes 4037-4040 / 4055-4057 (absent from RuneLite and the cache).
+Neptune ships no command table, so `commands.sym` (opcodes, from RuneLite `Opcodes.java`) and `commands.cs2` (signatures) are curated for
+the commands the pack scripts use. **`if_runscript*` = 2929** is in neither RuneLite nor any cache script; it was read from the 242 client
+(injected-client jar, obfuscated): the handler for opcode 2929 pops three ints (crc, component, sub id) and a type string, builds the typed
+argument array and calls the method that sends client packet 14, which is `IF_SCRIPT_TRIGGER` in `GameClientProtId`. One reading of
+flattened bytecode, so treat it as the first thing to confirm in the client (OPEN-CP1: a search keystroke must reach the server as
+`IfScriptTrigger` with the crc given in the `if_script` symbol).
+
+## D-073 `.if3` format, click mask, fonts
+
+The `.if3` files are TOML in the shape of OpenRune's (ISC; scripts and the `spawn_menu.if3` layout are adapted from OpenRune-Server, D-069
+applies) with our field names documented on `InterfacePacker`. Decisions: component 0 is a root layer sized by the interface's width /
+height and carries the `[[interface]]` hooks (`on_load`); children without `parent` hang off it (the cache's interfaces have exactly one
+root in 746 of 992 cases, and the layout is the same when mounted). IF3 click mask: op N (1-based) is enabled by bit N, matching every
+op-bearing component in the cache (e.g. 1 op = 0x2, 2 ops = 0x6, the 10-slot layers 0x400 + bits); `click_mask` overrides it. Fonts:
+`regular` = p12_full (495), `bold` = b12_full (496), `small` = p11_full (494) (RuneLite `FontID`); text shadow defaults to on, as in the
+cache's own text. `MiniToml` reads the TOML subset instead of a library (no catalog entry works without the serialization plugin).
+The IF3 encoder (`If3Codec`) is the inverse of `ComponentTypeDecoder` and keeps every field; `cache-pack` proves it on all 25,152 IF3
+components of the cache (decode, encode, same bytes). Not encodable: IF1 components (the legacy layout), and IF3 types other than layer,
+rectangle, text, graphic, model, line (the cache has no others).
+
+## D-074 Where the base symbols come from
+
+Generated from the cache on every run (`CacheSymbols`): obj, npc, inv, varp, varbit, loc, seq, spotanim, dbrow, dbtable, jingle, graphic
+(sprites, names like `checkbox,1`), varc, interface and component names from the gamevals in archive 24; string var-clients by scanning
+every script for `get/set_varc_string` (the varc config files carry no type). Curated in `tools/cache-pack/src/main/resources/cs2/`
+because the cache has no names for them: `commands.sym` / `commands.cs2` (see D-071), `legacy.sym` / `legacy.cs2` (the 12 existing
+scripts the pack scripts call: ids from OpenRune's rev 240 `clientscript.rscm`, each confirmed against the cache script's argument counts
+and body; signatures typed from the call sites), `fontmetrics.sym` (RS Mod `font.sym`, ids checked against archive 13), `constant.sym`
+(`^iftype_*`, `^setpos_*`, `^setsize_*`, `^settextalign_*`; key codes from RuneLite `KeyCode`, `key_del` = 101 confirmed by script 3876).
+Not available anywhere we can read: the names of the other ~7,900 cache scripts, and enum / struct / param / dbcolumn names. A pack
+script that needs one adds a line to the pack's own `cs2/symbols/*.sym` (types `varp`, `varc`, `param`, `if_script`, `dbcolumn`, ...) or
+extends `legacy.*` / `commands.*` here. `if_script` symbols are the server-side script crc as a signed int (the spawn menu needs
+`-880770536 ifscript_3414196760 int,int,string`).

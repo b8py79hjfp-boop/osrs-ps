@@ -1,0 +1,16 @@
+// Stubs for the cache scripts the pack scripts call or hook. Only the signature matters: this file is a Neptune library and is
+// never written out. Ids are in legacy.sym; each was checked against the script's argument counts and body in the cache.
+
+[proc,stoneborder](component $border, string $title, int $flags)
+[proc,searchbar_create](component $bar, component $unused)
+[proc,searchbar_set_text](component $text)
+[proc,button_setup](component $active, component $button, string $label)
+[proc,scrollbar_vertical](component $scrollbar, component $layer, graphic $g1, graphic $g2, graphic $g3, graphic $g4, graphic $g5, graphic $g6)
+[proc,on_mobile]()(boolean)
+return(false);
+[proc,keyboard_show](int $a, int $b)
+[proc,keyboard_hide]
+[proc,chatdefault_stopinput]
+[proc,chatdefault_restoreinput]
+[clientscript,searchbar_mouseover](component $text, int $colour)
+[clientscript,searchbar_mouseleave](component $text, int $colour)

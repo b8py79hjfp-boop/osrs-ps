@@ -1,0 +1,65 @@
+// Signatures of the ClientScript commands the pack scripts use. Opcodes are in commands.sym (RuneLite 1.13.6 Opcodes.java).
+// Parameter and return types follow the call sites of the cache's own scripts and the argument order the client pops.
+// Add a command here (and its opcode to commands.sym) the first time a pack script needs it; nothing is generated.
+
+[command,cc_create](component $layer, int $type, int $subid)
+[command,cc_deleteall](component $com)
+[command,cc_setposition](int $x, int $y, int $xmode, int $ymode)
+[command,cc_setsize](int $width, int $height, int $widthmode, int $heightmode)
+[command,cc_setcolour](int $colour)
+[command,cc_setfill](boolean $fill)
+[command,cc_setgraphic](graphic $graphic)
+[command,cc_setgraphicshadow](int $colour)
+[command,cc_setoutline](int $thickness)
+[command,cc_setobject_nonum](obj $obj, int $count)
+[command,cc_setop](int $op, string $text)
+[command,cc_setopbase](string $text)
+[command,cc_setonop](hook $hook)
+[command,cc_settext](string $text)
+[command,cc_settextfont](fontmetrics $font)
+[command,cc_settextalign](int $horizontal, int $vertical, int $linespacing)
+[command,cc_settextshadow](boolean $shadow)
+
+[command,if_settext](string $text, component $com)
+[command,if_setontimer](hook $hook, component $com)
+[command,if_setop](int $op, string $text, component $com)
+[command,if_setonop](hook $hook, component $com)
+[command,if_setonmouseover](hook $hook, component $com)
+[command,if_setonmouseleave](hook $hook, component $com)
+[command,if_setonkey](hook $hook, component $com)
+[command,if_setoninvtransmit](invhook $hook, component $com)
+[command,if_setcolour](int $colour, component $com)
+[command,if_triggerop](component $com, int $sub, int $op)
+[command,if_setscrollsize](int $width, int $height, component $com)
+[command,if_setscrollpos](int $x, int $y, component $com)
+[command,if_getwidth](component $com)(int)
+
+[command,string_length](string $text)(int)
+[command,substring](string $text, int $start, int $end)(string)
+[command,string_indexof_string](string $text, string $needle, int $start)(int)
+[command,string_indexof_char](string $text, char $needle)(int)
+[command,parawidth](string $text, int $width, fontmetrics $font)(int)
+[command,lowercase](string $text)(string)
+[command,compare](string $a, string $b)(int)
+[command,char_isalphanumeric](char $char)(boolean)
+[command,append_char](string $text, char $char)(string)
+[command,append](string $a, string $b)(string)
+
+[command,oc_name](obj $obj)(string)
+[command,inv_getobj](inv $inv, int $slot)(obj)
+[command,clientclock]()(int)
+
+// Handled by dynamic command handlers in Neptune; the symbol must still exist.
+[command,event_opbase]()(string)
+[command,event_mousex]()(int)
+[command,event_mousey]()(int)
+[command,event_com]()(component)
+[command,event_op]()(int)
+[command,event_comsubid]()(int)
+[command,event_com2]()(component)
+[command,event_comsubid2]()(int)
+[command,event_keycode]()(int)
+[command,event_keychar]()(char)
+
+// if_runscript* (opcode 2929, see D-072): int crc, component, sub id, then the type string Neptune appends.
+[command,if_runscript*]

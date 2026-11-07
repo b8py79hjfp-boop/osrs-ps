@@ -1,0 +1,197 @@
+package me.filby.neptune.clientscript.compiler.writer
+
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufAllocator
+import me.filby.neptune.clientscript.compiler.ClientScriptOpcode
+import me.filby.neptune.clientscript.compiler.writer.BinaryScriptWriter.DebugMode
+import me.filby.neptune.runescript.compiler.codegen.script.RuneScript
+import me.filby.neptune.runescript.compiler.type.StackType
+import me.filby.neptune.runescript.compiler.writer.BaseScriptWriter
+import me.filby.neptune.runescript.compiler.writer.BaseScriptWriter.Companion.getLocalCount
+import me.filby.neptune.runescript.compiler.writer.BaseScriptWriter.Companion.getParameterCount
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.relativeTo
+
+class BinaryScriptWriterContext(
+    script: RuneScript,
+    private val sourcePaths: List<Path>,
+    private val debugMode: DebugMode,
+    private val allocator: ByteBufAllocator,
+    private val arraysV2: Boolean,
+    private val longSupport: Boolean,
+) : BaseScriptWriter.BaseScriptWriterContext(script) {
+    /**
+     * The buffer that contains all instruction information.
+     */
+    private val instructionBuffer = allocator.buffer(INITIAL_CAPACITY)
+
+    /**
+     * The buffer that container all switch table information.
+     */
+    private val switchBuffer = allocator.buffer(INITIAL_CAPACITY)
+
+    /**
+     * Tracks the number of instructions within the script.
+     */
+    private var instructionCount = 0
+
+    fun instruction(opcode: ClientScriptOpcode, operand: Int) {
+        instructionCount += 1
+        instructionBuffer.writeShort(opcode.id)
+        if (opcode.largeOperand) {
+            instructionBuffer.writeInt(operand)
+        } else {
+            instructionBuffer.writeByte(operand)
+        }
+    }
+
+    fun instruction(opcode: Int, operand: Int) {
+        instructionCount += 1
+        instructionBuffer.writeShort(opcode)
+        instructionBuffer.writeByte(operand)
+    }
+
+    fun instruction(opcode: ClientScriptOpcode, operand: String) {
+        instructionCount += 1
+        instructionBuffer.writeShort(opcode.id)
+        instructionBuffer.writeString(operand)
+    }
+
+    fun instruction(opcode: ClientScriptOpcode, operand: Long) {
+        instructionCount += 1
+        instructionBuffer.writeShort(opcode.id)
+        instructionBuffer.writeLong(operand)
+    }
+
+    fun switch(id: Int, block: () -> Int) {
+        instruction(ClientScriptOpcode.SWITCH, id)
+
+        val switchStartPos = switchBuffer.writerIndex()
+        switchBuffer.writeShort(0)
+        val totalKeyCount = block()
+        switchBuffer.setShort(switchStartPos, totalKeyCount)
+    }
+
+    fun switchCase(key: Int, jump: Int) {
+        switchBuffer.writeInt(key)
+        switchBuffer.writeInt(jump)
+    }
+
+    fun finish(): ByteBuf {
+        val buf = allocator.buffer(calculateBufferSize())
+        val locals = script.locals
+        val switchBufferSize = switchBuffer.writerIndex()
+
+        buf.writeString(script.debugInfo())
+        buf.writeBytes(instructionBuffer)
+        buf.writeInt(instructionCount)
+        buf.writeShort(locals.getLocalCount(StackType.INTEGER, arraysV2))
+        buf.writeShort(locals.getLocalCount(StackType.OBJECT, arraysV2))
+        if (longSupport) {
+            buf.writeShort(locals.getLocalCount(StackType.LONG, arraysV2))
+        }
+        buf.writeShort(locals.getParameterCount(StackType.INTEGER, arraysV2))
+        buf.writeShort(locals.getParameterCount(StackType.OBJECT, arraysV2))
+        if (longSupport) {
+            buf.writeShort(locals.getParameterCount(StackType.LONG, arraysV2))
+        }
+        buf.writeByte(script.switchTables.size)
+        buf.writeBytes(switchBuffer)
+        buf.writeShort(switchBufferSize + 1)
+        return buf
+    }
+
+    private fun calculateBufferSize(): Int {
+        var size = 0
+        size += script.debugInfo().length + 1
+        size += instructionBuffer.readableBytes()
+        size += 4 // instruction count
+        size += if (longSupport) 2 * 6 else 2 * 4 // local var counts
+        size += 1 // switch table count
+        size += switchBuffer.readableBytes()
+        size += 2 // switch buffer size
+        return size
+    }
+
+    override fun close() {
+        instructionBuffer.release()
+        switchBuffer.release()
+    }
+
+    private fun ByteBuf.writeString(text: String) {
+        for (char in text) {
+            writeByte(wideToCp1252(char))
+        }
+        writeByte(0)
+    }
+
+    private fun RuneScript.debugInfo(): String = when (debugMode) {
+        DebugMode.NONE -> ""
+        DebugMode.NAME -> fullName
+        DebugMode.FULL -> "${relativeSource()} $fullName"
+    }
+
+    private fun RuneScript.relativeSource(): String {
+        val sourcePath = try {
+            Path(sourceName)
+        } catch (_: Exception) {
+            return sourceName
+        }
+
+        for (root in sourcePaths) {
+            if (sourcePath.startsWith(root)) {
+                // note: for consistency, always use `/` for path separator
+                return sourcePath.relativeTo(root).joinToString("/")
+            }
+        }
+        return sourceName
+    }
+
+    private companion object {
+        /**
+         * This value was determined by checking the average size of all scripts
+         * in OSRS and rounding to the next power of two.
+         */
+        const val INITIAL_CAPACITY = 512
+
+        /**
+         * Converts a widened character to its CP1251 representation.
+         */
+        fun wideToCp1252(char: Char): Int {
+            if (char.code in 1..127 || char.code in 160..255) {
+                return char.code
+            }
+            return when (char) {
+                '€' -> -128
+                '‚' -> -126
+                'ƒ' -> -125
+                '„' -> -124
+                '…' -> -123
+                '†' -> -122
+                '‡' -> -121
+                'ˆ' -> -120
+                '‰' -> -119
+                'Š' -> -118
+                '‹' -> -117
+                'Œ' -> -116
+                'Ž' -> -114
+                '‘' -> -111
+                '’' -> -110
+                '“' -> -109
+                '”' -> -108
+                '•' -> -107
+                '–' -> -106
+                '—' -> -105
+                '˜' -> -104
+                '™' -> -103
+                'š' -> -102
+                '›' -> -101
+                'œ' -> -100
+                'ž' -> -98
+                'Ÿ' -> -97
+                else -> '?'.code
+            }
+        }
+    }
+}

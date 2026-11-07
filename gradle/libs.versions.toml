@@ -30,6 +30,9 @@ protobufJava = "4.36.2"
 protobufGradle = "0.10.1"
 postgresql = "42.7.14"
 hikari = "7.1.0"
+# Neptune (vendored under tools/cache-pack/neptune, D-070) needs ANTLR for its parser and Guava for a few helpers.
+antlr = "4.13.1"
+guava = "33.6.0-android"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -66,6 +69,9 @@ grpc-kotlin-stub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpcKot
 protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobufJava" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+antlr-tool = { module = "org.antlr:antlr4", version.ref = "antlr" }
+antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }

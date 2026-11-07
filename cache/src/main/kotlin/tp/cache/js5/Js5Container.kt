@@ -2,11 +2,13 @@ package tp.cache.js5
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.SequenceInputStream
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
 import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 /**
  * JS5 container codec.
@@ -67,4 +69,43 @@ object Js5Container {
         if (out.size != uncompressedLength) throw IOException("Decompressed ${out.size} of $uncompressedLength bytes")
         return out
     }
+
+    /**
+     * Encodes [data] as a container (the inverse of [decode], unkeyed). Only [NONE] and [GZIP] are written: the client accepts
+     * all three types and gzip needs nothing beyond the JDK (the 10-byte header the client skips is what `GZIPOutputStream`
+     * writes). With [version] >= 0 the low 16 bits are appended as the disk store's 2-byte version trailer.
+     */
+    fun encode(data: ByteArray, compression: Int = GZIP, version: Int = -1): ByteArray {
+        val body: ByteArray
+        val header = ByteBuffer.allocate(HEADER + LENGTH_FIELD)
+        header.put(compression.toByte())
+        when (compression) {
+            NONE -> {
+                body = data
+                header.putInt(body.size)
+                header.limit(HEADER)
+            }
+
+            GZIP -> {
+                val bytes = ByteArrayOutputStream()
+                GZIPOutputStream(bytes).use { it.write(data) }
+                body = bytes.toByteArray()
+                header.putInt(body.size)
+                header.putInt(data.size)
+            }
+
+            else -> {
+                throw IllegalArgumentException("Cannot encode compression type $compression")
+            }
+        }
+        header.flip()
+        val trailer = if (version >= 0) VERSION_TRAILER else 0
+        val out = ByteBuffer.allocate(header.remaining() + body.size + trailer)
+        out.put(header).put(body)
+        if (version >= 0) out.putShort(version.toShort())
+        return out.array()
+    }
+
+    /** The 2-byte version trailer of the disk store. */
+    private const val VERSION_TRAILER = 2
 }

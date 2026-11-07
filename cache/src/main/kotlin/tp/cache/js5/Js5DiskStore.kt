@@ -85,13 +85,13 @@ class Js5DiskStore private constructor(
         const val MASTER_ARCHIVE: Int = 255
 
         /** Sector layout: 520 bytes = 8-byte header + 512 data, or 10-byte header + 510 data for group ids > 0xFFFF. */
-        private const val SECTOR_SIZE = 520
-        private const val HEADER_SIZE = 8
-        private const val EXTENDED_HEADER_SIZE = 10
-        private const val MAX_SHORT_GROUP = 0xFFFF
+        internal const val SECTOR_SIZE = 520
+        internal const val HEADER_SIZE = 8
+        internal const val EXTENDED_HEADER_SIZE = 10
+        internal const val MAX_SHORT_GROUP = 0xFFFF
 
         /** Index entry: u24 size + u24 first sector. */
-        private const val INDEX_ENTRY_SIZE = 6
+        internal const val INDEX_ENTRY_SIZE = 6
         private const val U8 = 0xFF
         private const val U16 = 0xFFFF
         private const val MAX_ARCHIVE_FILE = 254

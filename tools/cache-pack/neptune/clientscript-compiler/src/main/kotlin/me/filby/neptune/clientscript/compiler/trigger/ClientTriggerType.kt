@@ -1,0 +1,95 @@
+package me.filby.neptune.clientscript.compiler.trigger
+
+import me.filby.neptune.clientscript.compiler.type.ScriptVarType
+import me.filby.neptune.runescript.compiler.trigger.SubjectMode
+import me.filby.neptune.runescript.compiler.trigger.TriggerType
+import me.filby.neptune.runescript.compiler.type.TupleType
+import me.filby.neptune.runescript.compiler.type.Type
+
+/**
+ * An enumeration of valid trigger types for use in ClientScript.
+ */
+enum class ClientTriggerType(
+    override val id: Int,
+    override val subjectMode: SubjectMode = SubjectMode.Name,
+    override val allowParameters: Boolean = false,
+    override val parameters: Type? = null,
+    override val allowReturns: Boolean = false,
+    override val returns: Type? = null,
+) : TriggerType {
+    OPWORLDMAPELEMENT1(10, subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT)),
+    OPWORLDMAPELEMENT2(11, subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT)),
+    OPWORLDMAPELEMENT3(12, subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT)),
+    OPWORLDMAPELEMENT4(13, subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT)),
+    OPWORLDMAPELEMENT5(14, subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT)),
+    WORLDMAPELEMENTMOUSEOVER(
+        15,
+        subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT),
+        allowParameters = true,
+        parameters = TupleType(ScriptVarType.INT, ScriptVarType.INT),
+    ),
+    WORLDMAPELEMENTMOUSELEAVE(
+        16,
+        subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT),
+        allowParameters = true,
+        parameters = TupleType(ScriptVarType.INT, ScriptVarType.INT),
+    ),
+    WORLDMAPELEMENTMOUSEREPEAT(
+        17,
+        subjectMode = SubjectMode.Type(ScriptVarType.MAPELEMENT),
+        allowParameters = true,
+        parameters = TupleType(ScriptVarType.INT, ScriptVarType.INT),
+    ),
+    INV_CHANGED(
+        18,
+        subjectMode = SubjectMode.Type(ScriptVarType.INV, category = false),
+        allowParameters = true,
+        parameters = TupleType(
+            ScriptVarType.INT,
+            ScriptVarType.INT,
+            ScriptVarType.INT,
+            ScriptVarType.OBJ,
+            ScriptVarType.OBJ,
+            ScriptVarType.INT,
+        ),
+    ),
+    GCLIENTCLICKNPC(30),
+    GCLIENTCLICKLOC(31),
+    GCLIENTCLICKOBJ(32),
+    GCLIENTCLICKPLAYER(33),
+    GCLIENTCLICKTILE(34),
+    LOADNPC(35, subjectMode = SubjectMode.Type(ScriptVarType.NPC)),
+    UNLOADNPC(36, subjectMode = SubjectMode.Type(ScriptVarType.NPC)),
+    LOADLOC(37, subjectMode = SubjectMode.Type(ScriptVarType.LOC)),
+    LOCCHANGE(38, subjectMode = SubjectMode.Type(ScriptVarType.LOC)),
+    LOADOBJ(39, subjectMode = SubjectMode.Type(ScriptVarType.NAMEDOBJ)),
+    UNLOADOBJ(40, subjectMode = SubjectMode.Type(ScriptVarType.NAMEDOBJ)),
+    LOADPLAYER(41, subjectMode = SubjectMode.None),
+    UNLOADPLAYER(42, subjectMode = SubjectMode.None),
+    UPDATEOBJSTACK(45, subjectMode = SubjectMode.None),
+    UPDATEOBJCOUNT(46, subjectMode = SubjectMode.Type(ScriptVarType.NAMEDOBJ)),
+    COORDDESTINATION(47, subjectMode = SubjectMode.None),
+    COORDMOUSEOVER(48, subjectMode = SubjectMode.None),
+    PLAYERROUTEUPDATE(49, subjectMode = SubjectMode.None),
+    NPCROUTEUPDATE(50, subjectMode = SubjectMode.Type(ScriptVarType.NPC)),
+    PROC(73, allowParameters = true, allowReturns = true),
+    CLIENTSCRIPT(76, allowParameters = true),
+    HELDOBJOVERLAY(77, subjectMode = SubjectMode.Type(ScriptVarType.NAMEDOBJ)),
+    ONCLICKLOC(78, subjectMode = SubjectMode.Type(ScriptVarType.LOC)),
+    ONCLICKOBJ(79, subjectMode = SubjectMode.Type(ScriptVarType.NAMEDOBJ)),
+    ONCLICKNPC(80, subjectMode = SubjectMode.Type(ScriptVarType.NPC)),
+    ONCLICKPLAYER(81, subjectMode = SubjectMode.None),
+    ONMINIMENUOPEN(82, subjectMode = SubjectMode.None),
+    ONMINIMENUCLOSE(83, subjectMode = SubjectMode.None),
+    INTERPOLATE(
+        86,
+        subjectMode = SubjectMode.Name,
+        allowParameters = true,
+        parameters = ScriptVarType.INT,
+        allowReturns = true,
+        returns = ScriptVarType.INT,
+    ),
+    ;
+
+    override val identifier: String get() = name.lowercase()
+}

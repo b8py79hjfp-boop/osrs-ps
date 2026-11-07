@@ -20,6 +20,7 @@ Non-obvious choices go in `docs/DECISIONS.md`; phase plans in `docs/plans/phase-
 | Boot check (CI) | `./gradlew :server:run --args=--boot-check` |
 | Test 1 (cache smoke) | `./gradlew :tools:symbol-gen:test` |
 | Content progress report (Wiki vs code, writes `PROGRESS.md`; `--refresh` re-downloads the Wiki) | `python3 -I tools/progress/content_progress.py` |
+| Pack custom content (cs2, interfaces, inv/varp/varbit) into `.data/cache/242-packed/` (source cache untouched) | `./gradlew :tools:cache-pack:run --args="pack"` (`verify`, `--pack-dir <dir>`; sources in `content/<module>/src/main/resources/pack`) |
 | Inspect cache data | `./gradlew :tools:cache-dump:run --args="summary"` (also `config obj 4151`, `map 50 50`, `collision 3222 3218 0`) |
 
 JDK toolchain comes from `osrs.javaVersion` in `gradle.properties` (25). A machine without JDK 25 can override it in
@@ -42,7 +43,7 @@ content/<area>/     plugins (combat, pvp, ...). Depend only on plugin-api + symb
 services/           account, social, exchange, hiscores (interfaces + in-process impls)
 server/             world-node main, config, wiring (composition root)
 hub/                hub main (Phase 5)
-tools/              symbol-gen (+ test 1), cache-dump, scenario (golden tests), botswarm, replay, wiki-import
+tools/              symbol-gen (+ test 1), cache-dump, cache-pack (+ vendored Neptune cs2 compiler), scenario (golden tests), botswarm, replay, wiki-import
 client/             release client (Phase 6): runelite fork, gamepatch, launcher, dist
 ```
 
