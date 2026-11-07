@@ -50,7 +50,7 @@ internal object SpecialEffects {
                 CombatStyle.RANGED -> AttackType.RANGED
                 else -> type
             }
-        if (style == CombatStyle.RANGED && with(Attacks) { category.usesAmmo() } && !CombatSystem.useAmmo(player)) {
+        if (style == CombatStyle.RANGED && !CombatSystem.useAmmo(player, target, category)) {
             player.message("There is no ammo left in your quiver.")
             player.stopInteraction()
             return

@@ -333,12 +333,26 @@ internal object CombatSystem {
         attacker.events.publish(AttackEvent(attacker, target, hitStyle(style)))
     }
 
-    /** Removes one piece of ammo from the quiver; false if there's none. */
-    fun useAmmo(player: PlayerRef): Boolean {
-        val ammo = player.worn(Wear.AMMO)
+    /**
+     * CD-A1: spends the ammunition of one ranged attack at [target]: arrows / bolts from the ammo slot, thrown weapons
+     * from the weapon slot (not the blowpipe, which uses charges). False when there is none.
+     */
+    fun useAmmo(player: PlayerRef, target: EntityRef, category: WeaponCategory): Boolean {
+        val weapon = player.objName(player.worn(Wear.WEAPON)).lowercase()
+        if (NO_AMMO_BOWS.any { it in weapon }) return true
+        val slot =
+            when {
+                category === Weapons.BOW || category === Weapons.CROSSBOW -> Wear.AMMO
+                category === Weapons.THROWN && "blowpipe" !in weapon -> Wear.WEAPON
+                else -> return true
+            }
+        val ammo = player.worn(slot)
         if (ammo < 0) return false
-        return player.transaction("ammo") { removeAt(Invs.WORN, Wear.AMMO, ammo, 1) }
+        return AmmoRecovery.spend(player, slot, ammo, target)
     }
+
+    /** Bows that make their own arrows or use charges (Wiki: crystal bow, bow of faerdhinen, Craw's / webweaver bow). */
+    private val NO_AMMO_BOWS = listOf("crystal bow", "faerdhinen", "craw's bow", "webweaver bow")
 }
 
 /**

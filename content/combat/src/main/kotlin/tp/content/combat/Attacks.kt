@@ -20,7 +20,7 @@ internal object Attacks {
         val spec = Specials.take(player)
         if (spec != null) return SpecialEffects.perform(player, target, spec, stance, type, category)
         player.setAttackClock(player.tick + player.attackSpeed())
-        if (type.style == CombatStyle.RANGED && category.usesAmmo() && !CombatSystem.useAmmo(player)) {
+        if (type.style == CombatStyle.RANGED && !CombatSystem.useAmmo(player, target, category)) {
             player.message("There is no ammo left in your quiver.")
             player.stopInteraction()
             return

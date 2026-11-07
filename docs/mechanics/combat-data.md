@@ -47,3 +47,12 @@ and conflict groups aren't in the cache: OSRS Wiki "Prayer" table (prayers.md).
 | CD-W3 | When hit, a player plays the shield's block anim, else the weapon's, else `human_unarmedblock`, timed to the hit (not while moving); NPCs play their block anim (npc-combat.md N10). | RS Mod `combatPlayDefendAnim` |
 | CD-W4 | While a weapon is wielded the player's base animations (ready, turn, walk ×4, run) are its own where given. Ranged attacks show the ammo's (or thrown weapon's) launch graphic at height 96 and its travel projectile in its shape (arrow, bolt, thrown, chinchompa, dark bow doubles); projectiles of every kind use the RS Mod `ProjAnimBuilds` shapes (heights in MAP_PROJANIM_V2 units), arriving on the hit tick. | RS Mod `objs.toml`, `PvNCombat`, `ProjAnimBuilds` |
 | CD-W5 | Attack speed and range come from the cache params 14 / 13; `weapons.tsv` fills them where the cache has none. | RS Mod `objs.toml` |
+
+## Ammunition (CD-A)
+
+| # | Rule | Source |
+|---|---|---|
+| CD-A1 | Each ranged attack spends one piece of ammunition: arrows / bolts / javelins from the ammo slot (bows, crossbows, ballistae), thrown weapons from the weapon slot. Crystal bow, bow of faerdhinen, Craw's and webweaver bows and the blowpipe use none (charges are not modelled). | Wiki weapon pages |
+| CD-A2 | 20% breaks on impact. An Ava's device in the cape slot keeps its share (attractor 60%, accumulator 72%, assembler 80%; max-cape forms by name), unless the body item is in the Wiki's interference table (`ava-interference.tsv`). | Wiki "Ava's device", "Ava's assembler" |
+| CD-A3 | The rest drops on the target's tile, private to the shooter first (ground-items.md G1). | Wiki "Ava's device" (fail rate) |
+| CD-A4 | OPEN-CD-A1: the drop happens on the attack tick (not when the projectile lands); the interference table's collapsed rows may be incomplete; Ava's mithril-item attraction and chinchompas (always used) are as before. | - |
