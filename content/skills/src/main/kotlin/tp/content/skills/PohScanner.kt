@@ -60,6 +60,7 @@ internal object PohScanner {
         for (f in found) at[slot(f.dx, f.dz, f.loc.shape)] = f
         val seen = HashSet<Found>()
         val groups = ArrayList<HotspotGroup>()
+        val kinds = found.groupBy({ it.name }, { it.loc.id }).mapValues { (_, ids) -> ids.distinct().sorted() }
         for (start in found) {
             if (!seen.add(start)) continue
             val members = ArrayList<Found>()
@@ -79,7 +80,7 @@ internal object PohScanner {
             val anchorLoc = members.minBy { PohRooms.templateTile(it.dx, it.dz, room.rotation) }
             val anchor = PohRooms.templateTile(anchorLoc.dx, anchorLoc.dz, room.rotation)
             val key = HouseLayout.furnitureKey(room.floor, room.x, room.z, HouseLayout.layerOf(anchorLoc.loc.shape), anchor)
-            groups += HotspotGroup(key, room, start.name, members.map { it.loc })
+            groups += HotspotGroup(key, room, start.name, members.map { it.loc }, kinds.getValue(start.name))
         }
         return groups
     }

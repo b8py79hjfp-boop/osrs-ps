@@ -15,7 +15,14 @@ internal class DoorSpot(val loc: LocRef, val side: Side)
  * One hotspot of a room: the [locs] (copied template locs) of one furniture hotspot named [name] (lower case). [key] is the
  * stable key that names it in the saved layout; [built] is the piece standing on it, if any.
  */
-internal class HotspotGroup(val key: Int, val room: PlacedRoom, val name: String, val locs: List<LocRef>) {
+internal class HotspotGroup(
+    val key: Int,
+    val room: PlacedRoom,
+    val name: String,
+    val locs: List<LocRef>,
+    /** The distinct hotspot loc ids of every hotspot called [name] in the room, sorted (construction.md CO24). */
+    val kinds: List<Int> = emptyList(),
+) {
     var built: Piece? = null
 
     /** The hotspot loc ids in a fixed order; the i-th picks the i-th loc id of a built piece. */

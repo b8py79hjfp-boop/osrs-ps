@@ -19,11 +19,11 @@ internal object HouseMenus {
     private const val PAGE = 4
     private const val MORE = "More..."
     private const val CANCEL = "Cancel"
-    private const val YES = "Yes"
-    private const val NO = "No"
+    const val YES = "Yes"
+    const val NO = "No"
 
     /** The yes answer of a [YES] / [NO] menu. */
-    private const val ANSWER_YES = 1
+    const val ANSWER_YES = 1
 
     /** Hotspot loc shapes: walls are 0..3, wall decor 4..8, ground decor 22 (the client's layer rule). */
     private const val WALL_LAST = 3
@@ -31,7 +31,7 @@ internal object HouseMenus {
     private const val GROUND_DECOR = 22
 
     /** The house the player stands in, if they own it and it is in build mode; else tells them why not. */
-    private fun ownBuildHouse(p: PlayerRef): House? {
+    fun ownBuildHouse(p: PlayerRef): House? {
         val house = p[House.CURRENT]
         return when {
             house == null || house.instance.destroyed -> {
@@ -96,13 +96,13 @@ internal object HouseMenus {
     }
 
     /** The first reason [f] cannot be built now (level, tools, materials) as a game message, or null. */
-    private fun shortfall(p: PlayerRef, f: Furniture, flat: Boolean = false): String? {
+    fun shortfall(p: PlayerRef, f: Furniture, flat: Boolean = false): String? {
         val inv = p.inv(Invs.INV)
         return when {
             !flat && p.level(Stats.CONSTRUCTION) < f.level -> "You need a Construction level of ${f.level} to build that."
             f.tools.any { inv.total(it) == 0L } -> "You need ${toolList(p, f)} to build that."
             flat && inv.total(f.flatpack) == 0L -> "You don't have the flatpack to build that."
-            !flat && f.inputs.any { inv.total(it.obj) < it.count } -> "You don't have the materials to build that."
+            !flat && !PohMaterials.covers(p, f.inputs) -> "You don't have the materials to build that."
             else -> null
         }
     }
@@ -114,13 +114,13 @@ internal object HouseMenus {
                 "construction flatpack",
             ) { remove(Invs.INV, f.flatpack, 1) }
         } else {
-            p.transaction("construction") { take(f.inputs) }
+            PohMaterials.take(p, "construction", f.inputs)
         }
 
     private fun toolList(p: PlayerRef, f: Furniture): String = f.tools.joinToString(" and ") { "a ${p.objName(it).lowercase()}" }
 
     /** Wall hotspots use the wall build animation, floor hotspots the floor one, the rest the plain one (OPEN-CO7). */
-    private fun animFor(shape: Int): Int =
+    fun animFor(shape: Int): Int =
         when {
             shape == GROUND_DECOR -> Seqs.HUMAN_POH_BUILD_FLOOR
             shape <= WALL_LAST || shape <= WALL_DECOR_LAST -> Seqs.HUMAN_POH_BUILD_WALL
@@ -143,9 +143,21 @@ internal object HouseMenus {
         val there = house.roomAt(room.floor, x, z)
         val limit = minOf(house.dim, HouseBuilder.maxDimension(player.baseLevel(Stats.CONSTRUCTION)))
         when {
-            there != null -> removeRoom(house, there)
-            x !in 1..limit || z !in 1..limit -> player.message("You can't build a room there.")
-            else -> addRoom(house, room, side, x, z)
+            there != null -> {
+                removeRoom(house, there)
+            }
+
+            x !in 1..limit || z !in 1..limit -> {
+                player.message("You can't build a room there.")
+            }
+
+            room.floor == PohRooms.UPPER && house.roomAt(PohRooms.GROUND, x, z) == null -> {
+                player.message("You can't build a room there: there is no room below it.")
+            }
+
+            else -> {
+                addRoom(house, room, side, x, z)
+            }
         }
     }
 
@@ -156,7 +168,7 @@ internal object HouseMenus {
         val costs = ConstructionData.rooms().associateBy { it.name }
         val types =
             PohRooms.ALL.indices
-                .filter { !PohRooms.ALL[it].basement && PohRooms.rotationsFacing(it, side.opposite).isNotEmpty() }
+                .filter { PohRooms.allowedOn(it, from.floor) && PohRooms.rotationsFacing(it, side.opposite).isNotEmpty() }
                 .sortedBy { costs[PohRooms.ALL[it].name]?.level ?: 0 }
         val type =
             pick("Choose a room to build", types) {
@@ -189,6 +201,9 @@ internal object HouseMenus {
         if (house.scans[room]?.groups?.any { it.built?.id == House.EXIT_PORTAL_PIECE } == true) {
             return player.message("You can't remove the room with the exit portal.")
         }
+        if (room.floor == PohRooms.GROUND && house.roomAt(PohRooms.UPPER, room.x, room.z) != null) {
+            return player.message("You can't remove a room that is supporting another room.")
+        }
         if (choice("Do you want to remove the ${room.template.label.lowercase()}?", YES, NO) != ANSWER_YES) return
         if (house.instance.destroyed || room !in house.layout.rooms) return
         HouseBuilder.removeRoom(player, house, room)
@@ -198,7 +213,7 @@ internal object HouseMenus {
     // ---- menus
 
     /** Asks for one of [items] on pages of [PAGE]; null if the menu was closed or cancelled. */
-    private suspend fun <T> PlayerScript.pick(title: String, items: List<T>, label: (T) -> String): T? {
+    suspend fun <T> PlayerScript.pick(title: String, items: List<T>, label: (T) -> String): T? {
         if (items.isEmpty()) return null
         var start = 0
         while (true) {

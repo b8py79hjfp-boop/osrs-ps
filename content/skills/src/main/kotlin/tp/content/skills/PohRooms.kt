@@ -38,6 +38,7 @@ internal object PohRooms {
     /** Floors of a house are instance levels: basement 0, ground floor 1, upper floor 2 (the template zones exist on all four levels). */
     const val BASEMENT = 0
     const val GROUND = 1
+    const val UPPER = 2
 
     /** Tiles per room side: one zone. */
     const val ZONE = 8
@@ -90,6 +91,7 @@ internal object PohRooms {
             RoomTemplate("Dungeon (Construction)", "dungeon", 1856, 7064, setOf(N, E, S, W), basement = true, label = "Dungeon cross"),
             RoomTemplate("Treasure room", "treasure room", 1912, 7072, setOf(S), basement = true),
             RoomTemplate("Dungeon (Construction)", "dungeon", 1888, 7064, setOf(N, S), basement = true, label = "Dungeon corridor"),
+            RoomTemplate("Dungeon (Construction)", "dungeon", 1872, 7064, setOf(N, E, S, W), basement = true, label = "Dungeon stairs"),
         )
 
     /** Room ids of the default house (construction.md H1). */
@@ -100,6 +102,22 @@ internal object PohRooms {
     fun zone(type: Int, style: Int, floor: Int): CoordGrid {
         val t = ALL[type]
         return CoordGrid(t.zoneX + style * STYLE_STRIDE, t.zoneZ, floor)
+    }
+
+    /** Rooms that stay on the ground floor (Wiki "Player-owned house", Restrictions: "gardens can only be built on ground level"). */
+    private val GARDENS = setOf("Garden", "Formal garden", "Superior garden")
+
+    /**
+     * Whether a room of [type] may be built on [floor]: dungeon rooms only underground, gardens only on the ground floor, the
+     * rest on the ground and upper floors (Wiki "Player-owned house", Restrictions; construction.md CO23).
+     */
+    fun allowedOn(type: Int, floor: Int): Boolean {
+        val t = ALL[type]
+        return when (floor) {
+            BASEMENT -> t.basement
+            GROUND -> !t.basement
+            else -> !t.basement && t.name !in GARDENS
+        }
     }
 
     /** The door sides of a room of [type] turned [rotation] quarter turns clockwise. */
@@ -149,14 +167,11 @@ internal object PohRooms {
     /** The name (lower case) of the loc that marks the doorways of a room (cache: category 485, op 5 "Build"). */
     const val DOOR_HOTSPOT = "door hotspot"
 
-    /** Staircase hotspots are left out: floors are not connected yet (OPEN-CO6). */
-    private const val STAIRS = "stair space"
-
     private const val SPACE = " space"
 
     /** Whether a loc of this lower-case cache name is a furniture hotspot (cache category 207, op 5 "Build"). */
-    fun isHotspot(name: String): Boolean = ((name.endsWith(SPACE) || name.contains("$SPACE ")) && name != STAIRS) || name in ODD_HOTSPOTS
+    fun isHotspot(name: String): Boolean = name.endsWith(SPACE) || name.contains("$SPACE ") || name in ODD_HOTSPOTS
 
     /** Every hotspot name a "Build" click is registered for: the furniture table's and the unlisted ones. */
-    fun hotspotNames(): Set<String> = (PohFurniture.hotspotNames + UNLISTED_HOTSPOTS + ODD_HOTSPOTS).filterTo(HashSet()) { it != STAIRS }
+    fun hotspotNames(): Set<String> = PohFurniture.hotspotNames + UNLISTED_HOTSPOTS + ODD_HOTSPOTS
 }

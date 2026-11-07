@@ -95,11 +95,21 @@ internal object HouseBuilder {
 
     /** Puts [piece] on the hotspot: each hotspot loc becomes the piece's loc with the same index, keeping shape and angle. */
     fun place(p: PlayerRef, g: HotspotGroup, piece: Piece) {
-        for (loc in g.locs) {
-            val index = g.ids.indexOf(loc.id).coerceAtMost(piece.locs.size - 1)
-            p.addLoc(piece.locs[index], loc.coord, loc.shape, loc.angle)
-        }
+        for (loc in g.locs) p.addLoc(piece.locs[locIndex(g, loc, piece)], loc.coord, loc.shape, loc.angle)
         g.built = piece
+        PohPortals.decorate(p, g, piece)
+    }
+
+    /**
+     * Which of the piece's loc ids a hotspot loc becomes. The i-th hotspot loc id of the group picks the i-th loc id; when the
+     * group has fewer ids than the piece but the room has exactly as many kinds of this hotspot as the piece has ids (wall
+     * shelves, the sixteen decoration spaces), the kind's rank picks it (construction.md CO24, OPEN-CO10). A piece whose extra
+     * ids are states (open and closed, lit and unlit) always uses the first.
+     */
+    private fun locIndex(g: HotspotGroup, loc: tp.plugin.LocRef, piece: Piece): Int {
+        val last = piece.locs.size - 1
+        if (g.ids.size < piece.locs.size && g.kinds.size == piece.locs.size) return g.kinds.indexOf(loc.id).coerceIn(0, last)
+        return g.ids.indexOf(loc.id).coerceAtMost(last)
     }
 
     private fun hide(p: PlayerRef, g: HotspotGroup) {

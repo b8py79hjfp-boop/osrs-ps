@@ -106,10 +106,10 @@ clockwise r steps (south, west, north, east).
 | 22 | Dungeon cross (basement) | 1856, 7064 | N E S W |
 | 23 | Treasure room (basement) | 1912, 7072 | S |
 | 24 | Dungeon corridor (basement) | 1888, 7064 | N S |
+| 25 | Dungeon stairs (basement) | 1872, 7064 | N E S W |
 
-Zones not used: (1880, 7088) skill hall and (1912, 7088) quest hall (same hotspots, the rug area altered around the staircase),
-(1912, 7056) menagerie (no habitat hotspots) and (1872, 7064) dungeon with a staircase. They look like the staircase variants
-(OPEN-CO6). Style n adds 64 n to the x of every zone. The same zone on level 0, 1, 2 differs slightly (wall loc ids, the stair
+Zones not used: (1880, 7088) skill hall and (1912, 7088) quest hall (same hotspots, the rug area altered around the staircase) and
+(1912, 7056) menagerie (no habitat hotspots). They look like the staircase variants (OPEN-CO23). Style n adds 64 n to the x of every zone. The same zone on level 0, 1, 2 differs slightly (wall loc ids, the stair
 hotspot), which is why the template level equals the floor.
 
 ## OPEN
@@ -133,10 +133,8 @@ hotspot), which is why the template level equals the floor.
   without enabling their events, so use the portal ops.
 - **OPEN-CO5: estate agent.** Buying the house (1,000 coins) or Daddy's Home, moving it to another location, redecorating the style
   and the unlock rules other than the Wiki table above are not implemented; the first entry creates the house free.
-- **OPEN-CO6: floors and yard.** Only the ground floor can be built: upper-floor and basement rooms exist in the template table and
-  the save format, but no staircase, trapdoor or dungeon entrance moves a player between floors, so the menu offers only
-  ground-floor rooms. The yard around the house is left empty (void, blocked) instead of the Wiki's yard. "Stair space" hotspots
-  are ignored. Rooms cannot be moved (viewer).
+- **OPEN-CO6: yard.** Floors are connected now (CO23). The yard around the house is left empty (void, blocked) instead of the Wiki's
+  yard. Rooms cannot be moved (viewer).
 - **OPEN-CO7: texts and animations.** The game messages, menu titles and the animation per hotspot kind (floor `HUMAN_POH_BUILD_FLOOR`
   3683 for ground-decor hotspots, wall `HUMAN_POH_BUILD_WALL` 3684 for wall and wall-decor hotspots, otherwise `HUMAN_POH_BUILD`
   3676) are plausible, not sourced. Remove takes a single tick for lack of a source.
@@ -178,10 +176,10 @@ Code: `PohAltar.kt` (altar, burners), `PohServants.kt` (servants), `PohFlatpacks
 ### Added OPEN
 
 - **OPEN-CO12 .. OPEN-CO15:** Mahogany Homes, see mahogany-homes.md.
-- **OPEN-CO16: still not buildable.** Pieces whose Wiki infobox is versioned or has no id and that are not in `construction-extra.tsv`: ranges,
-  ovens, sinks, firepits, shelves (the pairs of ids in the Wiki are not documented as versions or lit states), chests, wardrobes, armour
-  cases, costume boxes, toy boxes, trapdoors, statues, windows, curtains, thrones, shields, the combat dummy, banner stands, the
-  jester, pools, plants, trees. The ids the Wiki lists were fetched with `tools/wiki-import/construction_extra.py` (run it again to see them).
+- **OPEN-CO16: still not buildable (rest after CO24).** Windows (decorative window, stained glass: the Wiki's 60+ ids are nine-id
+  blocks per window kind and the chapel's kind could not be matched), curtains, plants, trees, the beehive, the topiary, fireplaces
+  with versions, rune cases, the Mahogany Homes client beds and chairs, the hedge / fence sets. Wrong Wiki ids are also masked:
+  the Throne room "Trapdoor" trap (ids 6521 and 40423 are a pitfall and a table).
 - **OPEN-CO17: burner time.** "Burn longer with a high Firemaking level" (Wiki change) but no number is given; `BURN_TICKS` is 100 as a
   placeholder. Who may light a burner (owner only, guests) is not sourced; any player in the house can.
 - **OPEN-CO18: altars.** The god of the altar (Wiki: from the chapel icon) is not modelled: the Saradomin loc is built and all four are
@@ -194,16 +192,66 @@ Code: `PohAltar.kt` (altar, burners), `PohServants.kt` (servants), `PohFlatpacks
 - **OPEN-CO20: flat-packs.** Item on hotspot is not wired (hotspot loc ids are only known after a room is copied), so the build menu
   offers held flat-packs instead. The Wiki does not say that creating a flat-pack gives the piece's xp; it is assumed (the only place
   the xp can come from). Pieces whose cache obj name differs from the furniture name (e.g. 4-poster bed, crude wooden chair, wardrobes)
-  have no flat-pack in `construction-flatpacks.tsv` and cannot be made. The Bench with vice and Bench with lathe rows are the Wiki's
-  totals / upgrade recipes; upgrading a bench in place ("Upgrade" op 4) is not implemented.
+  have no flat-pack in `construction-flatpacks.tsv` and cannot be made. The Bench with vice and Bench with lathe are made by upgrading
+  in place (CO29), not from the build menu.
 - **OPEN-CO21: cape.** Only the backpack op "Tele to POH"; the worn op, the "Teleport" sub-options (Home, Rimmington ... Prifddinas),
   the teleport animation and the arrival tile ("just north of the exit portal" or outside the portal depending on the house setting)
   are not implemented; the arrival is the usual tile beside the exit portal.
-- **OPEN-CO22: not done.** Basement and dungeon rooms are in the room table (CO6) but no stairs, trapdoors or dungeon doors connect floors;
-  the oak and other dungeon doors, the jewellery box, the ornate pool and other pools, the portal chamber / nexus teleports and the
-  mounted cape / talisman teleports, the larder, the lectern, costume storage and the menagerie have no behaviour. Proposed order: (1) floor
-  links (the "Stair space" hotspots and the dungeon entrance: a build menu entry per staircase, "Climb-up / Climb-down" moving the player
-  to the same tile on the next instance level, rooms of the floor above or below having to exist), then the dungeon doors; (2) pools
-  (op "Drink": Wiki restore values; they need the combat module's stat restore for run energy, hitpoints, prayer, special attack and
-  stat boosts, so that part is a request to the main session); (3) the portal chamber and nexus teleports through the existing
-  teleport helpers of content/magic.
+- **OPEN-CO22: not done.** The mounted cape / talisman teleports, the larder, the lectern, costume storage (wardrobes, chests and
+  boxes only stand there; their ops "Open", "Search", "Change-clothes", "Upgrade" are not wired) and the menagerie have no behaviour.
+  Floors, doors, pools, jewellery boxes and portals: see CO23 .. CO29 below.
+
+## Floors, pools, portals, boxes and upgrades
+
+Code: `PohFloors.kt`, `PohPools.kt`, `PohPortals.kt` (`PohPortalsPlugin`, `PohPortals`, `PohTravel`), `PohJewellery.kt`, `PohUpgrades.kt`,
+`PohMaterials.kt`; tables `construction-locs.tsv`, `construction-upgrades.tsv`, `poh-teleports.tsv` (+ rows in `construction-extra.tsv`).
+Sources, fetched 2026-11-07: (R) "Player-owned house" (Restrictions, Basement, planning), "Oak staircase", "Staircase", "Dungeon
+(Construction)"; (Q) "Superior garden", "Pool of Restoration" .. "Ornate pool of Rejuvenation"; (X) "Portal chamber", "Portal chamber/Portal
+costs", "Portal nexus"; (J) "Basic / Fancy / Ornate jewellery box"; (U) the "Upgrade" recipes of "Bench with vice", "Bench with lathe",
+the jewellery boxes and the nexus; (S) "Plank sack"; (L) cache 2757: loc ops and categories (`config loc`, built furniture is
+category 206, hotspots 207), multi-locs, `map 29..31 110..111`.
+
+| # | Rule | Source |
+|---|---|---|
+| CO23 | **Floors.** A house has at most one floor above and one below the ground floor: instance levels basement 0, ground 1, upper 2. Gardens only on the ground floor, dungeon rooms (oubliette, dungeon corridor / cross / stairs, treasure room) only underground, everything else on the ground and upper floors. A room on the upper floor needs a room below it; a ground-floor room under an upper-floor room cannot be removed (dungeon rooms under ground rooms can). The stair hotspot (cache "Stair Space", 2x2, in the skill and quest hall and the dungeon stairs room) takes a staircase: oak 27, teak 48, marble 82 are built "up" (loc 13497 / 13499 / 13501, op 1 "Climb-up") or "down" (13498 / 13500 / 13502, "Climb-down"); spiral 67 and marble spiral 97 (13503 / 13505) have "Climb", "Climb-up", "Climb-down". Climbing moves the player to the nearest walkable tile of the same room cell one floor over. With no room there, the owner in building mode is asked which to add: up from the ground floor a skill or quest hall, down a dungeon stairs room (level 70, 7,500 coins), a throne room trapdoor ("Go-down" on the open one) an oubliette. The dungeon entrance (4529, op 1 "Enter") goes down, the oubliette ladder (13328-13330, "Climb") up. Trapdoors open and close and the oak / steel-plated / marble dungeon doors open and close through the generic door table (`doors.tsv`). | R, L |
+| CO24 | **Built loc ids (OPEN-CO16 answered in part).** `construction-locs.tsv` gives the built loc ids of the rows the Wiki importer dropped, by (name, room): the ids come from the Wiki infoboxes and were checked against the cache loc names and ops; where the ids of one row are states of one piece (closed / open chest, lit / unlit, empty / pot / kettle range) the first id is built. Ranges and ovens 13529-13544, sinks 13559-13564 (gold sink 26458), shelves (a pair per piece: the kitchen has two kinds of shelf space, 15399 and 15400, and the kind's rank picks the id), costume room wardrobes 18784-18796 (seven, in level order), armour cases 18778-18782, costume boxes 18772-18776, toy boxes 18798-18802, treasure chests 18804-18808, treasure room chests 13283-13291, prize chests 13385 / 13387 / 13389, trophy cases, banner stands, trapdoors 13675-13680, statues 13271-13273 (the Saradomin versions), the demonic throne, the floor decoration, the jester and the three shield sets of sixteen ids. When a piece has as many ids as the room has kinds of that hotspot (sixteen decoration spaces, two shelves) each kind takes its own id, else the first. | L, Wiki infoboxes |
+| CO25 | **Pools** (superior garden, "Pool space", cache 29237-29241 op 1 "Drink"): restoration restores special attack energy; revitalisation adds run energy; rejuvenation adds prayer points; the fancy pool adds every reduced stat except hitpoints; the ornate pool adds hitpoints. Built from nothing: restoration pool (65, 706 xp, 5 limestone brick, 5 bucket of water, 1,000 soul rune, 1,000 body rune); the others are upgrades (CO29). | Q |
+| CO26 | **Portal chamber and portal nexus.** The chamber has three portal spaces (1 left of the door, 2 opposite, 3 right: the sorted hotspot ids 15406 / 15407 / 15408). Teak 50, mahogany 65 and marble 80 portal frames (13636-13638) are built; the owner uses the teleport focus 50 / greater teleport focus 65 / scrying pool 80 ("Direct-portal") to pick a portal and a destination he has the Magic level for (a boost counts); directing takes 100 times the spell's runes and gives five times its xp; the destination is saved per slot and shown as that destination's portal loc (`poh-teleports.tsv`: 37 destinations with the Wiki's rune table, the tier's loc id, the spell's xp and tile from teleports.md); the portal's "Enter" teleports for free. The nexus (marble 72, gilded 82, crystalline 92) holds 4 / 8 / 41 destinations; "Configuration" adds one for 1,000 times the runes (real Magic level) or sets the left-click one, "Teleport" uses it, "Teleport Menu" lists them. Teleports show the standard cast animation and take 3 ticks (teleports.md T2). | X, L |
+| CO27 | **Jewellery boxes** (achievement gallery, cache op 2 "Teleport Menu"): a menu of the kind of jewellery then the destination, unlimited, no charges. Basic: ring of dueling (Emir's Arena, Castle Wars, Ferox Enclave, Fortis Colosseum), games necklace (Burthorpe, Barbarian Outpost, Corporeal Beast, Chasm of Tears, Wintertodt Camp); fancy adds combat bracelet (4) and skills necklace (6); ornate adds ring of wealth (4) and amulet of glory (4). Tiles are teleports.md's jewellery table. | J |
+| CO28 | **Plank sack in building.** Materials of a build (and of an upgrade) are taken from the backpack first, then from the plank sack (planks only): "can be used directly from the sack". Flat-packs still use the backpack only. | S |
+| CO29 | **Upgrades** (op 4 "Upgrade" on the built piece, building mode, owner): the Wiki's "Upgrade" recipes in `construction-upgrades.tsv`: restoration -> revitalisation (70, 850 xp, 10 stamina potion(4)) -> rejuvenation (80, 900, 10 prayer potion(4)) -> fancy (85, 1,950, 2 marble block, 10 super restore(4)) -> ornate (90, 3,107, 5 gold leaf, 10 anti-venom(4), 1,000 blood rune); steel framed workbench -> bench with vice (62, 140 xp, 2 oak plank, 1 steel bar) -> bench with lathe (77, 140, the same); basic -> fancy (86, 1,350, gold leaf, 5 combat bracelet(4), 5 skills necklace(4)) -> ornate jewellery box (91, 2,680, 2 gold leaf, 8 ring of wealth (5), 8 amulet of glory(4)); marble -> gilded (82, 2,600, 4 marble block, 2 gold leaf) -> crystalline portal nexus (92, 2,600, 2 magic stone, 2 gold leaf). The upgraded pieces are not in the build menus. The new piece gives the upgrade's xp only. | U |
+
+### More OPEN
+
+- **OPEN-CO23: floors.** The Wiki says a staircase "will connect to the room above or below by default if and only if the room is facing the
+  proper direction"; we add the room unrotated and connect any two rooms in the same cell. The hall variants with a stairwell hole in the
+  rug (zones 1880/7088 and 1912/7088) are unused: the staircase stands on the full rug. Rugs cannot be built on the stair space (the Wiki
+  lists "Rug space, Stair space"). The Wiki says a "down" staircase has "an additional option" of a dungeon stairs room; we offer only that.
+  The add-room prompt is a chatbox menu, not the construction interface, and the player must click the stairs again after the room is
+  added. "Remove-room" (op 4) is not wired. Outside building mode a staircase with no room beyond says "You can't go that way yet."
+  (ours). Ladder / trapdoor animations (828 up, 827 down) are RS Mod's, unverified for house ladders. The dungeon stairs room is
+  appended to the room table as type 25.
+- **OPEN-CO24: ids.** Which of a row's ids is a state and which is a version is inferred (first id built). Costume room wardrobes are
+  matched to ids by level order (no source). The chapel statues build the Saradomin version only; shields build the first of
+  sixteen ids unless the room has sixteen kinds; the gold sink uses 26458 (the cache also has 42852); the banner stands build the
+  first id (the others carry banners).
+- **OPEN-CO25: pools.** The Wiki's "can't drink from the pool during combat" (recently in PvP combat) is not checked: there is no PvP
+  combat state in plugin-api. Not done: resetting the prayer-drain timer (5 April 2023), curing poison, disease and venom and the surge
+  potion cooldown (ornate pool: combat owns poison, venom and potions), the frozen / fiery versions, a drink animation, the message
+  (ours).
+- **OPEN-CO26: portals.** Not implemented: the quest requirements (not enforced, teleports.md OPEN-TP5), the diary alternatives
+  (Grand Exchange, Seers' Village, Yanille), combination runes for directing (the Wiki allows them since 14 May 2025; only plain runes
+  are used), Teleport to Boat, Ape Atoll (Arceuus), the basalt teleports, the Raging Echoes portal, scrying, the nexus' configuration
+  interface and keyboard options (chat menus instead), curing poison on leaving the house (combat owns poison). The destinations
+  are saved apart from the pieces, so a removed frame or an upgraded nexus keeps them (as the Wiki says). The portal animation and
+  delay are the standard spell cast (OPEN-TP3). The multi-loc portals (Varrock / Grand Exchange, Camelot / Seers', Watchtower /
+  Yanille) show their first child and are handled by both the parent id and the first child id (which one the client reports is
+  unverified).
+- **OPEN-CO27: boxes.** The "previous destination" op 3 and its loc ids (37493.. one per last teleport) are not used, the Teleport Menu is
+  a chat menu, the Fortis Colosseum Hero title and the other unlocks are not checked, the Wiki's "Chasm of Tears" is the games necklace's
+  Tears of Guthix tile.
+- **OPEN-CO28: sack.** The bank's Fill / Empty (right-click "Use" with the bank open) is not wired: the sack's item ops are registered but
+  the bank interface's inventory events belong to the bank module; flat-packs do not use the sack. Planks from servants never go in the
+  sack (Wiki). Sawmill planks go into the sack since 1 November 2023 in the game; here they are not routed.
+- **OPEN-CO29: upgrades.** Only the families above; costume storage "Upgrade" (oak -> teak -> mahogany treasure chests, armour cases,
+  wardrobes) is not wired. The Wiki's "Total" costs are the sum of the stages (not offered).

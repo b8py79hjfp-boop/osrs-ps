@@ -9,8 +9,16 @@ Gilded altar	75	2230	Chapel	Altar space	13197,13199,13198,40878	-1	5	8794,2347	8
 Incense burner	61	280	Chapel	Lamp space	13208,13209	-1	5	8794,2347	8778:4,2353:2
 Mahogany burner	65	600	Chapel	Lamp space	13210,13211	-1	5	8794,2347	8782:4,2353:2
 Marble burners	69	1040	Chapel	Lamp space	13212,13213	-1	5	8794,2347	8786:2,2353:2
-Bench with vice	62	580	Workshop	Workbench space	6794	-1	5	8794,2347	8778:8,2353:5
+Bench with vice	62	140	Workshop	Workbench space	6794	-1	5	8794,2347	8778:2,2353:1
 Wooden torches	49	58	Chapel	Lamp space	13200,13201	-1	5	8794,2347	960:2,1539:2
 Steel torches	45	40	Chapel	Lamp space	13202,13203	-1	5	8794,2347	2353:2
 Steel candlesticks	53	124	Chapel	Lamp space	13204,13205	-1	5	8794,2347	2353:6,36:6
 Gold candlesticks	57	46	Chapel	Lamp space	13206,13207	-1	5	8794,2347	2357:6,36:6
+Restoration pool	65	706	Superior garden	Pool space	29237	-1	5	8794,2347	3420:5,1929:5,566:1000,559:1000
+Revitalisation pool	70	850	Superior garden	Pool space	29238	-1	5	8794,2347	12625:10
+Rejuvenation pool	80	900	Superior garden	Pool space	29239	-1	5	8794,2347	2434:10
+Fancy rejuvenation pool	85	1950	Superior garden	Pool space	29240	-1	5	8794,2347	8786:2,3024:10
+Ornate rejuvenation pool	90	3107	Superior garden	Pool space	29241	-1	5	8794,2347	8784:5,12905:10,565:1000
+Crystalline portal nexus	92	2600	Portal nexus	Portal nexus space	33410	-1	5	8794,2347	8788:2,8784:2
+Marble portal	80	1500	Portal chamber	Portal space	13638	-1	5	8794,2347	8786:3
+Scrying pool	80	2000	Portal chamber	Centrepiece space	13639	-1	5	8794,2347	8786:4

@@ -1,0 +1,11 @@
+from	to	level	xp	materials
+Restoration pool	Revitalisation pool	70	850	12625:10
+Revitalisation pool	Rejuvenation pool	80	900	2434:10
+Rejuvenation pool	Fancy rejuvenation pool	85	1950	8786:2,3024:10
+Fancy rejuvenation pool	Ornate rejuvenation pool	90	3107	8784:5,12905:10,565:1000
+Steel framed workbench	Bench with vice	62	140	8778:2,2353:1
+Bench with vice	Bench with lathe	77	140	8778:2,2353:1
+Marble portal nexus	Gilded portal nexus	82	2600	8786:4,8784:2
+Gilded portal nexus	Crystalline portal nexus	92	2600	8788:2,8784:2
+Basic jewellery box	Fancy jewellery box	86	1350	8784:1,11118:5,11105:5
+Fancy jewellery box	Ornate jewellery box	91	2680	8784:2,11980:8,1712:8
