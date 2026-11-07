@@ -1,0 +1,34 @@
+id	name	npcs	wild	only	expr
+1	Kree'arra	Kree'arra	0	-	skill:Ranged:70&skill:Strength:60|skill:Agility:60&quest:Death Plateau:complete
+2	Commander Zilyana	Commander Zilyana	0	-	skill:Agility:70&quest:Death Plateau:complete
+3	General Graardor	General Graardor	0	-	skill:Strength:70&quest:Death Plateau:complete
+4	K'ril Tsutsaroth	K'ril Tsutsaroth	0	-	skill:Hitpoints:70&skill:Strength:60|skill:Agility:60&quest:Death Plateau:complete
+5	Dagannoth Kings	Dagannoth Rex;Dagannoth Prime;Dagannoth Supreme	0	-	-
+6	Giant Mole	Giant Mole	0	-	-
+7	Kalphite Queen	Kalphite Queen	0	-	-
+8	King Black Dragon	King Black Dragon	0	-	quest:Dragon Slayer I:complete
+9	Callisto	Callisto;Artio	1	-	-
+10	Venenatis	Venenatis;Spindel	1	-	-
+11	Vet'ion	Vet'ion;Calvar'ion	1	-	-
+12	Chaos Elemental	Chaos Elemental	1	-	-
+13	Chaos Fanatic	Chaos Fanatic	1	-	-
+14	Crazy archaeologist	Crazy archaeologist;Deranged archaeologist	1	-	-
+15	Scorpia	Scorpia	1	-	-
+16	Zulrah	Zulrah	0	-	quest:Regicide:complete
+17	Barrows brothers	Ahrim the Blighted;Dharok the Wretched;Guthan the Infested;Karil the Tainted;Torag the Corrupted;Verac the Defiled	0	-	quest:Priest in Peril:complete
+18	Kraken	Kraken	0	-	skill:Slayer:87
+19	Thermonuclear smoke devil	Thermonuclear smoke devil	0	-	skill:Slayer:93
+20	Cerberus	Cerberus	0	-	skill:Slayer:91
+21	Abyssal Sire	Abyssal Sire	0	-	skill:Slayer:85&quest:Enter the Abyss:complete|quest:Fairytale II - Cure a Queen:started
+22	Grotesque Guardians	Dusk;Dawn	0	-	skill:Slayer:75&quest:Priest in Peril:complete
+23	Vorkath	Vorkath	0	-	quest:Dragon Slayer II:complete
+24	Alchemical Hydra	Alchemical Hydra	0	Konar quo Maten	skill:Slayer:95
+25	Sarachnis	Sarachnis	0	-	-
+26	Phantom Muspah	Phantom Muspah	0	-	quest:Secrets of the North:complete
+27	Vardorvis	Vardorvis	0	-	quest:Desert Treasure II - The Fallen Empire:complete
+28	Duke Sucellus	Duke Sucellus	0	-	quest:Desert Treasure II - The Fallen Empire:complete
+29	The Whisperer	The Whisperer	0	-	quest:Desert Treasure II - The Fallen Empire:complete
+30	The Leviathan	The Leviathan	0	-	quest:Desert Treasure II - The Fallen Empire:complete
+31	Araxxor	Araxxor	0	-	skill:Slayer:92&quest:Priest in Peril:complete
+32	Shellbane gryphon	Shellbane gryphon	0	-	skill:Slayer:51&quest:Troubled Tortugans:complete
+33	Maggot King	Maggot King	0	-	skill:Slayer:74&quest:The Blood Moon Rises:complete

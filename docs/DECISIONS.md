@@ -885,3 +885,23 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
 - **Dragon Slayer I side routes** (`CrandorRoutes`) use `AttackCheck` / `LethalHitEvent` for Wormbrain; the combat module is untouched.
 - **Quest-only drops** (Witch's Potion's rat's tail) are skipped by the drops importer (`QUEST_ONLY_ITEMS`), so the quest plugin is the
   only source.
+
+## D-063: Slayer complete: the task in cache variables, the cache's db tables as data, the rewards interface from the client scripts
+
+Supersedes the "Persisted task" and "Quests and unlocks are never assumed" bullets of D-042. Rules and OPEN items: docs/mechanics/slayer.md
+SL1-SL15, OPEN-SL1-SL15. No engine, protocol, combat or plugin-api change.
+- **The task, points, streaks, rewards and block lists are the cache's own varps and varbits** (`slayer_count`/`slayer_target`, `slayer_points`,
+  `slayer_tasks_completed`, the three unlock varps, `slayer_blocked_<master>_n`), so the client, RuneLite and the rewards interface read them with
+  no transmit code and they persist with the player's varps. Only the stored task is a `saved` value. Old `slayer.*` saved values are not read.
+- **The cache is the data where it has it.** Db tables 113-117 give the reward rows (bit, cost, name, tab), the task ids the client shows, the
+  longer-task amounts, the boss weights and Konar's places; they are read at world start (`SlayerCache`) and joined to the Wiki task tables by task
+  name. The cache has no quest requirements for assignments (those are server scripts), so the Wiki's text becomes expressions in
+  `slayer-requirements.tsv` (written by `tools/wiki-import/slayer_requirements.py`, every text must be mapped or the script stops).
+- **Quest gating reads the quest's own state variable** (a copy of the `quest-states.tsv` rows in `slayer-quests.tsv`, as content/diaries does). A quest
+  nobody implements never leaves its unstarted state, so its tasks stay closed without a list to maintain. The opposite of diaries' OPEN-AD2, on purpose:
+  the brief asks for no unsourced assumption.
+- **The rewards interface is driven by the client's own scripts.** The server opens interface 426 and answers the clicks that reach it; the
+  protocol (which child of `confirm_button` is which action) was found by disassembling the rev 242 scripts, as D-038 did for skillmulti.
+- **Superiors despawn through `NpcRef.despawn()` from the `DeathEvent` handler**: combat calls `respawnAfter` after the event and the engine ignores it
+  for a removed npc, so no combat file knows about superiors.
+- **The equipment checks are proposals, not code** (docs/mechanics/slayer.md): none is a "cannot attack" in the sources, all change hits or monsters' attacks.
