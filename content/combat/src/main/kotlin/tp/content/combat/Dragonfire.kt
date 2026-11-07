@@ -98,6 +98,67 @@ internal object Dragonfire {
         }
     }
 
+    // ---- DF4-DF7: ordinary dragons (the Wiki attack styles list "dragonfire"; bosses have their own scripts)
+
+    /** Metallic dragons' dragonfire is typeless: Protect from Magic doesn't reduce it (Wiki "Dragonfire"). */
+    private val METALLIC = setOf("Bronze dragon", "Iron dragon", "Steel dragon", "Mithril dragon", "Adamant dragon", "Rune dragon")
+
+    /** DF5: chromatic-style dragons breathe instead of a melee attack 1 time in 6 (Mod Ash, Wiki "Dragonfire"). */
+    private const val BREATH_ONE_IN = 6
+
+    /**
+     * DF4/DF5: whether [npc] breathes this attack: only NPCs whose styles include dragonfire; in melee reach 1 in 6;
+     * out of reach always for long-ranged (metallic, brutal) dragons, never for chromatic ones (they only breathe in
+     * melee distance). OPEN-DF2: metallic / brutal dragons' in-reach breath chance is taken as 1 in 6 too.
+     */
+    fun breathes(npc: NpcRef, def: NpcCombatDef, distance: Boolean): Boolean {
+        if ("dragonfire" !in def.styles) return false
+        if (!distance) return npc.random(BREATH_ONE_IN) == 0
+        return npc.displayName in METALLIC || npc.displayName.startsWith("Brutal")
+    }
+
+    /**
+     * DF6 (Wiki "Dragonfire" damage-reduction tables, chromatic / metallic columns): the max hit by protection and by
+     * whether the player won the accuracy roll ([resisted]); metallic dragons ignore Protect from Magic.
+     */
+    @Suppress("MagicNumber", "CyclomaticComplexMethod") // the Wiki table
+    fun ordinaryMax(p: PlayerRef, metallic: Boolean, resisted: Boolean): Int {
+        val shield = hasShield(p)
+        val prayer = !metallic && p.protects(CombatStyle.MAGIC)
+        val potion = antifire(p)
+        return when {
+            potion == 2 -> 0
+            potion == 1 && (shield || prayer) -> 0
+            shield -> 5
+            prayer -> 10
+            potion == 1 -> if (resisted) 15 else 35
+            else -> if (resisted) 30 else 50
+        }
+    }
+
+    /** DF7: one breath: magic accuracy against the player's magic defence, the table's max, uniform damage. */
+    fun breathe(npc: NpcRef, def: NpcCombatDef, victim: EntityRef) {
+        val metallic = npc.displayName in METALLIC
+        npc.anim(Seqs.DRAGON_FIREBREATH_ALL_ATTACK)
+        CombatSystem.announceAttack(npc, victim, CombatStyle.MAGIC)
+        val delay = BossCombat.delay(npc, victim, CombatStyle.MAGIC)
+        BossCombat.projectile(npc, victim, SpotAnims.DRAGON_RANGED_FIRE_ATTACK, delay)
+        val max =
+            if (victim is PlayerRef) {
+                val resisted = !BossCombat.rolls(npc, victim, AttackType.MAGIC)
+                val unprotected = !hasShield(victim) && antifire(victim) < 2 && (metallic || !victim.protects(CombatStyle.MAGIC))
+                if (unprotected) victim.message(if (resisted) RESISTED else BURNT)
+                ordinaryMax(victim, metallic, resisted)
+            } else {
+                def.maxFor(CombatStyle.MAGIC)
+            }
+        val damage = BossCombat.roll(npc, 0, max)
+        CombatSystem.queueHit(victim, npc, damage, if (metallic) HitStyle.TYPELESS else HitStyle.MAGIC, delay)
+    }
+
+    private const val RESISTED = "You manage to resist some of the dragon fire!"
+    private const val BURNT = "You're horribly burnt by the dragon fire!"
+
     /** Whether any protection is up (the special breath effect chance drops from 1/2 to 1/8, DF3). */
     fun protectedFrom(p: PlayerRef): Boolean = hasShield(p) || p.protects(CombatStyle.MAGIC) || antifire(p) > 0
 }

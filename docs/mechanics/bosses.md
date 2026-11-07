@@ -151,6 +151,14 @@ outside the repo. Base stats, max hits per style, attack speeds and respawn time
 
   Shields: anti-dragon shield, dragonfire shield/ward and ancient wyvern shield, each charged or uncharged.
 - **DF3. Protected.** Any of the above counts as protected for KB2.
+- **DF4. Ordinary dragons** (NPCs whose Wiki attack styles include dragonfire, not bosses) breathe instead of a melee attack 1 time in 6
+  in melee reach (Mod Ash via Wiki "Dragonfire"); chromatic dragons breathe only in melee distance, metallic and brutal dragons also at range.
+- **DF5. Accuracy.** The dragon's magic attack roll against the player's magic defence: won = "You manage to resist some of the dragon fire!",
+  lost = "You're horribly burnt by the dragon fire!" (shown when no shield, super antifire or (non-metallic) prayer protects).
+- **DF6. Max hits** (Wiki tables, chromatic / metallic): none 50 lost / 30 won; shield 5; Protect from Magic 10 (not metallic); antifire 35 / 15;
+  super antifire 0; antifire with shield or prayer 0. Damage is uniform up to the max; metallic dragonfire is typeless.
+- **OPEN-DF2:** metallic and brutal dragons' breath chance in melee reach (1 in 6 assumed), the shield / potion protection messages, frost
+  dragons' freeze, and the potion being subtracted after the roll (the table's maxes are used directly).
 - OPEN-KB1: dragonfire has no accuracy roll here; damage is uniform up to the max.
 
 ## Revenants (RV)

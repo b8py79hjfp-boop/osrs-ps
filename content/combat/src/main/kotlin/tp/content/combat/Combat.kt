@@ -395,6 +395,8 @@ internal object NpcCombat {
         npc.setAttackClock(now + CombatSystem.npcSpeed(npc))
         val def = NpcCombatTable.of(npc.type)
         if (bossAttack(npc, def, victim, distance)) return
+        // DF4-DF7: ordinary dragons' breath instead of this attack.
+        if (def != null && Dragonfire.breathes(npc, def, distance)) return Dragonfire.breathe(npc, def, victim)
         val type = chooseType(npc, def, distance)
         val style = type.style
         val attackRoll =
