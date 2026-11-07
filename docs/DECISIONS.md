@@ -857,3 +857,18 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
   (OPEN-QUA6). The Ernest the Chicken lever maze is not implemented because the door / lever locs cannot be tied to the Wiki's labels
   from published sources (OPEN-QUA1).
 - Open items of these quests are `OPEN-QUA<n>` (docs/mechanics/quests.md) to stay apart from the parallel `OPEN-QU` list.
+
+## D-061: Quest batch B: shared helpers, multi-NPC stages, dialogue generated from the Wiki transcripts
+
+- **Batch B** (Pirate's Treasure, Prince Ali Rescue, Shield of Arrav, Dragon Slayer I, Below Ice Mountain, The Corsair Curse,
+  Misthalin Mystery, X Marks the Spot) lives in `content/quests` beside the first batch and follows D-059. Its own helpers are in
+  `QbHelpers.kt` (`QuestsB` rows, `passDoor`, `DigEvent` with the `QuestDigging` spade plugin) and its spawns in `QuestSpawnsB`
+  (separate from `QuestSpawns` so two batches merge cleanly). Open items are `OPEN-QUB<n>`.
+- **Stage values come from the cache where it has them**: the quest NPCs are multi-NPCs on the quest variable, so their arrays fix
+  real thresholds (Keli gone above 40 and the jailed Prince above 90 in Prince Ali Rescue, Tock gone at 6 and Ithoi at 52 in The
+  Corsair Curse, Abigale and Hewey above 15 in Misthalin Mystery). Other stages stay ours (OPEN-QU1). Quests whose cache variable
+  has only 0 / 1 / 2 (Shield of Arrav) keep their detail in account `saved` values.
+- **Gated doors**: plugin-api cannot ask the generic door script, so a door that a quest condition guards moves the player to the
+  other side of the wall loc (`passDoor`); hook proposal in the quest files (OPEN-QUB1).
+- **Dialogue** was converted from the Wiki transcript wikitext by a throw-away script (not committed); the generated Kotlin was then
+  edited by hand where the transcript's "above / below / other" links make loops and where the conditions needed the game's state.

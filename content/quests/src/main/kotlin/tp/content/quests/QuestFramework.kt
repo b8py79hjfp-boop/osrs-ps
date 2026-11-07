@@ -79,7 +79,7 @@ public class QuestFramework : ContentPlugin {
         if (p.staffLevel < ADMIN) return
         val row = args.getOrNull(0)?.toIntOrNull()
         if (row == null) {
-            for (q in IMPLEMENTED) p.message("${q().row} ${q().name}: stage ${q().stage(p)} (${q().state(p)})")
+            for (q in IMPLEMENTED.map { it() } + QuestsB.ALL) p.message("${q.row} ${q.name}: stage ${q.stage(p)} (${q.state(p)})")
             return
         }
         val quest = QuestBook.all.firstOrNull { it.row == row } ?: return p.message("No quest row $row.")

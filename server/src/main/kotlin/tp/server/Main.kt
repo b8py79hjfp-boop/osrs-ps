@@ -43,6 +43,8 @@ fun main(args: Array<String>) {
         exitProcess(1)
     }
     if ("--boot-check" in options) {
+        // Registers every content plugin too, so duplicate handlers fail CI here rather than at world start.
+        tp.plugin.PluginContent.load()
         data.cache.close()
         logger.info { "Boot check passed." }
         return

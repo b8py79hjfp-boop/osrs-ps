@@ -29,7 +29,8 @@ public class RuneMysteries : ContentPlugin {
         bus = events
         onOpNpc(Npcs.DUKE_OF_LUMBRIDGE, OP_TALK) { duke ->
             player.stopInteraction()
-            dukeTalk(duke)
+            // Dragon Slayer I's anti-dragon shield talk while that quest is under way and this one is not mid-way.
+            if (player.stage != 1 && dragonSlayerActive(player)) dukeDragonSlayer(duke) else dukeTalk(duke)
         }
         onOpNpc(Npcs.HEAD_WIZARD, OP_TALK) { sedridor ->
             player.stopInteraction()

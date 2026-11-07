@@ -29,10 +29,7 @@ public class KnightsSword : ContentPlugin {
             player.stopInteraction()
             squireTalk(squire)
         }
-        onOpNpc(Npcs.RELDO_NORMAL, OP_TALK) { reldo ->
-            player.stopInteraction()
-            reldoTalk(reldo)
-        }
+        // Reldo's Talk-to is Shield of Arrav's handler; it hands over to [reldoKnightsSword] for the Imcando question.
         onOpNpc(Npcs.THURGO, OP_TALK) { thurgo ->
             player.stopInteraction()
             thurgoTalk(thurgo)
@@ -304,7 +301,7 @@ public class KnightsSword : ContentPlugin {
 
     // ---- Reldo
 
-    private suspend fun PlayerScript.reldoTalk(reldo: NpcRef) {
+    internal suspend fun PlayerScript.reldoTalk(reldo: NpcRef) {
         val p = player
         npc(reldo, "Hello there, $name.")
         val options = ArrayList<String>()
@@ -690,4 +687,15 @@ public class KnightsSword : ContentPlugin {
         /** Wiki "The Knight's Sword" rewards: 1 quest point, 12,725 Smithing XP (cache col 33 = (13, 127250 tenths)). */
         val REWARD = QuestReward(model = Objs.FALADIAN_SWORD, xp = listOf(Stats.SMITHING to 12725.0))
     }
+}
+
+/** The Knight's Sword needs Reldo's Imcando lead (started, pie not yet given to Thurgo: stages 1..2). */
+internal fun knightsSwordAsksReldo(p: PlayerRef): Boolean = Quests.KNIGHTS_SWORD.stage(p) in 1 until KNIGHTS_SWORD_PIE_GIVEN
+
+/** KnightsSword PIE_GIVEN. */
+private const val KNIGHTS_SWORD_PIE_GIVEN = 3
+
+/** Reldo's Knight's Sword dialogue, for the Shield of Arrav handler that owns his Talk-to. */
+internal suspend fun PlayerScript.reldoKnightsSword(reldo: NpcRef) {
+    with(KnightsSword()) { reldoTalk(reldo) }
 }

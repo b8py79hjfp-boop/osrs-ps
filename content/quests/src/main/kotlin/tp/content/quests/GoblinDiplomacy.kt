@@ -25,9 +25,10 @@ import tp.symbols.Objs
 public class GoblinDiplomacy : ContentPlugin {
     override fun ContentScope.register() {
         for (general in GENERALS) {
-            onOpNpc(general, OP_TALK) {
+            onOpNpc(general, OP_TALK) { npc ->
                 player.stopInteraction()
-                generalsTalk()
+                // Dragon Slayer I asks Bentnoze about Wormbrain's map piece while that quest is under way.
+                if (general == Npcs.GENERAL_BENTNOZE_RED && dragonSlayerActive(player)) bentnozeDragonSlayer(npc) else generalsTalk()
             }
             for (mail in MAILS) {
                 onUseOnNpc(mail, general) {
@@ -59,7 +60,7 @@ public class GoblinDiplomacy : ContentPlugin {
         for (aggie in intArrayOf(Npcs.AGGIE_1OP, Npcs.AGGIE_2OPS)) {
             onOpNpc(aggie, OP_TALK) {
                 player.stopInteraction()
-                aggieTalk(it)
+                if (princeAliActive(player)) aggiePrinceAli(it) else aggieTalk(it)
             }
         }
         onOpNpc(Npcs.AGGIE_2OPS, OP_DYES) {
