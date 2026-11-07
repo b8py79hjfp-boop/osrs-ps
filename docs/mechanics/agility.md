@@ -112,10 +112,7 @@ gives 10, 20, 26.5, 36.5, 43, 53 and 110.5 xp (53 + 7.5 + 50) and the Draynor la
   Draynor and Al Kharid, and are the tile beside the next obstacle for Varrock; none are checked against a client or the real course. The cache marks
   most rooftop tiles as non-walkable, so a landing tile must be next to the next obstacle's loc. Varrock's mark-of-grace tiles are not set because
   their levels are unknown. Players are not forced onto the obstacle's start tile (nets, pipes and branches keep the player's own tile).
-- **OPEN-AG4:** marks of grace use the ground-item rules of ground-items.md: untradeable items are visible only to the owner and disappear after 300 ticks
-  (G3), the Wiki says 10 minutes (1000 ticks) and that the timer is paused while logged out. `ItemTx.createOnGround` has no lifetime parameter and the despawn
-  timing is engine configuration, so content cannot set 1000. Proposal: `createOnGround(obj, count, at, owner, lifetime = -1)` in plugin-api and
-  `ItemTransaction` (engine; main session). Rolling again on the Seers and Ardougne diaries, and the 2-minute cooldown reductions, are OPEN-AG8.
+- **OPEN-AG4:** marks of grace last 1000 ticks (Wiki: 10 minutes) through `createOnGround(..., lifetime)`; the Wiki's pause while logged out is not modelled.
 - **OPEN-AG5:** the mark chance of the Gnome course.
 - **OPEN-AG6:** the Agility cape and the lap counters / messages are not implemented. (Run energy restore and the graceful boost exist on main, run-energy.md.)
 - **OPEN-AG7:** failure details: the animation, the ticks before the fall, the message and the fall tiles are not on the Wiki. The fall tile is the nearest free ground tile

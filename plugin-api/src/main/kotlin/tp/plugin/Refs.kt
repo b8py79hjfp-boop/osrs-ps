@@ -712,8 +712,9 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
     public fun dropAt(invId: Int, slot: Int, obj: Int, count: Int, at: CoordGrid, owner: String): Boolean =
         tx.dropToGround(of(invId), slot, obj, count, at, owner)
 
-    /** Creates [count] of [obj] on the ground at [at], private to [owner] first. */
-    public fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String): Boolean = tx.createOnGround(obj, count, at, owner)
+    /** Creates [count] of [obj] on the ground at [at], private to [owner] first; [lifetime] in ticks overrides the default drop lifetime (e.g. marks of grace 1000); -1 = default. */
+    public fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String, lifetime: Int = -1): Boolean =
+        tx.createOnGround(obj, count, at, owner, lifetime)
 
     /** Adds to [invId], or drops at the player's feet (private to them) if it doesn't fit. */
     public fun addOrDrop(invId: Int, obj: Int, count: Int): Boolean =

@@ -113,10 +113,13 @@ public class Agility : ContentPlugin {
         if (p.random(course.markDenominator * reduction) >= course.markNumerator) return
         p.setSaved(SAVED_LAST_MARK, minute)
         val spot = course.markSpots[p.random(course.markSpots.size)]
-        p.transaction("mark of grace") { createOnGround(Objs.GRACE, 1, spot, p.username) }
+        p.transaction("mark of grace") { createOnGround(Objs.GRACE, 1, spot, p.username, MARK_LIFETIME) }
     }
 
     private companion object {
+        /** Wiki "Mark of grace": a spawned mark stays 10 minutes = 1000 ticks (OPEN-AG4). */
+        const val MARK_LIFETIME = 1000
+
         val LAP = AttrKey<Lap>("agility.lap")
 
         /** Saved-state key: the epoch minute of the last mark of grace spawn. */
