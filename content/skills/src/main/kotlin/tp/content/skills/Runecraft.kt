@@ -7,6 +7,7 @@ import tp.plugin.PlayerRef
 import tp.plugin.Stats
 import tp.plugin.TimerId
 import tp.symbols.Invs
+import tp.symbols.Locs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.symbols.SpotAnims
@@ -16,8 +17,8 @@ import tp.util.CoordGrid
  * Runecraft (docs/mechanics/runecraft.md): the mysterious ruins of the thirteen regular runic altars, crafting runes on
  * them, and making talisman tiaras. A talisman used on the ruins, or "Enter" while wearing the tiara (or a Runecraft
  * cape), takes the player to the altar's temple; the temple's portal brings them back. "Craft-rune" or essence used on the
- * altar binds every essence in the backpack at once (RC4). The Abyss, the Zeah altars, combination runes, essence pouches
- * and the Ourania altar are OPEN (runecraft.md).
+ * altar binds every essence in the backpack at once (RC4). Combination runes, pouches, the Abyss, the Ourania and Arceuus altars
+ * are in the Runecraft* files next to this one (runecraft.md RC7-RC21); the Astral altar is here. Guardians of the Rift is OPEN.
  */
 public class Runecraft : ContentPlugin {
     override fun ContentScope.register() {
@@ -25,6 +26,10 @@ public class Runecraft : ContentPlugin {
             ruins(temple)
             altar(temple)
             onOpLoc(temple.portalLoc, OP_USE) { leave(player, temple) }
+        }
+        onOpLoc(Locs.ASTRAL_ALTAR, OP_CRAFT) { astral(player) }
+        for (essence in listOf(RunecraftData.RUNE_ESSENCE, RunecraftData.PURE_ESSENCE)) {
+            onUseOnLoc(essence, Locs.ASTRAL_ALTAR) { astral(player) }
         }
         onLogin {
             syncEntry()
@@ -48,6 +53,7 @@ public class Runecraft : ContentPlugin {
         for (obj in listOf(Objs.TIARA, Objs.TIARA_GOLD, t.talisman, t.group.talisman)) {
             onUseOnLoc(obj, t.altarLoc) { makeTiara(player, t) }
         }
+        Combinations.register(this, t) { p, at, other -> Combinations.craft(p, at, other, NOTHING) }
     }
 
     // ---- ruins and portals
@@ -67,20 +73,11 @@ public class Runecraft : ContentPlugin {
         enter(p, t)
     }
 
-    private fun enter(p: PlayerRef, t: Temple) {
-        p.message("You feel a powerful force take hold of you...")
-        p.teleport(landing(p, t.portals[p.random(t.portals.size)], t.altar))
-    }
+    private fun enter(p: PlayerRef, t: Temple) = TempleEntry.enter(p, t)
 
     /** RC2: the portal returns the player to the tile beside their ruins. */
     private fun leave(p: PlayerRef, t: Temple) {
         p.teleport(outsideRuins(p, t.ruin))
-    }
-
-    /** The walkable tile next to [portal] that is nearest [altar]: the temple's arrival tile (RC2, OPEN-RC1). */
-    private fun landing(p: PlayerRef, portal: CoordGrid, altar: CoordGrid): CoordGrid {
-        val around = NEIGHBOURS.map { (dx, dz) -> portal.translate(dx, dz) }
-        return around.sortedBy { distanceSquared(it, altar) }.firstOrNull { p.isWalkable(it) } ?: portal
     }
 
     /** The walkable tile around the 3x3 ruins at [ruin] (its south-west tile) nearest the middle of its south side (RC2, OPEN-RC1). */
@@ -96,11 +93,7 @@ public class Runecraft : ContentPlugin {
         return ring.sortedBy { distanceSquared(it, front) }.firstOrNull { p.isWalkable(it) } ?: front
     }
 
-    private fun distanceSquared(a: CoordGrid, b: CoordGrid): Int {
-        val dx = a.x - b.x
-        val dz = a.z - b.z
-        return dx * dx + dz * dz
-    }
+    private fun distanceSquared(a: CoordGrid, b: CoordGrid): Int = TempleEntry.distanceSquared(a, b)
 
     // ---- crafting
 
@@ -108,29 +101,37 @@ public class Runecraft : ContentPlugin {
      * RC3-RC5: every rune and pure essence in the backpack becomes runes in one action (rune essence only where the altar
      * allows it), [Temple.runesPerEssence] per essence at the level held before the action, and xp per essence.
      */
-    private fun craft(p: PlayerRef, t: Temple) {
+    private fun craft(p: PlayerRef, t: Temple) = bind(p, t.name, t.rune, t.level, t.xp, t.pureOnly) { t.runesPerEssence(it) }
+
+    private fun bind(p: PlayerRef, name: String, rune: Int, level: Int, xp: Double, pureOnly: Boolean, perEssence: (Int) -> Int) {
         val inv = p.inv(Invs.INV)
-        val rune = if (t.pureOnly) 0 else inv.total(RunecraftData.RUNE_ESSENCE).toInt()
+        val rune0 = if (pureOnly) 0 else inv.total(RunecraftData.RUNE_ESSENCE).toInt()
         val pure = inv.total(RunecraftData.PURE_ESSENCE).toInt()
-        val essence = rune + pure
+        val essence = rune0 + pure
         if (essence == 0) {
-            val wrongKind = t.pureOnly && inv.total(RunecraftData.RUNE_ESSENCE) > 0
-            return p.message(if (wrongKind) "You need pure essence to bind ${t.name} runes." else "You have no essence to bind.")
+            val wrongKind = pureOnly && inv.total(RunecraftData.RUNE_ESSENCE) > 0
+            return p.message(if (wrongKind) "You need pure essence to bind $name runes." else "You have no essence to bind.")
         }
-        val level = p.level(Stats.RUNECRAFT)
-        if (level < t.level) return p.message("You need a Runecraft level of ${t.level} to craft ${t.name} runes.")
-        val runes = essence * t.runesPerEssence(level)
+        val current = p.level(Stats.RUNECRAFT)
+        if (current < level) return p.message("You need a Runecraft level of $level to craft $name runes.")
+        val runes = essence * perEssence(current)
         val done =
             p.transaction("runecraft") {
-                (rune == 0 || remove(Invs.INV, RunecraftData.RUNE_ESSENCE, rune)) &&
+                (rune0 == 0 || remove(Invs.INV, RunecraftData.RUNE_ESSENCE, rune0)) &&
                     (pure == 0 || remove(Invs.INV, RunecraftData.PURE_ESSENCE, pure)) &&
-                    add(Invs.INV, t.rune, runes)
+                    add(Invs.INV, rune, runes)
             }
         if (!done) return p.message("You don't have enough inventory space.")
         p.anim(Seqs.HUMAN_RUNECRAFT)
         p.spotAnim(SpotAnims.RUNECRAFTING)
-        p.message("You bind the temple's power into ${t.name} runes.")
-        p.addXp(Stats.RUNECRAFT, t.xp * essence)
+        p.message("You bind the temple's power into $name runes.")
+        p.addXp(Stats.RUNECRAFT, xp * essence)
+    }
+
+    /** RC21: the Astral altar on Lunar Isle needs Lunar Diplomacy (Wiki "Astral Altar"); astral runes are made from pure essence. */
+    private fun astral(p: PlayerRef) {
+        if (!RunecraftQuests.LUNAR_DIPLOMACY.done(p)) return p.message("You need to have completed Lunar Diplomacy to craft astral runes.")
+        bind(p, "astral", Objs.ASTRALRUNE, ASTRAL_LEVEL, ASTRAL_XP, true) { level -> 1 + ASTRAL_MULTIPLES.count { level >= it } }
     }
 
     /**
@@ -182,8 +183,12 @@ public class Runecraft : ContentPlugin {
 
         const val NOTHING = "Nothing interesting happens."
 
-        /** The eight tiles around a portal. */
-        val NEIGHBOURS = listOf(-1 to -1, 0 to -1, 1 to -1, -1 to 0, 1 to 0, -1 to 1, 0 to 1, 1 to 1)
+        /** Wiki "Astral Altar" / "Runecraft": astral runes at level 40, 8.7 xp per pure essence, a second rune per essence at 82. */
+        const val ASTRAL_LEVEL = 40
+        const val ASTRAL_XP = 8.7
+
+        @Suppress("MagicNumber")
+        val ASTRAL_MULTIPLES = listOf(82)
 
         /** Width of the mysterious ruins loc (cache loc 28914: width 3, length 3). */
         const val RUIN_SIZE = 3

@@ -26,6 +26,7 @@ public class Bank : ContentPlugin {
 
     override fun ContentScope.register() {
         bus = events
+        events.on<tp.plugin.OpenBankRequest> { it.player.openBank() }
         onOpLocNamed("Bank booth", "Bank") { player.openBank() }
         onOpLocNamed("Bank chest", "Use") { player.openBank() }
         onOpNpcOption("Bank") { player.openBank() }
