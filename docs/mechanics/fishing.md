@@ -77,15 +77,16 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
   do so if it is currently occupied by a fishing spot", Wiki "Fishing spot (karambwan)" trivia). The timer is uniform: 250 to 530
   ticks (most spots), 100 to 300 (sacred and infernal eel), 8 to 830 (anglerfish); the karambwan and dark crab spots never move
   (Wiki "Fishing spot", Mod Ash 19 Dec 2022). A player fishing at the spot that moved is sent to the new one for the next 8 ticks
-  ("if clicked on as it changes, the player will run to the new location"). plugin-api has no world tick hook, so the first
-  logged-in player's timer of each tick moves every spot that is due; with nobody online the spots stand still.
+  ("if clicked on as it changes, the player will run to the new location"). The world tick hook moves every spot that is due, so
+  spots keep moving with nobody online; the world RNG is drawn through the spot's own NPC.
 - **FS10: karambwan.** Op "Fish" of the karambwan spots, karambwan vessel (empty or loaded) and raw karambwanji: raw karambwan, 65
   Fishing, 50 xp, one roll 5 / 160. "Unlike regular Fishing, bait is consumed even without a catch" (Wiki "Raw karambwan"): the
   karambwanji is removed on a failed roll too. Source: Wiki "Raw karambwan", "Fishing spot (karambwan)".
 - **FS11: gates.** Karambwan needs the fishing part of Tai Bwo Wannai Trio, sacred eels Regicide, barbarian fishing the fishing part
-  of Barbarian Training (Wiki spot pages). None is implemented in content/quests, so the gates are behind `Fishing.ENFORCE_QUESTS`
-  (off). When on they read the state varps of `quest-states.tsv` (Tai Bwo Wannai Trio varp 320 >= 6, Regicide varp 328 >= 15) and,
-  for Barbarian Training, varbit `BRUT_FISHING_R` != 0 (OPEN-FS13).
+  of Barbarian Training (Wiki spot pages). Tai Bwo Wannai Trio and Regicide are not implemented in content/quests, so their gates are
+  behind `Fishing.ENFORCE_QUESTS` (off); when on they read the state varps of `quest-states.tsv` (Tai Bwo Wannai Trio varp 320 >= 6,
+  Regicide varp 328 >= 15). The Barbarian Training gate is always on: it needs varbit `BRUT_FISHING_R` >= 1, which Otto sets when he
+  teaches the rod (barbarian-training.md BT1, BT2). A leaping fish caught moves the step to 2.
 - **FS12: barbarian fishing.** Op "Use-rod" of the barbarian spots with a barbarian rod (or the pearl barbarian rod): the leaping
   fish roll best first 8 / 64 sturgeon (70 Fishing, 45 Strength and Agility, 80 xp, 7 Strength and 7 Agility xp), 16 / 96 salmon
   (58 / 30, 70 xp, 6), 32 / 192 trout (48 / 15, 50 xp, 5). The bait used first is, in order, fish offcuts, fishing bait, feathers,
@@ -129,9 +130,8 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
 - **OPEN-FS10:** the karambwan vessel is a tool here, empty or loaded alike; the Wiki's loading (the vessel empties and refills from the
   karambwanji in the backpack) and the filtered snatch message ("A Karambwan deftly snatches the Karambwanji from your vessel!") are not
   modelled; the vessel animation is the rod's.
-- **OPEN-FS11 / OPEN-FS13:** the three quest gates are off (FS11). Which Barbarian Training varbit marks the fishing part is not sourced:
-  `BRUT_FISHING_R` (cache name only) is assumed. The refusal wording is not sourced; Tinsay's lesson for cooking karambwan thoroughly is
-  OPEN-CK9.
+- **OPEN-FS11 / OPEN-FS13:** the Tai Bwo Wannai Trio and Regicide gates are off (FS11). The Barbarian Training gate is on (barbarian-training.md);
+  its refusal wording is not sourced (OPEN-BT4); Tinsay's lesson for cooking karambwan thoroughly is OPEN-CK9.
 - **OPEN-FS12:** the eel spot's op 1 (net: frog spawn 11/256 and swamp weed 43/1000 per Wiki drop lines, level 33, 75 xp) is not
   implemented: the Wiki gives drop rarities, not a skilling roll. Eels, slimy and cave, are fished with op 3.
 - **OPEN-FS14:** only the full angler's set is sourced (2.5%); the per-piece shares of a partial outfit are not. Rada's blessing and

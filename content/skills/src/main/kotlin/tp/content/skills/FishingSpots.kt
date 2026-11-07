@@ -1,20 +1,17 @@
 package tp.content.skills
 
 import tp.plugin.ContentScope
+import tp.plugin.EntityRef
 import tp.plugin.NpcRef
-import tp.plugin.PlayerRef
-import tp.plugin.TimerId
 import tp.util.CoordGrid
-
-private val SPOT_TIMER = TimerId("fishing.spots")
 
 /**
  * Where fishing spots are and how they move (docs/mechanics/fishing.md FS8, FS9). `fishing-spawns.tsv` (Wiki `ObjectLocLine` pins,
  * `tools/wiki-import/fishing_spawns.py`) lists the tiles a spot of a type has been seen on, grouped by area. A group gets
  * [spotsOf] spots, and after a hidden timer each moves to a free tile of its own group (Wiki "Fishing spot").
  *
- * There is no per-tick world hook in plugin-api, so the logged-in players' timers drive it: the first timer of a tick moves
- * every spot that is due (the world RNG is deterministic, so the result is too). A spot moves by being removed and spawned anew on
+ * The world tick hook drives it (spots keep moving with nobody online): each tick it moves every spot that is due, drawing
+ * from the world RNG through the spot's own NPC (so the result is deterministic). A spot moves by being removed and spawned anew on
  * its next tile; players still fishing at the old one are sent to the new one ([replacement]), as in the game ("if clicked on
  * as it changes, the player will run to the new location").
  */
@@ -28,7 +25,6 @@ internal class FishingSpots {
     private val spots = ArrayList<Spot>()
     private val moved = HashMap<Int, Redirect>()
     private var adopting: Spot? = null
-    private var lastTick = -1L
 
     fun install(scope: ContentScope) {
         with(scope) {
@@ -46,7 +42,7 @@ internal class FishingSpots {
                 }
             }
             onNpcSpawn { adopting?.let { if (it.group.npc == type) it.ref = this } }
-            onLogin { if (!hasTimer(SPOT_TIMER)) timer(SPOT_TIMER, 1, true) { drive(this) } }
+            onWorldTick { drive(tick) }
         }
     }
 
@@ -60,27 +56,24 @@ internal class FishingSpots {
         return r.to
     }
 
-    /** Runs once per tick (the first player timer of the tick): moves the spots whose timer expired. */
-    private fun drive(p: PlayerRef) {
-        val now = p.tick
-        if (now == lastTick) return
-        lastTick = now
+    /** Runs once per tick (world tick hook): moves the spots whose timer expired. */
+    private fun drive(now: Long) {
         for (spot in spots) {
             if (spot.moveAt == Long.MAX_VALUE) continue
-            if (spot.moveAt == UNSCHEDULED) spot.moveAt = now + interval(p, spot.group.kind)
-            if (spot.moveAt <= now) move(p, spot, now)
+            val ref = spot.ref ?: continue
+            if (spot.moveAt == UNSCHEDULED) spot.moveAt = now + interval(ref, spot.group.kind)
+            if (spot.moveAt <= now) move(ref, spot, now)
         }
     }
 
-    /** Moves [spot] to a random free tile of its group; if every other tile is taken it stays and waits for a new timer. */
-    private fun move(p: PlayerRef, spot: Spot, now: Long) {
-        spot.moveAt = now + interval(p, spot.group.kind)
-        val old = spot.ref ?: return
+    /** Moves [spot], now the NPC [old], to a random free tile of its group; if all other tiles are taken it stays and draws a new timer. */
+    private fun move(old: NpcRef, spot: Spot, now: Long) {
+        spot.moveAt = now + interval(old, spot.group.kind)
         val tiles = spot.group.tiles
         var free = 0
         for (t in tiles.indices) if (t != spot.tile && !taken(spot.group, t)) free++
         if (free == 0) return
-        var pick = p.random(free)
+        var pick = old.random(free)
         var next = -1
         for (t in tiles.indices) {
             if (t == spot.tile || taken(spot.group, t)) continue
@@ -89,7 +82,7 @@ internal class FishingSpots {
                 break
             }
         }
-        val fresh = p.spawnNpc(spot.group.npc, tiles[next], 0)
+        val fresh = old.spawnNpc(spot.group.npc, tiles[next], 0)
         moved[old.index] = Redirect(fresh, now + REDIRECT_TICKS)
         old.despawn()
         spot.ref = fresh
@@ -102,9 +95,9 @@ internal class FishingSpots {
     }
 
     /** Ticks until the next move: the window of the spot type, uniform (Wiki "Fishing spot", Mod Ash 19 Dec 2022). */
-    private fun interval(p: PlayerRef, kind: SpotKind): Long {
+    private fun interval(rng: EntityRef, kind: SpotKind): Long {
         val window = WINDOWS[kind] ?: DEFAULT_WINDOW
-        return (window.first + p.random(window.last - window.first + 1)).toLong()
+        return (window.first + rng.random(window.last - window.first + 1)).toLong()
     }
 
     private fun load(): List<Group> {

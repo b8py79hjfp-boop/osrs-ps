@@ -18,8 +18,8 @@ import tp.util.CoordGrid
  * ground logs, starts an attempt that rolls every [ATTEMPT_TICKS] ticks until it lights (FM1). The attempt is a
  * player timer, so walking away or losing the logs ends it, as in OSRS. A lit log becomes a [FIRE_LOC] that burns
  * out after 60 to 119 seconds and leaves ashes (FM4); the player steps west, else east, south or north (FM5).
- * Gnomish firelighters coat logs into coloured logs (FM6), a bow lights logs for players who finished Barbarian
- * Firemaking (FM7), and the pyromancer outfit adds xp (FM9).
+ * Gnomish firelighters coat logs into coloured logs (FM6), a bow lights logs for players Otto has taught
+ * (FM7, [BarbarianProgress]), and the pyromancer outfit adds xp (FM9).
  */
 public class Firemaking : ContentPlugin {
     override fun ContentScope.register() {
@@ -60,7 +60,7 @@ public class Firemaking : ContentPlugin {
 
     /** FM7 (Wiki "Barbarian Training"): a bow lights logs once Otto has taught it; level 35 is the miniquest's requirement. */
     private fun PlayerRef.lightWithBow(log: BurnableLog, bow: Int) {
-        if (saved(BARBARIAN_FIREMAKING_KEY) != BARBARIAN_FIREMAKING_DONE || baseLevel(Stats.FIREMAKING) < BARBARIAN_MIN_LEVEL) {
+        if (!BarbarianProgress.bowTaught(this) || baseLevel(Stats.FIREMAKING) < BARBARIAN_MIN_LEVEL) {
             return message(NOTHING_INTERESTING)
         }
         begin(log, null, bow, null)
@@ -121,6 +121,7 @@ public class Firemaking : ContentPlugin {
         addLoc(a.colour?.fire ?: FIRE_LOC, a.at, FIRE_SHAPE, 0, burn)
         message("The fire catches and the logs begin to burn.")
         OutfitBonuses.addFiremakingXp(this, a.log.xp)
+        if (a.tool != Objs.TINDERBOX && a.log.obj == Objs.OAK_LOGS) BarbarianProgress.litWithBow(this)
         if (coord == a.at) stepOff(a.at)
         queueHit(burn, strong = false) {
             // A Forester's campfire fed on this fire keeps it going and leaves its own ashes (ForesterCampfire).
@@ -169,10 +170,6 @@ public class Firemaking : ContentPlugin {
 
         /** Wiki "Gnomish firelighters": a coloured log gives 50 Firemaking xp (40 plus 10). */
         const val COLOURED_XP = 50.0
-
-        /** Player saved-value key set by Barbarian Training content once Otto has taught firemaking with a bow (OPEN-FM8). */
-        const val BARBARIAN_FIREMAKING_KEY = "barbarian.firemaking"
-        const val BARBARIAN_FIREMAKING_DONE = 1L
 
         /** Wiki "Barbarian Training": 35 Firemaking (not boostable) is the miniquest's requirement. */
         const val BARBARIAN_MIN_LEVEL = 35

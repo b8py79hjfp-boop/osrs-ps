@@ -14,9 +14,9 @@ import tp.util.CoordGrid
 
 /**
  * The Wintertodt's shared game of one world (docs/mechanics/wintertodt.md WT1 to WT12): the round clock, the energy
- * meter, the four braziers and pyromancers, and the storm's attacks. It advances once per tick, driven by whichever
- * player in the prison runs its timer first ([advance]); with nobody inside the game is reset on the next entry
- * (OPEN-WT1), so no empty world is simulated.
+ * meter, the four braziers and pyromancers, and the storm's attacks. It advances once per tick from the world tick hook
+ * ([advance], `Wintertodt.drive`); with nobody inside the game is reset on the next entry (OPEN-WT1), so no empty
+ * prison is simulated.
  */
 internal class WintertodtGame {
     class Brazier(val x: Int, val z: Int) {
@@ -353,7 +353,6 @@ internal class WintertodtGame {
         val PRISON_X = 1604..1652
         val PRISON_Z = 3965..4030
 
-        val GAME = AttrKey<WintertodtGame>("wintertodt.game")
         val WARMTH = AttrKey<Int>("wintertodt.warmth")
         val POINTS = AttrKey<Int>("wintertodt.points")
         val HIT_AT = AttrKey<Long>("wintertodt.hit_at")

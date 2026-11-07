@@ -8,7 +8,6 @@ import tp.plugin.PlayerScript
 import tp.plugin.Stats
 import tp.symbols.Invs
 import tp.symbols.Objs
-import tp.symbols.Varbits
 
 /**
  * Fishing (docs/mechanics/fishing.md). Spots are NPCs; the ids by spot type come from the Wiki (`fishing-spots.tsv`) and
@@ -137,6 +136,7 @@ public class Fishing : ContentPlugin {
             return p.stopInteraction()
         }
         p.message(if (big) fish.bigMessage else fish.message, Skilling.SPAM)
+        if (method == Method.BARBARIAN) BarbarianProgress.caughtLeapingFish(p)
         p.addXp(Stats.FISHING, fish.xp * anglerBonus(p))
         for (extra in fish.extras) p.addXp(extra.stat, extra.xp)
     }
@@ -186,17 +186,20 @@ public class Fishing : ContentPlugin {
         if (xp > 0.0) p.addXp(Stats.FISHING, xp * anglerBonus(p))
     }
 
-    /** Why [p] may not use a method that needs [gate], or null (FS11: only enforced when [ENFORCE_QUESTS] is on). */
+    /**
+     * Why [p] may not use a method that needs [gate], or null. Barbarian Training is implemented ([BarbarianProgress], FS11), so
+     * its gate always holds; the other two quests are not, so their gates are only enforced when [ENFORCE_QUESTS] is on.
+     */
     private fun gateProblem(p: PlayerRef, gate: Gate): String? {
-        if (!ENFORCE_QUESTS) return null
         val met =
             when (gate) {
                 Gate.NONE -> true
-                Gate.TAI_BWO_WANNAI_TRIO -> p.varp(TBWT_VARP) >= TBWT_DONE
-                Gate.BARBARIAN_TRAINING -> p.varbit(Varbits.BRUT_FISHING_R) != 0
-                Gate.REGICIDE -> p.varp(REGICIDE_VARP) >= REGICIDE_DONE
+                Gate.BARBARIAN_TRAINING -> BarbarianProgress.rodTaught(p)
+                Gate.TAI_BWO_WANNAI_TRIO -> !ENFORCE_QUESTS || p.varp(TBWT_VARP) >= TBWT_DONE
+                Gate.REGICIDE -> !ENFORCE_QUESTS || p.varp(REGICIDE_VARP) >= REGICIDE_DONE
             }
-        return if (met) null else "You have not completed the quest you need to fish here."
+        if (met) return null
+        return if (gate == Gate.BARBARIAN_TRAINING) BARBARIAN_REFUSAL else QUEST_REFUSAL
     }
 
     private companion object {
@@ -215,10 +218,15 @@ public class Fishing : ContentPlugin {
         const val FULL = "Your inventory is too full to hold any more fish."
 
         /**
-         * OPEN-FS11: Tai Bwo Wannai Trio, Barbarian Training and Regicide are not implemented, so nobody could ever meet their gates.
-         * Switch this on when they are; the varps are the "quest-states.tsv" rows of content/quests.
+         * OPEN-FS11: Tai Bwo Wannai Trio and Regicide are not implemented, so nobody could ever meet their gates. Switch this on when
+         * they are; the varps are the "quest-states.tsv" rows of content/quests. The Barbarian Training gate is not behind it.
          */
         const val ENFORCE_QUESTS = false
+
+        const val QUEST_REFUSAL = "You have not completed the quest you need to fish here."
+
+        /** OPEN-BT4: the wording of the refusal at the barbarian spots is not sourced. */
+        const val BARBARIAN_REFUSAL = "You need to learn barbarian fishing from Otto Godblessed before you can fish here."
 
         /** Tai Bwo Wannai Trio: state varp 320, complete at 6 (content/quests quest-states.tsv). */
         const val TBWT_VARP = 320

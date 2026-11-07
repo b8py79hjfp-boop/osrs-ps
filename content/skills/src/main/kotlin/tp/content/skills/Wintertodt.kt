@@ -1,6 +1,8 @@
 package tp.content.skills
 
 import tp.plugin.AttrKey
+import tp.plugin.ButtonClick
+import tp.plugin.Consumed
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.ItemOnItem
@@ -9,7 +11,6 @@ import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
-import tp.plugin.TimerId
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
@@ -23,13 +24,14 @@ import tp.util.CoordGrid
 
 /**
  * The Wintertodt minigame (docs/mechanics/wintertodt.md): the shared prison behind the Doors of Dinh, its rounds, the
- * braziers and pyromancers, the cold, points and the reward cart. Game state lives in [WintertodtGame]; this class
- * wires the interactions (light, feed, fix, chop, fletch, brew, heal, search) to it.
+ * braziers and pyromancers, the cold, points and the reward cart. Game state lives in [WintertodtGame] and advances from
+ * the world tick hook (one clock for the whole prison); this class wires the interactions (light, feed, fix, chop, fletch,
+ * brew, heal, drink, search) to it.
  */
 public class Wintertodt : ContentPlugin {
     private val rewards = WintertodtRewards()
     private var axeLevels: Map<Int, Int> = emptyMap()
-    private var warmIds: Set<Int> = emptySet()
+    private var game = WintertodtGame()
 
     /** Last HUD values sent to a player, so the interface is only written on a change. */
     internal class Hud(var energy: Int = -1, var points: Int = -1, var warmth: Int = -1)
@@ -38,13 +40,16 @@ public class Wintertodt : ContentPlugin {
         onWorldStart {
             axeLevels = AXES.keys.associateWith { objParamInt(it, Skilling.PARAM_LEVEL_REQUIRE) ?: 1 }
             rewards.resolve(this)
-            warmIds = WARM_NAMES.flatMap { objIdsNamed(it) }.toSet()
+            game = WintertodtGame().also { it.warmIds = WARM_NAMES.flatMap { name -> objIdsNamed(name) }.toSet() }
         }
+        onWorldTick { drive(tick) }
+        events.on<Consumed> { eaten -> restoreWarmthOnEating(eaten) }
+        for (potion in POTIONS) onItemOp(potion, DRINK) { click -> drinkPotion(click) }
         onLogin {
             setVarbit(Varbits.WINT_REWARD_POOL, (saved(REWARDS_KEY) ?: 0L).toInt())
             if (WintertodtGame.inside(coord)) enter(this)
         }
-        onLogout { leave(this) }
+        onLogout { leave(this, closeHud = false) }
         onOpLoc(Locs.WINT_DOOR, OP_FIRST) { door() }
         onOpLoc(Locs.WINT_BRAZIER, OP_FIRST) { loc -> light(loc) }
         onOpLoc(Locs.WINT_BRAZIER_LIT, OP_FIRST) { loc -> feed(loc) }
@@ -91,7 +96,6 @@ public class Wintertodt : ContentPlugin {
     }
 
     private fun enter(p: PlayerRef) {
-        val game = game(p)
         if (p in game.players) return
         if (game.players.isEmpty()) game.reset(p)
         game.players += p
@@ -104,42 +108,85 @@ public class Wintertodt : ContentPlugin {
         if (game.warmClothing(p) < WintertodtGame.WARM_CAP) {
             p.message("You feel the cold wind strike you as you enter; perhaps you should find some warmer clothes.")
         }
-        p.timer(TICK_TIMER, 1, soft = true) { tick() }
     }
 
-    /** Takes [p] out of the game: points are lost (Wiki "Wintertodt" Reward points). */
-    private fun leave(p: PlayerRef) {
-        val game = p.worldAttr(WintertodtGame.GAME) ?: return
+    /** Takes [p] out of the game: points are lost (Wiki "Wintertodt" Reward points) and the HUD closes unless the player is logging out. */
+    private fun leave(p: PlayerRef, closeHud: Boolean = true) {
         if (!game.players.remove(p)) return
-        p.stopTimer(TICK_TIMER)
         p[WintertodtGame.POINTS] = null
         p[WintertodtGame.WARMTH] = null
         p[HUD] = null
         p.setVarbit(Varbits.WINT_WARMTH, 0)
+        if (closeHud) p.closeOverlay(Components.Toplevel.OVERLAY_HUD)
     }
 
-    private fun game(p: PlayerRef): WintertodtGame {
-        val existing = p.worldAttr(WintertodtGame.GAME)
-        if (existing != null) return existing
-        return WintertodtGame().also {
-            it.warmIds = warmIds
-            p.setWorldAttr(WintertodtGame.GAME, it)
+    // ---- the world tick
+
+    /**
+     * The one clock of the prison (docs/mechanics/wintertodt.md WT2 to WT5): advances the round, then each player inside takes
+     * the standard attack, regenerates warmth and gets the HUD. Players who left the prison by any route are taken out here.
+     * With nobody inside nothing is simulated (OPEN-WT1); the first entrant resets the game.
+     */
+    private fun drive(now: Long) {
+        val inside = game.players
+        if (inside.isEmpty()) return
+        if (game.advance(inside[0], now)) endRound(inside[0], game)
+        for (i in inside.indices.reversed()) {
+            val p = inside.getOrNull(i) ?: continue
+            if (!WintertodtGame.inside(p.coord)) {
+                leave(p)
+                continue
+            }
+            if (game.active && now >= (p[NEXT_COLD] ?: 0L)) {
+                p[NEXT_COLD] = now + COLD_COOLDOWN_TICKS
+                // WT4: the roll is up to the maximum energy and the attack goes through when it is below the energy left.
+                if (!WintertodtGame.isSafe(p.coord) && p.random(WintertodtGame.ENERGY_MAX) < game.energy) {
+                    game.cold(p, game.standardDamage(p))
+                }
+            }
+            if (now % REGEN_INTERVAL_TICKS == 0L) p.regenerate(game)
+            p.updateHud(game)
         }
     }
 
-    // ---- the per-tick drive of a player inside
+    // ---- warmth from food and potions
 
-    private fun PlayerRef.tick() {
-        if (!WintertodtGame.inside(coord)) return leave(this)
-        val game = game(this)
-        if (game.advance(this, tick)) endRound(this, game)
-        if (game.active && tick >= (this[NEXT_COLD] ?: 0L)) {
-            this[NEXT_COLD] = tick + COLD_COOLDOWN_TICKS
-            // WT4: the roll is up to the maximum energy and the attack goes through when it is below the energy left.
-            if (!WintertodtGame.isSafe(coord) && random(WintertodtGame.ENERGY_MAX) < game.energy) game.cold(this, game.standardDamage(this))
-        }
-        if (tick % REGEN_INTERVAL_TICKS == 0L) regenerate(game)
-        updateHud(game)
+    /** WT5 (Wiki "Warmth"): food that heals at least 4 Hitpoints restores 35% warmth; triangle sandwiches and wine are excluded. */
+    private fun restoreWarmthOnEating(eaten: Consumed) {
+        val p = eaten.player
+        if (eaten.drink || p !in game.players) return
+        if (p.objName(eaten.obj).lowercase() in NO_WARMTH_FOOD) return
+        restoreWarmth(p, FOOD_WARMTH_PERCENT)
+    }
+
+    /** WT5 (Wiki "Rejuvenation potion"): a dose of the clicked potion restores 30% warmth. */
+    private fun PlayerRef.drinkPotion(click: ButtonClick) {
+        val inv = inv(Invs.INV)
+        if (click.slot !in 0 until inv.size || inv.obj(click.slot) != click.obj) return
+        val doses = POTIONS.indexOf(click.obj) + 1
+        if (doses == 0) return
+        interrupt() // inventory item actions interrupt (interactions.md I7)
+        val drunk =
+            transaction("wintertodt drink") {
+                if (doses ==
+                    1
+                ) {
+                    removeAt(Invs.INV, click.slot, click.obj, 1)
+                } else {
+                    replaceAt(Invs.INV, click.slot, click.obj, POTIONS[doses - 2])
+                }
+            }
+        if (!drunk) return
+        anim(Seqs.HUMAN_EAT)
+        message("You drink some of your rejuvenation potion.")
+        if (this in game.players) restoreWarmth(this, POTION_WARMTH_PERCENT)
+    }
+
+    private fun restoreWarmth(p: PlayerRef, percent: Int) {
+        val warmth = p[WintertodtGame.WARMTH] ?: return
+        val next = minOf(WintertodtGame.WARMTH_FULL, warmth + percent * WintertodtGame.WARMTH_PER_PERCENT)
+        p[WintertodtGame.WARMTH] = next
+        p.setVarbit(Varbits.WINT_WARMTH, next)
     }
 
     /** Wiki "Warmth": 8% per minute plus 1% per warm item, i.e. (8 + items) tenths of a percent every 10 ticks. */
@@ -204,7 +251,6 @@ public class Wintertodt : ContentPlugin {
     private suspend fun PlayerScript.light(loc: LocRef) {
         val p = player
         val i = brazierIndex(loc) ?: return
-        val game = game(p)
         if (!ready(p, game)) return
         if (!has(
                 p,
@@ -242,7 +288,6 @@ public class Wintertodt : ContentPlugin {
     private suspend fun PlayerScript.fix(loc: LocRef) {
         val p = player
         val i = brazierIndex(loc) ?: return
-        val game = game(p)
         if (!ready(p, game)) return
         if (!has(
                 p,
@@ -269,7 +314,6 @@ public class Wintertodt : ContentPlugin {
     /** WT6: feeding a lit brazier one bruma kindling (25 points, 3.8x xp) or root (10 points, 3x xp) every [FEED_TICKS]. */
     private suspend fun PlayerScript.feed(loc: LocRef) {
         val p = player
-        val game = game(p)
         if (!ready(p, game)) return
         cycle(loc, FEED_TICKS) {
             if (interrupted(p)) return@cycle false
@@ -405,7 +449,6 @@ public class Wintertodt : ContentPlugin {
     /** WT5 (Wiki "Pyromancer"): one dose, taken from the potion with fewest doses, heals a pyromancer fully for 75 points. */
     private suspend fun PlayerScript.help(target: NpcRef) {
         val p = player
-        val game = game(p)
         val i = game.pyromancers.indexOfFirst { it.npc == target }
         if (i < 0) return
         val pyro = game.pyromancers[i]
@@ -449,7 +492,16 @@ public class Wintertodt : ContentPlugin {
         val HUD = AttrKey<Hud>("wintertodt.hud")
         val NEXT_COLD = AttrKey<Long>("wintertodt.next_cold")
         val ACTION_START = AttrKey<Long>("wintertodt.action_start")
-        val TICK_TIMER = TimerId("wintertodt")
+
+        /** Cache item action text of a potion. */
+        const val DRINK = "Drink"
+
+        /** Wiki "Warmth": food of 4+ Hitpoints restores 35% warmth, a rejuvenation potion dose 30%. */
+        const val FOOD_WARMTH_PERCENT = 35
+        const val POTION_WARMTH_PERCENT = 30
+
+        /** Wiki "Warmth": the foods that heal 4+ Hitpoints but do not restore warmth (lower-case cache names). */
+        val NO_WARMTH_FOOD = setOf("triangle sandwich", "bottle of wine")
 
         const val OP_FIRST = 1
         const val OP_SECOND = 2
