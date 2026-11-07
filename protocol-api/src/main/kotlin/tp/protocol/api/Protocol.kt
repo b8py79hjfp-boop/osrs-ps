@@ -61,6 +61,9 @@ interface LoginRequest {
     /** Client IP address (the real one behind a PROXY-protocol proxy). */
     val address: String
 
+    /** The client's window was resizable at login (login block flag); picks the gameframe (gameframe-settings.md G8). */
+    val resizable: Boolean get() = false
+
     /** Called on the world thread. Returns the session bound to player slot [slot] (1..2047). */
     fun accept(slot: Int, details: LoginDetails): ClientSession
 

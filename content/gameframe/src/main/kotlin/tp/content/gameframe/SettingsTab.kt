@@ -31,7 +31,12 @@ internal object SettingsPanel {
         for (slider in SLIDERS) player.ifEvents(slider, 0..SLIDER_LAST_SLOT, op1)
         player.ifEvents(Components.Settings_Side.ATTACK_PRIORITY_PLAYER_BUTTONS, 1..PLAYER_PRIORITY_LAST, op1)
         player.ifEvents(Components.Settings_Side.ATTACK_PRIORITY_NPC_BUTTONS, 1..NPC_PRIORITY_LAST, op1)
+        // G8: the "Game client layout" dropdown rows 1..3.
+        player.ifEvents(Components.Settings_Side.DISPLAY_DYNAMIC_SETTING_1_BUTTONS, 1..LAYOUT_ROWS, op1)
     }
+
+    /** Fixed, resizable classic, resizable modern. */
+    private const val LAYOUT_ROWS = 3
 }
 
 /**

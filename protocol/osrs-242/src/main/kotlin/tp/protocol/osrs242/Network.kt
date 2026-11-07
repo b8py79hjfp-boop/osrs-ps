@@ -440,6 +440,8 @@ class Osrs242Network(
 
         override val address: String = ClientAddress.of(handler.ctx.channel())
 
+        override val resizable: Boolean = block.resizable
+
         override fun accept(slot: Int, details: LoginDetails): ClientSession {
             val response =
                 LoginResponse.Ok(

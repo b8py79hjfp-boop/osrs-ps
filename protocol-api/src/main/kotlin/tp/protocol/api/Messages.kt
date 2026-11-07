@@ -219,6 +219,9 @@ sealed interface ServerMessage {
     /** Opens [interfaceId] inside the parent component [destination] (packed `iface << 16 | comp`). */
     data class OpenSub(val destination: Int, val interfaceId: Int, val overlay: Boolean) : ServerMessage
 
+    /** Moves the interface open in component [from] to component [to] (IF_MOVESUB; a toplevel switch). */
+    data class MoveSub(val from: Int, val to: Int) : ServerMessage
+
     /** Closes whatever is open in [destination] (packed component). */
     data class CloseSub(val destination: Int) : ServerMessage
 

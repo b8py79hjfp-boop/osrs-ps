@@ -316,6 +316,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.world.interfaces.openTop(p, interfaceId)
     }
 
+    /** The client's window was resizable at login (gameframe-settings.md G8). */
+    public val loginResizable: Boolean get() = p.loginResizable
+
+    /** The toplevel interface open now (-1 before the gameframe). */
+    public val toplevel: Int get() = p.world.interfaces.top(p)
+
+    /**
+     * Switches the toplevel to [interfaceId] and moves every open interface into it (IF_OPENTOP + IF_MOVESUB, G8). Content
+     * keeps naming destinations by their fixed-mode `toplevel` components; the engine redirects them.
+     */
+    public fun moveTop(interfaceId: Int) {
+        p.world.interfaces.moveTop(p, interfaceId)
+    }
+
     public fun openOverlay(destination: Int, interfaceId: Int) {
         p.world.interfaces.openOverlay(p, destination, interfaceId)
     }

@@ -14,6 +14,7 @@ import net.rsprot.protocol.game.outgoing.info.util.onFailure
 import net.rsprot.protocol.game.outgoing.info.util.onSuccess
 import net.rsprot.protocol.game.outgoing.info.util.safeReleaseOrThrow
 import net.rsprot.protocol.game.outgoing.interfaces.IfCloseSub
+import net.rsprot.protocol.game.outgoing.interfaces.IfMoveSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenSub
 import net.rsprot.protocol.game.outgoing.interfaces.IfOpenTop
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetEventsV2
@@ -400,6 +401,10 @@ internal class RspSession(
 
                 is ServerMessage.CloseSub -> {
                     IfCloseSub(message.destination)
+                }
+
+                is ServerMessage.MoveSub -> {
+                    IfMoveSub(message.from, message.to)
                 }
 
                 is ServerMessage.InterfaceEvents -> {

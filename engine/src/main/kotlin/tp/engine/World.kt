@@ -103,7 +103,14 @@ class World(
     /** Line of sight between two entities' footprints (projectile rules). */
     fun hasLineOfSight(from: Entity, to: Entity): Boolean = interactions.hasLineOfSight(from, to)
 
-    val interfaces = Interfaces()
+    val interfaces =
+        Interfaces().apply {
+            loadRedirects { id ->
+                data.configs.enums[id]
+                    ?.intValues
+                    .orEmpty()
+            }
+        }
 
     /** World-scoped content state (plugin instances are shared by every world in the JVM; their state lives here). */
     val attrs: HashMap<Any, Any> = HashMap()
@@ -1064,6 +1071,7 @@ class World(
             }
         val player = newPlayer(slot, profile?.displayName ?: request.username, session, config.spawn)
         player.loginAddress = request.address
+        player.loginResizable = request.resizable
         if (profile != null) {
             player.accountId = profile.accountId
             player.staffLevel = profile.staffLevel

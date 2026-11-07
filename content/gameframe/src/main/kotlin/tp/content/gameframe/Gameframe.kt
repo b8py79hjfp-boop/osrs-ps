@@ -15,6 +15,8 @@ import tp.symbols.Varbits
 public class Gameframe : ContentPlugin {
     override fun ContentScope.register() {
         onLogin { openGameframe() }
+        // G8: the "Game client layout" dropdown (1 fixed, 2 resizable classic, 3 resizable modern).
+        onButton(Components.Settings_Side.DISPLAY_DYNAMIC_SETTING_1_BUTTONS) { click -> changeLayout(click.slot) }
         // Logout tab <-> World Switcher (same side slot; the client closes the old sub on IF_OPENSUB).
         onButton(Components.Logout.WORLD_SWITCHER) { openWorldSwitcher() }
         onButton(Components.Worldswitcher.CLOSE) { openOverlay(Components.Toplevel.SIDE10, Interfaces.LOGOUT) }
@@ -27,7 +29,17 @@ public class Gameframe : ContentPlugin {
     }
 
     private fun PlayerRef.openGameframe() {
-        openTop(Interfaces.TOPLEVEL)
+        // G8: the saved layout when the client's window mode matches it, else fixed / resizable classic (RS Mod
+        // `openLoginGameframe` fallback).
+        val saved = saved(SAVED_LAYOUT)?.toInt()
+        val top =
+            when {
+                !loginResizable -> Interfaces.TOPLEVEL
+                saved == Interfaces.TOPLEVEL_PRE_EOC -> Interfaces.TOPLEVEL_PRE_EOC
+                else -> Interfaces.TOPLEVEL_OSRS_STRETCH
+            }
+        setVarbit(Varbits.RESIZABLE_STONE_ARRANGEMENT, if (top == Interfaces.TOPLEVEL_PRE_EOC) 1 else 0)
+        openTop(top)
         for ((iface, target) in OVERLAYS) openOverlay(target, iface)
         // Inventory tab item ops (RS Mod `InvOpenScript`).
         SideInventory.enableEvents(this)
@@ -42,8 +54,40 @@ public class Gameframe : ContentPlugin {
         clientScript(CS_SIDEBUTTON_SWITCH, PANEL_INVENTORY)
     }
 
+    /**
+     * G8 (RS Mod `DisplaySettingsScript` / `GameframeScript.queueGameframeMove`): a change between fixed and resizable first
+     * asks the client to switch its window mode (client script 3998 with the mode 0 / 1 / 2), and the toplevel moves 2
+     * ticks later (1 when the window mode stays), on a soft timer so a modal does not stop it.
+     */
+    private fun PlayerRef.changeLayout(sub: Int) {
+        val target = LAYOUTS.getOrNull(sub - 1) ?: return
+        val current = toplevel
+        if (target == current) return
+        val windowChange = (target == Interfaces.TOPLEVEL) != (current == Interfaces.TOPLEVEL)
+        if (windowChange) clientScript(CS_CLIENT_MODE, sub - 1)
+        timer(LAYOUT_TIMER, if (windowChange) 2 else 1, soft = true) {
+            stopTimer(LAYOUT_TIMER)
+            if (target != Interfaces.TOPLEVEL) {
+                setVarbit(Varbits.RESIZABLE_STONE_ARRANGEMENT, if (target == Interfaces.TOPLEVEL_PRE_EOC) 1 else 0)
+            }
+            moveTop(target)
+            setSaved(SAVED_LAYOUT, target.toLong())
+            // RS Mod reopens the orbs after the move (their init script lays them out for the new frame).
+            openOverlay(Components.Toplevel.ORBS, Interfaces.ORBS)
+        }
+    }
+
     private companion object {
         const val CS_SIDEBUTTON_SWITCH = 915
+
+        /** `settings_client_mode` (RS Mod `runClientScript(3998, clientMode)`): 0 fixed, 1 resizable, 2 resizable modern. */
+        const val CS_CLIENT_MODE = 3998
+
+        /** Dropdown rows 1..3 (RS Mod `toggleClientType`). */
+        val LAYOUTS = listOf(Interfaces.TOPLEVEL, Interfaces.TOPLEVEL_OSRS_STRETCH, Interfaces.TOPLEVEL_PRE_EOC)
+
+        const val SAVED_LAYOUT = "gameframe_toplevel"
+        val LAYOUT_TIMER = tp.plugin.TimerId("gameframe_layout")
 
         /** Side panel index of the backpack (varc `toplevel_panel`: 0 combat, 1 skills, 2 quests, 3 inventory). */
         const val PANEL_INVENTORY = 3

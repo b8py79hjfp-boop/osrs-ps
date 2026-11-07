@@ -46,6 +46,10 @@ class Player internal constructor(
     var loginAddress: String = ""
         internal set
 
+    /** The client's window was resizable at login (G8). */
+    var loginResizable: Boolean = false
+        internal set
+
     /** Hub account id (0 without an account authority). */
     var accountId: Long = 0
         internal set
