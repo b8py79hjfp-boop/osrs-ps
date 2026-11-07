@@ -231,7 +231,7 @@ internal object PoweredStaves {
         (if (staff.effect == Effect.SHADOW) ProjType.TUMEKENS else ProjType.MAGIC).launch(player, target, staff.projectile, delay)
         CombatVisuals.block(target, delay)
         val multiplier = if (staff.effect == Effect.SHADOW) SHADOW_MULTIPLIER else 1
-        val attackRoll = Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier)
+        val attackRoll = Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier, target = target)
         val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
         val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
@@ -246,6 +246,7 @@ internal object PoweredStaves {
             minOf(MAX_SHADOW_PERCENT, player.bonus(Param.MAGIC_DAMAGE) / MAGIC_DAMAGE_UNIT * multiplier) +
                 player.activePrayers().sumOf { it.effect.magicDamage }
         var max = Formulas.magicMaxHit(staff.max(player.level(Stat.MAGIC)), damagePercent)
+        max = TargetGear.apply(max, TargetGear.of(player, target, CombatStyle.MAGIC))
         if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
         var damage = Formulas.damage(max, player::random)
         val sanguine = staff.effect == Effect.SANGUINE && player.random(SANGUINE_CHANCE) == 0

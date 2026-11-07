@@ -40,7 +40,7 @@ public class Combat : ContentPlugin {
             req.handled = true
         }
         events.on<tp.plugin.SpellAccuracyRoll> { roll ->
-            val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC)
+            val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC, target = roll.target)
             roll.hit = Formulas.hits(attack, Attacks.defenceRoll(roll.target, AttackType.MAGIC), roll.caster::random)
         }
         onOpNpcOption("Attack") { npc -> CombatSystem.attackFromOp(this, npc) }

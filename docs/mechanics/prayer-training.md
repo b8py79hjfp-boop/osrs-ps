@@ -37,6 +37,5 @@ Sources, fetched as wikitext from oldschool.runescape.wiki on 2026-11-06:
   and the Elder Chaos druid's unnoting are not implemented.
 - **OPEN-PT6: not implemented.** Gilded altars and incense burners (no player-owned houses yet), the Ectofuntus, the libation bowl,
   Sinister and Demonic Offering (Arceuus spellbook, magic module), the bonecrusher necklace and ash sanctifier, the Catacombs prayer
-  restore on burying, Prayer-restoring altars ("Pray-at"), ensouled heads (they need the Arceuus Reanimation spells and the Wiki gives
-  their xp per spell cast, not per head), urium remains, bird's eggs, the prayer altar in the Wilderness church (2947,3820), and
+  restore on burying, Prayer-restoring altars ("Pray-at"), urium remains, bird's eggs, the prayer altar in the Wilderness church (2947,3820), and
   "Demonic ashes" (no such obj in cache 2757: the cache has fiendish, vile, malicious, abyssal and infernal ashes).

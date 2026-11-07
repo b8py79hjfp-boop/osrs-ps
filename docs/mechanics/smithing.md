@@ -82,8 +82,8 @@ production batches): skilling.md SK, MU, PR.
   uses it; the make-X menu reuses the shared, verified `skillmulti` flow instead of guessing the row's server protocol.
 - **OPEN-SM3:** which metal opens when the anvil is clicked while carrying several bar types (highest tier is used).
 - **OPEN-SM4:** Varrock armour (chance of 2 bars at the Edgeville furnace) and the Smiths' uniform (20% per piece to take 1 tick
-  off anvil smithing) are not modelled; neither are the Blast Furnace, cannonballs, blurite / elemental / lovakite / lead /
-  cupronickel bars, Superheat Item, the dragon-tier smithing and the Sailing items.
+  off anvil smithing) are not modelled; neither are the Blast Furnace, cannonballs, elemental / lovakite / lead /
+  cupronickel bars, the dragon-tier smithing and the Sailing items.
 - **OPEN-SM5:** message texts "The ore is too impure and you fail to refine it." and "You hammer the X and make Y." are from
   memory of the live game; only "You retrieve a bar of X." and the ring messages are sourced (RuneLite).
 - **OPEN-SM6:** ring of forging Check / Break ops; charges are a saved content value and are not shown by the item.

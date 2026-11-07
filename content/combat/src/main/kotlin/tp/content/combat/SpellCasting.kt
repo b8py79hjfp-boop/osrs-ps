@@ -93,7 +93,9 @@ internal object SpellCasting {
         val def = (target as? NpcRef)?.let { NpcCombatTable.of(it.type) }
         val weakness = if (spell.element != null && def?.weakElement == spell.element.word) def.weakPercent else 0
         val attackRoll =
-            Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC) * (PERCENT + weakness + demonbaneAccuracy(player, spell)) / PERCENT
+            Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC, target = target) *
+                (PERCENT + weakness + demonbaneAccuracy(player, spell)) /
+                PERCENT
         val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
         val distance = if (spell.toSouthWest) southWestDistance(player, target) else player.distanceTo(target)
         val delay = Formulas.magicDelay(distance)
@@ -108,7 +110,7 @@ internal object SpellCasting {
             if (spell.effect is SpellEffect.Debuff) {
                 0
             } else {
-                var max = maxHit(player, target, spell, weakness)
+                var max = TargetGear.apply(maxHit(player, target, spell, weakness), TargetGear.of(player, target, CombatStyle.MAGIC))
                 if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
                 minOf(Formulas.DAMAGE_CAP, Formulas.damage(max, player::random))
             }

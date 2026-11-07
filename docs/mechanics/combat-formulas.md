@@ -58,6 +58,8 @@ wikitext from oldschool.runescape.wiki on 2026-11-06 (line numbers refer to thos
 | F20 | Player damage cap 200. | MM:4 |
 | F21 | Combat level = ⌊¼ (Def + HP + ⌊Prayer / 2⌋) + max(13/40 (Att + Str), 13/40 ⌊1.5 Rng⌋, 13/40 ⌊1.5 Mag⌋)⌋. | CL:37-57 |
 | F22 | Special attacks roll against a fixed defence type (e.g. dragon dagger: slash). Attack-roll modifier +100% doubles the roll. | AT:5, SA:37, SA:177 |
+| F23 | Salve amulet against undead NPCs (Infobox `attributes` undead): salve ×7/6 melee; (i) ×7/6 melee and ranged, ×23/20 (+15%) magic; (e) ×6/5 melee; (ei) ×6/5 all styles. Applied as ⌊roll × n/d⌋ to the attack roll and ⌊max × n/d⌋ to the max hit. Does not stack with F24; the salve wins. OPEN-F5: for magic the +15% / +20% is applied to the finished max hit, not added to the magic damage percent. | Wiki "Salve amulet", "(i)", "(e)", "(ei)" (Mod Ash: "It's 1/6") |
+| F24 | Black mask / Slayer helmet against the player's current Slayer task: ×7/6 melee; imbued (i) also ×23/20 ranged and magic. Konar / Krystilia area limits and the awakened bosses are not modelled (OPEN-F6). | Wiki "Black mask", "Slayer helmet" (Mod Ash: "7/6") |
 
 ## Special attacks used in golden scenarios
 

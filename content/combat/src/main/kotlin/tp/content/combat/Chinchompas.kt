@@ -24,7 +24,7 @@ internal object Chinchompas {
         }
         player.setAttackClock(player.tick + player.attackSpeed())
         val distance = player.distanceTo(target)
-        val attackRoll = Attacks.attackRoll(player, stance, type) * fuseAccuracy(stance, distance) / PERCENT
+        val attackRoll = Attacks.attackRoll(player, stance, type, target = target) * fuseAccuracy(stance, distance) / PERCENT
         val defenceRoll = Attacks.defenceRoll(target, type, NpcCombatDef.DEF_HEAVY)
         val delay = Formulas.thrownDelay(distance)
         // Gameval names: the `_pvn` throw is the player-versus-NPC variant.
@@ -32,7 +32,7 @@ internal object Chinchompas {
         ProjType.CHINCHOMPA.launch(player, target, projectileOf(thrown), delay)
         // CH3: the primary target's roll decides the whole explosion.
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
-        val max = Attacks.maxHit(player, stance, type)
+        val max = Attacks.maxHit(player, stance, type, target)
         for (victim in victims(player, target)) {
             CombatSystem.announceAttack(player, victim, CombatStyle.RANGED)
             var victimMax = max

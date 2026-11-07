@@ -56,7 +56,7 @@ spiritual creatures 63), the lowest level above 1 in the group.
   the rewards line for masters other than those in tree 40; the texts in `Slayer.kt` are plausible, not sourced.
 - **OPEN-SL5: locations.** Konar's tasks count only in her named location, and monsters that are only killable on a task (the
   Wiki "Slayer task" page) are not restricted.
-- **OPEN-SL6: gating details.** Equipment that is required to fight (nose peg, earmuffs, spiny helmet, ...) and the Slayer helmet
-  bonus belong to combat (`content/combat`) and are not modelled; the Slayer level of the gate uses boosts, which the Wiki does not say.
+- **OPEN-SL6: gating details.** Equipment that is required to fight (nose peg, earmuffs, spiny helmet, ...) is not modelled; the black mask /
+  Slayer helmet bonus is (combat-formulas.md F24); the Slayer level of the gate uses boosts, which the Wiki does not say.
 - **OPEN-SL7: weights in the pool.** The weights are the Wiki's current table (summer 2025 sweep-up); a task whose group has no cache npc in
   `slayer-monsters.tsv` is dropped by the importer.

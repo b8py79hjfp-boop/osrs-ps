@@ -25,9 +25,9 @@ internal object Attacks {
             player.stopInteraction()
             return
         }
-        val attackRoll = attackRoll(player, stance, type)
+        val attackRoll = attackRoll(player, stance, type, target = target)
         val defenceRoll = defenceRoll(target, type, rangedDefenceOf(category))
-        var max = maxHit(player, stance, type)
+        var max = maxHit(player, stance, type, target)
         if (target is PlayerRef && target.protects(type.style)) max = Formulas.protectedMaxHit(max)
         val distance = player.distanceTo(target)
         val delay = hitDelay(type.style, category, distance)
@@ -57,7 +57,10 @@ internal object Attacks {
 
     fun WeaponCategory.usesAmmo(): Boolean = this === Weapons.BOW || this === Weapons.CROSSBOW
 
-    fun attackRoll(player: PlayerRef, stance: Stance, type: AttackType, magicBonusMultiplier: Int = 1): Int =
+    fun attackRoll(player: PlayerRef, stance: Stance, type: AttackType, magicBonusMultiplier: Int = 1, target: EntityRef? = null): Int =
+        TargetGear.apply(baseAttackRoll(player, stance, type, magicBonusMultiplier), TargetGear.of(player, target, type.style))
+
+    private fun baseAttackRoll(player: PlayerRef, stance: Stance, type: AttackType, magicBonusMultiplier: Int): Int =
         when (type.style) {
             CombatStyle.MELEE -> {
                 val eff = Formulas.effectiveLevel(player.level(Stat.ATTACK), player.prayerPercent { it.attack }, stance.attackBonus)
@@ -111,7 +114,10 @@ internal object Attacks {
             }
         }
 
-    fun maxHit(player: PlayerRef, stance: Stance, type: AttackType): Int =
+    fun maxHit(player: PlayerRef, stance: Stance, type: AttackType, target: EntityRef? = null): Int =
+        TargetGear.apply(baseMaxHit(player, stance, type), TargetGear.of(player, target, type.style))
+
+    private fun baseMaxHit(player: PlayerRef, stance: Stance, type: AttackType): Int =
         when (type.style) {
             CombatStyle.MELEE -> {
                 val eff =

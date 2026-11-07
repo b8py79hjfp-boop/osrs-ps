@@ -101,7 +101,7 @@ Stall: T arrive (anim, message) -> T+2 (loot, xp, stall emptied for its respawn)
   height is 0.
 - **OPEN-TH9:** equipment and effects that change the roll or the loot: Thieving cape (+10%, only "cape + diary" is charted), Ardougne cloak
   and diary bonuses (+10% in Ardougne, everywhere after the hard diary), the Rogue outfit (double loot), Dodgy necklace (25% to avoid the
-  stun, 10 charges), the Shadow Veil spell (15%), H.A.M. robes (ejection from the hideout), Hosidius / Shayzien / Varlamore guards and the
+  stun, 10 charges), H.A.M. robes (ejection from the hideout), Hosidius / Shayzien / Varlamore guards and the
   Varlamore and Kastori farmers (they share the base NPC's data here).
 - **OPEN-TH10:** chests and doors (lockpicking, trap searching and their respawn table in "Pickpocketing") are not implemented.
 - **OPEN-TH11:** the "Open-all" and "Open" backpack ops are registered once for all items (`onItemOp` has one owner per text) and ignore any
