@@ -14,7 +14,14 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
   (Pollnivneach Rooftop Course)"): order, loc ids, option text, level, xp, success charts ("Skilling success chart" low/high), fall damage
 - (S) "Shortcut" (list of shortcuts: level and xp) and the shortcut pages ("Underwall tunnel (Falador)", "Underwall tunnel (Draynor
   Village)", "Fence (Varrock)")
-- (B) "Barbarian Outpost Agility Course", "Wilderness Agility Course" and their obstacle pages (read; see OPEN-AG10)
+- (B) "Barbarian Outpost Agility Course", "Wilderness Agility Course" and their obstacle pages (e.g. "Ropeswing (Wilderness Agility Course)",
+  "Crumbling wall (Barbarian Outpost Agility Course)"), "Agility dispenser", "Wilderness agility ticket" (fetched 2026-11-07)
+- (N) "Ape Atoll Agility Course", "Werewolf Agility Course", "Shayzien Agility Course" (+ obstacle pages), "Prifddinas Agility Course", "Colossal Wyrm
+  Agility Course", "Agility Pyramid", "Template:Mark of grace spawns" (read only: data in OPEN-AG10; nothing implemented)
+- (R) "Brimhaven Agility Arena", "Ticket dispenser", "Agility arena ticket", "Pirate Jackie the Fruit" and the arena obstacle pages; "Hallowed Sepulchre"
+  (read only, OPEN-AG16)
+- (O) the shortcut pages "Obstacle pipe (Barbarian Outpost)", "(Edgeville Dungeon)", "(Taverley Dungeon)", "Narrow crevice (Dwarven Mine)", "Crevice
+  (Fremennik Slayer Dungeon)", "Underwall tunnel (Yanille)"
 - (M) "Marks of grace" (https://oldschool.runescape.wiki/w/Marks_of_grace): spawn cooldown, chances, level penalty, spawn tiles
 - (L) the cache (cache 2757): loc placements (`cache-dump map`), loc ops (all obstacles are op 1), collision (`cache-dump collision`), gameval
   seqs by name (`human_walk_logbalance` 762, `human_reachforladder` 828, `human_climbing_down` 740, `human_pipesqueeze` 746, `human_ropeswing_long` 751,
@@ -32,6 +39,11 @@ Sources, fetched as raw wikitext from oldschool.runescape.wiki on 2026-11-06:
 
 | AG6 | Failing: an obstacle with a `Fail` entry rolls `statRandom(AGILITY, low, high)` (the Wiki "Skilling success chart" low/high out of 256, with the current level). On a failure the lap state is kept (the obstacle is tried again), the player is dropped to the obstacle's fall tile after one tick and takes `floor(hitpoints / 17) + 2` damage as a `DamageRequest` (the combat module applies it and can kill; without it the hit is non-lethal). Set only where the chart and the damage formula are both on the Wiki: Canifis gap 3 (low 175, high 300), Pollnivneach market stall (low 60, high 300). | C |
 | AG7 | Shortcuts (`Shortcuts.kt`, table in `Shortcut.kt`): a loc of the table with its option needs the shortcut's Agility level (current), plays the animation for its ticks, moves the player to the end of the shortcut farther from them and gives the Wiki xp (0 for the three in the table). Two-way, no failure, no other skill or quest. | S |
+
+| AG11 | Barbarian Outpost (level 35, `AgilityCourses.kt`): ropeswing 23131 (22 xp, chart 200/280), log balance 23144 (13.7, 180/260), obstacle net 20211 (8.2), balancing ledge 23547 (22, 200/280), ladder 42487 / 16682 (0), three crumbling walls 1948 (13.7 each); lap bonus 46.3 Agility + 41.3 Strength (153.3 xp a lap). The three walls share loc 1948 and are told apart by their placement (`Obstacle.at`). Marks of grace as AG4 (2/6) at the ledge's landing tile. | B, L |
+| AG12 | Wilderness (`AgilityCourses.kt`, `AgilityWilderness.kt`): pipe 23137 (level 49, 12.5), ropeswing 23132 (20, chart 200/250, damage `floor(hp*3/20)+1`), stepping stones 23556 (20, 180/250, `floor(hp*4/20)+1`), log balance 23542 (20, 200/250, `floor(hp*3/20)+1`), rocks 23640 (498.9, only for an unbroken lap). No marks. The dispenser (loc 53224, ops Tag / Pay / Redeem): the lap leaves a ticket to tag; Tag gives one Wilderness agility ticket and restores run energy; Pay takes 150,000 coins from the inventory and gives a looting bag if the player has none in the inventory or bank; after that each tagged lap grows the streak and gives one noted resource roll (8/31 each anglerfish, manta ray, karambwan, 7/31 blighted super restore(4); quantities 3-6, 6-11, 10-16, 14-20 and 1-2, 2-4, 3-6, 4-8 for streak 1-15, 16-30, 31-60, 61+), one noted armour roll (Wiki weights per bracket) and, with a free slot, one unnoted supply (5/16 each food, 1/16 restore); starting a lap without tagging resets the streak; logout takes 10 laps off a paid streak; Redeem turns all inventory tickets into 200 xp each (210 from 11, 220 from 51, 230 from 101, applied to all of them). | B |
+| AG13 | Lap tracking is per course and several courses can share an obstacle (one loc in two courses advances both); doing an obstacle of an unrelated course drops the lap. | modelled (OPEN-AG2) |
+| AG14 | Brimhaven Agility Arena ticket dispensers (`BrimhavenArena.kt`, locs 3608 and the dart ones 3581, op Tag): one of the 24 dispensers is active per minute (100 ticks, uniformly chosen when first asked in that minute, shared by all players); tagging it gives 30 Agility xp per 10 levels (boosts included, at most 300), one Agility arena ticket (29480) and one Brimhaven voucher (29482), two each 10% of the time with the elite Karamja diary; one claim per activation; the Wiki's three messages. | R |
 
 ### Courses (obstacle loc id / option / level / xp / landing)
 
@@ -88,9 +100,15 @@ Falador (3045, 3345), (3049, 3357), (3019, 3345), (3013, 3345), (3015, 3333) on 
 Pollnivneach (3347, 2969), (3353, 2975), (3359, 2983) on 1, (3357, 3002), (3362, 2993) on 2; Rellekka (2623, 3675), (2628, 3652), (2629, 3653), (2641, 3650), (2642, 3651) on 3;
 Ardougne (2657, 3318) on 3.
 
+Barbarian Outpost (AG11), tiles are estimates (OPEN-AG3, OPEN-AG11): rope (2551, 3549, 0) after 4 ticks; log (2541, 3546, 0) 10; net (2537, 3546, 1) 2; ledge (2532, 3547, 1) 4;
+ladder (2532, 3546, 0) 2; walls to the tile east of each wall (2537, 2540, 2543; 3553) 2 each. Wilderness (AG12): pipe south end (3004, 3938) to (3004, 3950) 12; rope to (3005, 3958) 4; stones to (2996, 3960) 6;
+log to (2994, 3945) 8; rocks to (2994, 3933) 4. Failure leaves the player where they are (no fall tile on the Wiki).
+
 Shortcuts (AG7): Falador underwall tunnel (level 26; locs 16527, 16528, "Climb-into"; ends (2948, 3309) and (2948, 3313)); Draynor underwall tunnel (level 42; locs 19032,
 19036; ends (3066, 3257) and (3070, 3257)); Varrock fence (level 13; loc 16518 "Jump-over"; ends (3240, 3335) and (3240, 3334)). Level and xp from the Wiki list; the ends are the
-free tiles on both sides in the cache collision.
+free tiles on both sides in the cache collision. Added (AG9): Barbarian Outpost pipe (level 35, 10 xp; loc 20210; ends (2552, 3561) and (2552, 3558)), Edgeville Dungeon pipe (51, 10; 16511; (3149, 9906) and (3155, 9906)),
+Taverley Dungeon pipe (70, 10; 16509; (2886, 9799) and (2892, 9799)), Dwarven Mine narrow crevice (42, 0; 16543; (3027, 9806) and (3036, 9806)), Fremennik Slayer Dungeon crevice (61, 0; 16539; (2729, 10008) and (2736, 10008)),
+Yanille underwall tunnel (16, 0; wall 16519 and hole 16520; (2575, 3107) and (2575, 3112)). The ends are the first free cache tile beyond the loc placements at both mouths (two-tile-wide pipes), ticks one per tile.
 
 ## Tick timeline
 
@@ -121,16 +139,38 @@ gives 10, 20, 26.5, 36.5, 43, 53 and 110.5 xp (53 + 7.5 + 50) and the Draynor la
 - **OPEN-AG8:** achievement diary effects: Pollnivneach drying line 666 xp and a 1/3 two-minute mark timer (Desert hard), Rellekka pile of fish 615 xp and the same
   timer (Fremennik hard), Seers' mark rerolls 5/10/15% (Kandarin easy/medium/hard), Ardougne elite timer and 25% reroll. Diary state lives in `content/diaries`
   (varbits per tier), which `content/skills` may not depend on. Proposal: a plugin-api query for a completed diary tier backed by the diary varbits.
-- **OPEN-AG9:** shortcuts: only three simple two-way ones are in the table. The rest of the Wiki list (about 160) needs per-shortcut geometry (diagonal or multi-tile
+- **OPEN-AG9:** shortcuts: only nine simple two-way ones are in the table. The rest of the Wiki list (about 160) needs per-shortcut geometry (diagonal or multi-tile
   crossings, level changes, failure with its own xp, extra Strength/Ranged/grapple requirements, quests) that the cache collision does not show clearly enough, or is
-  failable without a chart (log balances, stepping stones). Quest-gated shortcuts are skipped: `quest-states.tsv` has the varbit per quest, but most quests are not
-  implemented (a handler could compare the quest varbit/varp with its `end` value).
-- **OPEN-AG10:** courses not implemented. Barbarian Outpost (level 35; ropeswing 23131, log 23144, net 20211, ledge 23547, ladder 16682, three crumbling walls 1948, bonus
-  46.3 Agility + 41.3 Strength; charts 200/280, 180/260, 200/280): the ladder loc 16682 has no placement in the cache (a multi-loc child, the placed ids are 16680, 16683,
-  42487), failure damage and landing are not on the Wiki, the course is entered after Alfred Grimhand's Barcrawl and the mark spot is only "after the balancing ledge" at
-  an unknown tile; the three walls share one loc id, which needs per-placement dispatch. Wilderness (level 52/49; pipe 23137, ropeswing 23132, stepping stones 23556,
-  log 23542, rocks 23640 with the 498.9 lap bonus; charts 200/250, 180/250, 200/250; damage `floor(hp * 0.15) + 1` and `floor(hp * 0.2) + 1`): the dungeon fall tile is not
-  on the Wiki and the course sits in a combat area with a dispenser (150,000 coin fee, looting bag, tickets). Not attempted for lack of Wiki or cache data: Ape Atoll (needs
-  Monkey Madness I), Werewolf (dungeon course with sticks), Shayzien basic/advanced, Prifddinas (Song of the Elves), Colossal Wyrm (termite currency), Agility Pyramid, Brimhaven
-  Agility Arena (minigame, tickets). The Grace shop (Rogues' Den, shop 148 in `shops.tsv` / `shop-items.tsv`) and the Agility Arena Store (shop 3) already exist with the Wiki
-  stock; the marks-of-grace prices are the obj cost in the cache (hood 35, set 260).
+  failable without a chart (log balances, stepping stones; the Wiki gives only the xp on failure). Grapple shortcuts were looked at and not added: they need a worn crossbow (not the love crossbow or ballistae) and a worn
+  mith grapple (obj 9419, 1/25 chance of breaking), Strength and Ranged levels, no xp, and a barehanded alternative at a higher Agility level; the pages disagree (Broken Raft: Strength 17 on its page, 19 in the list), and the crossing
+  tiles (a river 12 tiles wide at the Broken Raft, level changes at the walls) are not clear from the cache. Not added for the same reason: Stronghold Slayer Cave and Asgarnian Ice Dungeon tunnels (two-wide or diagonal), Edgeville
+  south pipe 62409 (one placement, ends unclear), Brimhaven Dungeon pipe 21728 (level 22 one way only). Quest-gated shortcuts are skipped (`quest-states.tsv` has the varbit per quest, but most quests are not implemented).
+- **OPEN-AG10:** courses not implemented, with the sourced data kept here for the next pass (fetched 2026-11-07; the cache ids and placements are from `cache-dump map`):
+  - Ape Atoll (level 48, unboostable; Monkey Madness I chapter 2 (varp 365); a ninja or Kruk greegree must be worn; 580 xp a lap = 40, 40, 40, 60, 100 + 300 bonus only for the whole course; stepping stone 15412 (2754, 2742), tropical tree 15414 (2753, 2741),
+    monkeybars 15417/15418/15419/16076 (level 2, x 2747-2752, z 2741), skull slope 1747 (2746, 2741), rope 15487 (2752, 2731); the last tree is the same id as the first; stones and the second tree cannot fail, the rest can but no chart is given; the course's marks spawn east
+    of the fairy ring at (2745, 2735)). Not implemented: the monkey appearance and the multi-level geometry are not clear from the cache; the MM1 gate would be a coded-off flag (content/quests does not implement it).
+  - Werewolf (level 60; Creature of Fenkenstrain (varbit 13715), Ring of Charos worn at the trapdoor; stepping stones 11643 (five placements, each clicked), hurdles 11638/11639/11640, pipes 11657, skull slope 11641, zip line 11644/11645/11646, xp 50, 60, 15, 25, 200 (140-200 depending on where
+    the deathslide is failed) + 380 for handing the stick to the Agility Trainer; the stick spawns after the pipe and despawns after about 90 s; the deathslide depends on weight, Agility and Strength with no formula on the Wiki; marks spawn between the stones and the hurdles at (3540, 9888)).
+  - Shayzien (basic level 1, 153.5 xp; advanced level 45, 507.5 xp, needs a crossbow and a mith grapple; neither can be failed any more): ladder 42209 (5.5; 6 on the advanced table), monkeybars 42211 (8), tightrope 42212 (9), basic bar 42213 (7), tightropes 42214 and 42215 (9),
+    gap 42216 (106); advanced beams 42217 and 42220 (23 each), edges 42218 (18) and 42219 (21), zip line 42221 (400). The marks' spawn tile is unknown ("before the split"). The two courses share the first three obstacles (the lap model supports it, AG13); the roof
+    landings are not clear from the cache.
+  - Prifddinas (level 75, Song of the Elves (varbit 9016); 12 obstacles, loc ids 36221, 36225, 36227, 36228, 36229, 36231, 36233-36238; xp 11.5, 30.7, 28.1, 23, 11.5, 0, 25.6, 30.7, 25.6, 30.7, 30.7, 1037.1; tightropes 1-2 and the chimney fail until 91 with no chart; six random portal
+    shortcuts (82 xp, one crystal shard each, shard obj 23962) and no marks): only a few placements fall in the dumped squares, and the portals need random world locs.
+  - Colossal Wyrm (basic level 50, advanced 62; Children of the Sun (varbit 9632); loc ids 55178-55190 and zip line 55179; xp 37.2 per obstacle and 341.2 on the zip line (advanced 37.2 x3, 70 x4 and 662); no failure; termites (obj 30038) and blessed bone shards on the way; the page carries an
+    "obsolete" banner for the 2026 changes to xp and termites, so its numbers may not match rev 242).
+  - Agility Pyramid (level 30, five floors of generated layouts; xp 12 (stone block), 8 (low wall), 52 (ledge), 56.4 (plank, cross gap), 22 (jump gap), pyramid block 0; completion bonus `300 + 8 * level`, capped at 1000; the pyramid top (obj 6970) pays 10,000 coins to Simon
+    Templeton; failure damage 6 (block), 4 (wall), 10 (ledge, plank), 8 (gaps, moving blocks), no success chart, no moving-block timing, no layout on the Wiki).
+  - Mark of grace tiles of the courses not implemented: Ape Atoll (2745, 2735), Werewolf (3540, 9888); Shayzien and Barbarian are not given as tiles (Barbarian uses the ledge landing, OPEN-AG11).
+- **OPEN-AG11:** Barbarian Outpost: the failure damage and fall tiles are not on the Wiki (the course page says small damage; a failure leaves the player in place with the AG6 formula `hp/17 + 2`), the entry Alfred Grimhand's Barcrawl (varbit 13714, end 2) is not enforced
+  (the quest is not implemented; the Wiki says only the entrance pipe needs it), the mark tile is a guess and the landing tiles are estimates (OPEN-AG3). `Course.entry` is the hook for quest gates (a coded-off flag per quest); none is wired because no quest of the list is implemented.
+  The crumbling wall loc 1948 is registered for the whole world: a wall with that id elsewhere does nothing when clicked.
+- **OPEN-AG12:** Wilderness: the gate (level 52, fee at the gate on Bounty Hunter worlds) and the area bounds ("the fee is lost when you leave the course or die") are not implemented; the dungeon fall tile of the rope and the log is not on the Wiki (the player stays where he is); the north end of the pipe
+  at (3004, 3948) does nothing; the streak and the fee are saved with the player but not reset on leaving the area or dying.
+- **OPEN-AG13:** the dispenser restores run energy when tagged (Wiki, no amount): taken as full.
+- **OPEN-AG14:** the Wilderness loot needs an open looting bag on the Wiki (Sept 2025) and a medium clue scroll chance (1/40, 1/20 with a ring of wealth (i)): neither the looting bag nor clue scrolls exist, so the loot goes to the inventory and there is no clue roll.
+- **OPEN-AG15:** Brimhaven Agility Arena: only the ticket dispensers are implemented. Missing: the flashing arrow over the active pillar (plugin-api has no hint-arrow call; proposal: `PlayerRef.hintArrow(coord)`), the 200 coin fee to Cap'n Izzy, the ticket-to-xp exchange (345 xp, 379.5 with Karamja gloves 2 or higher) which the Wiki puts in
+  Pirate Jackie's Agility Arena Store (shop 3, dummy obj 29484; the shops module owns that screen), the 10% obstacle xp bonus with the gloves, and all obstacles with their Wiki data (rope swing 20 xp / 4 ticks, low wall 8 / 5, plank 6 / 9, balancing rope 10 / 9,
+  log 12 / 9, balancing ledge 16 / 9, monkey bars 14 / 13, pillar 18 / 9, pressure pad 26 / 4 and floor spikes 24 / 4 (level 20; no failure from 50), hand holds 22 / 10, spinning blades 28 / 5 and darts 30 / 10 (level 40; darts drain 2 Agility), blade 0 xp, all with failure damage `floor(hp * 5 / 100) + 2`;
+  the Wiki gives no success charts) and the geometry of the 25 pillars (obstacle loc ids 3551-3585, cache level 3).
+- **OPEN-AG16:** Hallowed Sepulchre: not attempted. The Wiki gives the floors (Agility 52, 62, 72, 77, 87), a 2-minute timer plus 2 minutes per floor, the trap kinds and the coffin skill challenges, but the cyclic trap timings, trap damage, the floor layouts, per-floor xp and the coffin loot tables are
+  spread over some forty pages (Wizard statue, Knight statue, Crossbowman statue, Coffin, Grand Hallowed Coffin, floor pages) and each floor is a long instanced route; it also needs hit damage via `DamageRequest` and an instance per player. The Mysterious Stranger shops (244-246) exist in `shops.tsv`.

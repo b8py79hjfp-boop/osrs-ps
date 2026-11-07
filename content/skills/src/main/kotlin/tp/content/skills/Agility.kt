@@ -12,29 +12,54 @@ import tp.symbols.Objs
 import tp.util.CoordGrid
 
 /**
- * Agility courses (docs/mechanics/agility.md): the Gnome Stronghold course and the ten rooftops (Draynor to Ardougne).
+ * Agility courses (docs/mechanics/agility.md): the Gnome Stronghold course, the ten rooftops (Draynor to Ardougne) and the
+ * Barbarian Outpost and Wilderness courses of `AgilityCourses.kt`. Obstacles that several courses share (one loc in
+ * two courses) advance each of those courses' laps; obstacles that share a loc id on one course are told apart by placement.
  * Crossing an obstacle plays its animation for its tick count and then moves the player to the far side (no forced-movement
  * message exists yet, OPEN-AG1). Obstacles must be crossed in order for a lap to count: finishing one earns the lap bonus
  * and a chance of a mark of grace (AG4, AG5). Obstacles fail only where the Wiki gives a success chart (AG6, OPEN-AG2).
  */
 public class Agility : ContentPlugin {
-    /** How far a player has got in a lap: [next] is the order of the obstacle that continues it. */
-    private class Lap(val course: Course, var next: Int)
+    /** The unbroken laps a player has under way: for each course the order of the obstacle that continues it. */
+    private class Laps {
+        val next = HashMap<Course, Int>(2)
+    }
+
+    /** One obstacle of one course that a (loc, op) pair stands for; courses that share an obstacle (Shayzien) have several. */
+    private class Entry(val course: Course, val order: Int, val obstacle: Obstacle)
 
     override fun ContentScope.register() {
+        val byLoc = LinkedHashMap<Long, MutableList<Entry>>()
         for (course in COURSES) {
             course.obstacles.forEachIndexed { order, obstacle ->
-                for (loc in listOf(obstacle.loc) + obstacle.alsoLocs) onOpLoc(loc, obstacle.op) { cross(course, order) }
+                for (loc in listOf(obstacle.loc) + obstacle.alsoLocs) {
+                    byLoc
+                        .getOrPut(
+                            (loc.toLong() shl Int.SIZE_BITS) or obstacle.op.toLong(),
+                        ) { ArrayList() }
+                        .add(Entry(course, order, obstacle))
+                }
             }
+        }
+        for ((key, entries) in byLoc) {
+            val loc = (key shr Int.SIZE_BITS).toInt()
+            onOpLoc(loc, key.toInt()) { ref -> cross(entries.filter { it.obstacle.at == null || it.obstacle.at == ref.coord }) }
         }
     }
 
-    private suspend fun PlayerScript.cross(course: Course, order: Int) {
+    private suspend fun PlayerScript.cross(entries: List<Entry>) {
         val p = player
-        val obstacle = course.obstacles[order]
+        val first = entries.firstOrNull() ?: return
+        val course = first.course
+        val obstacle = first.obstacle
         val required = if (obstacle.level > 0) obstacle.level else course.level
         if (p.level(Stats.AGILITY) < required) {
             p.message("You need an Agility level of $required to attempt this obstacle.")
+            return
+        }
+        val refusal = course.entry?.invoke(p) ?: obstacle.check?.invoke(p)
+        if (refusal != null) {
+            p.message(refusal)
             return
         }
         p.stopInteraction() // one crossing per click (the delay would otherwise leave the interaction running)
@@ -56,45 +81,57 @@ public class Agility : ContentPlugin {
             p.teleport(end)
         }
         p.anim(-1)
-        p.addXp(Stats.AGILITY, obstacle.xp)
-        if (progress(p, course, order)) lapDone(p, course)
+        val completed = entries.filter { progress(p, it.course, it.order) }
+        // A lap-only obstacle (Wilderness rocks) pays its xp only for an unbroken lap.
+        if (!obstacle.xpOnlyInLap || completed.isNotEmpty()) p.addXp(Stats.AGILITY, obstacle.xp)
+        p[LAPS]?.next?.keys?.retainAll(entries.mapTo(HashSet(2)) { it.course }) // doing another course's obstacle drops this lap
+        for (entry in entries) if (entry.order == 0) entry.course.onStart?.invoke(p)
+        for (entry in completed) lapDone(p, entry.course)
     }
 
     /**
      * AG6: a failed crossing keeps the lap (the obstacle is tried again, Wiki "Barbarian Outpost Agility Course"), drops the
-     * player to [Fail.fall] after a tick and deals `hitpoints / 17 + 2` damage (Wiki "Hand holds (Falador Rooftop Course)");
-     * the animation, delay and message are OPEN-AG7.
+     * player to [Fail.fall] (where the Wiki gives one) after a tick and deals `hitpoints * n / d + base` damage (Wiki "Hand holds
+     * (Falador Rooftop Course)": floor(1/17 hitpoints + 2); Wilderness "Ropeswing": floor(3/20 hitpoints) + 1); the animation,
+     * delay and message are OPEN-AG7.
      */
     private suspend fun PlayerScript.fall(p: PlayerRef, fail: Fail) {
         delay(FALL_DELAY_TICKS)
-        p.teleport(fail.fall)
+        fail.fall?.let { p.teleport(it) }
         p.anim(-1)
-        val damage = p.hitpoints / FALL_DAMAGE_DIVISOR + FALL_DAMAGE_BASE
+        val damage = p.hitpoints * fail.damageNumerator / fail.damageDenominator + fail.damageBase
         val request = DamageRequest(p, null, damage)
         p.events.publish(request)
         if (!request.handled) p.hitpoints = (p.hitpoints - damage).coerceAtLeast(1) // no combat module: the fall never kills
         p.message("You slip and fall to the ground.")
     }
 
-    /** Tracks the lap: true when [order] was the last obstacle of an unbroken lap. */
+    /**
+     * Tracks the lap of [course]: true when [order] was the last obstacle of an unbroken lap. Courses that share their first
+     * obstacles (Shayzien) each track their own lap.
+     */
     private fun progress(p: PlayerRef, course: Course, order: Int): Boolean {
+        val laps = p[LAPS] ?: Laps().also { p[LAPS] = it }
         if (order == 0) {
-            p[LAP] = Lap(course, 1)
+            laps.next[course] = 1
             return false
         }
-        val lap = p[LAP]
-        if (lap == null || lap.course !== course || lap.next != order) {
-            p[LAP] = null
+        if (laps.next[course] != order) {
+            laps.next.remove(course)
             return false
         }
-        lap.next = order + 1
-        if (order != course.obstacles.size - 1) return false
-        p[LAP] = null
+        if (order != course.obstacles.size - 1) {
+            laps.next[course] = order + 1
+            return false
+        }
+        laps.next.remove(course)
         return true
     }
 
     private fun lapDone(p: PlayerRef, course: Course) {
         if (course.lapXp > 0.0) p.addXp(Stats.AGILITY, course.lapXp)
+        if (course.lapStrengthXp > 0.0) p.addXp(Stats.STRENGTH, course.lapStrengthXp)
+        course.onLap?.invoke(p)
         rollMark(p, course)
     }
 
@@ -120,7 +157,7 @@ public class Agility : ContentPlugin {
         /** Wiki "Mark of grace": a spawned mark stays 10 minutes = 1000 ticks (OPEN-AG4). */
         const val MARK_LIFETIME = 1000
 
-        val LAP = AttrKey<Lap>("agility.lap")
+        val LAPS = AttrKey<Laps>("agility.laps")
 
         /** Saved-state key: the epoch minute of the last mark of grace spawn. */
         const val SAVED_LAST_MARK = "agility.mark_minute"

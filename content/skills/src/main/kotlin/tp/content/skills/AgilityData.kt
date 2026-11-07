@@ -15,14 +15,26 @@ internal class Dest(val x: Int, val z: Int, val level: Int, val relative: Boolea
  * How an obstacle can be failed (docs/mechanics/agility.md AG6): the success chance is the Wiki "Skilling success chart"
  * `low`/`high` (out of 256 at levels 1 and 99, [tp.plugin.PlayerRef.statRandom]); a failed player falls to [fall] and takes
  * `hitpoints / 17 + 2` damage (Wiki "Hand holds (Falador Rooftop Course)": floor(1/17 hitpoints + 2) of the current hitpoints).
+ * The Wilderness course has its own fractions ([damageNumerator] / [damageDenominator] + [damageBase]); a null [fall]
+ * leaves the player where they are (the Wiki gives no fall tile: OPEN-AG11, OPEN-AG12).
  */
-internal class Fail(val low: Int, val high: Int, val fall: CoordGrid)
+internal class Fail(
+    val low: Int,
+    val high: Int,
+    val fall: CoordGrid?,
+    val damageNumerator: Int = 1,
+    val damageDenominator: Int = 17,
+    val damageBase: Int = 2,
+)
 
 /**
  * One obstacle of a course (docs/mechanics/agility.md AG1-AG3): loc [loc] with op [op], the [anim] played while the
  * player crosses for [ticks] ticks (there is no forced-movement message yet, OPEN-AG1), [xp] from the course page, and
  * the [dest] the player is moved to. [alsoLocs] are other locs of the same obstacle (the rest of a rope, the second pipe).
  * [level] is the obstacle's own Agility requirement (0: the course's); [fail] is set only where the Wiki gives the chance.
+ * [at] restricts the entry to the one placement of a loc id that several obstacles share (the three Barbarian crumbling
+ * walls); [xpOnlyInLap] gives the xp only when this obstacle completes an unbroken lap (Wiki "Rocks (Wilderness Agility Course)");
+ * [check] returns a refusal message when the player may not cross (worn items, quest gates).
  */
 internal class Obstacle(
     val loc: Int,
@@ -34,6 +46,9 @@ internal class Obstacle(
     val alsoLocs: List<Int> = emptyList(),
     val level: Int = 0,
     val fail: Fail? = null,
+    val at: CoordGrid? = null,
+    val xpOnlyInLap: Boolean = false,
+    val check: ((tp.plugin.PlayerRef) -> String?)? = null,
 )
 
 /**
@@ -42,6 +57,9 @@ internal class Obstacle(
  * grace appear on ([markSpots], empty where the spawn tiles are not sourced). A completed lap spawns a mark with chance
  * [markNumerator] / [markDenominator] (Wiki "Marks of grace": 2/6 by default, 2/5 Rellekka, 2/3 Canifis and Ardougne);
  * [markLevelPenalty] false where the 80% reduction 20 levels over does not apply (Canifis, a coding error per the Wiki).
+ * [lapStrengthXp] is Strength xp given with the lap bonus (Barbarian Outpost); [entry] returns a refusal message when the
+ * player may not use the course at all (quest gates, OPEN-AG11); [onLap] runs after a completed lap and [onStart] when the
+ * first obstacle is crossed (Wilderness tickets and streak).
  */
 internal class Course(
     val name: String,
@@ -52,6 +70,10 @@ internal class Course(
     val markNumerator: Int = 2,
     val markDenominator: Int = 6,
     val markLevelPenalty: Boolean = true,
+    val lapStrengthXp: Double = 0.0,
+    val entry: ((tp.plugin.PlayerRef) -> String?)? = null,
+    val onLap: ((tp.plugin.PlayerRef) -> Unit)? = null,
+    val onStart: ((tp.plugin.PlayerRef) -> Unit)? = null,
 )
 
 internal fun tile(x: Int, z: Int, level: Int) = Dest(x, z, level)
@@ -161,4 +183,5 @@ internal val VARROCK =
     )
 
 internal val COURSES: List<Course> =
-    listOf(GNOME_STRONGHOLD, DRAYNOR, AL_KHARID, VARROCK, CANIFIS, FALADOR, SEERS_VILLAGE, POLLNIVNEACH, RELLEKKA, ARDOUGNE)
+    listOf(GNOME_STRONGHOLD, DRAYNOR, AL_KHARID, VARROCK, CANIFIS, FALADOR, SEERS_VILLAGE, POLLNIVNEACH, RELLEKKA, ARDOUGNE) +
+        MORE_COURSES
