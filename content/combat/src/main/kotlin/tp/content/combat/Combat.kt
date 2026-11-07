@@ -26,6 +26,8 @@ import tp.util.CoordGrid
  */
 public class Combat : ContentPlugin {
     override fun ContentScope.register() {
+        // poison.md PO14: poison / venom requested by other modules.
+        events.on<tp.plugin.PoisonRequest> { r -> if (r.venom) Poison.envenom(r.target) else Poison.poison(r.target, r.severity) }
         // SE10: finishing items used on their monster.
         for ((item, npc, finish) in SlayerGear.finishUses()) {
             onUseOnNpc(item, npc) { target -> SlayerGear.use(player, target, finish, item) }

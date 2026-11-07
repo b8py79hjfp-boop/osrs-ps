@@ -22,6 +22,8 @@ way the client's HP orb does.
 | PO12 | Poisonous NPCs "may do so regardless of whether or not they inflict any damage, even if protection prayers are used". Starting damage: the infobox `poisonous` number. | PO intro |
 | PO13 | Poison and venom damage are typeless hits with their own hitsplats (cache hitmark 65/66 poison, 5 venom; RS Mod `hitmark.sym`), no retaliation; death clears them. | PO, VE, RS Mod |
 
+| PO14 | Other modules poison or envenom through plugin-api `PoisonRequest` (urn snakes, traps); the same rules apply. | - |
+
 ## OPEN
 
 - **OPEN-PO1:** an NPC's chance to poison per attack. Implemented: 1/4 (the melee weapon chance).

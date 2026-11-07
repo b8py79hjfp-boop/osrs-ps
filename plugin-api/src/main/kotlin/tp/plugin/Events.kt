@@ -113,3 +113,6 @@ public class TeleportRequest(public val player: PlayerRef, public val to: tp.uti
     public var handled: Boolean = false
     public var denied: String? = null
 }
+
+/** Poison ([venom] false, starting at [severity]) or envenom [target] from content outside combat (snake bites, traps). */
+public class PoisonRequest(public val target: EntityRef, public val severity: Int, public val venom: Boolean = false) : Event
