@@ -7,6 +7,7 @@ import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
+import tp.plugin.SharedAttrs
 import tp.plugin.TimerId
 import tp.symbols.Components
 import tp.symbols.Invs
@@ -24,6 +25,8 @@ internal class Spell(
     val impact: Int,
     /** Barrage spells measure hit delay to the defender's south-west tile (HD:3). */
     val toSouthWest: Boolean,
+    /** Burst and barrage hit up to 9 targets in multi-combat (MG1). */
+    val multi: Boolean = false,
 )
 
 /** Manual casting of combat spells on players and NPCs (approach range 10, spell speed 5: AS:6). */
@@ -62,6 +65,14 @@ public class Magic : ContentPlugin {
             return
         }
         player.setAttackClock(now + SPELL_SPEED)
+        player.anim(Seqs.ZAROS_VERTICAL_CASTING)
+        CombatSystem.announceAttack(player, target, CombatStyle.MAGIC)
+        strike(player, target, spell, baseXp = true)
+        if (spell.multi) splash(player, target, spell)
+    }
+
+    /** One target's roll, impact and hit for [spell] (F12-F16); [baseXp] once per cast (MG2, OPEN-MG1). */
+    private fun strike(player: PlayerRef, target: EntityRef, spell: Spell, baseXp: Boolean) {
         // Manually cast spells get no invisible stance bonus (CO:49).
         val attackRoll = Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC)
         val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
@@ -69,8 +80,6 @@ public class Magic : ContentPlugin {
         if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
         val distance = if (spell.toSouthWest) southWestDistance(player, target) else player.distanceTo(target)
         val delay = Formulas.magicDelay(distance)
-        player.anim(Seqs.ZAROS_VERTICAL_CASTING)
-        CombatSystem.announceAttack(player, target, CombatStyle.MAGIC)
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random) || (spell.freeze > 0 && Bosses.freezeLands(player, target))
         val damage = if (hit) Formulas.damage(max, player::random) else 0
         // Visual lands on the application tick: 30 client cycles per tick (OPEN-C1).
@@ -84,8 +93,28 @@ public class Magic : ContentPlugin {
         CombatSystem.queueHit(target, player, damage, HitStyle.MAGIC, delay) {
             if (spell.freeze > 0) Freezes.freeze(target, player, spell.freeze)
         }
-        player.addXp(Stat.MAGIC, damage * 2.0 + spell.baseXp())
+        player.addXp(Stat.MAGIC, damage * 2.0 + if (baseXp) spell.baseXp() else 0.0)
         player.addXp(Stat.HITPOINTS, damage * 4.0 / 3)
+    }
+
+    /**
+     * MG1 (Wiki "Ice Barrage", "Multicombat area"): burst and barrage also hit up to 8 more targets within one tile of
+     * the target, when the target stands in a multi-combat area; each must be multi-combat too and attackable by the
+     * caster, and each rolls its own hit and freeze.
+     */
+    private fun splash(player: PlayerRef, target: EntityRef, spell: Spell) {
+        val multiAt = player.worldAttr(SharedAttrs.MULTI_AREA) ?: return
+        if (!multiAt(target.coord)) return
+        val around: List<EntityRef> = player.npcsWithin(target.coord, SPLASH_RADIUS) + player.playersAround(target.coord, SPLASH_RADIUS)
+        var extra = 0
+        for (other in around) {
+            if (extra >= MAX_EXTRA_TARGETS) break
+            if (other == target || other == player || !multiAt(other.coord)) continue
+            if (!CombatSystem.canFight(player, other, HitStyle.MAGIC, quiet = true)) continue
+            CombatSystem.announceAttack(player, other, CombatStyle.MAGIC)
+            strike(player, other, spell, baseXp = false)
+            extra++
+        }
     }
 
     private fun prayerDamage(player: PlayerRef): Int = player.activePrayers().sumOf { it.effect.magicDamage }
@@ -114,6 +143,10 @@ public class Magic : ContentPlugin {
         const val CYCLES_PER_TICK = 30
         const val SPLASH_HEIGHT = 124
 
+        /** MG1: the 3×3 around the target, up to 9 targets in all. */
+        const val SPLASH_RADIUS = 1
+        const val MAX_EXTRA_TARGETS = 8
+
         /** Magic damage param unit (OPEN-D1). */
         const val MAGIC_DAMAGE_UNIT = 10
 
@@ -138,6 +171,7 @@ public class Magic : ContentPlugin {
                     listOf(Objs.DEATHRUNE to 2, Objs.CHAOSRUNE to 4, Objs.WATERRUNE to 4),
                     SpotAnims.ICE_BURST_IMPACT,
                     false,
+                    multi = true,
                 ),
                 Spell(
                     Components.Magic_Spellbook.ICE_BLITZ,
@@ -160,6 +194,7 @@ public class Magic : ContentPlugin {
                     ),
                     SpotAnims.ICE_BARRAGE_IMPACT,
                     true,
+                    multi = true,
                 ),
             )
     }

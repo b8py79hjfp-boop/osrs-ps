@@ -135,6 +135,32 @@ public sealed class EntityRef {
         return out
     }
 
+    /** NPCs in the world within [radius] tiles of [centre] (Chebyshev from their south-west tile, same level). */
+    public fun npcsWithin(centre: CoordGrid, radius: Int): List<NpcRef> {
+        val out = ArrayList<NpcRef>()
+        e.world.forEachNpc { n ->
+            if (!n.hidden && n.coord.level == centre.level &&
+                maxOf(kotlin.math.abs(n.coord.x - centre.x), kotlin.math.abs(n.coord.z - centre.z)) <= radius
+            ) {
+                out += NpcRef(n)
+            }
+        }
+        return out
+    }
+
+    /** Players within [radius] tiles of [centre] (Chebyshev, same level). */
+    public fun playersAround(centre: CoordGrid, radius: Int): List<PlayerRef> {
+        val out = ArrayList<PlayerRef>()
+        e.world.forEachPlayer { p ->
+            if (p.coord.level == centre.level &&
+                maxOf(kotlin.math.abs(p.coord.x - centre.x), kotlin.math.abs(p.coord.z - centre.z)) <= radius
+            ) {
+                out += PlayerRef(p)
+            }
+        }
+        return out
+    }
+
     /** Whether this world is a PvP world (WorldConfig). */
     public val isPvpWorld: Boolean get() = e.world.config.pvpWorld
 

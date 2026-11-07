@@ -17,6 +17,8 @@ import tp.util.CoordGrid
  */
 public class Wilderness : ContentPlugin {
     override fun ContentScope.register() {
+        // The multi-combat map for other modules (combat's multi-target attacks): a world attr, set once per world.
+        onLogin { if (worldAttr(tp.plugin.SharedAttrs.MULTI_AREA) == null) setWorldAttr(tp.plugin.SharedAttrs.MULTI_AREA, ::isMulti) }
         onLogin { timer(AREA_CHECK, 1, soft = true) { updateArea() } }
         events.on<AttackCheck> { check ->
             val attacker = check.attacker as? PlayerRef ?: return@on

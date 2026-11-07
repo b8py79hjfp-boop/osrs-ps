@@ -12,6 +12,7 @@ internal object Attacks {
     fun playerAttack(player: PlayerRef, target: EntityRef) {
         val (stance, type) = player.stanceAndType()
         val category = player.weaponCategory()
+        if (category === Weapons.CHINCHOMPA) return Chinchompas.attack(player, target, stance, type)
         val now = player.tick
         val spec = Specials.take(player)
         if (spec?.instant != true) player.setAttackClock(now + player.attackSpeed())
@@ -53,6 +54,7 @@ internal object Attacks {
     fun rangedDefenceOf(category: WeaponCategory): Int =
         when (category) {
             Weapons.THROWN -> NpcCombatDef.DEF_LIGHT
+            Weapons.CHINCHOMPA -> NpcCombatDef.DEF_HEAVY
             Weapons.CROSSBOW -> NpcCombatDef.DEF_HEAVY
             else -> NpcCombatDef.DEF_STANDARD
         }
@@ -149,7 +151,7 @@ internal object Attacks {
         when {
             style == CombatStyle.MELEE -> 0
             style == CombatStyle.MAGIC -> Formulas.magicDelay(distance)
-            category === Weapons.THROWN -> Formulas.thrownDelay(distance)
+            category === Weapons.THROWN || category === Weapons.CHINCHOMPA -> Formulas.thrownDelay(distance)
             else -> Formulas.bowDelay(distance)
         }
 
@@ -167,7 +169,7 @@ internal object Attacks {
 
     /** Combat XP per damage (Combat Options CO:17-46): 4 per damage to the style's skill, 4/3 to Hitpoints. */
     @Suppress("MagicNumber") // xp rates
-    private fun grantXp(player: PlayerRef, stance: Stance, style: CombatStyle, damage: Int) {
+    fun grantXp(player: PlayerRef, stance: Stance, style: CombatStyle, damage: Int) {
         if (damage <= 0) return
         val xp = damage * 4.0
         when {

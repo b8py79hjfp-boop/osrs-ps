@@ -119,6 +119,9 @@ internal object Weapons {
     val STAB_SWORD = cat(17, A to AttackType.STAB, AG to AttackType.STAB, AG to AttackType.SLASH, D to AttackType.STAB)
     val STAFF = cat(18, A to AttackType.CRUSH, AG to AttackType.CRUSH, D to AttackType.CRUSH)
     val THROWN = cat(19, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
+
+    /** Chinchompas: short / medium / long fuse (Wiki "Chinchompa (weapon)"), weapon category 7. */
+    val CHINCHOMPA = cat(7, AR to AttackType.RANGED, R to AttackType.RANGED, L to AttackType.RANGED)
     val WHIP = cat(20, A to AttackType.SLASH, C to AttackType.SLASH, D to AttackType.SLASH)
 
     /** Obj `category` (cache) → weapon category, from the weapons checked in cache 2757 (combat-data.md). */
@@ -134,6 +137,7 @@ internal object Weapons {
             64 to BOW, // magic shortbow
             65 to CLAW, // dragon claws
             150 to WHIP, // abyssal whip
+            572 to CHINCHOMPA, // grey, red and black chinchompas
         )
 
     fun of(objCategory: Int): WeaponCategory = byObjCategory[objCategory] ?: UNARMED

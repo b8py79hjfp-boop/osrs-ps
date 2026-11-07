@@ -98,6 +98,12 @@ public object DuelRules {
 
 /** Attributes shared between content modules. */
 public object SharedAttrs {
+    /**
+     * World attr: whether a tile is in a multi-combat area. Set by the module that owns the multi-combat map (pvp,
+     * RS Mod `multiway.json`); read by combat for multi-target attacks (barrage, burst, chinchompas). Absent = singles.
+     */
+    public val MULTI_AREA: AttrKey<(tp.util.CoordGrid) -> Boolean> = AttrKey("multi_area")
+
     /** Rules of the running duel (bits of [DuelRules]); set from "FIGHT!" until the duel ends. */
     public val DUEL_RULES: AttrKey<Int> = AttrKey("duel_rules")
 

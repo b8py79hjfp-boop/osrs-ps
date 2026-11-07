@@ -124,14 +124,14 @@ internal object CombatSystem {
     }
 
     /** Whether [attacker] may attack [target] now (AttackCheck event: PvP rules subscribe). */
-    fun canFight(attacker: EntityRef, target: EntityRef, style: HitStyle? = null): Boolean {
+    fun canFight(attacker: EntityRef, target: EntityRef, style: HitStyle? = null, quiet: Boolean = false): Boolean {
         if (target.isDying || attacker.isDying) return false
         if (target is NpcRef && !target.isInWorld) return false
         val check = AttackCheck(attacker, target, style)
         attacker.events.publish(check)
         val denial = check.denial
         if (denial != null || !check.allowed) {
-            if (attacker is PlayerRef) attacker.message(denial ?: "You can't attack that.")
+            if (attacker is PlayerRef && !quiet) attacker.message(denial ?: "You can't attack that.")
             return false
         }
         return true
