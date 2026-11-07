@@ -40,6 +40,7 @@ public class Emotes : ContentPlugin {
         val name = EmoteTab.names[slot] ?: return
         closeModal()
         val emote = EMOTES[name]
+        events.publish(tp.plugin.EmotePerformed(this, name))
         when {
             emote != null -> {
                 play(emote, loop)

@@ -54,3 +54,12 @@ public class ItemsCreated(public val player: PlayerRef, public val reason: Strin
 
 /** [player] gained [xp] in [stat] (published by [PlayerRef.addXp]). */
 public class XpGained(public val player: PlayerRef, public val stat: Int, public val xp: Double) : Event
+
+/** [player] arrived at [to] from [from] by a teleport spell, tablet or jewellery (content/magic `Teleports`). */
+public class Teleported(public val player: PlayerRef, public val from: tp.util.CoordGrid, public val to: tp.util.CoordGrid) : Event
+
+/** [player] wielded / wore [obj] into worn slot [slot]. */
+public class Equipped(public val player: PlayerRef, public val obj: Int, public val slot: Int) : Event
+
+/** [player] used the emote named [name] in the emote tab (e.g. "Cheer"); locked emotes are refused after this. */
+public class EmotePerformed(public val player: PlayerRef, public val name: String) : Event

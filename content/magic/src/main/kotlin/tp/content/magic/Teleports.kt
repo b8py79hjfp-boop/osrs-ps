@@ -128,7 +128,9 @@ internal object Teleports {
                     play(self, stage)
                 }
                 delay(ticks - elapsed)
+                val from = self.coord
                 self.teleport(destination)
+                self.events.publish(tp.plugin.Teleported(self, from, destination))
                 self.anim(RESET_ANIM)
             } finally {
                 self[BUSY] = null

@@ -115,6 +115,7 @@ public class Equipment : ContentPlugin {
             return
         }
         afterChange(pos)
+        events.publish(tp.plugin.Equipped(this, obj, pos))
     }
 
     /**
