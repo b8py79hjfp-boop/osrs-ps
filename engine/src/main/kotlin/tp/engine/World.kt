@@ -252,6 +252,7 @@ class World(
         val start = System.nanoTime()
         while (true) (tasks.poll() ?: break).invoke()
         inputPhase()
+        worldEntityPhase()
         npcPhase()
         playerPhase()
         postTick()
@@ -265,6 +266,15 @@ class World(
 
     /** Tick-time histograms (health checks, metrics, alerts, load tests). */
     val metrics = TickMetrics()
+
+    /**
+     * Phase 2b (world-entities.md WE10): world entities (boats) move after input, so a heading or sail change of this
+     * tick acts this tick, and before NPCs and players, who then act on the decks' new positions.
+     */
+    private fun worldEntityPhase() {
+        if (worldEntities.all().isEmpty()) return
+        content.onWorldEntityPhase(this)
+    }
 
     /** Phase 2: up to 10 commands per player in arrival order (RSProt enforces the cap); acted on now. */
     private fun inputPhase() {

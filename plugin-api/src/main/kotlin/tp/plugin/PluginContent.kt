@@ -204,6 +204,15 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref.handler(event)
     }
 
+    /** The world's ref for the per-tick world-entity hook (one per world, no allocation per tick). */
+    private var worldRef: WorldRef? = null
+
+    override fun onWorldEntityPhase(world: World) {
+        val handler = h.worldEntityTick ?: return
+        val ref = worldRef?.takeIf { it.w === world } ?: WorldRef(world).also { worldRef = it }
+        ref.handler()
+    }
+
     override fun onHeading(player: Player, heading: Int) {
         val handler = h.heading ?: return
         ref(player).handler(heading)

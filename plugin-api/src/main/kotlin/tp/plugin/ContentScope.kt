@@ -72,6 +72,12 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.heading = handler
     }
 
+    /** Every tick, after input and before NPCs, while the world has world entities; one handler (the sailing plugin). */
+    public fun onWorldEntityTick(handler: WorldRef.() -> Unit) {
+        check(handlers.worldEntityTick == null) { "duplicate handler: world entity tick" }
+        handlers.worldEntityTick = handler
+    }
+
     /** Option 1..5 on a world entity (boat) in view; one handler (the sailing plugin). */
     public fun onOpWorldEntity(handler: PlayerRef.(WorldEntityRef, Int) -> Unit) {
         check(handlers.opWorldEntity == null) { "duplicate handler: world entity op" }
@@ -257,6 +263,7 @@ internal class Handlers {
     val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
     var examine: (PlayerRef.(Examined) -> Unit)? = null
     var heading: (PlayerRef.(Int) -> Unit)? = null
+    var worldEntityTick: (WorldRef.() -> Unit)? = null
     var opWorldEntity: (PlayerRef.(WorldEntityRef, Int) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()

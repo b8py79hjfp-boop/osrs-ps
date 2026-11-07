@@ -21,6 +21,24 @@ Sources: cache 2757 db 164 (`BASESPEED`, `SPEEDCAP`, `ACCELERATION`, `SPEEDBOOST
 | M7 | The anchor stops the boat faster than furling sails and allows rotation in place. | Wiki Anchor |
 | M8 | Collisions: the boat is blocked by land and rocks; boat HP 0 capsizes it (player returns to the last gangplank). | Wiki Sailing, Boat |
 
+## Implemented (S2 core, `content/sailing/.../BoatMotion.kt`)
+
+- **SM1, helm:** `navigate` puts the player at the helm and switches tile clicks in every world (`SET_INTERACTION_MODE`
+  world -2) to heading mode; entity clicks become examine-only. `stopNavigating` restores walking. Verified in the
+  client: hovering the sea shows "Set heading", and a click sends SET_HEADING.
+- **SM2, sails:** down / half / full / reverse set the target speed: 0, half the base, the base (capped), and a quarter
+  of the base astern (OPEN-M4). Setting a heading starts a stopped boat (OPEN-M5).
+- **SM3, the tick:** in the world-entity phase (world-entities.md WE10), each boat:
+  - turns toward the heading by its turn rate;
+  - moves its speed toward the target by its acceleration;
+  - moves its pivot along its facing (angle 0 south, 512 west, 1024 north, 1536 east).
+- **SM5, collision:** the centre, bow, stern and sides of the footprint must be sea with no blocking loc
+  (world-entities.md WE9). Otherwise the boat stops and the navigator gets "Your boat can't go any further that way."
+  (OPEN text).
+- **Turn rates and acceleration** are passed in by the boat's spawner from its stats (OPEN-M1, OPEN-M3).
+- **Verified in the client:** a click east turned the boat and it sailed away from the Port Sarim docks with the
+  camera following.
+
 ## OPEN
 
 - **OPEN-M1:** turn rate per tick and throttle steps. The 2023 design blog proposed 2 / 4 / 6 ticks per 90 degrees but is not the

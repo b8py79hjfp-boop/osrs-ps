@@ -670,6 +670,11 @@ public class ObjRef internal constructor(internal val g: GroundObj) {
 public class WorldRef internal constructor(internal val w: World) {
     public val tick: Long get() = w.tick
 
+    /** Whether a boat may occupy [tile]: sea with no blocking loc (sailing-movement.md SM1, SM5). */
+    public fun isSailable(tile: CoordGrid): Boolean =
+        w.data.locs.isSea(tile.x, tile.z) &&
+            w.collision.flags[tile.x, tile.z, 0] and org.rsmod.routefinder.flag.CollisionFlag.LOC == 0
+
     /** Int values of cache enum [id] (key → value); empty if absent. */
     public fun enumInts(id: Int): Map<Int, Int> =
         w.data.configs.enums[id]

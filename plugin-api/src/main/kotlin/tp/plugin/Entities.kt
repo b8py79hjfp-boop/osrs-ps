@@ -235,6 +235,12 @@ public sealed class EntityRef {
         e.world.data.locs
             .isSea(tile.x, tile.z)
 
+    /** Whether a boat may occupy [tile]: sea, with no blocking loc such as a rock (sailing-movement.md SM1, SM5). */
+    public fun isSailable(tile: CoordGrid): Boolean =
+        e.world.data.locs
+            .isSea(tile.x, tile.z) &&
+            e.world.collision.flags[tile.x, tile.z, 0] and org.rsmod.routefinder.flag.CollisionFlag.LOC == 0
+
     /** Whether [tile] can be stood on: no blocking loc and walkable floor (collision flags). */
     public fun isWalkable(tile: CoordGrid): Boolean =
         e.world.collision.flags[tile.x, tile.z, tile.level] and WALK_BLOCKERS == 0

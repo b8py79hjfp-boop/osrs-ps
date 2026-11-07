@@ -37,6 +37,8 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
   - SET_INTERACTION_MODE (`PlayerRef.setInteractionMode`) switches a world's tile clicks between walk and heading,
     and entity clicks between enabled and examine-only.
   - Sources: RSProt `SetHeading`, `OpWorldEntity`, `SetInteractionMode`.
+- **WE10: the world-entity phase.** World entities move in their own tick phase after input and before NPCs, so a
+  heading or sail change made this tick acts this tick (plugin-api `onWorldEntityTick`).
 - **WE7: NPCs on decks** stand on deck tiles like any NPC. RSProt's per-world NPC info shows them on the entity.
 
 - **WE9: the sea mask.** Boats sail only on level-0 tiles with a sea overlay, `MapSquare.isSea`, plugin-api
