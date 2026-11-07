@@ -39,6 +39,14 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
   - Sources: RSProt `SetHeading`, `OpWorldEntity`, `SetInteractionMode`.
 - **WE7: NPCs on decks** stand on deck tiles like any NPC. RSProt's per-world NPC info shows them on the entity.
 
+- **WE9: the sea mask.** Boats sail only on level-0 tiles with a sea overlay, `MapSquare.isSea`, plugin-api
+  `EntityRef.isSea`. The sea overlays are config ids 441..623: one family of triplets (water overlay, untextured blend,
+  water overlay) with the water textures 1 and 130..189. Rivers and lakes use the older overlays 5 and 6.
+  - Checked against the cache: the sea off Port Sarim and Rimmington is sea; Lumbridge castle and the River Lum are
+    not.
+  - This answers the plan's OPEN-M2 from the client's own data. It is still OPEN whether the live server uses exactly
+    this set: rocks are locs and block through collision, and the boat footprint must clear the mask.
+
 ## Verified
 
 In the real client: a boat deck (config 1, deck copied from the template zone at (1496, 4512), level 1 — that zone is the Pandemonium intro boat, "Will and Anne's boat"; the player raft is at x 3843, z 6458..6460, see docs/plans/sailing.md §2.4) spawned in the sea

@@ -63,6 +63,9 @@ class StaticLocs private constructor(
         return null
     }
 
+    /** Whether level-0 tile ([x], [z]) is sea (sailing-movement.md SM1: sea overlays; boats sail only on sea). */
+    fun isSea(x: Int, z: Int): Boolean = squares[squareId(x, z)]?.isSea(x and LOCAL_MASK, z and LOCAL_MASK) ?: false
+
     /** Whether the cache has map square ([squareX], [squareZ]) (instance space must avoid real squares). */
     fun hasSquare(squareX: Int, squareZ: Int): Boolean = squares.containsKey((squareX shl SQUARE_AXIS_BITS) or squareZ)
 

@@ -353,7 +353,7 @@ Rapids note: Wiki says "Each stack adds 0.5 tiles/tick": the page also gives the
   [W:TT]; a stuck-reminder exists (`SAILING_BOAT_STUCK_REMINDER` 19116) and "Fixed a collision logic issue" (26 Nov 2025)
   [W:Sailing]. How the sea/land mask is encoded (water overlay, a new tile flag, or server-side data) is unknown: the
   level-0 `map` dump around the Bay of Sarim shows ordinary block flags on land only, not a sailable bit. **OPEN-M2**
-  (most important engine question). The boat footprint (config bounds) must clear the mask each tick.
+  (most important engine question). *Update: resolved from the cache, see world-entities.md WE9 (sea overlays 441..623).* The boat footprint (config bounds) must clear the mask each tick.
 - World border: impassable regions in Northern Ocean etc. show a message 4 times then a bell and screen shake, no
   damage [W:Haz]. Ocean list and levels in 4.1.
 - A player on a boat has a root-world build area that follows the pivot (WE4).

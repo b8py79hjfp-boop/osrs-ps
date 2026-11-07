@@ -98,10 +98,25 @@ class GameMap(val squares: List<MapSquare>, val skippedGroups: List<Int>) {
             return decode(key, terrain, locs)
         }
 
+        /** Level-0 sea tiles as 64 rows of 64 bits, or null when the square has no sea (saves memory inland). */
+        private fun seaMask(overlays: ShortArray?): LongArray? {
+            if (overlays == null) return null
+            val mask = LongArray(MapSquare.SIZE)
+            var any = false
+            for (x in 0 until MapSquare.SIZE) {
+                for (z in 0 until MapSquare.SIZE) {
+                    if (!SeaOverlays.isSea(overlays[x * MapSquare.SIZE + z].toInt())) continue
+                    mask[x] = mask[x] or (1L shl z)
+                    any = true
+                }
+            }
+            return if (any) mask else null
+        }
+
         private fun decode(key: MapSquareKey, terrain: ByteArray, locData: ByteArray?): MapSquare {
             val decoded =
                 try {
-                    MapTerrainDecoder.decode(terrain)
+                    MapTerrainDecoder.decode(terrain, keepOverlays0 = true)
                 } catch (e: IOException) {
                     throw IOException("$key terrain: ${e.message}", e)
                 }
@@ -115,7 +130,7 @@ class GameMap(val squares: List<MapSquare>, val skippedGroups: List<Int>) {
                         throw IOException("$key locs: ${e.message}", e)
                     }
                 }
-            return MapSquare(key, decoded.settings, ids, infos, decoded.extensionBytes)
+            return MapSquare(key, decoded.settings, ids, infos, decoded.extensionBytes, seaMask(decoded.overlays0))
         }
     }
 }

@@ -38,8 +38,13 @@ class MapSquare(
     val locInfo: IntArray,
     /** Bytes of the undecoded terrain extension section (D-013), 0 when absent. */
     val terrainExtensionBytes: Int = 0,
+    /** Level-0 sea tiles (sea overlays, [SeaOverlays]): bit z of row x; null when the square has none. */
+    val seaMask: LongArray? = null,
 ) {
     val locCount: Int get() = locIds.size
+
+    /** Whether local tile ([x], [z]) on level 0 is sea (boats may sail there; docs/mechanics/sailing-movement.md). */
+    fun isSea(x: Int, z: Int): Boolean = seaMask?.let { (it[x] ushr z) and 1L != 0L } ?: false
 
     fun settings(level: Int, x: Int, z: Int): Int = tileSettings[tileIndex(level, x, z)].toInt() and 0xFF
 
@@ -75,6 +80,20 @@ class MapSquare(
     }
 }
 
+/**
+ * The sea overlays (sailing-movement.md SM1): config ids 441..623 are one family laid out in triplets (a water overlay,
+ * an untextured blend, the water overlay again) whose textures are 1 and the depth series 130..189; the sea around
+ * Port Sarim (square 47,49) uses 441, 444, 447 and 450. Rivers and lakes use the older water overlays 5 and 6, which
+ * boats cannot enter. Derived from the rev-242 overlay configs (`cache-dump config overlay --all`, `overlays`), OPEN-M2.
+ */
+object SeaOverlays {
+    const val FIRST = 441
+    const val LAST = 623
+
+    /** Whether a raw terrain overlay value (config id + 1, 0 = none) is sea. */
+    fun isSea(rawOverlay: Int): Boolean = rawOverlay - 1 in FIRST..LAST
+}
+
 /** Tile setting bits from the terrain file (RS Mod `MapTileDefinition`; client `Tiles_renderFlags`). */
 object TileSettings {
     /** Tile is blocked for walking (water, cliffs...). */
@@ -105,12 +124,16 @@ object MapTerrainDecoder {
     private const val TRAILER_NONE = 0
     private const val TRAILER_EXTENSION = 1
 
-    /** Decoded settings plus the size of the undecoded extension section (0 when absent). */
-    class Terrain(val settings: ByteArray, val extensionBytes: Int)
+    /**
+     * Decoded settings plus the size of the undecoded extension section (0 when absent); [overlays0] holds the level-0
+     * overlay values (index `x * 64 + z`; 0 = none, else config id + 1) when asked for (the sea mask, docs/plans/sailing.md OPEN-M2).
+     */
+    class Terrain(val settings: ByteArray, val extensionBytes: Int, val overlays0: ShortArray? = null)
 
-    fun decode(data: ByteArray): Terrain {
+    fun decode(data: ByteArray, keepOverlays0: Boolean = false): Terrain {
         val buf = ReadBuf(data)
         val settings = ByteArray(MapSquare.LEVELS * MapSquare.SIZE * MapSquare.SIZE)
+        val overlays0 = if (keepOverlays0) ShortArray(MapSquare.SIZE * MapSquare.SIZE) else null
         for (level in 0 until MapSquare.LEVELS) {
             for (x in 0 until MapSquare.SIZE) {
                 for (z in 0 until MapSquare.SIZE) {
@@ -123,7 +146,8 @@ object MapTerrainDecoder {
                         }
                         when {
                             opcode <= OP_OVERLAY_LAST -> {
-                                buf.g2s()
+                                val overlay = buf.g2s()
+                                if (level == 0 && overlays0 != null) overlays0[x * MapSquare.SIZE + z] = overlay.toShort()
                             }
 
                             opcode <= OP_SETTINGS_LAST -> {
@@ -138,14 +162,14 @@ object MapTerrainDecoder {
                 }
             }
         }
-        if (!buf.isReadable) return Terrain(settings, 0)
+        if (!buf.isReadable) return Terrain(settings, 0, overlays0)
         return when (val trailer = buf.g1()) {
             TRAILER_NONE -> {
-                if (buf.isReadable) throw IOException("${buf.remaining} bytes after terrain trailer 0") else Terrain(settings, 0)
+                if (buf.isReadable) throw IOException("${buf.remaining} bytes after terrain trailer 0") else Terrain(settings, 0, overlays0)
             }
 
             TRAILER_EXTENSION -> {
-                Terrain(settings, buf.remaining)
+                Terrain(settings, buf.remaining, overlays0)
             }
 
             else -> {

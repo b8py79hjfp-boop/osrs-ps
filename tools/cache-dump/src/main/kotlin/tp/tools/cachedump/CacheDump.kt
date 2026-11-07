@@ -81,6 +81,10 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
             SafeZones.write(cache, cacheDir, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
         }
 
+        "overlays" -> {
+            printOverlays(cache, intArg(args, 0, "squareX"), intArg(args, 1, "squareZ"))
+        }
+
         "summary" -> {
             printSummary(cache, cacheDir)
         }
@@ -223,3 +227,25 @@ private fun runeliteStatic(cache: Js5Cache, args: List<String>) {
         )
     println("wrote RuneLite static data to $dir")
 }
+
+/** Level-0 overlay config ids of one map square, north at top (`.` = none; ids in hex, two digits). */
+private fun printOverlays(cache: Js5Cache, squareX: Int, squareZ: Int) {
+    val files = cache.readFiles(MAPS_ARCHIVE, (squareX shl SQUARE_SHIFT) or squareZ) ?: return println("no square $squareX,$squareZ")
+    val terrain =
+        tp.cache.map.MapTerrainDecoder
+            .decode(files.data[files.ids.indexOf(0)], keepOverlays0 = true)
+    val overlays = terrain.overlays0 ?: return
+    val ids = sortedSetOf<Int>()
+    for (z in tp.cache.map.MapSquare.SIZE - 1 downTo 0) {
+        val row = StringBuilder()
+        for (x in 0 until tp.cache.map.MapSquare.SIZE) {
+            val v = overlays[x * tp.cache.map.MapSquare.SIZE + z].toInt()
+            if (v == 0) row.append(" .") else row.append("%2x".format(v - 1)).also { ids += v - 1 }
+        }
+        println(row)
+    }
+    println("overlay ids: $ids")
+}
+
+private const val MAPS_ARCHIVE = 5
+private const val SQUARE_SHIFT = 8

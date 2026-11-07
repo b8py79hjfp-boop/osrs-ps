@@ -230,6 +230,11 @@ public sealed class EntityRef {
                     .layerOf(shape),
             )?.let { LocRef(it.id, it.coord, it.shape, it.angle) }
 
+    /** Whether [tile] (level 0 of the root world) is sea, where boats may sail (sailing-movement.md SM1). */
+    public fun isSea(tile: CoordGrid): Boolean =
+        e.world.data.locs
+            .isSea(tile.x, tile.z)
+
     /** Whether [tile] can be stood on: no blocking loc and walkable floor (collision flags). */
     public fun isWalkable(tile: CoordGrid): Boolean =
         e.world.collision.flags[tile.x, tile.z, tile.level] and WALK_BLOCKERS == 0
