@@ -32,6 +32,12 @@ COURSES = [
     "Draynor Village Rooftop Course",
     "Al Kharid Rooftop Course",
     "Varrock Rooftop Course",
+    "Canifis Rooftop Course",
+    "Falador Rooftop Course",
+    "Seers' Village Rooftop Course",
+    "Pollnivneach Rooftop Course",
+    "Rellekka Rooftop Course",
+    "Ardougne Rooftop Course",
 ]
 
 
@@ -66,7 +72,10 @@ def main():
     rows = ["course\torder\tname\tloc\top\tlevel\txp\tx\tz\tplane\tshape\tangle"]
     for course in COURSES:
         text = wikitext(course)
-        table = text[text.find("==Obstacles=="):]
+        # the obstacle table follows "==Obstacles==" (or "==Experience==" on Ardougne, the first table captioned "Course
+        # Breakdown" on Seers' Village)
+        start = max(text.find("==Obstacles=="), text.find("==Experience=="), text.find("|+Course Breakdown"))
+        table = text[start:]
         table = table[:table.find("|}")]
         order = 0
         seen = {}

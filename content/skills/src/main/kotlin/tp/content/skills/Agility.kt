@@ -3,6 +3,7 @@ package tp.content.skills
 import tp.plugin.AttrKey
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.DamageRequest
 import tp.plugin.LocRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
@@ -11,10 +12,10 @@ import tp.symbols.Objs
 import tp.util.CoordGrid
 
 /**
- * Agility courses (docs/mechanics/agility.md): the Gnome Stronghold course and the Draynor, Al Kharid and Varrock rooftops.
+ * Agility courses (docs/mechanics/agility.md): the Gnome Stronghold course and the ten rooftops (Draynor to Ardougne).
  * Crossing an obstacle plays its animation for its tick count and then moves the player to the far side (no forced-movement
  * message exists yet, OPEN-AG1). Obstacles must be crossed in order for a lap to count: finishing one earns the lap bonus
- * and a chance of a mark of grace (AG4, AG5). Failing obstacles is OPEN-AG2: the Wiki gives the damage but no chance.
+ * and a chance of a mark of grace (AG4, AG5). Obstacles fail only where the Wiki gives a success chart (AG6, OPEN-AG2).
  */
 public class Agility : ContentPlugin {
     /** How far a player has got in a lap: [next] is the order of the obstacle that continues it. */
@@ -31,12 +32,18 @@ public class Agility : ContentPlugin {
     private suspend fun PlayerScript.cross(course: Course, order: Int) {
         val p = player
         val obstacle = course.obstacles[order]
-        if (p.level(Stats.AGILITY) < course.level) {
-            p.message("You need an Agility level of ${course.level} to attempt this obstacle.")
+        val required = if (obstacle.level > 0) obstacle.level else course.level
+        if (p.level(Stats.AGILITY) < required) {
+            p.message("You need an Agility level of $required to attempt this obstacle.")
             return
         }
         p.stopInteraction() // one crossing per click (the delay would otherwise leave the interaction running)
         p.anim(obstacle.anim)
+        val fail = obstacle.fail
+        if (fail != null && !p.statRandom(Stats.AGILITY, fail.low, fail.high)) {
+            fall(p, fail)
+            return
+        }
         val dest = obstacle.dest
         val at = p.coord
         val end = if (dest.relative) at.translate(dest.x, dest.z, dest.level) else CoordGrid(dest.x, dest.z, dest.level)
@@ -51,6 +58,22 @@ public class Agility : ContentPlugin {
         p.anim(-1)
         p.addXp(Stats.AGILITY, obstacle.xp)
         if (progress(p, course, order)) lapDone(p, course)
+    }
+
+    /**
+     * AG6: a failed crossing keeps the lap (the obstacle is tried again, Wiki "Barbarian Outpost Agility Course"), drops the
+     * player to [Fail.fall] after a tick and deals `hitpoints / 17 + 2` damage (Wiki "Hand holds (Falador Rooftop Course)");
+     * the animation, delay and message are OPEN-AG7.
+     */
+    private suspend fun PlayerScript.fall(p: PlayerRef, fail: Fail) {
+        delay(FALL_DELAY_TICKS)
+        p.teleport(fail.fall)
+        p.anim(-1)
+        val damage = p.hitpoints / FALL_DAMAGE_DIVISOR + FALL_DAMAGE_BASE
+        val request = DamageRequest(p, null, damage)
+        p.events.publish(request)
+        if (!request.handled) p.hitpoints = (p.hitpoints - damage).coerceAtLeast(1) // no combat module: the fall never kills
+        p.message("You slip and fall to the ground.")
     }
 
     /** Tracks the lap: true when [order] was the last obstacle of an unbroken lap. */
@@ -85,8 +108,9 @@ public class Agility : ContentPlugin {
         val minute = p.epochMinutes
         val last = p.saved(SAVED_LAST_MARK)
         if (last != null && minute < last + MARK_COOLDOWN_MINUTES) return
-        val reduction = if (p.baseLevel(Stats.AGILITY) >= course.level + MARK_LEVEL_PENALTY_OVER) MARK_PENALTY_FACTOR else 1
-        if (p.random(MARK_CHANCE_DENOMINATOR * reduction) >= MARK_CHANCE_NUMERATOR) return
+        val penalised = course.markLevelPenalty && p.baseLevel(Stats.AGILITY) >= course.level + MARK_LEVEL_PENALTY_OVER
+        val reduction = if (penalised) MARK_PENALTY_FACTOR else 1
+        if (p.random(course.markDenominator * reduction) >= course.markNumerator) return
         p.setSaved(SAVED_LAST_MARK, minute)
         val spot = course.markSpots[p.random(course.markSpots.size)]
         p.transaction("mark of grace") { createOnGround(Objs.GRACE, 1, spot, p.username) }
@@ -101,9 +125,12 @@ public class Agility : ContentPlugin {
         /** Minutes between two mark spawns (Wiki "Marks of grace" Spawning mechanics: three minutes). */
         const val MARK_COOLDOWN_MINUTES = 3L
 
-        /** A lap spawns a mark with chance 2/6 (Wiki "Marks of grace": "2/6 for all other rooftop courses"; the Gnome course OPEN-AG5). */
-        const val MARK_CHANCE_NUMERATOR = 2
-        const val MARK_CHANCE_DENOMINATOR = 6
+        /** Ticks a failed player takes to fall (OPEN-AG7: not on the Wiki). */
+        const val FALL_DELAY_TICKS = 1
+
+        /** Fall damage is `hitpoints / 17 + 2` (Wiki "Hand holds (Falador Rooftop Course)": floor(1/17 hitpoints + 2)). */
+        const val FALL_DAMAGE_DIVISOR = 17
+        const val FALL_DAMAGE_BASE = 2
 
         /** Levels over the course's requirement from which marks are 80% rarer (Wiki "Marks of grace": 20 levels). */
         const val MARK_LEVEL_PENALTY_OVER = 20

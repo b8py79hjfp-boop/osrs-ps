@@ -12,9 +12,17 @@ import tp.util.CoordGrid
 internal class Dest(val x: Int, val z: Int, val level: Int, val relative: Boolean = false)
 
 /**
+ * How an obstacle can be failed (docs/mechanics/agility.md AG6): the success chance is the Wiki "Skilling success chart"
+ * `low`/`high` (out of 256 at levels 1 and 99, [tp.plugin.PlayerRef.statRandom]); a failed player falls to [fall] and takes
+ * `hitpoints / 17 + 2` damage (Wiki "Hand holds (Falador Rooftop Course)": floor(1/17 hitpoints + 2) of the current hitpoints).
+ */
+internal class Fail(val low: Int, val high: Int, val fall: CoordGrid)
+
+/**
  * One obstacle of a course (docs/mechanics/agility.md AG1-AG3): loc [loc] with op [op], the [anim] played while the
  * player crosses for [ticks] ticks (there is no forced-movement message yet, OPEN-AG1), [xp] from the course page, and
  * the [dest] the player is moved to. [alsoLocs] are other locs of the same obstacle (the rest of a rope, the second pipe).
+ * [level] is the obstacle's own Agility requirement (0: the course's); [fail] is set only where the Wiki gives the chance.
  */
 internal class Obstacle(
     val loc: Int,
@@ -24,12 +32,16 @@ internal class Obstacle(
     val xp: Double,
     val dest: Dest,
     val alsoLocs: List<Int> = emptyList(),
+    val level: Int = 0,
+    val fail: Fail? = null,
 )
 
 /**
  * An agility course: [obstacles] in lap order, the Wiki [lapXp] granted for a completed lap on top of the last
  * obstacle (0 when the Wiki folds it into the last obstacle's xp, as on every rooftop course), and the tiles marks of
- * grace appear on ([markSpots], empty where the spawn tiles are not sourced).
+ * grace appear on ([markSpots], empty where the spawn tiles are not sourced). A completed lap spawns a mark with chance
+ * [markNumerator] / [markDenominator] (Wiki "Marks of grace": 2/6 by default, 2/5 Rellekka, 2/3 Canifis and Ardougne);
+ * [markLevelPenalty] false where the 80% reduction 20 levels over does not apply (Canifis, a coding error per the Wiki).
  */
 internal class Course(
     val name: String,
@@ -37,18 +49,21 @@ internal class Course(
     val obstacles: List<Obstacle>,
     val lapXp: Double,
     val markSpots: List<CoordGrid>,
+    val markNumerator: Int = 2,
+    val markDenominator: Int = 6,
+    val markLevelPenalty: Boolean = true,
 )
 
-private fun tile(x: Int, z: Int, level: Int) = Dest(x, z, level)
+internal fun tile(x: Int, z: Int, level: Int) = Dest(x, z, level)
 
 private fun by(dx: Int, dz: Int, dLevel: Int) = Dest(dx, dz, dLevel, relative = true)
 
 /** Climbing up (RS Mod / cache `human_reachforladder`) and the balance, swing and jump animations, by gameval name. */
-private const val CLIMB = Seqs.HUMAN_REACHFORLADDER
-private const val BALANCE = Seqs.HUMAN_WALK_LOGBALANCE
-private const val SIDESTEP = Seqs.HUMAN_WALK_SIDESTEPL
-private const val SWING = Seqs.HUMAN_ROPESWING_LONG
-private const val JUMP = Seqs.AGILITY_SHORTCUT_WALL_JUMPDOWN
+internal const val CLIMB = Seqs.HUMAN_REACHFORLADDER
+internal const val BALANCE = Seqs.HUMAN_WALK_LOGBALANCE
+internal const val SIDESTEP = Seqs.HUMAN_WALK_SIDESTEPL
+internal const val SWING = Seqs.HUMAN_ROPESWING_LONG
+internal const val JUMP = Seqs.AGILITY_SHORTCUT_WALL_JUMPDOWN
 
 /**
  * Gnome Stronghold Agility Course (Wiki "Gnome Stronghold Agility Course"; locs and tiles from cache 2757). Tiles: the log
@@ -134,7 +149,16 @@ internal val VARROCK =
             Obstacle(14841, 1, JUMP, 3, 143.7, tile(3237, 3414, 0)),
         ),
         0.0,
-        emptyList(),
+        // Wiki "Mark of grace spawns" (plane-0 pins lifted to the roof level by the cache collision; the plane of (3196, 3415)
+        // is a guess, OPEN-AG3).
+        listOf(
+            CoordGrid(3185, 3394, 3),
+            CoordGrid(3191, 3394, 3),
+            CoordGrid(3196, 3415, 1),
+            CoordGrid(3238, 3406, 3),
+            CoordGrid(3220, 3401, 1),
+        ),
     )
 
-internal val COURSES: List<Course> = listOf(GNOME_STRONGHOLD, DRAYNOR, AL_KHARID, VARROCK)
+internal val COURSES: List<Course> =
+    listOf(GNOME_STRONGHOLD, DRAYNOR, AL_KHARID, VARROCK, CANIFIS, FALADOR, SEERS_VILLAGE, POLLNIVNEACH, RELLEKKA, ARDOUGNE)
