@@ -28,6 +28,15 @@ interface GameNetwork {
     /** A visual on NPC [index] this tick. */
     fun npcVisual(index: Int, visual: Visual) {}
 
+    /** World entity [spec] (a boat) appeared in the world (docs/mechanics/world-entities.md WE1). */
+    fun worldEntityAdded(spec: WorldEntitySpec) {}
+
+    /** World entity [index] left the world. */
+    fun worldEntityRemoved(index: Int) {}
+
+    /** World entity [index] moved to fine root coordinates ([fineX], [fineZ]) facing [angle] (WE3). */
+    fun worldEntityMoved(index: Int, level: Int, fineX: Int, fineZ: Int, angle: Int, teleport: Boolean) {}
+
     /** End of the info pass, after every session flushed (release per-tick shared buffers). */
     fun afterFlush() {}
 
@@ -119,4 +128,30 @@ data class AvatarState(
     val moveSteps: Int,
     val teleported: Boolean,
     val running: Boolean,
+)
+
+/**
+ * A world entity as the client sees it (RSProt `WorldEntityAvatarFactory.alloc`, docs/mechanics/world-entities.md):
+ * [index] 1..4094, config [id] (archive 2 group 72), [ownerIndex] (> 0 a player, < 0 an NPC, 0 none), size in zones,
+ * the south-west zone of its instance land, the levels that belong to it, its pivot in the root world in fine units
+ * (128 per tile), the root level it renders on, the level activity happens on, its [angle] (0 south, 512 west, 1024
+ * north, 1536 east) and its instance's reference zones: [sizeX] × [sizeZ] × 4 levels, level-major then x then z, each
+ * packed like `ServerMessage.RebuildRegion` (-1 = none).
+ */
+class WorldEntitySpec(
+    val index: Int,
+    val id: Int,
+    val ownerIndex: Int,
+    val sizeX: Int,
+    val sizeZ: Int,
+    val southWestZoneX: Int,
+    val southWestZoneZ: Int,
+    val minLevel: Int,
+    val maxLevel: Int,
+    val fineX: Int,
+    val fineZ: Int,
+    val projectedLevel: Int,
+    val activeLevel: Int,
+    val angle: Int,
+    val zones: IntArray,
 )

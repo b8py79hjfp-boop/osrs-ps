@@ -18,6 +18,10 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 /** Typical projectile launch angle (RS Mod projanim defaults). */
 private const val DEFAULT_ANGLE = 15
 
+/** Fine units (RSProt `CoordFine`): 128 per tile; a tile centre is +64. */
+private const val FINE_SHIFT = 7
+private const val HALF_TILE = 64
+
 /** Collision flags that stop a tile being stood on (rsmod-pathfinder `CollisionFlag.LOC` | `BLOCK_WALK`). */
 private const val WALK_BLOCKERS: Int = org.rsmod.routefinder.flag.CollisionFlag.LOC or org.rsmod.routefinder.flag.CollisionFlag.BLOCK_WALK
 
@@ -161,6 +165,32 @@ public sealed class EntityRef {
     /** Allocates an empty instanced area of [widthSquares] × [lengthSquares] map squares (64 tiles each) in this world. */
     public fun createInstance(widthSquares: Int = 1, lengthSquares: Int = 1): InstanceRef =
         InstanceRef(e.world.instances.create(widthSquares, lengthSquares), e.world.instances)
+
+    /**
+     * Creates a world entity (boat) of config [configId] with a [sizeX] × [sizeZ]-zone deck whose activity is on
+     * [activeLevel], at root tile [at] facing [angle]. Copy its deck, then [WorldEntityRef.show] it.
+     */
+    public fun createWorldEntity(configId: Int, sizeX: Int, sizeZ: Int, activeLevel: Int, at: CoordGrid, angle: Int = 0): WorldEntityRef =
+        WorldEntityRef(
+            e.world.worldEntities.create(
+                configId,
+                sizeX,
+                sizeZ,
+                activeLevel,
+                (at.x shl FINE_SHIFT) + HALF_TILE,
+                (at.z shl FINE_SHIFT) + HALF_TILE,
+                at.level,
+                angle,
+                (this as? PlayerRef)?.slot ?: 0,
+            ),
+            e.world,
+        )
+
+    /** The world entity whose deck holds [coord] (the boat a player stands on), or null. */
+    public fun worldEntityAt(coord: CoordGrid): WorldEntityRef? =
+        e.world.worldEntities
+            .at(coord)
+            ?.let { WorldEntityRef(it, e.world) }
 
     /** The live instance holding [coord], or null. */
     public fun instanceAt(coord: CoordGrid): InstanceRef? =

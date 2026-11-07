@@ -90,6 +90,9 @@ class World(
     /** Instanced areas built from template zones (docs/mechanics/instances.md). */
     val instances = tp.engine.map.Instances(data.locs, data.configs.locs, locs, collision)
 
+    /** Boats and other moving worlds (docs/mechanics/world-entities.md). */
+    val worldEntities = tp.engine.map.WorldEntities(instances) { network }
+
     val movement = Movement(collision.flags)
     internal val interactions = InteractionProcessor(collision.flags, movement)
 
@@ -468,7 +471,14 @@ class World(
 
     /** Ops are only possible on things the client can see: the 104x104 build area. */
     private fun inBuildArea(player: Player, x: Int, z: Int): Boolean =
-        x - player.buildArea.x in 0 until BuildArea.SIZE && z - player.buildArea.z in 0 until BuildArea.SIZE
+        (x - player.buildArea.x in 0 until BuildArea.SIZE && z - player.buildArea.z in 0 until BuildArea.SIZE) ||
+            onSameWorldEntity(player, x, z)
+
+    /** WE5: clicks on the deck of the world entity the player stands on name the deck's own tiles. */
+    private fun onSameWorldEntity(player: Player, x: Int, z: Int): Boolean {
+        val boat = worldEntities.at(player.coord) ?: return false
+        return CoordGrid(x, z, player.coord.level) in boat
+    }
 
     private fun isOtherVisible(player: Player, other: Player?): Boolean = other != null && other !== player && inView(player, other)
 
@@ -563,6 +573,17 @@ class World(
         val inSpace = instances.isInstanceSpace(player.coord)
         val instance = if (inSpace) instances.at(player.coord) else null
         if (inSpace && instance == null) teleport(player, config.spawn)
+        // WE4: on a world entity the build area is the root world around the entity, rebuilt like any root area.
+        val boat = instance?.let(worldEntities::of)
+        if (boat != null) {
+            val root = boat.rootCoord
+            if (!BuildArea.needsRebuild(root, player.buildArea) && player.regionStamp == NO_REGION) return
+            player.regionStamp = NO_REGION
+            player.buildArea = BuildArea.originFor(root)
+            player.session.send(ServerMessage.Rebuild(root.x, root.z))
+            player.zoneSync.reset()
+            return
+        }
         val stamp = instance?.let { (it.id.toLong() shl Int.SIZE_BITS) or it.version.toLong() } ?: NO_REGION
         if (!BuildArea.needsRebuild(player.coord, player.buildArea) && stamp == player.regionStamp) return
         val reload = stamp != player.regionStamp
@@ -594,6 +615,7 @@ class World(
         ground.clearEvents()
         locs.clearEvents()
         for (npc in npcs) if (npc != null && !npc.hidden) network.npcSync(npc.index, npc.coord.level, npc.coord.x, npc.coord.z)
+        worldEntities.sync()
         network.buildInfos()
         for (slot in pidOrder) {
             val player = players[slot] ?: continue

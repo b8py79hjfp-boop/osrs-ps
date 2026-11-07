@@ -27,6 +27,7 @@ import net.rsprot.protocol.game.outgoing.logout.LogoutTransfer
 import net.rsprot.protocol.game.outgoing.map.RebuildLoginV2
 import net.rsprot.protocol.game.outgoing.map.RebuildNormalV2
 import net.rsprot.protocol.game.outgoing.map.RebuildRegionV2
+import net.rsprot.protocol.game.outgoing.map.RebuildWorldEntityV4
 import net.rsprot.protocol.game.outgoing.map.util.RebuildRegionZone
 import net.rsprot.protocol.game.outgoing.map.util.ReferenceZone
 import net.rsprot.protocol.game.outgoing.misc.client.ServerTickEnd
@@ -62,6 +63,7 @@ import tp.protocol.api.ClientSession
 import tp.protocol.api.FriendRow
 import tp.protocol.api.ServerMessage
 import tp.protocol.api.Visual
+import tp.protocol.api.WorldEntitySpec
 import tp.protocol.api.ZoneOp
 
 /**
@@ -73,6 +75,7 @@ internal class RspSession(
     private val infos: Infos,
     private val username: String,
     private val zoneBuffers: ZonePartialEnclosedCacheBuffer,
+    private val worldEntity: (Int) -> WorldEntitySpec?,
     private val onClose: (RspSession) -> Unit,
 ) : ClientSession {
     private var sink: ((ClientCommand) -> Unit)? = null
@@ -183,7 +186,8 @@ internal class RspSession(
 
     /** Info packets in the order of RSProt's README example; npc info is omitted (and released) when empty. */
     override fun flushInfos() {
-        val root = infos.getPackets().rootWorldInfoPackets
+        val packets = infos.getPackets()
+        val root = packets.rootWorldInfoPackets
         session.queue(root.activeWorld)
         session.queue(root.npcUpdateOrigin)
         root.worldEntityInfo.onSuccess(session::queue).onFailure { throw it }
@@ -192,6 +196,18 @@ internal class RspSession(
             root.npcInfo.safeReleaseOrThrow()
         } else {
             root.npcInfo.onSuccess(session::queue).onFailure { throw it }
+        }
+        // WE2: each world entity in view (RSProt README "update all the infos and worlds"): set it active, build its map
+        // the cycle it is added, then its npc info.
+        for (world in packets.activeWorlds) {
+            session.queue(world.activeWorld)
+            if (world.added) worldEntity(world.worldId)?.let { session.queue(rebuildWorldEntity(it)) }
+            if (world.npcInfo.isEmpty()) {
+                world.npcInfo.safeReleaseOrThrow()
+            } else {
+                session.queue(world.npcUpdateOrigin)
+                world.npcInfo.onSuccess(session::queue).onFailure { throw it }
+            }
         }
         session.queue(root.activeWorld)
         beforeFirstInfo?.let { held ->
@@ -220,6 +236,21 @@ internal class RspSession(
         /** REBUILD_REGION covers 13 zones per axis, the centre zone ± 6 (RSProt `RebuildRegionV2`). */
         private const val REGION_AXIS = 13
         private const val REGION_RADIUS = 6
+
+        /** REBUILD_WORLDENTITY_V4: the map behind a world entity, from its instance's reference zones (WE2). */
+        private fun rebuildWorldEntity(spec: WorldEntitySpec): RebuildWorldEntityV4 {
+            val baseZoneX = spec.southWestZoneX
+            val baseZoneZ = spec.southWestZoneZ
+            return RebuildWorldEntityV4(baseZoneX shl ZONE_SHIFT, baseZoneZ shl ZONE_SHIFT, spec.sizeX, spec.sizeZ) { zoneX, zoneZ, level ->
+                val dx = zoneX - baseZoneX
+                val dz = zoneZ - baseZoneZ
+                if (dx !in 0 until spec.sizeX || dz !in 0 until spec.sizeZ) return@RebuildWorldEntityV4 null
+                spec.zones
+                    .getOrElse((level * spec.sizeX + dx) * spec.sizeZ + dz) { -1 }
+                    .takeIf { it >= 0 }
+                    ?.let { RebuildRegionZone(ReferenceZone(it)) }
+            }
+        }
 
         /** REBUILD_REGION_V2 from the engine's zone table (docs/mechanics/instances.md IN4; no XTEA keys in rev 242). */
         private fun rebuildRegion(message: ServerMessage.RebuildRegion): RebuildRegionV2 {

@@ -49,6 +49,7 @@ import net.rsprot.protocol.game.incoming.social.IgnoreListAdd
 import net.rsprot.protocol.game.incoming.social.IgnoreListDel
 import net.rsprot.protocol.game.outgoing.info.npcinfo.NpcAvatar
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInfo
+import net.rsprot.protocol.game.outgoing.info.worldentityinfo.WorldEntityAvatar
 import net.rsprot.protocol.loginprot.incoming.util.AuthenticationType
 import net.rsprot.protocol.loginprot.incoming.util.LoginBlock
 import net.rsprot.protocol.loginprot.outgoing.LoginResponse
@@ -175,6 +176,45 @@ class Osrs242Network(
         Visuals.apply(avatar.extendedInfo, visual)
     }
 
+    private val worldEntityAvatars = HashMap<Int, WorldEntityAvatar>()
+
+    /** Live world entities by index, read by each session to rebuild a newly visible one (WE2). */
+    internal val worldEntities = HashMap<Int, tp.protocol.api.WorldEntitySpec>()
+
+    override fun worldEntityAdded(spec: tp.protocol.api.WorldEntitySpec) {
+        val net = service ?: return
+        worldEntities[spec.index] = spec
+        worldEntityAvatars[spec.index] =
+            net.worldEntityAvatarFactory.alloc(
+                spec.index,
+                spec.id,
+                spec.ownerIndex,
+                spec.sizeX,
+                spec.sizeZ,
+                spec.southWestZoneX,
+                spec.southWestZoneZ,
+                spec.minLevel,
+                spec.maxLevel,
+                spec.fineX,
+                spec.fineZ,
+                spec.projectedLevel,
+                spec.activeLevel,
+                spec.angle,
+            )
+    }
+
+    override fun worldEntityRemoved(index: Int) {
+        val net = service ?: return
+        worldEntities.remove(index)
+        worldEntityAvatars.remove(index)?.let(net.worldEntityAvatarFactory::release)
+    }
+
+    override fun worldEntityMoved(index: Int, level: Int, fineX: Int, fineZ: Int, angle: Int, teleport: Boolean) {
+        val avatar = worldEntityAvatars[index] ?: return
+        avatar.updateCoord(level, fineX, fineZ, teleport)
+        avatar.updateAngle(angle)
+    }
+
     override fun shutdown() {
         service?.shutdown()
     }
@@ -228,7 +268,9 @@ class Osrs242Network(
                             "jx section=${block.jxSessionId != null}; layouts so far: no-jx=${JxLayoutStats.noJx.get()}, " +
                             "jx=${JxLayoutStats.withJx.get()})"
                     }
-                    gate.onLogin(RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs), zoneBuffers))
+                    gate.onLogin(
+                        RspLoginRequest(net, responseHandler, block, block.crc.validate(js5.archiveCrcs), zoneBuffers, worldEntities::get),
+                    )
                 }
 
                 // Reconnection lands in Phase 5 (session handover); refuse cleanly for now.
@@ -363,6 +405,7 @@ class Osrs242Network(
         private val block: LoginBlock<AuthenticationType>,
         override val crcValid: Boolean,
         private val zoneBuffers: ZonePartialEnclosedCacheBuffer,
+        private val worldEntityOf: (Int) -> tp.protocol.api.WorldEntitySpec?,
     ) : LoginRequest {
         override val username: String = block.username
 
@@ -385,7 +428,14 @@ class Osrs242Network(
                 )
             val session = handler.writeSuccessfulResponse(response, block)
             val infos = service.infoProtocols.alloc(slot, OldSchoolClientType.DESKTOP)
-            val rsp = RspSession(session, infos, username, zoneBuffers) { closed -> service.infoProtocols.dealloc(closed.release()) }
+            val rsp =
+                RspSession(
+                    session,
+                    infos,
+                    username,
+                    zoneBuffers,
+                    worldEntityOf,
+                ) { closed -> service.infoProtocols.dealloc(closed.release()) }
             session.setDisconnectionHook { rsp.markDisconnected() }
             return rsp
         }
