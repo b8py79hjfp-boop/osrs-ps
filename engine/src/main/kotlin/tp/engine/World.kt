@@ -449,6 +449,16 @@ class World(
                 player.session.publicChat(command.text, command.colour, command.effect)
             }
 
+            is ClientCommand.ChatFilters -> {
+                // Gameframe G6: the client filters what it shows; the server keeps the setting and sends it back.
+                if (command.publicChat !in 0..CHAT_FILTER_MAX || command.privateChat !in 0..2 || command.trade !in 0..2) {
+                    return invalid(player, command)
+                }
+                val packed = (command.publicChat.toLong() shl CHAT_FILTER_BITS * 2) or (command.privateChat.toLong() shl CHAT_FILTER_BITS)
+                player.saved[CHAT_FILTER_KEY] = packed or command.trade.toLong()
+                player.session.send(ServerMessage.ChatFilters(command.publicChat, command.privateChat, command.trade))
+            }
+
             is ClientCommand.Social -> {
                 val textOk = command.action != SocialAction.PRIVATE_MESSAGE || command.text.length in 1..MAX_CHAT_LENGTH
                 val nameOk = command.action == SocialAction.CHANNEL_LEAVE || command.name.length in 1..MAX_NAME_LENGTH
@@ -1023,6 +1033,11 @@ class World(
         player.session.beginGame(player.avatarState())
         player.session.syncAvatar(player.avatarState())
         player.vars.sendAll(player.session)
+        player.saved[CHAT_FILTER_KEY]?.let { f ->
+            val mask = (1L shl CHAT_FILTER_BITS) - 1
+            val public = (f shr CHAT_FILTER_BITS * 2 and mask).toInt()
+            player.session.send(ServerMessage.ChatFilters(public, (f shr CHAT_FILTER_BITS and mask).toInt(), (f and mask).toInt()))
+        }
         content.onLogin(player)
         tracer?.onLogin(player)
         logger.info { "login: $player ($playerCount online)" }
@@ -1154,8 +1169,13 @@ class World(
         private const val MAX_SUBOP = 31
         private const val COMPONENT_SHIFT = 16
 
+        /** Saved chat filters: public << 8 | private << 4 | trade. */
+        private const val CHAT_FILTER_KEY = "chat.filters"
+        private const val CHAT_FILTER_BITS = 4
+        private const val CHAT_FILTER_MAX = 3
+
         /** Public chat line limit: the client's chatbox input is capped at 80 characters. */
-        private const val MAX_CHAT_LENGTH = 80
+        const val MAX_CHAT_LENGTH = 80
 
         /** Display names are at most 12 characters (OSRS Wiki "Display name"). */
         private const val MAX_NAME_LENGTH = 12

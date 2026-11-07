@@ -17,7 +17,6 @@ public class Login : ContentPlugin {
     }
 
     private fun PlayerRef.login() {
-        chatFilters(0, 0)
         message("Welcome to world $worldId.")
         // Chat input is locked until the client knows the display name (RS Mod `chatboxUnlocked`).
         setVarbit(Varbits.HAS_DISPLAYNAME_TRANSMITTER, 1)

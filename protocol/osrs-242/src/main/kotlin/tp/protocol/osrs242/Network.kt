@@ -367,6 +367,9 @@ class Osrs242Network(
                 ),
             )
         }
+        b.addListener(net.rsprot.protocol.game.incoming.misc.user.SetChatFilterSettings::class.java) { s, m ->
+            s.deliver(ClientCommand.ChatFilters(m.publicChatFilter, m.privateChatFilter, m.tradeChatFilter))
+        }
         b.addListener(MessagePublic::class.java) { s, m ->
             s.deliver(ClientCommand.PublicChat(m.message, m.colour, m.effect, m.type))
         }

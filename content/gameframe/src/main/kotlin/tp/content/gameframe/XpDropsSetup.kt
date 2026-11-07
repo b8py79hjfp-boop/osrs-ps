@@ -12,7 +12,8 @@ import tp.symbols.Varbits
 /**
  * XP drops "Setup" panel (docs/mechanics/gameframe-buttons.md O2), opened from op 2 of the XP drops orb. The panel's
  * dropdown rows are dynamic children whose varbits the cache names after them; Save keeps the choices and Cancel puts
- * back the values the panel opened with. RS Mod has no handler for this panel, so the click protocol is OPEN-O2.
+ * back the values the panel opened with. RS Mod has no handler for this panel; the click protocol (1-based row in the
+ * child slot, stored as row - 1) was verified against the rev 242 client (O2).
  */
 public class XpDropsSetup : ContentPlugin {
     override fun ContentScope.register() {
@@ -27,13 +28,14 @@ public class XpDropsSetup : ContentPlugin {
     private fun PlayerRef.open() {
         this[SNAPSHOT] = IntArray(DROPDOWNS.size) { varbit(DROPDOWNS[it].second) }
         openModal(Components.Toplevel.MAINMODAL, Interfaces.XPDROPS_SETUP)
-        // OPEN-O2: option rows are assumed to report their index (child slot) and to map one-to-one to the varbit value.
-        for ((component, _) in DROPDOWNS) ifEvents(component, 0..OPTION_LAST_SLOT, IfEvents.op(1))
+        // Rows report their 1-based position as the child slot (verified with the rev 242 client, O2).
+        for ((component, _) in DROPDOWNS) ifEvents(component, 1..OPTION_LAST_SLOT, IfEvents.op(1))
     }
 
-    private fun PlayerRef.choose(varbit: Int, value: Int) {
-        // The slot comes from the client: it must fit the varbit before it is stored.
-        if (varbitFits(varbit, value)) setVarbit(varbit, value)
+    private fun PlayerRef.choose(varbit: Int, slot: Int) {
+        // The slot comes from the client: it must be a row and fit the varbit before it is stored (value = row - 1).
+        val value = slot - 1
+        if (slot >= 1 && varbitFits(varbit, value)) setVarbit(varbit, value)
     }
 
     private fun PlayerRef.cancel() {

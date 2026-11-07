@@ -89,6 +89,9 @@ sealed interface ClientCommand {
     /** Public chat line (already Huffman-decoded). */
     data class PublicChat(val text: String, val colour: Int, val effect: Int, val type: Int) : ClientCommand
 
+    /** The chatbox filter buttons (RSProt `SetChatFilterSettings`): 0 on, 1 friends, 2 off (public 3 = hide). */
+    data class ChatFilters(val publicChat: Int, val privateChat: Int, val trade: Int) : ClientCommand
+
     /** Friends/ignore list edits and private messages ([text] only for [SocialAction.PRIVATE_MESSAGE]). */
     data class Social(val action: SocialAction, val name: String, val text: String = "", val rank: Int = 0) : ClientCommand
 
@@ -186,6 +189,9 @@ sealed interface ServerMessage {
      */
     data class GameMessage(val text: String, val type: Int = 0, val name: String? = null) : ServerMessage
 
+    /** The chat filter settings the client shows on its chatbox buttons (CHAT_FILTER_SETTINGS + the private one). */
+    data class ChatFilters(val publicChat: Int, val privateChat: Int, val trade: Int) : ServerMessage
+
     /** Root (toplevel) interface. */
     data class OpenTop(val interfaceId: Int) : ServerMessage
 
@@ -231,9 +237,6 @@ sealed interface ServerMessage {
 
     /** Right-click option [slot] (1..8) on other players. */
     data class PlayerOption(val slot: Int, val text: String?, val top: Boolean) : ServerMessage
-
-    /** Chat filter settings (public, trade). */
-    data class ChatFilters(val publicFilter: Int, val tradeFilter: Int) : ServerMessage
 
     /** Map rebuild centred on the player's current position (sent when the build area changes). */
     data class Rebuild(val x: Int, val z: Int) : ServerMessage

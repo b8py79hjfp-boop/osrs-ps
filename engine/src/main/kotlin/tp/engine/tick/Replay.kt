@@ -66,6 +66,7 @@ object CommandCodec {
             is ClientCommand.ButtonT -> "buttont ${c.fromComponent} ${c.fromSub} ${c.fromObj} ${c.toComponent} ${c.toSub} ${c.toObj}"
             is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj} ${c.subop}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
+            is ClientCommand.ChatFilters -> "chatfilters ${c.publicChat} ${c.privateChat} ${c.trade}"
             is ClientCommand.ResumePause -> "resume ${c.component} ${c.sub}"
             is ClientCommand.ResumeString -> "resumestring ${str(c.text)}"
             is ClientCommand.ResumeCount -> "resumecount ${c.count}"
@@ -148,6 +149,10 @@ object CommandCodec {
 
             "chat" -> {
                 ClientCommand.PublicChat(unstr(parts[1]), i(2), i(3), i(4))
+            }
+
+            "chatfilters" -> {
+                ClientCommand.ChatFilters(i(1), i(2), i(3))
             }
 
             "resume" -> {

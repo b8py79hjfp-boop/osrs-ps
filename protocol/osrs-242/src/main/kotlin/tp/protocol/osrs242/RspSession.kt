@@ -128,6 +128,17 @@ internal class RspSession(
             return
         }
         if (message is ServerMessage.ZoneOps) return queueZoneOps(message)
+        if (message is ServerMessage.ChatFilters) {
+            session.queue(
+                net.rsprot.protocol.game.outgoing.misc.player
+                    .ChatFilterSettings(message.publicChat, message.trade),
+            )
+            session.queue(
+                net.rsprot.protocol.game.outgoing.misc.player
+                    .ChatFilterSettingsPrivateChat(message.privateChat),
+            )
+            return
+        }
         if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         if (message is ServerMessage.RebuildRegion) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         val held = beforeFirstInfo
@@ -436,7 +447,7 @@ internal class RspSession(
                 }
 
                 is ServerMessage.ChatFilters -> {
-                    ChatFilterSettings(message.publicFilter, message.tradeFilter)
+                    error("sent as two packets in send()")
                 }
 
                 is ServerMessage.Rebuild -> {

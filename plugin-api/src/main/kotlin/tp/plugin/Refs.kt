@@ -398,8 +398,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.PlayerOption(slot, text, top))
     }
 
-    public fun chatFilters(publicFilter: Int, tradeFilter: Int) {
-        p.session.send(ServerMessage.ChatFilters(publicFilter, tradeFilter))
+    /** Sets the chatbox filter buttons (0 on, 1 friends, 2 off). */
+    public fun chatFilters(publicFilter: Int, privateFilter: Int, tradeFilter: Int) {
+        p.session.send(ServerMessage.ChatFilters(publicFilter, privateFilter, tradeFilter))
     }
 
     // ---- vars
