@@ -1,0 +1,44 @@
+[clientscript,trading_post_mine](component $mine, component $scrollbar, component $title, component $collect, string $data, int $count, int $max, string $collecttext)
+// The viewer's own listings (inv tp_mine) with "price ea" and "sold/quantity sold" lines; $data rows are price;sold;quantity.
+if_settext(append(append(append("Your listings ", tostring($count)), "/"), tostring($max)), $title);
+~trading_post_collect_draw($collect, $collecttext);
+cc_deleteall($mine);
+def_int $slot = 0;
+def_int $rows = 0;
+def_int $id = 0;
+def_int $y = 0;
+def_string $row = "";
+def_string $name = "";
+def_obj $obj = null;
+while ($slot < 10) {
+    $obj = inv_getobj(tp_mine, $slot);
+    if ($obj ! null) {
+        $row = ~trading_post_row($data, $slot);
+        $id = calc($slot * 6);
+        $y = calc($rows * 46);
+        $name = oc_name($obj);
+        cc_create($mine, ^iftype_graphic, $id);
+        cc_setposition(0, calc($y + 6), ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject($obj, stringtoint(~trading_post_field($row, 2)));
+        ~trading_post_line($mine, calc($id + 1), $y, 0xff981f, ~trading_post_fit($name, 72));
+        ~trading_post_line($mine, calc($id + 2), calc($y + 14), 0xffffff, append(~trading_post_field($row, 0), " ea"));
+        ~trading_post_line($mine, calc($id + 3), calc($y + 28), 0x9f8b6b, append(append(append(~trading_post_field($row, 1), "/"), ~trading_post_field($row, 2)), " sold"));
+        cc_create($mine, ^iftype_rectangle, calc($id + 5));
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 44, ^setsize_minus, ^setsize_abs);
+        cc_setcolour(0xffffff);
+        cc_setfill(true);
+        cc_settrans(255);
+        cc_setop(1, "Cancel");
+        cc_setopbase(append("<col=ff9040>", $name));
+        cc_setonmouseover("trading_post_hover(event_com, event_comsubid, 220)");
+        cc_setonmouseleave("trading_post_hover(event_com, event_comsubid, 255)");
+        $rows = calc($rows + 1);
+    }
+    $slot = calc($slot + 1);
+}
+if_setscrollsize(0, calc($rows * 46), $mine);
+~scrollbar_vertical($scrollbar, $mine, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

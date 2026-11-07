@@ -1,0 +1,11 @@
+[clientscript,trading_post_init](component $border, component $searchbar, component $searchtext, component $list, component $scrollbar, component $status, component $mine, component $minescroll, component $collect, component $sell, component $showall, component $radioitem, component $radioplayer)
+~stoneborder($border, "Trading Post", 0);
+~searchbar_create($searchbar, null);
+%settings_search_string = "";
+~trading_post_search_idle($searchtext);
+~button_setup(null, $showall, "Show all");
+~button_setup(null, $sell, "Sell");
+~trading_post_collect_draw($collect, "Nothing to collect");
+~trading_post_radio($radioitem, "Item", true);
+~trading_post_radio($radioplayer, "Player", false);
+if_setoninvtransmit("trading_post_draw($list, $scrollbar, $status, \"\", 0, clientclock){tp_results}", $list);

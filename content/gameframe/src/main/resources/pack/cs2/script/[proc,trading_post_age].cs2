@@ -1,0 +1,13 @@
+[proc,trading_post_age](int $seconds)(string)
+def_int $h = calc($seconds / 3600);
+def_int $m = calc($seconds / 60 % 60);
+def_int $s = calc($seconds % 60);
+def_string $mm = tostring($m);
+if ($m < 10) {
+    $mm = append("0", $mm);
+}
+def_string $ss = tostring($s);
+if ($s < 10) {
+    $ss = append("0", $ss);
+}
+return(append(append(append(append(tostring($h), ":"), $mm), ":"), $ss));

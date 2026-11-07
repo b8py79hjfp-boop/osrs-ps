@@ -1,0 +1,98 @@
+[proc,trading_post_paint](component $list, component $scrollbar, component $status, string $data, int $mode, int $base)
+// $data: one row per listings slot, "|"-separated; fields ";"-separated.
+// $mode 0 (listings): price;seller;age seconds;mine (1 = the viewer's own listing)
+// $mode 1 (history): Bought / Sold;price;other player;age seconds
+cc_deleteall($list);
+def_int $slot = 0;
+def_int $rows = 0;
+def_int $id = 0;
+def_int $y = 0;
+def_int $amount = 0;
+def_string $row = "";
+def_string $name = "";
+def_string $who = "";
+def_string $op = "";
+def_obj $obj = null;
+while ($slot < 60) {
+    $obj = inv_getobj(tp_results, $slot);
+    if ($obj ! null) {
+        $row = ~trading_post_row($data, $slot);
+        $id = calc($slot * 8);
+        $y = calc($rows * 34);
+        $amount = inv_getnum(tp_results, $slot);
+        $name = oc_name($obj);
+
+        cc_create($list, ^iftype_rectangle, $id);
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 32, ^setsize_minus, ^setsize_abs);
+        if ($rows % 2 = 0) {
+            cc_setcolour(0x3e3529);
+        } else {
+            cc_setcolour(0x463c2f);
+        }
+        cc_setfill(true);
+
+        cc_create($list, ^iftype_graphic, calc($id + 1));
+        cc_setposition(4, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        if ($amount > 1) {
+            cc_setobject($obj, $amount);
+        } else {
+            cc_setobject_nonum($obj, 1);
+        }
+
+        ~trading_post_cell($list, calc($id + 2), 44, $y, 104, ^settextalign_left, 0xff981f, ~trading_post_fit($name, 104));
+        if ($mode = 0) {
+            ~trading_post_cell($list, calc($id + 3), 150, $y, 70, ^settextalign_centre, 0xff981f, ~trading_post_field($row, 0));
+            $who = ~trading_post_field($row, 1);
+            if (compare(~trading_post_field($row, 3), "1") = 0) {
+                ~trading_post_cell($list, calc($id + 4), 220, $y, 60, ^settextalign_centre, 0x0dc10d, "You");
+                $op = "Cancel";
+            } else {
+                ~trading_post_cell($list, calc($id + 4), 220, $y, 60, ^settextalign_centre, 0xff981f, ~trading_post_fit($who, 60));
+                $op = "Buy";
+            }
+            ~trading_post_cell($list, calc($id + 6), 280, $y, 50, ^settextalign_centre, 0xff981f, ~trading_post_age(stringtoint(~trading_post_field($row, 2))));
+        } else {
+            ~trading_post_cell($list, calc($id + 3), 150, $y, 70, ^settextalign_centre, 0xff981f, ~trading_post_field($row, 1));
+            $who = ~trading_post_field($row, 2);
+            if (compare(~trading_post_field($row, 0), "Bought") = 0) {
+                ~trading_post_cell($list, calc($id + 4), 220, $y, 60, ^settextalign_centre, 0x0dc10d, ~trading_post_fit($who, 60));
+            } else {
+                ~trading_post_cell($list, calc($id + 4), 220, $y, 60, ^settextalign_centre, 0xff0000, ~trading_post_fit($who, 60));
+            }
+            ~trading_post_cell($list, calc($id + 6), 280, $y, 50, ^settextalign_centre, 0xff981f, ~trading_post_age(stringtoint(~trading_post_field($row, 3))));
+            $op = "";
+        }
+
+        // A transparent cover over the row takes the clicks (sub = slot * 8 + 7; the server uses sub / 8).
+        cc_create($list, ^iftype_rectangle, calc($id + 7));
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 32, ^setsize_minus, ^setsize_abs);
+        cc_setcolour(0xffffff);
+        cc_setfill(true);
+        cc_settrans(255);
+        if (string_length($op) > 0) {
+            cc_setop(1, $op);
+            cc_setopbase(append("<col=ff9040>", $name));
+            cc_setonmouseover("trading_post_hover(event_com, event_comsubid, 220)");
+            cc_setonmouseleave("trading_post_hover(event_com, event_comsubid, 255)");
+        }
+        $rows = calc($rows + 1);
+    }
+    $slot = calc($slot + 1);
+}
+if ($rows = 0) {
+    if ($mode = 0) {
+        if_settext("No listings found", $status);
+    } else {
+        if_settext("No trades yet", $status);
+    }
+} else {
+    if_settext("", $status);
+}
+if_setscrollsize(0, calc($rows * 34), $list);
+~scrollbar_vertical($scrollbar, $list, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");
+if_setontimer("trading_post_tick($list, $data, $mode, $base)", $list);

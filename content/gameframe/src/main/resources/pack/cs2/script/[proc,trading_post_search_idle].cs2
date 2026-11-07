@@ -1,0 +1,14 @@
+[proc,trading_post_search_idle](component $searchtext)
+if_setop(1, "Search", $searchtext);
+if_setonop("trading_post_search_op($searchtext)", $searchtext);
+if_setonmouseover("searchbar_mouseover($searchtext, null)", $searchtext);
+if_setonmouseleave("searchbar_mouseleave($searchtext, null)", $searchtext);
+if_setonkey(null, $searchtext);
+~chatdefault_restoreinput;
+if (string_length(%settings_search_string) = 0) {
+    if_setcolour(0x9f8b6b, $searchtext);
+    if_settext("Search item...", $searchtext);
+} else {
+    if_setcolour(0xff981f, $searchtext);
+    ~searchbar_set_text($searchtext);
+}

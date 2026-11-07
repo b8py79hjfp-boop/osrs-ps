@@ -1,0 +1,3 @@
+[proc,trading_post_draw_now](component $list, component $scrollbar, component $status, string $data, int $mode)
+if_setscrollpos(0, 0, $list);
+~trading_post_paint($list, $scrollbar, $status, $data, $mode, clientclock);

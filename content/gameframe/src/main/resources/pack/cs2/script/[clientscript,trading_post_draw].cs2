@@ -1,0 +1,2 @@
+[clientscript,trading_post_draw](component $list, component $scrollbar, component $status, string $data, int $mode, int $base)
+~trading_post_paint($list, $scrollbar, $status, $data, $mode, $base);

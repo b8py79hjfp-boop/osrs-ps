@@ -1,0 +1,4 @@
+[clientscript,trading_post_rows](component $list, component $scrollbar, component $status, string $data, int $mode)
+// Server -> client: new row data; redraws now and on every later tp_results transmit.
+if_setoninvtransmit("trading_post_draw($list, $scrollbar, $status, $data, $mode, clientclock){tp_results}", $list);
+~trading_post_draw_now($list, $scrollbar, $status, $data, $mode);

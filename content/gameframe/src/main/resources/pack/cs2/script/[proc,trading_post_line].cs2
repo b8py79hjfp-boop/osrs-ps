@@ -1,0 +1,9 @@
+[proc,trading_post_line](component $mine, int $id, int $y, int $colour, string $text)
+cc_create($mine, ^iftype_text, $id);
+cc_setposition(40, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(72, 16, ^setsize_abs, ^setsize_abs);
+cc_settextfont(p11_full);
+cc_settextalign(^settextalign_left, ^settextalign_centre, 0);
+cc_settextshadow(true);
+cc_setcolour($colour);
+cc_settext($text);

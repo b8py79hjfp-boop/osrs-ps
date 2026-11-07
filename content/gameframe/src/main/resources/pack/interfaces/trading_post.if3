@@ -1,0 +1,223 @@
+# Trading Post (docs/mechanics/trading-post.md). Layout after the owner's reference screenshots; drawn by trading_post_* scripts.
+[[interface]]
+name = "interface.trading_post"
+width = 512
+height = 334
+on_load = ["clientscript.trading_post_init", "component.trading_post:border", "component.trading_post:searchbar", "component.trading_post:searchtext", "component.trading_post:list", "component.trading_post:list_scrollbar", "component.trading_post:status", "component.trading_post:mine", "component.trading_post:mine_scrollbar", "component.trading_post:collectbtn", "component.trading_post:sellbtn", "component.trading_post:showall", "component.trading_post:radio_item", "component.trading_post:radio_player"]
+
+[[component]]
+name = "border"
+type = "layer"
+x = 0
+y = 0
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "historybtn"
+type = "text"
+x = 10
+y = 6
+width = 60
+height = 16
+options = ["View history"]
+text = "History"
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "header"
+type = "layer"
+x = 10
+y = 34
+width = 330
+height = 18
+
+[[component]]
+name = "hdr_item"
+type = "text"
+parent = "header"
+x = 0
+y = 0
+width = 150
+height = 18
+options = ["Sort"]
+text = "Item"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "hdr_price"
+type = "text"
+parent = "header"
+x = 150
+y = 0
+width = 70
+height = 18
+options = ["Sort"]
+text = "Price ea."
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "hdr_seller"
+type = "text"
+parent = "header"
+x = 220
+y = 0
+width = 60
+height = 18
+options = ["Sort"]
+text = "Seller"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "hdr_age"
+type = "text"
+parent = "header"
+x = 280
+y = 0
+width = 50
+height = 18
+options = ["Sort"]
+text = "Age"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "list"
+type = "layer"
+x = 10
+y = 52
+width = 330
+height = 226
+
+[[component]]
+name = "status"
+type = "text"
+x = 10
+y = 52
+width = 330
+height = 226
+text = ""
+font = "bold"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "list_scrollbar"
+type = "layer"
+x = 342
+y = 52
+width = 16
+height = 226
+
+[[component]]
+name = "mine_title"
+type = "text"
+x = 364
+y = 34
+width = 130
+height = 18
+text = "Your listings 0/10"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "mine"
+type = "layer"
+x = 364
+y = 52
+width = 112
+height = 172
+
+[[component]]
+name = "mine_scrollbar"
+type = "layer"
+x = 478
+y = 52
+width = 16
+height = 172
+
+[[component]]
+name = "collectbtn"
+type = "layer"
+x = 364
+y = 230
+width = 130
+height = 42
+options = ["Collect"]
+
+[[component]]
+name = "radio_item"
+type = "layer"
+x = 12
+y = 282
+width = 60
+height = 16
+options = ["Select"]
+
+[[component]]
+name = "radio_player"
+type = "layer"
+x = 12
+y = 300
+width = 60
+height = 16
+options = ["Select"]
+
+[[component]]
+name = "searchbar"
+type = "layer"
+x = 80
+y = 288
+width = 180
+height = 24
+
+[[component]]
+name = "searchtext"
+type = "text"
+parent = "searchbar"
+x = 0
+y = 0
+width = 180
+height = 24
+options = ["Search"]
+text = "Search item..."
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "showall"
+type = "layer"
+x = 266
+y = 288
+width = 74
+height = 24
+options = ["Show all"]
+
+[[component]]
+name = "sellbtn"
+type = "layer"
+x = 364
+y = 288
+width = 130
+height = 24
+options = ["Sell"]

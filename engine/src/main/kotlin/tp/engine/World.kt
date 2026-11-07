@@ -893,6 +893,21 @@ class World(
 
     fun objIdsNamed(name: String): List<Int> = objsByName[name].orEmpty()
 
+    /** Tradeable, unnoted, non-placeholder objs whose name contains [query] (case-insensitive), at most [limit]. */
+    fun tradeableObjsContaining(query: String, limit: Int): Set<Int> {
+        val q = query.lowercase()
+        val out = LinkedHashSet<Int>()
+        for ((name, ids) in objsByName) {
+            if (!name.lowercase().contains(q)) continue
+            for (id in ids) {
+                val t = data.configs.objs[id] ?: continue
+                if (t.tradeable && !t.isNoted && !t.isPlaceholder) out += id
+                if (out.size >= limit) return out
+            }
+        }
+        return out
+    }
+
     /** Obj config (wear positions, params) for content facades. */
     fun objType(id: Int): tp.cache.config.obj.ObjType? = data.configs.objs[id]
 

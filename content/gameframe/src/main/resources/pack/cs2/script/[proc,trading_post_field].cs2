@@ -1,0 +1,17 @@
+[proc,trading_post_field](string $row, int $n)(string)
+def_int $start = 0;
+def_int $end = 0;
+def_int $i = 0;
+while ($i < $n) {
+    $start = string_indexof_string($row, ";", $start);
+    if ($start = -1) {
+        return("");
+    }
+    $start = calc($start + 1);
+    $i = calc($i + 1);
+}
+$end = string_indexof_string($row, ";", $start);
+if ($end = -1) {
+    $end = string_length($row);
+}
+return(substring($row, $start, $end));

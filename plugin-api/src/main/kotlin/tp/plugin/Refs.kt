@@ -637,6 +637,12 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 
+    /** Tradeable, unnoted objs whose name contains [query] (case-insensitive), at most [limit] (search boxes). */
+    public fun tradeableObjsContaining(
+        query: String,
+        limit: Int = OBJ_SEARCH_LIMIT,
+    ): Set<Int> = p.world.tradeableObjsContaining(query, limit)
+
     /** The unnoted form of [obj] (itself when not a note). */
     public fun unnoted(obj: Int): Int =
         p.world
@@ -876,6 +882,9 @@ public class DbRowRef internal constructor(private val row: tp.cache.config.dbro
 /** A map loc an interaction targets. */
 private const val MILLIS_PER_MINUTE = 60_000L
 private const val MILLIS_PER_SECOND = 1_000L
+
+/** Most objs one name search returns. */
+private const val OBJ_SEARCH_LIMIT = 500
 
 /** First 8 bytes of SHA-256 over the address. */
 private fun addressHash(address: String): Long {

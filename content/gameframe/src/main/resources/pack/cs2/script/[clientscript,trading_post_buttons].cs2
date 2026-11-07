@@ -1,0 +1,22 @@
+[clientscript,trading_post_buttons](int $byplayer, int $sortcol, int $history)
+// Item / Player search mode, the sorted column (0 item, 1 price, 2 seller, 3 age) and the History link.
+if ($byplayer = 1) {
+    ~trading_post_radio(trading_post:radio_item, "Item", false);
+    ~trading_post_radio(trading_post:radio_player, "Player", true);
+} else {
+    ~trading_post_radio(trading_post:radio_item, "Item", true);
+    ~trading_post_radio(trading_post:radio_player, "Player", false);
+}
+~trading_post_header(trading_post:hdr_item, "Item", $sortcol = 0);
+~trading_post_header(trading_post:hdr_price, "Price ea.", $sortcol = 1);
+~trading_post_header(trading_post:hdr_seller, "Seller", $sortcol = 2);
+~trading_post_header(trading_post:hdr_age, "Age", $sortcol = 3);
+if ($history = 1) {
+    if_settext("<u=ff981f>Listings</u>", trading_post:historybtn);
+    if_setop(1, "View listings", trading_post:historybtn);
+    if_settext("Other", trading_post:hdr_seller);
+    if_settext("When", trading_post:hdr_age);
+} else {
+    if_settext("<u=ff981f>History</u>", trading_post:historybtn);
+    if_setop(1, "View history", trading_post:historybtn);
+}

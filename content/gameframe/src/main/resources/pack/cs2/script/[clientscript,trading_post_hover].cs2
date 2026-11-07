@@ -1,0 +1,4 @@
+[clientscript,trading_post_hover](component $com, int $sub, int $trans)
+if (cc_find($com, $sub) = true) {
+    cc_settrans($trans);
+}
