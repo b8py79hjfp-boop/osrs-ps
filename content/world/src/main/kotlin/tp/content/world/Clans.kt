@@ -12,6 +12,7 @@ import tp.symbols.Interfaces
 import tp.symbols.Invs
 import tp.symbols.Npcs
 import tp.symbols.Objs
+import tp.symbols.Varbits
 
 /**
  * Clans (docs/mechanics/clans.md): the clan and guest side tabs, founding at the Clan Hub clerk with the creation side
@@ -59,7 +60,12 @@ public class Clans : ContentPlugin {
         }
 
         // CL2: "Recruit" near the clerk or with a vexillum worn.
-        onLogin { timer(RECRUIT_TIMER, 1, soft = true) { updateRecruit() } }
+        onLogin {
+            // CL9: "no clan" until the hub's clan state arrives (varbit 3 = loaded; client script 4288).
+            if (clanName == null) setVarbit(Varbits.CLAN_AFFINITYSTATUS, NO_CLAN)
+            if (guestClanName == null) setVarbit(Varbits.CLAN_GUEST_AFFINITYSTATUS, NO_CLAN)
+            timer(RECRUIT_TIMER, 1, soft = true) { updateRecruit() }
+        }
         onOpPlayer(RECRUIT_OP) { target ->
             if (!canRecruit(player)) return@onOpPlayer
             player.clan(ClanAction.Invite(target.username)) { err ->
@@ -101,6 +107,9 @@ public class Clans : ContentPlugin {
         val FOUNDING = AttrKey<String>("clan_founding")
         val RECRUITING = AttrKey<Boolean>("clan_recruit_op")
         val RECRUIT_TIMER = TimerId("clan_recruit_op")
+
+        /** `clan_affinitystatus` 1: no clan (client script 4288 "No current clan"). */
+        const val NO_CLAN = 1
 
         /** OPEN-CL6: the slot of "Recruit" (free slots 5..7; RS Mod has no clans). */
         const val RECRUIT_OP = 6

@@ -456,6 +456,15 @@ class World(
                 player.session.publicChat(command.text, command.colour, command.effect)
             }
 
+            is ClientCommand.ClanFullRequest -> {
+                // CL9: answer from the last snapshot, or "no clan" so the panel stops waiting. Group ironman (1+) has none.
+                val guest = command.clanId < 0
+                val i = if (guest) 1 else 0
+                val last = if (command.settings) player.clanSettings[i] else player.clanChannel[i]
+                val none = if (command.settings) ServerMessage.ClanSettingsLeft(guest) else ServerMessage.ClanChannelLeft(guest)
+                player.session.send(if (command.clanId > 0) none else last ?: none)
+            }
+
             is ClientCommand.ChatFilters -> {
                 // Gameframe G6: the client filters what it shows; the server keeps the setting and sends it back.
                 if (command.publicChat !in 0..CHAT_FILTER_MAX || command.privateChat !in 0..2 || command.trade !in 0..2) {
@@ -1049,11 +1058,11 @@ class World(
         player.session.beginGame(player.avatarState())
         player.session.syncAvatar(player.avatarState())
         player.vars.sendAll(player.session)
-        player.saved[CHAT_FILTER_KEY]?.let { f ->
-            val mask = (1L shl CHAT_FILTER_BITS) - 1
-            val public = (f shr CHAT_FILTER_BITS * 2 and mask).toInt()
-            player.session.send(ServerMessage.ChatFilters(public, (f shr CHAT_FILTER_BITS and mask).toInt(), (f and mask).toInt()))
-        }
+        // G6: always sent at login (all "on" for a new account); the client redraws the chatbox when it arrives.
+        val f = player.saved[CHAT_FILTER_KEY] ?: 0L
+        val mask = (1L shl CHAT_FILTER_BITS) - 1
+        val public = (f shr CHAT_FILTER_BITS * 2 and mask).toInt()
+        player.session.send(ServerMessage.ChatFilters(public, (f shr CHAT_FILTER_BITS and mask).toInt(), (f and mask).toInt()))
         content.onLogin(player)
         tracer?.onLogin(player)
         logger.info { "login: $player ($playerCount online)" }

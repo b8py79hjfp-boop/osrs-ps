@@ -92,6 +92,9 @@ sealed interface ClientCommand {
     /** The chatbox filter buttons (RSProt `SetChatFilterSettings`): 0 on, 1 friends, 2 off (public 3 = hide). */
     data class ChatFilters(val publicChat: Int, val privateChat: Int, val trade: Int) : ClientCommand
 
+    /** The client asks for a clan's full channel ([settings] false) or settings (CLAN*_FULL_REQUEST); [clanId] < 0 = guest. */
+    data class ClanFullRequest(val clanId: Int, val settings: Boolean) : ClientCommand
+
     /** Friends/ignore list edits and private messages ([text] only for [SocialAction.PRIVATE_MESSAGE]). */
     data class Social(val action: SocialAction, val name: String, val text: String = "", val rank: Int = 0) : ClientCommand
 

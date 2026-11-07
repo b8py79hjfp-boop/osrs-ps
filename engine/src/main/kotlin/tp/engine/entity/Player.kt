@@ -58,6 +58,10 @@ class Player internal constructor(
     var clanRank: Int = 0
     var guestClanName: String? = null
 
+    /** The last clan channel / settings packets sent (index 0 own clan, 1 guest), resent when the client asks (clans.md CL9). */
+    val clanChannel: Array<tp.protocol.api.ServerMessage?> = arrayOfNulls(2)
+    val clanSettings: Array<tp.protocol.api.ServerMessage?> = arrayOfNulls(2)
+
     override var hitpoints: Int
         get() = stats.level(PlayerStats.HITPOINTS)
         set(value) {

@@ -329,6 +329,12 @@ class Osrs242Network(
 
     /** Clan channel member menu: kick and ban (docs/mechanics/clans.md CL7). */
     private fun clanConsumers(b: GameMessageConsumerRepositoryBuilder<RspSession>) {
+        b.addListener(net.rsprot.protocol.game.incoming.clan.ClanChannelFullRequest::class.java) { s, m ->
+            s.deliver(ClientCommand.ClanFullRequest(m.clanId, settings = false))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.clan.ClanSettingsFullRequest::class.java) { s, m ->
+            s.deliver(ClientCommand.ClanFullRequest(m.clanId, settings = true))
+        }
         b.addListener(net.rsprot.protocol.game.incoming.clan.ClanChannelKickUser::class.java) { s, m ->
             s.deliver(ClientCommand.Social(SocialAction.CLAN_KICK, m.name, rank = m.clanId))
         }

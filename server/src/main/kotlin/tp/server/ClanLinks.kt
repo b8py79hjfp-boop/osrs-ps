@@ -8,6 +8,7 @@ import tp.protocol.api.ServerMessage
 import tp.services.ClanRules
 import tp.services.SocialEvent
 import tp.services.SocialService
+import tp.symbols.Varbits
 
 /** Hub call for a world clan request (docs/mechanics/clans.md); null = done, else the message to show. */
 internal suspend fun SocialService.clan(account: Long, r: ClanRequest): String? =
@@ -57,6 +58,10 @@ internal class ClanLinks(private val worldId: Int, private val nextCounter: () -
         if (clan == null) {
             if (e.guest) player.guestClanName = null else player.clanName = null
             if (!e.guest) player.clanRank = 0
+            val i = if (e.guest) 1 else 0
+            player.vars.setBit(statusVarbit(e.guest), STATUS_NONE)
+            player.clanChannel[i] = null
+            player.clanSettings[i] = null
             player.session.send(ServerMessage.ClanChannelLeft(e.guest))
             player.session.send(ServerMessage.ClanSettingsLeft(e.guest))
             if (before != null) player.session.send(ServerMessage.GameMessage(if (e.guest) LEFT_GUEST else LEFT))
@@ -69,10 +74,12 @@ internal class ClanLinks(private val worldId: Int, private val nextCounter: () -
             player.clanRank = clan.members.firstOrNull { it.accountId == player.accountId }?.rank ?: 0
         }
         val members = e.online.map { ClanRow(it.name, it.rank, it.worldId) }
-        player.session.send(
-            ServerMessage.ClanChannel(e.guest, clan.name, clan.rules.kickRank, clan.rules.talkRank, members, ++updateNum),
-        )
-        player.session.send(
+        val i = if (e.guest) 1 else 0
+        player.vars.setBit(statusVarbit(e.guest), STATUS_LOADED)
+        val channel = ServerMessage.ClanChannel(e.guest, clan.name, clan.rules.kickRank, clan.rules.talkRank, members, ++updateNum)
+        player.clanChannel[i] = channel
+        player.session.send(channel)
+        val settings =
             ServerMessage.ClanSettings(
                 e.guest,
                 clan.name,
@@ -83,8 +90,9 @@ internal class ClanLinks(private val worldId: Int, private val nextCounter: () -
                 clan.members.map { ClanAffined(it.name, it.rank, it.joinedDay) },
                 clan.banned,
                 updateNum.toInt(),
-            ),
-        )
+            )
+        player.clanSettings[i] = settings
+        player.session.send(settings)
         if (before == null) {
             val prefix = if (e.guest) "///" else "//"
             player.session.send(ServerMessage.ClanSystemMessage(e.guest, worldId, nextCounter(), "Now talking in ${clan.name}."))
@@ -92,9 +100,18 @@ internal class ClanLinks(private val worldId: Int, private val nextCounter: () -
         }
     }
 
-    private companion object {
+    private fun statusVarbit(guest: Boolean) = if (guest) Varbits.CLAN_GUEST_AFFINITYSTATUS else Varbits.CLAN_AFFINITYSTATUS
+
+    companion object {
+        /**
+         * Varbits `clan_affinitystatus` / `clan_guest_affinitystatus` (client script 4288): 0 connecting, 1 no clan,
+         * 2 fetching, 3 loaded (the panels then read the clan settings).
+         */
+        const val STATUS_NONE = 1
+        const val STATUS_LOADED = 3
+
         /** OPEN-CL5: our wording; the Wiki gives none. */
-        const val LEFT = "You are no longer a member of a clan."
-        const val LEFT_GUEST = "You have left the guest clan channel."
+        private const val LEFT = "You are no longer a member of a clan."
+        private const val LEFT_GUEST = "You have left the guest clan channel."
     }
 }
