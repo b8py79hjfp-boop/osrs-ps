@@ -12,21 +12,52 @@ internal object Attacks {
     fun playerAttack(player: PlayerRef, target: EntityRef) {
         val (stance, type) = player.stanceAndType()
         val category = player.weaponCategory()
-        if (category === Weapons.CHINCHOMPA) return Chinchompas.attack(player, target, stance, type)
-        PoweredStaves.of(player.worn(Wear.WEAPON))?.let { staff ->
-            if (!PoweredStaves.attack(player, target, staff, stance)) player.stopInteraction()
-            return
+        when {
+            category === Weapons.CHINCHOMPA -> {
+                Chinchompas.attack(player, target, stance, type)
+            }
+
+            PoweredStaves.of(player.worn(Wear.WEAPON)) != null -> {
+                val staff = PoweredStaves.of(player.worn(Wear.WEAPON))
+                if (staff != null && !PoweredStaves.attack(player, target, staff, stance)) player.stopInteraction()
+            }
+
+            else -> {
+                val spec = Specials.take(player)
+                if (spec != null) {
+                    SpecialEffects.perform(player, target, spec, stance, type, category)
+                } else if (prepare(player, target, type, category)) {
+                    normalAttack(player, target, stance, type, category)
+                }
+            }
         }
-        val spec = Specials.take(player)
-        if (spec != null) return SpecialEffects.perform(player, target, spec, stance, type, category)
+    }
+
+    /**
+     * Sets the attack clock and spends what the attack uses (tar, ammo, blowpipe charges); a salamander's Blaze fires
+     * here. False when nothing more happens this attack.
+     */
+    private fun prepare(player: PlayerRef, target: EntityRef, type: AttackType, category: WeaponCategory): Boolean {
         val blowpipe = Blowpipe.isBlowpipe(player.worn(Wear.WEAPON))
         // GE62 Wiki "Toxic blowpipe": attack speed 3 against monsters, 4 (a shortbow's) against players.
         player.setAttackClock(player.tick + player.attackSpeed() + if (blowpipe && target is PlayerRef) 1 else 0)
-        if (type.style == CombatStyle.RANGED && !CombatSystem.useAmmo(player, target, category)) {
-            if (!blowpipe) player.message("There is no ammo left in your quiver.")
-            player.stopInteraction()
-            return
+        val salamander = category === Weapons.SALAMANDER
+        var ok = !salamander || Salamanders.useTar(player)
+        if (ok && salamander && type.style == CombatStyle.MAGIC) {
+            player.anim(attackAnim(player, category, type))
+            CombatSystem.announceAttack(player, target, type.style)
+            Salamanders.blaze(player, target, Formulas.magicDelay(player.distanceTo(target)))
+            return false
         }
+        if (ok && type.style == CombatStyle.RANGED && !CombatSystem.useAmmo(player, target, category)) {
+            if (!blowpipe) player.message("There is no ammo left in your quiver.")
+            ok = false
+        }
+        if (!ok) player.stopInteraction()
+        return ok
+    }
+
+    private fun normalAttack(player: PlayerRef, target: EntityRef, stance: Stance, type: AttackType, category: WeaponCategory) {
         val c = GearContext.ctx(player, target, type)
         val attackRoll = attackRoll(player, stance, type, target = target)
         val defenceRoll = defenceRoll(target, type, rangedDefenceOf(category))
@@ -42,7 +73,22 @@ internal object Attacks {
         CombatSystem.announceAttack(player, target, type.style)
         val splats =
             if (type.style == CombatStyle.MELEE) {
-                PostRoll.melee(player, c, attackRoll, defenceRoll, min, max, unprotectedMax = range[1])
+                // SP64 Entice: the next melee attack's first accuracy roll is sure against monsters, +50% against players.
+                val enticed = (player[SpecialEffects.ENTICED_UNTIL] ?: 0L) > player.tick
+                if (enticed) player[SpecialEffects.ENTICED_UNTIL] = null
+                val roll = if (enticed && target is PlayerRef) attackRoll * 3 / 2 else attackRoll
+                val sure = enticed && target !is PlayerRef
+                PostRoll
+                    .melee(
+                        player,
+                        c,
+                        roll,
+                        defenceRoll,
+                        min,
+                        max,
+                        unprotectedMax = range[1],
+                        firstSure = sure,
+                    ).also { virulence(player, it) }
             } else {
                 PostRoll.ranged(player, target, c, attackRoll, defenceRoll, max, category === Weapons.CROSSBOW)
             }
@@ -55,6 +101,18 @@ internal object Attacks {
             rangedVisuals(player, target, category, second)
             land(player, target, stance, type, PostRoll.ranged(player, target, c, attackRoll, defenceRoll, max, crossbow = false), second)
         }
+    }
+
+    /** SP63 Virulence: the next accurate noxious halberd hit deals at least the cured affliction's hit. */
+    private fun virulence(player: PlayerRef, splats: List<PostRoll.Splat>) {
+        val min = player[SpecialEffects.VIRULENCE_MIN] ?: return
+        if (!GearContext.kit(player).has("noxious halberd")) {
+            player[SpecialEffects.VIRULENCE_MIN] = null
+            return
+        }
+        val first = splats.firstOrNull { it.accurate } ?: return
+        first.damage = maxOf(first.damage, min)
+        player[SpecialEffects.VIRULENCE_MIN] = null
     }
 
     /** Queues [splats] on [target] after [delay] ticks and grants the xp for their damage. */

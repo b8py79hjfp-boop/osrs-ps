@@ -148,6 +148,7 @@ internal object Dragonfire {
                 val resisted = !BossCombat.rolls(npc, victim, AttackType.MAGIC)
                 val unprotected = !hasShield(victim) && antifire(victim) < 2 && (metallic || !victim.protects(CombatStyle.MAGIC))
                 if (unprotected) victim.message(if (resisted) RESISTED else BURNT)
+                Shields.absorbDragonfire(victim)
                 ordinaryMax(victim, metallic, resisted)
             } else {
                 def.maxFor(CombatStyle.MAGIC)

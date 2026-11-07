@@ -152,6 +152,16 @@ a scale 2 times in 3 and a dart like other ammo (Ava's devices keep theirs, 80% 
 GE62: attack speed +1 against players (4, a shortbow's). GE64: lost on a PvP death it drops empty with its scales and
 darts. OPEN-GE3: exact Check / load messages.
 
+## Salamanders and new magic weapons (GE90-GE92)
+
+- GE90 Wiki "Salamander": every attack burns one of the salamander's own tar from the ammo slot (swamp lizard: guam,
+  orange: marrentill, red: tarromin, black: harralander, tecu: irit); without it the attack doesn't happen
+  (OPEN-GE16: the message).
+- GE91 Blaze (magic): accuracy as a spell (+9), max ⌊(Magic × (s + 64) + 320) / 640⌋ with s = 56 / 59 / 77 / 92 / 104,
+  then the magic damage chain; Magic and Defence experience (Wiki `Module:CombatStyles`: defensive magic).
+- GE92 Zorya's tome: a powered staff, ⌊Magic / 3⌋ − 10, speed 3, 3 astral + 2 nature runes per charge, 20,000 charges,
+  not against players (special: special-attacks.md SP50).
+
 ## Immunities (GE81-GE84)
 
 - Flying (Wiki "Flying (attribute)"): no melee damage except polearms (and salamanders, calculator).
@@ -177,3 +187,4 @@ darts. OPEN-GE3: exact Check / load messages.
 - OPEN-GE13 sapphire bolts needing a hit.
 - OPEN-GE14 burn immunity.
 - OPEN-GE15 scythe of vitur hitting more than one target in its arc.
+- OPEN-GE16 the salamander's no-tar message.

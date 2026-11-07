@@ -188,6 +188,7 @@ internal object CombatSystem {
         val boss = (target as? NpcRef)?.let { Bosses.of(it.type) }
         var adjusted = if (boss != null && target is NpcRef) boss.incoming(target, source, damage, style) else damage
         adjusted = SpecialEffects.incoming(target, adjusted, style)
+        adjusted = Shields.rondache(target, adjusted, style)
         // CM17: Ward of Arceuus takes ⌊damage / 10⌋ off demons' hits.
         if (source is NpcRef && SpellEffects.warded(target) && NpcCombatTable.of(source.type)?.attributes?.contains("demon") == true) {
             adjusted -= adjusted / WARD_DIVISOR

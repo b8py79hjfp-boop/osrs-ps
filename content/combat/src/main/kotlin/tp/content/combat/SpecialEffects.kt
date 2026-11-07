@@ -37,7 +37,14 @@ internal object SpecialEffects {
     @Suppress("CyclomaticComplexMethod") // style and visuals per special
     fun perform(player: PlayerRef, target: EntityRef, row: SpecialRow, stance: Stance, type: AttackType, category: WeaponCategory) {
         val energyUsed = if (row.name == "Unleash") player[UNLEASH_SPENT] ?: UNLEASH_MIN else row.energy
-        player.setAttackClock(player.tick + if (row.instant) 0 else speed(player, row))
+        if (!SpecialRules.targetAllowed(player, target, row)) {
+            player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) + cost(player, row))
+            return Attacks.playerAttack(player, target)
+        }
+        if (row.name == "Scatter ashes") return scatterAshes(player, target, row)
+        // SP5: Quick Smash fires on top of the attack delay; Momentum Throw "counts as a normal attack".
+        val instantFree = row.instant && row.name != "Momentum Throw"
+        player.setAttackClock(player.tick + if (instantFree) 0 else SpecialRules.speed(row, speed(player, row)))
         val style =
             when (row.style) {
                 SpecStyle.MAGIC -> CombatStyle.MAGIC
@@ -55,6 +62,8 @@ internal object SpecialEffects {
             player.stopInteraction()
             return
         }
+        // SP54: the dark bow's special fires two arrows.
+        if (row.name.startsWith("Descent")) CombatSystem.useAmmo(player, target, category)
         if (row.anim >= 0) player.anim(row.anim)
         if (row.spot >= 0) player.spotAnim(row.spot, height = if (style == CombatStyle.MELEE) 0 else LAUNCH_HEIGHT)
         val delay = Attacks.hitDelay(style, category, player.distanceTo(target))
@@ -131,7 +140,7 @@ internal object SpecialEffects {
     ) {
         val style = type.style
         val defenceType = row.defenceType ?: type
-        val accuracy = accuracyPermille(target, row, energyUsed)
+        val accuracy = SpecialRules.accuracy(player, target, row, accuracyPermille(target, row, energyUsed))
         val sure = accuracy >= GUARANTEED
         val attackRoll =
             if (sure) {
@@ -144,23 +153,25 @@ internal object SpecialEffects {
             }
         var defenceRoll = Attacks.defenceRoll(target, defenceType, Attacks.rangedDefenceOf(category))
         if (row.name == "Feint") defenceRoll /= FEINT_DEFENCE_DIVISOR
-        var max = baseMax(player, row, stance, type, energyUsed, target)
+        defenceRoll = SpecialRules.defence(row, defenceRoll)
+        val normal = Attacks.minMaxHit(player, stance, type, target, special = true)
+        val ruled = SpecialRules.range(player, target, row, stance, normal)
+        var max = ruled?.get(1) ?: baseMax(player, row, stance, type, energyUsed, target)
         if (row.name == "Annihilate" && index > 0) max = max * ANNIHILATE_FALLOFF / PERCENT
-        val ignoresPrayer = row.name in IGNORES_PROTECTION
+        val ignoresPrayer = row.name in IGNORES_PROTECTION || row.name == "Pulsate"
         if (target is PlayerRef && target.protects(style) && !ignoresPrayer) max = Formulas.protectedMaxHit(max)
-        val rolls = hitsOf(player, row, sure, attackRoll, defenceRoll, max)
-        var first = true
-        for ((hit, damage) in rolls) {
-            val dealt = minOf(Formulas.DAMAGE_CAP, damage)
-            val landingHit = hit
-            val thisDelay = if (first) delay else delay + secondDelay(row, target)
-            CombatSystem.queueHit(target, player, dealt, CombatSystem.hitStyle(style), thisDelay) {
-                onLand(player, target, row, landingHit, dealt)
-                if (landingHit) Toxic.onPlayerHit(player, target, style, dealt)
-            }
-            if (dealt > 0) Attacks.grantXp(player, stance, style, dealt)
-            first = false
+        val min = minOf(ruled?.get(0) ?: normal[0], max)
+        val rolls =
+            SpecialRules.hits(player, target, row, attackRoll, defenceRoll, min, max)
+                ?: hitsOf(player, row, sure, attackRoll, defenceRoll, max, min)
+        val splats = rolls.map { (hit, damage) -> PostRoll.Splat(damage, hit) }
+        if (style == CombatStyle.RANGED && category === Weapons.CROSSBOW &&
+            splats.isNotEmpty()
+        ) {
+            bolts(player, target, row, type, splats[0], max)
         }
+        queue(player, target, row, stance, style, splats, delay)
+        SpecialRules.after(player, target, row, rolls, delay)
         // SP10: Saradomin's Lightning adds a magic hit of 1-16 when the melee part is accurate.
         if (row.name == "Saradomin's Lightning" && rolls.firstOrNull()?.first == true) {
             val bolt = 1 + player.random(SS_BOLT_MAX)
@@ -169,6 +180,41 @@ internal object SpecialEffects {
         }
         if (row.name == "Hammer Blow" && rolls.all { !it.first }) {
             CombatSystem.queueHit(target, player, HAMMER_FLAT, CombatSystem.hitStyle(style), delay)
+        }
+    }
+
+    /** SP61: specials take enchanted bolt effects too; Armadyl Eye doubles their chance, Evoke guarantees them. */
+    private fun bolts(player: PlayerRef, target: EntityRef, row: SpecialRow, type: AttackType, first: PostRoll.Splat, max: Int) {
+        val mode =
+            when (row.name) {
+                "Armadyl Eye" -> PostRoll.Bolts.Spec.ARMADYL_EYE
+                "Evoke" -> PostRoll.Bolts.Spec.EVOKE
+                else -> PostRoll.Bolts.Spec.NONE
+            }
+        PostRoll.Bolts.apply(player, target, GearContext.ctx(player, target, type, special = true), first, max, mode)
+    }
+
+    /** Queues the special's hitsplats with their landing effects and grants the xp. */
+    private fun queue(
+        player: PlayerRef,
+        target: EntityRef,
+        row: SpecialRow,
+        stance: Stance,
+        style: CombatStyle,
+        splats: List<PostRoll.Splat>,
+        delay: Int,
+    ) {
+        for ((i, s) in splats.withIndex()) {
+            val dealt = minOf(Formulas.DAMAGE_CAP, s.damage)
+            val landingHit = s.accurate
+            val thisDelay = if (i == 0) delay else delay + secondDelay(row, target)
+            CombatSystem.queueHit(target, player, dealt, CombatSystem.hitStyle(style), thisDelay) {
+                s.onLand?.invoke()
+                onLand(player, target, row, landingHit, dealt)
+                if (landingHit) Toxic.onPlayerHit(player, target, style, dealt)
+                if (landingHit && i == 0) SetEffects.onLanded(player, target, style, dealt)
+            }
+            if (dealt > 0) Attacks.grantXp(player, stance, style, dealt)
         }
     }
 
@@ -257,6 +303,7 @@ internal object SpecialEffects {
         attackRoll: Int,
         defenceRoll: Int,
         max: Int,
+        min: Int = 0,
     ): List<Pair<Boolean, Int>> {
         fun roll(): Boolean = guaranteed || Formulas.hits(attackRoll, defenceRoll, player::random)
 
@@ -269,11 +316,6 @@ internal object SpecialEffects {
             "Abyssal Puncture" -> {
                 val hit = guaranteed || roll()
                 List(2) { hit to if (hit) dmg(0, max * ABYSSAL_PUNCTURE / PERMILLE) else 0 }
-            }
-
-            "Descent of Darkness / Dragons", "Descent of Darkness" -> {
-                val minimum = if (row.damagePermille >= DRAGON_ARROWS) DESCENT_DRAGON_MIN else DESCENT_MIN
-                List(2) { minOf(DESCENT_CAP, maxOf(minimum, if (roll()) dmg(0, max) else 0)).let { true to it } }
             }
 
             "Feint", "Hamstring" -> {
@@ -302,7 +344,7 @@ internal object SpecialEffects {
             else -> {
                 List(maxOf(1, row.hits)) {
                     val hit = guaranteed || roll()
-                    hit to if (hit) dmg(0, max) else 0
+                    hit to if (hit) maxOf(1, dmg(min, max)) else 0
                 }
             }
         }
@@ -576,6 +618,10 @@ internal object SpecialEffects {
                 player[POWER_OF_DEATH_UNTIL] = player.tick + POWER_OF_DEATH_TICKS
             }
 
+            "Tumeken's Light", "Virulence", "Entice" -> {
+                return newerBuff(player, row)
+            }
+
             else -> {
                 player.message("This special attack is not available here.") // OPEN-SA: Leagues / Deadman buffs
                 return false
@@ -583,6 +629,89 @@ internal object SpecialEffects {
         }
         return true
     }
+
+    /** SP62-SP64: the newer buff specials; false (energy kept) when they can't be used now. */
+    private fun newerBuff(player: PlayerRef, row: SpecialRow): Boolean =
+        when (row.name) {
+            "Tumeken's Light" -> {
+                // SP62 Wiki "Keris partisan of the sun": Tombs of Amascut only (not modelled here).
+                player.message("This special attack can only be used within the Tombs of Amascut.")
+                false
+            }
+
+            "Virulence" -> {
+                // SP63 Wiki "Noxious halberd": while poisoned / venomed, cure it (no immunity); the next accurate halberd
+                // hit's minimum becomes the hit the affliction would have dealt.
+                val state = Poison.state(player)
+                if (state <= 0) {
+                    player.message("You can only use this special attack whilst you are poisoned.")
+                } else {
+                    player[VIRULENCE_MIN] = Poison.hitDamage(state)
+                    Poison.clear(player)
+                }
+                state > 0
+            }
+
+            else -> {
+                entice(player, row)
+            }
+        }
+
+    /**
+     * SP64 Wiki "Soulflame horn": up to 3 other players within 3 tiles who accept aid; 25% energy per ally (OPEN-SP16:
+     * the list page reads 25% plus 25% per ally); the user and each ally's next melee attack within 10 ticks hits for
+     * sure against monsters (+50% accuracy against players).
+     */
+    private fun entice(player: PlayerRef, row: SpecialRow): Boolean {
+        val allies =
+            player
+                .playersAround(player.coord, ENTICE_RADIUS)
+                .filter { it != player && it.varbit(tp.symbols.Varbits.OPTION_ACCEPTAID) == 1 }
+                .take(ENTICE_ALLIES)
+        if (allies.isEmpty()) {
+            player.message("You blow your horn into the wind. No-one nearby is able to listen.")
+            return false
+        }
+        val cost = row.energy * allies.size
+        if (player.varp(Varps.SA_ENERGY) < cost) {
+            player.message(Specials.NO_ENERGY)
+            return false
+        }
+        // The caller takes row.energy; the extra allies cost the rest here.
+        player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - (cost - row.energy))
+        for (p in allies + player) p[ENTICED_UNTIL] = p.tick + ENTICE_TICKS
+        return true
+    }
+
+    /**
+     * SP65 Wiki "Purging staff": Scatter ashes casts the best demonbane spell the player can; if it kills the demon,
+     * the energy comes back and the next attack is 3 ticks sooner. Runes are needed (OPEN-SP17).
+     */
+    private fun scatterAshes(player: PlayerRef, target: EntityRef, row: SpecialRow) {
+        val level = player.level(Stat.MAGIC)
+        val spell = DEMONBANE.mapNotNull { name -> CombatSpellTable.ALL.firstOrNull { it.name == name } }.lastOrNull { level >= it.level }
+        val refund = { player.setVarp(Varps.SA_ENERGY, minOf(Specials.FULL_ENERGY, player.varp(Varps.SA_ENERGY) + cost(player, row))) }
+        if (spell == null || !SpellCasting.cast(player, target, spell, manual = false)) {
+            refund()
+            return
+        }
+        target.queueHit(Formulas.magicDelay(player.distanceTo(target)) + 1) {
+            if (target.isDying || target.hitpoints <= 0) {
+                refund()
+                player.setAttackClock(player.attackClock() - SCATTER_QUICKER)
+            }
+        }
+    }
+
+    private val DEMONBANE = listOf("Inferior Demonbane", "Superior Demonbane", "Dark Demonbane")
+    private const val SCATTER_QUICKER = 3
+    private const val ENTICE_RADIUS = 3
+    private const val ENTICE_ALLIES = 3
+    private const val ENTICE_TICKS = 10L
+
+    /** Entice's sure hit (until tick) and Virulence's stored minimum (consumed by [Attacks]). */
+    val ENTICED_UNTIL = tp.plugin.AttrKey<Long>("spec_enticed_until")
+    val VIRULENCE_MIN = tp.plugin.AttrKey<Int>("spec_virulence_min")
 
     private fun boost(player: PlayerRef, stat: Int, amount: Int) {
         player.setLevel(stat, maxOf(player.level(stat), minOf(player.baseLevel(stat) + amount, player.level(stat) + amount)))
@@ -658,10 +787,6 @@ internal object SpecialEffects {
     private const val AYAK_OFFSET = 6
     private const val SWARM_PERCENT = 40
     private const val ABYSSAL_PUNCTURE = 850
-    private const val DRAGON_ARROWS = 1500
-    private const val DESCENT_MIN = 5
-    private const val DESCENT_DRAGON_MIN = 8
-    private const val DESCENT_CAP = 48
     private const val FEINT_MIN = 20
     private const val FEINT_MAX = 120
     private const val FEINT_DEFENCE_DIVISOR = 4

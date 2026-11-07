@@ -32,6 +32,61 @@ number's source is the TSV row; conflicts and guesses are listed in docs/researc
 | SP21 | Bear Down (20), Phantom Strike (PvP, the damage again) and Flames of Ralos (10) bleed as typeless hits of 5 every 2 ticks (SA-20). |
 | SP31 | Buffs: Sanctuary +8 Defence; Rampage drains Attack, Defence, Ranged, Magic by 10% and boosts Strength by 10 + drained / 4; Lumber Up / Rock Knocker / Fishstabber +3 Woodcutting / Mining / Fishing with their shouts; Power of Death halves melee damage taken for 100 ticks. |
 
+## Rules added with the gear-effects audit (SP41-SP65)
+
+Sources: each special's Wiki page (`https://oldschool.runescape.wiki/w/<Weapon>`), quoted in the research notes; the
+Wiki DPS calculator (`PlayerVsNPCCalc`) where it models the special. Code: `SpecialRules.kt`, `Shields.kt`, `Zorya`.
+
+- SP41 Specials that need a set or a resource check it before any energy is spent, with the game's refusal
+  (Behead: soul stacks; Shield Slam: 10 charges; Blood infusion / Break Shackles / Eclipse: the full moon set; Scatter
+  ashes: the Arceuus spellbook; the dark bow: at least 2 arrows). Specials hit through bolts and set effects (SP61) and
+  keep the weapon's minimum hit (Osmumten's fang: Eviscerate rolls 15%..100% of the true max).
+- SP42 Dragon longsword (bh): its special is one tick faster.
+- SP43 Behead (soulreaper axe): consumes every soul stack; per stack +12% accuracy, +6% max, min hit 6% of max.
+- SP44 Blood infusion (dual macuahuitl, blood moon set): max ×1.25 split ⌊half⌋ + rest, each half rolled on its own
+  (×1.25 accuracy), costs ⌊25%⌋ of current Hitpoints hit or miss; Bloodrager (next attack a tick sooner) if either hits.
+  No minimum (Mod Ash: "did not make it into the game").
+- SP45 Brutal Swing (crimson kisten): four accuracy rolls; n successes deal 70+20(n−1)% .. 110+20(n−1)% of max in one
+  splat (the row's 4000‰ accuracy is replaced by 1000‰).
+- SP46 Break Shackles (blue moon spear, set): +1.5% accuracy (uncapped) and damage (≤ +112.5%) per tick of bind left on
+  the target, then the bind is removed.
+- SP47 Dragon mace (bh): Shatter rolls against 60% of the crush defence.
+- SP48 Division (tonalztics): each successful hit lowers Defence by the target's Magic / 8; against monsters the first
+  hit's drain counts for the second roll, not in PvP.
+- SP49 Burning barrage (burning claws): up to three rolls, first success sets the pattern (75-175% split 25/25/50, 15%
+  burn per splat; 50-150% split 50/50 then −1, −1, +2, 30%; 25-125% then +1, +1, −2, 45%; none: 0-2 total).
+- SP50 Zorya's flow: the tome's powered-staff max ×1.6, accuracy ×2.5 (×2.2 / ×4 with stored charges); a hit stores 3
+  buffed attacks (≤ 5, 30 s, refreshed per use): +150% accuracy, +60% damage, every 2 ticks. Not against players.
+- SP51 Eclipse (atlatl, set): magic defence, ×1.5 accuracy; the atlatl's max plus the target's remaining burn damage
+  (≤ 50; half to the min), burns consumed. OPEN-SP18: ranged or magic attack roll (magic used).
+- SP52 Pulsate (Dawnbringer): 75-150, guaranteed, ignoring gear, prayer and level.
+- SP53 Shield Slam (Rondache, no energy, from the spec bar when the weapon has none): +6 crush accuracy per charge,
+  flat x + x% damage for x charges (24 at 20), all charges consumed.
+- SP54 Descent of Darkness / Dragons: two arrows (2 ammo), ×1.3 (×1.5 with dragon arrows), minimum 5 / 8 per arrow even
+  on a miss, at most 48; the (bh) bow 7 / 10 and rolls from the minimum.
+- SP55 Scorching shackles: demons only ("Scorching shackles won't work against a non-demon enemy.", energy refunded):
+  bound 20 ticks and a 5-damage burn, 1 at once, hit or miss.
+- SP56 Blood Sacrifice (ancient godsword): see the rule in code; 25 typeless after 8 ticks unless 5+ tiles away, heal
+  ≤ 15% of the target's max HP, capped 25 (15 vs players; OPEN-SP12 changelog says 14).
+- SP57 Rondache charges: its +2 flat armour / magic resistance takes up to 2 off a hit not stopped by prayer, charging
+  that much (≤ 2 per hit, once per 2 ticks, ≤ 20).
+- SP58-SP60 Dragonfire shield / ward ("Activate") and ancient wyvern shield ("Operate"), worn op 1: one charge, range 10,
+  cooldown 192 ticks (wyvern 200: OPEN-SP13), up to 25 (wyvern 15), Defence-based accuracy against magic defence
+  (OPEN-SP15), not against dragons / wyverns; an anti-dragon shield caps it at 3 against players, a super antifire
+  blocks it (OPEN-SP14: plain antifire). Dragonfire shields absorb one charge per dragon breath (≤ 50); "Inspect",
+  "Empty", worn "Check". Wyvern charging with fossils / numulites is OPEN-SP19.
+- SP61 Bolt effects in specials: Armadyl Eye doubles the base chance (the Kandarin diary then adds a tenth of the base:
+  10% → 21%); Evoke guarantees the effect on a successful hit.
+- SP62 Tumeken's Light: Tombs of Amascut only (refused here).
+- SP63 Virulence (noxious halberd): only while poisoned / venomed; cures it (no immunity); the next accurate halberd hit
+  deals at least the hit the affliction would have dealt (lost on weapon change / logout).
+- SP64 Entice (soulflame horn): up to 3 other players within 3 tiles with Accept Aid on; 25% energy per ally
+  (OPEN-SP16); their and the user's next melee attack within 10 ticks: first accuracy roll sure vs monsters, +50% vs
+  players. No ally: "You blow your horn into the wind. No-one nearby is able to listen."
+- SP65 Scatter ashes (purging staff, Arceuus): casts the best demonbane spell the player can (runes needed, OPEN-SP17);
+  a kill refunds the energy and makes the next attack 3 ticks sooner.
+- Momentum Throw counts as a normal attack: the attack delay restarts (Quick Smash does not).
+
 ## OPEN
 
 - **OPEN-SP2:** Leagues / Deadman-only specials (Echo slash, Power of the Gods' blood sacrifice, Crystalline
@@ -39,9 +94,13 @@ number's source is the TSV row; conflicts and guesses are listed in docs/researc
   Light, Virulence, Behead, Break Shackles, Eclipse, Burning barrage, Scorching shackles, Scatter ashes, Blood infusion,
   Brutal Swing's stacks, Shield Slam charges) use only their generic row; the buffs among them say "This special attack
   is not available here."
-- **OPEN-SP3:** enchanted-bolt specials (Armadyl Eye, Evoke) need bolt effects, not modelled; their accuracy applies.
+- ~~OPEN-SP3~~ closed: Armadyl Eye / Evoke bolt effects are SP61.
 - **OPEN-SP4:** player spec graphics are drawn at height 0 for melee and 96 for ranged / magic; the per-graphic heights
   are not in any source.
-- **OPEN-SP5:** the dragonfire shield / wyvern shield operate attacks (no energy, 2-minute cooldown) are item ops, not
-  done here.
+- ~~OPEN-SP5~~ closed: the shield operate attacks are SP58-SP60.
+- **OPEN-SP12** Blood Sacrifice PvP heal cap (15 / 14). **OPEN-SP13** wyvern shield cooldown ticks. **OPEN-SP14**
+  plain antifire against the shield blasts. **OPEN-SP15** shield blast attack bonus. **OPEN-SP16** Entice energy
+  formula. **OPEN-SP17** Scatter ashes runes. **OPEN-SP18** Eclipse attack roll. **OPEN-SP19** wyvern shield charging.
+- OPEN-SP2 also covers the Leagues / Deadman weapons' specials: Brand (infernal tecpatl), Crystalline Severance,
+  Explosive Shatter (lithic sceptre), Lightning Strike / Lingering Lightning (thunder khopesh): not obtainable here.
 - The research OPEN list (SA-1..SA-26) applies.

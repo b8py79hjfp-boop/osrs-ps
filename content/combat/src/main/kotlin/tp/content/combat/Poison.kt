@@ -117,7 +117,7 @@ internal object Poison {
         if (state(player) != 0) start(player)
     }
 
-    private fun hitDamage(state: Int): Int =
+    fun hitDamage(state: Int): Int =
         if (state >= VENOM) minOf(VENOM_CAP, 2 * (state - VENOM + 3)) else (state + SEVERITY_PER_DAMAGE - 1) / SEVERITY_PER_DAMAGE
 
     private fun start(e: EntityRef) {

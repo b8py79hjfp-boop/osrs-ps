@@ -139,21 +139,47 @@ public class SetEffects : ContentPlugin {
 
 /**
  * Burns (Wiki "Burn"): 10 damage over 40 ticks, 1 every 4 ticks, at most 5 burns at once (further ones are lost).
- * Typeless: protection prayers don't reduce it.
+ * Typeless: protection prayers don't reduce it. Each burn keeps its remaining damage, so the Eclipse special can
+ * consume what is left.
  */
 internal object Burns {
-    private val ACTIVE = AttrKey<MutableList<Long>>("burns_until")
+    private val ACTIVE = AttrKey<MutableList<IntArray>>("burns_active")
 
-    fun burn(target: EntityRef, source: EntityRef) {
-        val now = target.tick
-        val active = (target[ACTIVE] ?: mutableListOf<Long>().also { target[ACTIVE] = it }).apply { removeAll { it <= now } }
+    /** Starts a burn of [total] damage on [target]; [now]: the first point lands at once (Scorching shackles). */
+    fun burn(target: EntityRef, source: EntityRef, total: Int = TOTAL, now: Boolean = false) {
+        val active = target[ACTIVE] ?: mutableListOf<IntArray>().also { target[ACTIVE] = it }
+        active.removeAll { it[0] <= 0 }
         if (active.size >= MAX_STACKS) return
-        active += now + DURATION
-        for (i in 1..TICKS) CombatSystem.queueHit(target, source, 1, HitStyle.TYPELESS, i * INTERVAL)
+        val left = intArrayOf(total)
+        active += left
+        if (now) tick(target, source, left)
+        schedule(target, source, left)
     }
 
+    private fun schedule(target: EntityRef, source: EntityRef, left: IntArray) {
+        if (left[0] <= 0) return
+        target.queueHit(INTERVAL) {
+            tick(target, source, left)
+            schedule(target, source, left)
+        }
+    }
+
+    private fun tick(target: EntityRef, source: EntityRef, left: IntArray) {
+        if (left[0] <= 0 || target.isDying) return
+        left[0]--
+        CombatSystem.applyHit(target, source, 1, HitStyle.TYPELESS)
+    }
+
+    /** Ends every burn on [target] and returns the damage they had left (GE76 / Eclipse). */
+    fun consume(target: EntityRef): Int {
+        val active = target[ACTIVE] ?: return 0
+        val left = active.sumOf { maxOf(0, it[0]) }
+        active.forEach { it[0] = 0 }
+        active.clear()
+        return left
+    }
+
+    private const val TOTAL = 10
     private const val MAX_STACKS = 5
     private const val INTERVAL = 4
-    private const val TICKS = 10
-    private const val DURATION = (INTERVAL * TICKS).toLong()
 }

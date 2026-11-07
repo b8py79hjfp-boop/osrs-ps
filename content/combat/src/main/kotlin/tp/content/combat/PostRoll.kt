@@ -44,11 +44,14 @@ internal object PostRoll {
         min: Int,
         max: Int,
         unprotectedMax: Int = max,
+        firstSure: Boolean = false,
     ): List<Splat> {
         val k = c.kit
+        var sure = firstSure
 
         fun roll(m: Int): Splat {
-            val hit = accurate(player, c, attackRoll, defenceRoll)
+            val hit = sure || accurate(player, c, attackRoll, defenceRoll)
+            sure = false
             return Splat(if (hit) damage(player, min, maxOf(min, m)) else 0, hit)
         }
         val splats =
@@ -219,13 +222,21 @@ internal object PostRoll {
      * ruby and diamond work regardless of accuracy; dragonstone, onyx, emerald and sapphire need a successful hit.
      */
     object Bolts {
-        fun apply(player: PlayerRef, target: EntityRef, c: GearEffects.Ctx, s: Splat, max: Int) {
+        /** How a special changes the proc: Armadyl Eye doubles the base chance, Evoke guarantees it on a hit. */
+        enum class Spec { NONE, ARMADYL_EYE, EVOKE }
+
+        fun apply(player: PlayerRef, target: EntityRef, c: GearEffects.Ctx, s: Splat, max: Int, spec: Spec = Spec.NONE) {
             val ammo = c.kit.names.firstOrNull { it.endsWith("bolts (e)") } ?: return
             val pvp = target is PlayerRef
             val ranged = player.level(Stat.RANGED)
             val zcb = c.kit.has("zaryte crossbow")
 
-            fun proc(pvpTenths: Int, pvmTenths: Int): Boolean = chance(player, if (pvp) pvpTenths else pvmTenths)
+            fun proc(pvpTenths: Int, pvmTenths: Int): Boolean =
+                when (spec) {
+                    Spec.EVOKE -> s.accurate
+                    Spec.ARMADYL_EYE -> chance(player, if (pvp) pvpTenths else pvmTenths, doubled = true)
+                    Spec.NONE -> chance(player, if (pvp) pvpTenths else pvmTenths)
+                }
             when (ammo.substringBefore(' ')) {
                 "opal" -> {
                     if (proc(50, 50)) {
@@ -308,9 +319,12 @@ internal object PostRoll {
             }
         }
 
-        /** [tenths] of a percent, raised by a tenth with the Kandarin hard diary. */
-        private fun chance(player: PlayerRef, tenths: Int): Boolean {
-            val boosted = if (kandarinHard(player)) tenths * 11 / 10 else tenths
+        /**
+         * [tenths] of a percent; Armadyl Eye doubles the base, and the Kandarin hard diary then adds a tenth of the
+         * base (Wiki "Armadyl crossbow": "increased from 10% to a total of 21%").
+         */
+        private fun chance(player: PlayerRef, tenths: Int, doubled: Boolean = false): Boolean {
+            val boosted = (if (doubled) tenths * 2 else tenths) + if (kandarinHard(player)) tenths / 10 else 0
             return boosted > 0 && player.random(PERMILLE) < boosted
         }
 

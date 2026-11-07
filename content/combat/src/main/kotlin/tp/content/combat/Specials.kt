@@ -69,7 +69,7 @@ internal object Specials {
             player.message(DuelChecks.NO_SPECIALS)
             return
         }
-        val row = byObj[player.worn(Wear.WEAPON)] ?: byObj[player.worn(Wear.SHIELD)]
+        val row = rowFor(player)
         if (row == null) {
             player.message("This weapon does not have a special attack.")
             return
@@ -78,6 +78,7 @@ internal object Specials {
             player.message(NO_ENERGY)
             return
         }
+        if (!SpecialRules.ready(player, row)) return
         if (row.style == SpecStyle.INSTANT && !row.instantAttack()) {
             if (SpecialEffects.buff(player, row)) player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - row.energy)
             return
@@ -86,6 +87,13 @@ internal object Specials {
         // SP5: Quick Smash and Momentum Throw hit now, without waiting for the attack clock.
         if (row.instant) SpecialEffects.instantAttack(player)
     }
+
+    /**
+     * The weapon's special; without one, a Rondache's Shield Slam (SP53: it "can be activated by clicking the usual
+     * special attack bar"). Operate shields (dragonfire shield / ward, ancient wyvern shield) are worn ops, not specs.
+     */
+    private fun rowFor(player: PlayerRef): SpecialRow? =
+        byObj[player.worn(Wear.WEAPON)] ?: byObj[player.worn(Wear.SHIELD)]?.takeIf { it.name == "Shield Slam" }
 
     /** Instant-style rows that are attacks (granite maul, thrownhammer-like) rather than buffs. */
     private fun SpecialRow.instantAttack(): Boolean = name in INSTANT_ATTACKS
@@ -96,8 +104,9 @@ internal object Specials {
     fun take(player: PlayerRef): SpecialRow? {
         if (player.varp(Varps.SA_ATTACK) == 0) return null
         player.setVarp(Varps.SA_ATTACK, 0)
-        val row = byObj[player.worn(Wear.WEAPON)] ?: return null
-        if (row.style == SpecStyle.INSTANT && !row.instantAttack()) return null
+        val row =
+            rowFor(player)?.takeIf { (it.style != SpecStyle.INSTANT || it.instantAttack()) && SpecialRules.ready(player, it) }
+                ?: return null
         val energy = player.varp(Varps.SA_ENERGY)
         val cost = SpecialEffects.cost(player, row)
         if (energy < cost) {

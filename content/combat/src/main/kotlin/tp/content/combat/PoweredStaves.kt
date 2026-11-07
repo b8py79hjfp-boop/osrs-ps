@@ -180,6 +180,21 @@ internal object PoweredStaves {
                 SpotAnims.VFX_AYAK_NORMAL_PROJECTILE,
                 SpotAnims.VFX_AYAK_NORMAL_IMPACT,
             ),
+            // Wiki "Zorya's tome": ⌊Magic / 3⌋ - 10 (calculator; "base max hit of 18" at 85), speed 3; astral 3 + nature 2;
+            // 20,000; not against players.
+            Staff(
+                "zoryas_tome",
+                intArrayOf(Objs.ZORYAS_TOME),
+                Objs.ZORYAS_TOME_UNCHARGED,
+                20_000,
+                3,
+                listOf(Objs.ASTRALRUNE to 3, Objs.NATURERUNE to 2),
+                { maxOf(1, it / 3 - 10) },
+                -1,
+                SpotAnims.VFX_ZORYA_TOME_STANDARD_SPOTANIM,
+                SpotAnims.VFX_ZORYA_TOME_PROJ,
+                SpotAnims.VFX_ZORYA_TOME_IMPACT,
+            ),
             // Wiki "Bone staff": ⌊Magic / 3⌋ + 5 (+10 against rats); chaos 1; 20,000; no uncharged obj in the cache here.
             Staff(
                 "bone_staff",
@@ -221,7 +236,9 @@ internal object PoweredStaves {
             return false
         }
         player.setSaved(key(staff), left - 1)
-        player.setAttackClock(player.tick + staff.speed)
+        // SP50: a stored Zorya's flow buff: +150% accuracy, +60% damage and a 2-tick attack.
+        val buffed = staff.family == ZORYA && Zorya.use(player)
+        player.setAttackClock(player.tick + if (buffed) ZORYA_BUFFED_SPEED else staff.speed)
         val weapon = player.worn(Wear.WEAPON)
         player.anim(staff.castAnim.takeIf { it >= 0 } ?: WeaponData.of(weapon)?.attackAnims?.firstOrNull { it >= 0 } ?: Seqs.HUMAN_CASTING)
         if (staff.castSpot >= 0) player.spotAnim(staff.castSpot, height = CAST_HEIGHT)
@@ -232,22 +249,33 @@ internal object PoweredStaves {
         CombatVisuals.block(target, delay)
         val multiplier = if (staff.effect == Effect.SHADOW) SHADOW_MULTIPLIER else 1
         player[Attr.LAST_SPELL] = null // a powered staff's own spell is not Magic Dart (slayer-equipment.md SE9)
-        val attackRoll = Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier, target = target)
+        val attackRoll =
+            Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier, target = target) *
+                (if (buffed) ZORYA_ACCURACY else PERCENT) / PERCENT
         val defenceRoll = PostRoll.brimstone(player, Attacks.defenceRoll(target, AttackType.MAGIC))
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
         val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
         target.spotAnim(if (hit) staff.impact else SpotAnims.FAILEDSPELL_IMPACT, height = IMPACT_HEIGHT, delay = arrive)
-        if (hit) land(player, target, staff, stance, multiplier, delay) else CombatSystem.queueHit(target, player, 0, HitStyle.MAGIC, delay)
+        if (hit) {
+            land(
+                player,
+                target,
+                staff,
+                stance,
+                multiplier,
+                delay,
+                buffed,
+            )
+        } else {
+            CombatSystem.queueHit(target, player, 0, HitStyle.MAGIC, delay)
+        }
         if (charges(player, staff) <= 0) uncharge(player, staff)
         return true
     }
 
-    private fun land(player: PlayerRef, target: EntityRef, staff: Staff, stance: Stance, multiplier: Int, delay: Int) {
-        val tenths =
-            minOf(MAX_SHADOW_TENTHS, player.bonus(Param.MAGIC_DAMAGE) * multiplier) +
-                player.activePrayers().sumOf { it.effect.magicDamage } * TENTHS
-        val c = GearContext.ctx(player, target, AttackType.MAGIC)
-        var max = GearEffects.magicMax(c, staff.max(player.level(Stat.MAGIC)), tenths, null, 0, elementalAmulet = false)
+    private fun land(player: PlayerRef, target: EntityRef, staff: Staff, stance: Stance, multiplier: Int, delay: Int, buffed: Boolean) {
+        var max = max(player, target, staff, multiplier)
+        if (buffed) max = max * ZORYA_DAMAGE / PERCENT
         if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
         var damage = PostRoll.ahrim(player, Formulas.damage(max, player::random))
         val sanguine = staff.effect == Effect.SANGUINE && player.random(SANGUINE_CHANCE) == 0
@@ -271,6 +299,21 @@ internal object PoweredStaves {
             }
             player.addXp(Stat.HITPOINTS, damage * 4.0 / 3)
         }
+    }
+
+    /** The staff's max hit at [target] with the magic damage chain (gear-effects.md GE30-GE35). */
+    private fun max(player: PlayerRef, target: EntityRef, staff: Staff, multiplier: Int): Int {
+        val tenths =
+            minOf(MAX_SHADOW_TENTHS, player.bonus(Param.MAGIC_DAMAGE) * multiplier) +
+                player.activePrayers().sumOf { it.effect.magicDamage } * TENTHS
+        val c = GearContext.ctx(player, target, AttackType.MAGIC)
+        return GearEffects.magicMax(c, staff.max(player.level(Stat.MAGIC)), tenths, null, 0, elementalAmulet = false)
+    }
+
+    /** The wielded staff's normal max hit at [target] (0 without one): the base of its special attack. */
+    fun magicMax(player: PlayerRef, target: EntityRef): Int {
+        val staff = of(player.worn(Wear.WEAPON)) ?: return 0
+        return max(player, target, staff, if (staff.effect == Effect.SHADOW) SHADOW_MULTIPLIER else 1)
     }
 
     /** CM22: runes used on the staff buy as many charges as they pay for, up to its capacity. */
@@ -328,6 +371,12 @@ internal object PoweredStaves {
     /** Wiki "Tumeken's shadow": gear magic attack and damage × 3, damage capped at 100%. */
     private const val SHADOW_MULTIPLIER = 3
     private const val MAX_SHADOW_TENTHS = 1000
+
+    /** SP50 Wiki "Zorya's tome": buffed attacks +150% accuracy, +60% damage, every 2 ticks. */
+    private const val ZORYA = "zoryas_tome"
+    private const val ZORYA_ACCURACY = 250
+    private const val ZORYA_DAMAGE = 160
+    private const val ZORYA_BUFFED_SPEED = 2
 
     /** Wiki "Sanguinesti staff": 1 in 5, +8 damage. */
     private const val SANGUINE_CHANCE = 5
