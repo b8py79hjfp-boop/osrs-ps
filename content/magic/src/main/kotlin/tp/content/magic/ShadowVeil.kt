@@ -4,6 +4,7 @@ import tp.plugin.AttrKey
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
+import tp.plugin.SpellRunes
 import tp.plugin.Stats
 import tp.symbols.Components
 import tp.symbols.Objs
@@ -13,7 +14,7 @@ import tp.symbols.SpotAnims
 /**
  * Shadow Veil (docs/mechanics/magic-utility.md SV1): lasts as many ticks as the caster's base Magic level and can be cast
  * once per 50 ticks. The thieving effect (a 15% chance to avoid the stun and damage of a failed pickpocket) is read by the
- * pickpocketing code, which does not yet look at [VEILED_UNTIL] (OPEN-MU13).
+ * pickpocketing code through [VEILED_UNTIL].
  */
 public class ShadowVeil : ContentPlugin {
     override fun ContentScope.register() {
@@ -33,7 +34,7 @@ public class ShadowVeil : ContentPlugin {
 
     internal companion object {
         /** Tick at which the caster's Shadow Veil ends. */
-        val VEILED_UNTIL = AttrKey<Long>("shadow_veil_until")
+        val VEILED_UNTIL = tp.plugin.SharedAttrs.SHADOW_VEIL_UNTIL
 
         private val READY_AT = AttrKey<Long>("shadow_veil_ready_at")
 

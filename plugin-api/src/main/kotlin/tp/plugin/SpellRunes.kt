@@ -1,7 +1,5 @@
-package tp.content.magic
+package tp.plugin
 
-import tp.plugin.ItemTx
-import tp.plugin.PlayerRef
 import tp.symbols.Invs
 import tp.symbols.Objs
 
@@ -11,8 +9,8 @@ import tp.symbols.Objs
  * backpack as plain runes. The whole payment is steps of the caller's item transaction, so a spell that fails halfway
  * costs nothing.
  */
-internal object SpellRunes {
-    /** Worn slot of the weapon (RS Mod wear positions; same as content/combat `Equipment`). */
+public object SpellRunes {
+    /** Worn slot of the weapon (RS Mod wear positions). */
     private const val WEAPON_SLOT = 3
 
     /** A combination rune and the two elemental runes it counts as (OSRS Wiki "Combination rune"). */
@@ -50,7 +48,7 @@ internal object SpellRunes {
     }
 
     /** Whether the equipped weapon supplies [rune] without end. */
-    fun staffSupplies(player: PlayerRef, rune: Int): Boolean {
+    public fun staffSupplies(player: PlayerRef, rune: Int): Boolean {
         val weapon = player.inv(Invs.WORN).obj(WEAPON_SLOT)
         if (weapon < 0) return false
         return STAFF_SUPPLY[player.objName(weapon).lowercase()]?.contains(rune) == true
@@ -60,7 +58,7 @@ internal object SpellRunes {
      * Takes [runes] (rune obj to count) as steps of [tx]; false if the player can't pay. Nothing is removed when this
      * returns false only because the transaction as a whole is then undone by the caller's `transaction`.
      */
-    fun take(tx: ItemTx, player: PlayerRef, runes: List<Pair<Int, Int>>): Boolean {
+    public fun take(tx: ItemTx, player: PlayerRef, runes: List<Pair<Int, Int>>): Boolean {
         val need = LinkedHashMap<Int, Int>()
         for ((rune, count) in runes) {
             if (!staffSupplies(player, rune)) need.merge(rune, count, Int::plus)
@@ -77,6 +75,25 @@ internal object SpellRunes {
             if (used > 0 && !tx.remove(Invs.INV, combo.rune, used)) return false
         }
         return need.all { (rune, count) -> count <= 0 || tx.remove(Invs.INV, rune, count) }
+    }
+
+    /** Whether [player] could pay [runes] now (staff, combination and plain runes), without taking anything. */
+    public fun has(player: PlayerRef, runes: List<Pair<Int, Int>>): Boolean {
+        val need = LinkedHashMap<Int, Int>()
+        for ((rune, count) in runes) {
+            if (!staffSupplies(player, rune)) need.merge(rune, count, Int::plus)
+        }
+        val backpack = player.inv(Invs.INV)
+        for (combo in COMBOS) {
+            val held = backpack.total(combo.rune)
+            var used = 0
+            while (used < held && covers(need, combo)) {
+                reduce(need, combo.first)
+                reduce(need, combo.second)
+                used++
+            }
+        }
+        return need.all { (rune, count) -> count <= 0 || backpack.total(rune) >= count }
     }
 
     private fun covers(need: Map<Int, Int>, combo: Combo): Boolean = (need[combo.first] ?: 0) > 0 || (need[combo.second] ?: 0) > 0

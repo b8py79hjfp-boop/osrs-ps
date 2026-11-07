@@ -261,6 +261,12 @@ public sealed class EntityRef {
         e.world.data.locs
             .isSea(tile.x, tile.z)
 
+    /** Int values of cache enum [id] (key → value); empty if absent. */
+    public fun enumInts(id: Int): Map<Int, Int> =
+        e.world.data.configs.enums[id]
+            ?.intValues
+            .orEmpty()
+
     /** Whether a boat may occupy [tile]: sea, with no blocking loc such as a rock (sailing-movement.md SM1, SM5). */
     public fun isSailable(tile: CoordGrid): Boolean =
         e.world.data.locs
@@ -305,6 +311,12 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
     public fun setLevel(stat: Int, value: Int) {
         n.levels[stat] = value.coerceAtLeast(0)
     }
+
+    /** The NPC config's level for [stat] (same order as [level]): what drains are measured against. */
+    public fun baseLevel(stat: Int): Int =
+        n.world.data.configs.npcs[n.type]
+            ?.stats
+            ?.getOrNull(stat) ?: 0
 
     /** The NPC's name as players see it (cache name). */
     public val displayName: String get() =

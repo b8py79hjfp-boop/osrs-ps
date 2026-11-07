@@ -3,6 +3,7 @@ package tp.content.magic
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
+import tp.plugin.SpellRunes
 import tp.plugin.Stats
 import tp.plugin.WorldRef
 import tp.symbols.Components

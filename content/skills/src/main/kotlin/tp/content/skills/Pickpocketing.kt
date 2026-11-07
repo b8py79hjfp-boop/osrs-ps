@@ -54,6 +54,10 @@ public class Pickpocketing : ContentPlugin {
         val rate = if (gloves) target.glovesRate else target.rate
         if (p.statRandom(Stats.THIEVING, rate.low, rate.high)) {
             if (steal(p, target, name)) delay(PICKPOCKET_TICKS)
+        } else if (veilSaves(p)) {
+            // SV1: Shadow Veil spares the stun and the damage; the attempt still fails.
+            p.message("You fail to pick the $name's pocket.")
+            delay(PICKPOCKET_TICKS)
         } else {
             fail(p, npc, target, name)
             delay(PICKPOCKET_TICKS + STUN_TICKS)
@@ -97,6 +101,10 @@ public class Pickpocketing : ContentPlugin {
         }
         return null
     }
+
+    /** SV1 (Wiki "Shadow Veil"): while it lasts, a failed pickpocket has a 15% chance to avoid the stun and damage. */
+    private fun veilSaves(p: PlayerRef): Boolean =
+        (p[tp.plugin.SharedAttrs.SHADOW_VEIL_UNTIL] ?: 0L) > p.tick && p.random(PERCENT) < VEIL_CHANCE
 
     private fun fail(p: PlayerRef, npc: NpcRef, target: Pickable, name: String) {
         p.message("You fail to pick the $name's pocket.")
@@ -142,6 +150,10 @@ public class Pickpocketing : ContentPlugin {
 
         /** Extra ticks a failed pickpocket costs (Wiki "Pickpocketing": further pickpocketing is blocked for eight ticks). */
         const val STUN_TICKS = 8
+
+        /** Wiki "Shadow Veil": a 15% chance to avoid the stun. */
+        const val VEIL_CHANCE = 15
+        const val PERCENT = 100
 
         /** Coin pouches that stack in the backpack (Wiki "Coin pouch": 28 without the Ardougne diaries, OPEN-TH3). */
         const val COIN_POUCH_LIMIT = 28

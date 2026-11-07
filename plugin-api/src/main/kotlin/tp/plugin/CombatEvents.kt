@@ -142,7 +142,21 @@ public object SharedAttrs {
 
     /** Tick until which teleports are blocked (Tele Block). */
     public val TELEBLOCK_UNTIL: AttrKey<Long> = AttrKey("teleblock_until")
+
+    /** Tick at which the player's Charge runs out (magic sets it; combat reads it for the god spells). */
+    public val MAGIC_CHARGED_UNTIL: AttrKey<Long> = AttrKey("magic_charged_until")
+
+    /** Tick at which the player's Shadow Veil runs out (magic sets it; thieving reads it). */
+    public val SHADOW_VEIL_UNTIL: AttrKey<Long> = AttrKey("shadow_veil_until")
 }
+
+/** Asks the Slayer module whether [npc] is [player]'s current Slayer task; [onTask] stays false if nobody answers. */
+public class SlayerTaskCheck(public val player: PlayerRef, public val npc: NpcRef) : Event {
+    public var onTask: Boolean = false
+}
+
+/** [caster] paid for a combat spell cast from [book] (magic content ends a Spellbook Swap on it). */
+public class CombatSpellCast(public val caster: PlayerRef, public val book: Int) : Event
 
 /** A player's look changed outside the equipment module (skull); the appearance owner re-sends it. */
 public class AppearanceChanged(public val player: PlayerRef) : Event

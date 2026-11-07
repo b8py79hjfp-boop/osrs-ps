@@ -4,6 +4,7 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.LocRef
 import tp.plugin.PlayerScript
+import tp.plugin.SpellRunes
 import tp.symbols.Components
 import tp.symbols.Invs
 import tp.symbols.Objs

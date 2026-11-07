@@ -22,6 +22,11 @@ public class DevCommands : ContentPlugin {
             val level = args.getOrNull(1)?.toIntOrNull()
             if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
         }
+        onCommand("spellbook") { args ->
+            // 0 standard, 1 ancient, 2 lunar, 3 arceuus (varbit `spellbook`).
+            val book = args.getOrNull(0)?.toIntOrNull()
+            if (book != null && book in 0..LAST_SPELLBOOK) setVarbit(tp.symbols.Varbits.SPELLBOOK, book)
+        }
         onCommand("max") {
             for (stat in 0..LAST_COMBAT_STAT) addXp(stat, MAX_XP)
             message("Combat stats set to 99.")
@@ -72,6 +77,8 @@ public class DevCommands : ContentPlugin {
     }
 
     private companion object {
+        /** Arceuus, the last spellbook varbit value. */
+        const val LAST_SPELLBOOK = 3
         const val STAT_COUNT = 24
         const val MAX_XP = 13_034_431.0
 

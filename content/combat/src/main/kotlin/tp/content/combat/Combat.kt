@@ -54,8 +54,13 @@ public class Combat : ContentPlugin {
                 Components.Combat_Interface._3,
             )
         stances.forEachIndexed { mode, component ->
-            onButton(component) { if (weaponCategory().slots.getOrNull(mode) != null) setVarp(Varps.COM_MODE, mode) }
+            onButton(component) {
+                if (weaponCategory().slots.getOrNull(mode) == null) return@onButton
+                Autocast.clear(this)
+                setVarp(Varps.COM_MODE, mode)
+            }
         }
+        Autocast.register(this)
         onButton(Components.Combat_Interface.RETALIATE) { setVarp(Varps.OPTION_NODEF, 1 - varp(Varps.OPTION_NODEF)) }
         onButton(Components.Combat_Interface.SPECIAL_ATTACK) { Specials.toggle(this) }
         onButton(Components.Orbs.SPECBUTTON) { Specials.toggle(this) }
@@ -87,6 +92,9 @@ internal object CombatSystem {
     /** Respawn ticks for NPCs the Wiki table has no respawn time for (npc-combat.md N6). */
     private const val NPC_RESPAWN_DELAY = 25
 
+    /** Wiki "Ward of Arceuus": demons deal 10% less (the reduction rounds down). */
+    private const val WARD_DIVISOR = 10
+
     /** Respawn point: Lumbridge (RS Mod `PlayerDeath` default). */
     private val RESPAWN = CoordGrid(3222, 3218, 0)
 
@@ -100,6 +108,14 @@ internal object CombatSystem {
     /** Ap script: ranged sets its approach range (I2); melee turns the ap into an op (aprange -1). */
     fun attackFromAp(script: PlayerScript, target: EntityRef) {
         val player = script.player
+        if (Autocast.spellOf(player) != null) {
+            if (script.currentApRange != SpellCasting.SPELL_RANGE) {
+                script.apRange(SpellCasting.SPELL_RANGE)
+                return
+            }
+            attackLoop(script, target)
+            return
+        }
         val style = player.stanceAndType().second.style
         if (style == CombatStyle.MELEE) {
             if (script.currentApRange != -1) script.apRange(-1)
@@ -115,12 +131,16 @@ internal object CombatSystem {
 
     private fun attackLoop(script: PlayerScript, target: EntityRef) {
         val player = script.player
-        if (!canFight(player, target, hitStyle(player.stanceAndType().second.style))) return
+        val spell = Autocast.spellOf(player)
+        val style = if (spell != null) HitStyle.MAGIC else hitStyle(player.stanceAndType().second.style)
+        if (!canFight(player, target, style)) return
         if (!DuelChecks.weaponAllowed(player)) return
         script.keepInteraction()
         player.face(target)
         if (player.attackClock() > player.tick) return
-        Attacks.playerAttack(player, target)
+        if (spell == null) return Attacks.playerAttack(player, target)
+        // CM14: an autocast that can't be cast stops the attack (the reason was already said).
+        if (!SpellCasting.cast(player, target, spell, manual = false, defensive = Autocast.defensive(player))) player.stopInteraction()
     }
 
     /** Whether [attacker] may attack [target] now (AttackCheck event: PvP rules subscribe). */
@@ -159,7 +179,11 @@ internal object CombatSystem {
     ) {
         if (target.isDying || (target is NpcRef && !target.isInWorld)) return // OPEN-C2
         val boss = (target as? NpcRef)?.let { Bosses.of(it.type) }
-        val adjusted = if (boss != null && target is NpcRef) boss.incoming(target, source, damage, style) else damage
+        var adjusted = if (boss != null && target is NpcRef) boss.incoming(target, source, damage, style) else damage
+        // CM17: Ward of Arceuus takes ⌊damage / 10⌋ off demons' hits.
+        if (source is NpcRef && SpellEffects.warded(target) && NpcCombatTable.of(source.type)?.attributes?.contains("demon") == true) {
+            adjusted -= adjusted / WARD_DIVISOR
+        }
         val dealt = minOf(adjusted, target.hitpoints)
         target.hitpoints -= dealt
         if (dealt > 0) {

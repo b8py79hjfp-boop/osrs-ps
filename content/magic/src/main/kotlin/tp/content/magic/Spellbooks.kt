@@ -15,6 +15,7 @@ import tp.symbols.Varbits
 public class Spellbooks : ContentPlugin {
     override fun ContentScope.register() {
         onLogin { if (saved(SWAP_SAVED) != null) end(this) }
+        events.on<tp.plugin.CombatSpellCast> { onCast(it.caster) }
     }
 
     internal companion object {

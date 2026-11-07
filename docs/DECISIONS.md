@@ -706,3 +706,16 @@ sailing-pandemonium.md.
   two characters.
 - **Will and Anne's boat uses config 10** (not 3 as first assumed): 3 is the sloop (OPEN-W1).
 - **Only the deck level (1) of a template is copied** (level 0 draws a dark rectangle).
+
+## D-051: Combat spells are one generated table and one casting engine; autocast mirrors client script 243
+
+- **Generated table** (`CombatSpellTable.kt`, from `docs/research/combat-spells.tsv` by `tools/wiki-import/combat_spells_kt.py`): every symbol is
+  checked by the generator; effects are mapped per spell in the generator, not parsed at runtime. Tele Block and Vengeance stay in content/pvp.
+- **`SpellRunes` moved to plugin-api** so combat and magic pay runes the same way (staves, combination runes).
+- **Cross-module state goes through `SharedAttrs`** (Charge, Shadow Veil) and events (`CombatSpellCast` ends a Spellbook Swap, `SlayerTaskCheck`
+  asks the Slayer module about the slayer's staff (e)).
+- **Autocast lists are a server copy of client script 243** keyed by the varp 664 layout key, so the server accepts exactly what the client shows;
+  the autocast id maps to our spell through cache enum 1986 and obj param 596.
+- **Item charges per player** (Iban's staff, slayer's staff (e)) in `saved` counters until an item-charge store exists (OPEN-CM4).
+- **NPC attributes and elemental weakness** were added to the Wiki NPC import (`attributes`, `weak`, `weakpct` columns).
+- **Interactions from a deck into the root world** (WE11): no route, reach while the pivot is within 31 tiles; content checks the real distance.

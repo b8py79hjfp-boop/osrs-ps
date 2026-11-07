@@ -39,6 +39,7 @@ public class Slayer : ContentPlugin {
         onItemOp(Objs.SLAYER_GEM, OP_CHECK) { click -> gemCheck(click) }
         events.on<DeathEvent> { death -> killed(death) }
         events.on<AttackCheck> { attack -> attackCheck(attack) }
+        events.on<tp.plugin.SlayerTaskCheck> { check -> check.onTask = check.onTask || onTask(check.player, check.npc) }
     }
 
     private suspend fun PlayerScript.talk(npc: NpcRef, master: SlayerMaster) {
@@ -106,6 +107,12 @@ public class Slayer : ContentPlugin {
         if (t.other && !QUESTS_ASSUMED_COMPLETE) return false
         if (p.combatLevel < t.combat || p.baseLevel(Stats.SLAYER) < t.slayer || t.max <= 0) return false
         return t.skills.all { (stat, level) -> p.baseLevel(stat) >= level }
+    }
+
+    /** Whether [npc] belongs to [player]'s current task (the same match as a kill uses). */
+    private fun onTask(player: PlayerRef, npc: NpcRef): Boolean {
+        val group = player.saved(GROUP_KEY) ?: return false
+        return SlayerData.MONSTERS[npc.type]?.any { key(it.group) == group } == true
     }
 
     private fun killed(death: DeathEvent) {

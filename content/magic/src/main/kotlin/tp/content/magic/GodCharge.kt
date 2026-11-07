@@ -4,6 +4,8 @@ import tp.plugin.AttrKey
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
+import tp.plugin.SharedAttrs
+import tp.plugin.SpellRunes
 import tp.plugin.TimerId
 import tp.symbols.Components
 import tp.symbols.Objs
@@ -11,7 +13,7 @@ import tp.symbols.Seqs
 
 /**
  * Charge (docs/mechanics/magic-utility.md CH1-CH2): imbues the caster for 700 ticks and can be cast once per 100. The
- * stronger god spells themselves belong to combat (OPEN-MU8): this plugin only keeps the timer.
+ * stronger god spells themselves belong to combat, which reads [CHARGED_UNTIL].
  */
 public class GodCharge : ContentPlugin {
     override fun ContentScope.register() {
@@ -38,8 +40,8 @@ public class GodCharge : ContentPlugin {
     }
 
     internal companion object {
-        /** Tick at which the caster's Charge runs out; combat reads it once it models the stronger god spells (OPEN-MU8). */
-        val CHARGED_UNTIL = AttrKey<Long>("magic_charged_until")
+        /** Tick at which the caster's Charge runs out; combat reads it for the god spells (combat-magic.md). */
+        val CHARGED_UNTIL = SharedAttrs.MAGIC_CHARGED_UNTIL
 
         private val READY_AT = AttrKey<Long>("magic_charge_ready_at")
         private val FADE = TimerId("god_charge")

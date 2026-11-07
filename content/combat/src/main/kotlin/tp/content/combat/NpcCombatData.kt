@@ -25,6 +25,11 @@ internal class NpcCombatDef(
     val venomous: Boolean,
     val poisonImmune: Boolean,
     val venomImmune: Boolean,
+    /** Infobox Monster `attributes` (demon, undead, dragon, ...), lower case. */
+    val attributes: Set<String> = emptySet(),
+    /** Elemental weakness (air, water, earth, fire; empty for none) and its percent (Wiki "Elemental weakness"). */
+    val weakElement: String = "",
+    val weakPercent: Int = 0,
 ) {
     val meleeTypes: List<AttackType> = MELEE_WORDS.mapNotNull { (word, type) -> type.takeIf { word in styles } }
     val hasRanged: Boolean get() = "ranged" in styles
@@ -109,6 +114,9 @@ internal object NpcCombatTable {
                     venomous = b("venom"),
                     poisonImmune = b("pimm"),
                     venomImmune = b("vimm"),
+                    attributes = s("attributes").split(',').filter { it.isNotEmpty() }.toSet(),
+                    weakElement = s("weak"),
+                    weakPercent = i("weakpct"),
                 )
         }
         return out

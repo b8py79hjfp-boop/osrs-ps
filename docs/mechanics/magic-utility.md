@@ -45,7 +45,7 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 | TO2 | The caster pays and gains xp at the cast. The target gets a Yes / No chatbox menu naming the caster and the town (OPEN-MU4 text); on Yes, if still free to teleport, the target is stalled like a standard teleport (3 ticks) with seq 1816 and spotanim 342 and moved to the town. | Teleother_* ("A window will pop for the person being teleported") |
 | TO3 | Destinations: Lumbridge 3221,3218 (centre of the Wiki polygon), Falador 2964,3378, Camelot 2757,3479. Range 10 (OPEN-MU6). | Teleother_* "Destination" |
 | CH1 | Charge (level 80, 180 xp, fire 3 + blood 3 + air 3): messages "You feel charged with magic power." and, 700 ticks later, "Your magical charge fades away." | Charge |
-| CH2 | It can be cast once per 100 ticks ("once every 60 seconds"). The stronger god spells are combat's: this plugin only keeps the timer `magic_charged_until` (OPEN-MU8). | Charge |
+| CH2 | It can be cast once per 100 ticks ("once every 60 seconds"). The stronger god spells are combat's (combat-magic.md CM7): this plugin keeps the timer `SharedAttrs.MAGIC_CHARGED_UNTIL`. | Charge |
 | LC1 | Humidify (level 68, 65 xp, astral 1 + water 3 + fire 1, 4 ticks): every empty bucket, jug, vial, bowl, waterskin(0), watering can and piece of clay in the backpack is filled (clay becomes soft clay) for one cast; unwatered saplings and Gricoller's can are OPEN-MU5. | Humidify |
 | LC2 | Plank Make (level 86, 90 xp, astral 2 + nature 1 + earth 15, 3 ticks): cast on one log; it becomes the plank and costs 70% of the sawmill's coins (logs 70, oak 175, teak 350, mahogany 1,050, camphor 1,750, ironwood 3,500, rosewood 5,250). Autocast and the sawmill voucher bonus are OPEN-MU25 / OPEN-MU5. | Plank_Make |
 | LC3 | Spin Flax (level 76, 75 xp, astral 1 + nature 2 + air 5, 5 ticks): up to 5 flax become bow strings, 15 Crafting xp each; no flax: "You don't have any flax to spin." | Spin_Flax |
@@ -67,7 +67,7 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 | RE3 | Only the caster fights the creature: an `AttackCheck` denies the creature attacking anyone else and anyone else attacking it. The creature stays until killed or until its caster logs out (OPEN-MU12). | Reanimation_spells ("Killing the reanimated creature will grant Prayer experience"); ownership is OPEN-MU12 |
 | RE4 | Killing it gives the caster Prayer xp: goblin 130, monkey 182, imp 286, minotaur 364, scorpion 454, bear 480, unicorn 494; dog 520, chaos druid 584, giant 650, ogre 716, elf 754, troll 780, horror 832; kalphite 884, dagannoth 936, bloodveld 1,040, TzHaar 1,104, demon 1,170, hellhound 1,200; aviansie 1,234, abyssal 1,300, dragon 1,560. The Slayer xp and level requirements are OPEN-MU12. | the four spell pages |
 | RE5 | The creature attacks through combat's aggression only if the combat data marks it aggressive; this plugin does not start fights itself (OPEN-MU12). | - |
-| SV1 | Shadow Veil (level 47, 58 xp, earth 5 + fire 5 + cosmic 5, 1 tick): lasts as many ticks as the caster's base Magic level (0.6 x Y seconds), castable once per 50 ticks (30 seconds). The 15% chance to avoid the stun and damage of a failed pickpocket is for the pickpocketing code to read (`ShadowVeil.VEILED_UNTIL`); it doesn't yet (OPEN-MU13). | Shadow_Veil |
+| SV1 | Shadow Veil (level 47, 58 xp, earth 5 + fire 5 + cosmic 5, 1 tick): lasts as many ticks as the caster's base Magic level (0.6 x Y seconds), castable once per 50 ticks (30 seconds). The 15% chance to avoid the stun and damage of a failed pickpocket is read by the pickpocketing code (`SharedAttrs.SHADOW_VEIL_UNTIL`): the attempt still fails, without stun or damage. The Wiki gives no separate message, so the plain failure message is shown. | Shadow_Veil |
 
 ### Cast visuals (cache names, MU3)
 
@@ -100,12 +100,12 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 - **OPEN-MU5:** left out: lead / lovakite / cupronickel bars and the smithing catalyst (Superheat); sickles and quest jewellery (Enchant); unwatered saplings and Gricoller's can (Humidify); the sawmill voucher bonus (Plank Make); salve, m'speak and emblem stringing.
 - **OPEN-MU6:** Telekinetic Grab's flight time ("Too late - it's gone!", level change fizzles, Tower of Life, farming patch) is not modelled, the item arrives at the cast; the range of Teleother, Cure Other, Energy Transfer and Heal Other is assumed to be the 10 tiles of other spells.
 - **OPEN-MU7:** Respawn Teleport goes to Lumbridge until respawn points exist (teleports.md OPEN-TP4 style).
-- **OPEN-MU8:** the Charge effect on the three god spells (30 instead of 20 max hit with the god cape) belongs to content/combat; it needs a shared key (`SharedAttrs`) for `GodCharge.CHARGED_UNTIL`.
+- **OPEN-MU8:** resolved: combat reads `SharedAttrs.MAGIC_CHARGED_UNTIL` (combat-magic.md CM7).
 - **OPEN-MU9:** Superglass Make's bonus yield ("variable", 1.3 on average per pair, up to 1.6 with giant seaweed) has no published rule; 30% extra glass per pair is the stand-in (`LunarCrafting.SUPERGLASS_BONUS_PERCENT`).
 - **OPEN-MU10:** Tan Leather's right-click toggle between soft and hard leather for cowhide; soft only.
 - **OPEN-MU11:** the Dark Altar of Arceuus (loc 27979, "Venerate") and Tyss's dialogue to unlock and switch to the Arceuus book; the occult altar (loc 29150) and its four-book menu.
 - **OPEN-MU12:** reanimation: the "dropped within 35 x 35 tiles" rule needs a record of where a head dropped (drops, trade, bank); the creature's lifetime, Slayer xp and level requirements, and whether the combat data makes the creature attack its caster.
-- **OPEN-MU13:** Shadow Veil's effect on Pickpocketing (content/skills, not touched): it should read `ShadowVeil.VEILED_UNTIL` through a shared key.
+- **OPEN-MU13:** resolved: pickpocketing reads `SharedAttrs.SHADOW_VEIL_UNTIL` (SV1).
 - **OPEN-MU14:** Enchant Crossbow Bolt: the Wiki says the spell opens an interface to choose among up to 10 bolt spells; the cache's interface symbols have no such interface and the chatbox menu is capped at 6 options. Not implemented.
 - **OPEN-MU15:** Stat Spy (interface 523 `dream_player_stats`, client scripts not traced).
 - **OPEN-MU16:** whether a combination rune is consumed when only one of its two elements is needed (SP2).

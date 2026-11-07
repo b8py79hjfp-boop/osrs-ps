@@ -29,6 +29,7 @@ internal fun PlayerRef.afterChange(pos: Int) {
         setVarp(Varps.SA_ATTACK, 0)
         val slots = weaponCategory().slots
         if (slots.getOrNull(varp(Varps.COM_MODE)) == null) setVarp(Varps.COM_MODE, slots.indexOfFirst { it != null })
+        Autocast.onWeaponChange(this)
     }
     Appearance.refresh(this)
 }

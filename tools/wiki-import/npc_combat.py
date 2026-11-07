@@ -199,13 +199,17 @@ def record(get):
         "venom": "venom" in poison_text,
         "pimm": immune(get, "immunepoison", "poisonresistance"),
         "vimm": immune(get, "immunevenom", "venomresistance"),
+        # Infobox Monster `attributes` (demon, undead, dragon, ...) and the elemental weakness fields (2024 rebalance).
+        "attributes": [a.strip().lower() for a in clean(get("attributes") or "").split(",") if a.strip()],
+        "weak": clean(get("elementalweaknesstype") or "").lower(),
+        "weakpct": int_or(get("elementalweaknesspercent")),
     }
     return rec
 
 
 COLUMNS = ["id", "name", "combat", "size", "speed", "max", "maxes", "styles", "aggressive", "respawn", "hp", "att", "str",
            "def", "mage", "range", "ab", "sb", "am", "mb", "ar", "rb", "dstab", "dslash", "dcrush", "dmagic", "dlight",
-           "dstandard", "dheavy", "poison", "venom", "pimm", "vimm"]
+           "dstandard", "dheavy", "poison", "venom", "pimm", "vimm", "attributes", "weak", "weakpct"]
 
 
 def row(npc_id, r):
@@ -214,7 +218,8 @@ def row(npc_id, r):
     cells = [npc_id, r["name"].replace("\t", " "), r["combat"], r["size"], r["speed"], r["max"],
              ",".join(f"{k}:{v}" for k, v in r["maxes"].items()), ",".join(r["styles"]), b(r["aggressive"]), r["respawn"],
              r["hp"], r["att"], r["str"], r["def_lvl"], r["mage"], r["range"], r["ab"], r["sb"], r["am"], r["mb"],
-             r["ar"], r["rb"], *r["def"], r["poison"], b(r["venom"]), b(r["pimm"]), b(r["vimm"])]
+             r["ar"], r["rb"], *r["def"], r["poison"], b(r["venom"]), b(r["pimm"]), b(r["vimm"]),
+             ",".join(r["attributes"]), r["weak"], r["weakpct"]]
     return "\t".join(str(c) for c in cells)
 
 

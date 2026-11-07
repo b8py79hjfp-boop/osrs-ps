@@ -69,6 +69,7 @@ class GoldenPvpTest {
                 val b = s.player("b", wild(dx = d))
                 if (attackerFirst) s.start(a, b) else s.start(b, a)
                 a.cheat("xp 6 ${Golden.MAX_XP}")
+                a.cheat("spellbook 1") // Ancient Magicks
                 a.cheat("item 560 100")
                 a.cheat("item 565 100")
                 a.cheat("item 555 100")

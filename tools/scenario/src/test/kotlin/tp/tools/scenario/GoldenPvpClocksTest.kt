@@ -74,6 +74,7 @@ class GoldenPvpClocksTest {
     fun `3d ice barrage freeze immunity and break`() {
         val (s, a, b) = duel(seed = 12, distance = 5)
         a.cheat("xp 6 ${Golden.MAX_XP}")
+        a.cheat("spellbook 1") // Ancient Magicks
         b.cheat("xp 3 ${Golden.MAX_XP}") // keeps b inside a's combat bracket
         for (rune in intArrayOf(Objs.DEATHRUNE, Objs.BLOODRUNE, Objs.WATERRUNE)) a.cheat("item $rune 500")
         s.tick()
@@ -95,6 +96,7 @@ class GoldenPvpClocksTest {
         // one landing after ends + 5 freezes again (the next cast is at ends + 7: spell speed 5).
         val (s3, e, f) = duel(seed = 12, distance = 5)
         e.cheat("xp 6 ${Golden.MAX_XP}")
+        e.cheat("spellbook 1")
         f.cheat("xp 3 ${Golden.MAX_XP}")
         for (rune in intArrayOf(Objs.DEATHRUNE, Objs.BLOODRUNE, Objs.WATERRUNE)) e.cheat("item $rune 500")
         s3.tick()
@@ -125,6 +127,7 @@ class GoldenPvpClocksTest {
         // Break: caster more than 10 tiles away ends the freeze.
         val (s2, c, d) = duel(seed = 13, distance = 5)
         c.cheat("xp 6 ${Golden.MAX_XP}")
+        c.cheat("spellbook 1")
         d.cheat("xp 3 ${Golden.MAX_XP}")
         for (rune in intArrayOf(Objs.DEATHRUNE, Objs.BLOODRUNE, Objs.WATERRUNE)) c.cheat("item $rune 500")
         s2.tick()

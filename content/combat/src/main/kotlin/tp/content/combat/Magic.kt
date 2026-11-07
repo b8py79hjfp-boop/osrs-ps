@@ -2,201 +2,212 @@ package tp.content.combat
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
-import tp.plugin.DuelRules
+import tp.plugin.DeathEvent
 import tp.plugin.EntityRef
-import tp.plugin.HitStyle
+import tp.plugin.HitEvent
+import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
-import tp.plugin.SharedAttrs
+import tp.plugin.SpellRunes
 import tp.plugin.TimerId
 import tp.symbols.Components
-import tp.symbols.Invs
 import tp.symbols.Objs
-import tp.symbols.Seqs
-import tp.symbols.SpotAnims
+import tp.symbols.Varbits
+import tp.symbols.Varps
 
-/** A combat spell (OSRS Wiki spell pages; combat-formulas.md F12, freeze.md Z1). */
-internal class Spell(
-    val component: Int,
-    val level: Int,
-    val baseMax: Int,
-    val freeze: Int,
-    val runes: List<Pair<Int, Int>>,
-    val impact: Int,
-    /** Barrage spells measure hit delay to the defender's south-west tile (HD:3). */
-    val toSouthWest: Boolean,
-    /** Burst and barrage hit up to 9 targets in multi-combat (MG1). */
-    val multi: Boolean = false,
-)
-
-/** Manual casting of combat spells on players and NPCs (approach range 10, spell speed 5: AS:6). */
+/**
+ * Combat magic (docs/mechanics/combat-magic.md): "Cast" on players and NPCs for every spell of [CombatSpellTable]
+ * (approach range 10), and the Arceuus combat buffs Mark of Darkness, Ward of Arceuus, the corruptions and Death Charge.
+ */
 public class Magic : ContentPlugin {
     override fun ContentScope.register() {
-        for (spell in SPELLS) {
+        for (spell in CombatSpellTable.ALL) {
             onApPlayerT(spell.component) { target -> cast(this, target, spell) }
             onApNpcT(spell.component) { target -> cast(this, target, spell) }
         }
+        onButton(Components.Magic_Spellbook.MARK_OF_DARKNESS, OP_CAST) { mark() }
+        onButton(Components.Magic_Spellbook.WARD_OF_ARCEUUS, OP_CAST) { ward() }
+        onButton(Components.Magic_Spellbook.LESSER_CORRUPTION, OP_CAST) { corruption(LESSER) }
+        onButton(Components.Magic_Spellbook.GREATER_CORRUPTION, OP_CAST) { corruption(GREATER) }
+        onButton(Components.Magic_Spellbook.DEATH_CHARGE, OP_CAST) { deathCharge() }
+        events.on<HitEvent> { corrupt(it) }
+        events.on<DeathEvent> { deathCharged(it) }
     }
 
-    private fun cast(script: PlayerScript, target: EntityRef, spell: Spell) {
+    /** CM1, CM15: one cast within range 10 when the attack clock allows; autocast takes over afterwards if it is set. */
+    private fun cast(script: PlayerScript, target: EntityRef, spell: CombatSpell) {
         val player = script.player
-        if (script.currentApRange != SPELL_RANGE) {
-            script.apRange(SPELL_RANGE)
-            return
-        }
-        if (!CombatSystem.canFight(player, target, HitStyle.MAGIC)) return
-        if (spell.freeze > 0 && player.duelRule(DuelRules.NO_MOVEMENT)) {
-            player.message(DuelChecks.HOLD_SPELLS)
+        if (script.currentApRange != SpellCasting.SPELL_RANGE) {
+            script.apRange(SpellCasting.SPELL_RANGE)
             return
         }
         player.face(target)
-        val now = player.tick
-        if (player.attackClock() > now) {
+        if (player.attackClock() > player.tick) {
             script.keepInteraction() // wait for the attack clock, then cast once
             return
         }
-        if (player.baseLevel(Stat.MAGIC) < spell.level) {
-            player.message("You need a Magic level of ${spell.level} to cast this spell.")
-            return
-        }
-        val hasRunes = player.transaction("runes") { spell.runes.all { (rune, count) -> remove(Invs.INV, rune, count) } }
-        if (!hasRunes) {
-            player.message("You do not have enough runes to cast this spell.")
-            return
-        }
-        player.setAttackClock(now + SPELL_SPEED)
-        player.anim(Seqs.ZAROS_VERTICAL_CASTING)
-        CombatSystem.announceAttack(player, target, CombatStyle.MAGIC)
-        strike(player, target, spell, baseXp = true)
-        if (spell.multi) splash(player, target, spell)
+        if (!SpellCasting.cast(player, target, spell, manual = true)) return
+        if (Autocast.spellOf(player) != null) CombatSystem.attackOpOf(target)?.let { player.interact(target, it) }
     }
 
-    /** One target's roll, impact and hit for [spell] (F12-F16); [baseXp] once per cast (MG2, OPEN-MG1). */
-    private fun strike(player: PlayerRef, target: EntityRef, spell: Spell, baseXp: Boolean) {
-        // Manually cast spells get no invisible stance bonus (CO:49).
-        val attackRoll = Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC)
-        val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
-        var max = Formulas.magicMaxHit(spell.baseMax, player.bonus(Param.MAGIC_DAMAGE) / MAGIC_DAMAGE_UNIT + prayerDamage(player))
-        if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
-        val distance = if (spell.toSouthWest) southWestDistance(player, target) else player.distanceTo(target)
-        val delay = Formulas.magicDelay(distance)
-        val hit = Formulas.hits(attackRoll, defenceRoll, player::random) || (spell.freeze > 0 && Bosses.freezeLands(player, target))
-        val damage = if (hit) Formulas.damage(max, player::random) else 0
-        // Visual lands on the application tick: 30 client cycles per tick (OPEN-C1).
-        target.spotAnim(
-            if (hit) spell.impact else SpotAnims.FAILEDSPELL_IMPACT,
-            height = SPLASH_HEIGHT,
-            delay =
-                target.ticksUntilHit(delay) * CYCLES_PER_TICK,
-        )
-        if (!hit) return // a splash: no hit, no freeze (Z6 aside, freezes need a successful cast)
-        CombatSystem.queueHit(target, player, damage, HitStyle.MAGIC, delay) {
-            if (spell.freeze > 0) Freezes.freeze(target, player, spell.freeze)
+    // ---- Arceuus buffs (CM16-CM19)
+
+    /** A buff spell's level, spellbook, cooldown and runes; true once paid. */
+    private fun PlayerRef.payBuff(
+        level: Int,
+        runes: List<Pair<Int, Int>>,
+        readyKey: tp.plugin.AttrKey<Long>,
+        cooldown: Long,
+        xp: Double,
+    ): Boolean {
+        if (varbit(Varbits.SPELLBOOK) != SpellBook.ARCEUUS.varbit) return false
+        if (level(Stat.MAGIC) < level) {
+            message("You need a Magic level of $level to cast this spell.")
+            return false
         }
-        player.addXp(Stat.MAGIC, damage * 2.0 + if (baseXp) spell.baseXp() else 0.0)
-        player.addXp(Stat.HITPOINTS, damage * 4.0 / 3)
+        if ((this[readyKey] ?: 0L) > tick) return false
+        if (!transaction("arceuus buff runes") { SpellRunes.take(this, this@payBuff, runes) }) {
+            message(SpellCasting.NO_RUNES)
+            return false
+        }
+        this[readyKey] = tick + cooldown
+        addXp(Stat.MAGIC, xp)
+        return true
     }
 
-    /**
-     * MG1 (Wiki "Ice Barrage", "Multicombat area"): burst and barrage also hit up to 8 more targets within one tile of
-     * the target, when the target stands in a multi-combat area; each must be multi-combat too and attackable by the
-     * caster, and each rolls its own hit and freeze.
-     */
-    private fun splash(player: PlayerRef, target: EntityRef, spell: Spell) {
-        val multiAt = player.worldAttr(SharedAttrs.MULTI_AREA) ?: return
-        if (!multiAt(target.coord)) return
-        val around: List<EntityRef> = player.npcsWithin(target.coord, SPLASH_RADIUS) + player.playersAround(target.coord, SPLASH_RADIUS)
-        var extra = 0
-        for (other in around) {
-            if (extra >= MAX_EXTRA_TARGETS) break
-            if (other == target || other == player || !multiAt(other.coord)) continue
-            if (!CombatSystem.canFight(player, other, HitStyle.MAGIC, quiet = true)) continue
-            CombatSystem.announceAttack(player, other, CombatStyle.MAGIC)
-            strike(player, other, spell, baseXp = false)
-            extra++
+    /** CM16: 3 × base Magic ticks (×5 with a purging staff), a warning 10 ticks before the end. */
+    private fun PlayerRef.mark() {
+        if (!payBuff(MARK_LEVEL, MARK_RUNES, MARK_READY, MARK_COOLDOWN, MARK_XP)) return
+        val purging = worn(Wear.WEAPON) == Objs.PURGING_STAFF
+        val ticks = baseLevel(Stat.MAGIC) * MARK_PER_LEVEL * if (purging) PURGING_MULTIPLIER else 1
+        this[SpellEffects.MARK_UNTIL] = tick + ticks
+        message("You have placed a Mark of Darkness upon yourself")
+        stopTimer(ArceuusBuffs.MARK_FADE)
+        timer(ArceuusBuffs.MARK_FADE, 1, soft = true) {
+            val left = (this[SpellEffects.MARK_UNTIL] ?: 0L) - tick
+            when {
+                left == MARK_WARNING.toLong() -> {
+                    message("Your Mark of Darkness is about to run out.")
+                }
+
+                left <= 0 -> {
+                    stopTimer(ArceuusBuffs.MARK_FADE)
+                    this[SpellEffects.MARK_UNTIL] = null
+                    message("Your Mark of Darkness has faded away.")
+                }
+            }
         }
     }
 
-    private fun prayerDamage(player: PlayerRef): Int = player.activePrayers().sumOf { it.effect.magicDamage }
-
-    private fun southWestDistance(player: PlayerRef, target: EntityRef): Int {
-        val a = player.coord
-        val b = target.coord
-        return maxOf(kotlin.math.abs(a.x - b.x), kotlin.math.abs(a.z - b.z))
+    /** CM17: Magic level ticks of protection. */
+    private fun PlayerRef.ward() {
+        if (!payBuff(WARD_LEVEL, WARD_RUNES, WARD_READY, WARD_COOLDOWN, WARD_XP)) return
+        this[SpellEffects.WARD_UNTIL] = tick + level(Stat.MAGIC)
     }
 
-    @Suppress("MagicNumber")
-    private fun Spell.baseXp(): Double =
-        when (component) {
-            Components.Magic_Spellbook.ICE_BARRAGE -> 52.0
-            Components.Magic_Spellbook.ICE_BLITZ -> 46.0
-            Components.Magic_Spellbook.ICE_BURST -> 40.0
-            else -> 34.0
+    /** CM18: the next successful hit on a player may corrupt them. */
+    private fun PlayerRef.corruption(kind: Int) {
+        val (level, runes, xp) =
+            if (kind ==
+                GREATER
+            ) {
+                Triple(GREATER_LEVEL, GREATER_RUNES, GREATER_XP)
+            } else {
+                Triple(LESSER_LEVEL, LESSER_RUNES, LESSER_XP)
+            }
+        if (!payBuff(level, runes, CORRUPTION_READY, CORRUPTION_COOLDOWN, xp)) return
+        this[ArceuusBuffs.CORRUPTION] = kind
+    }
+
+    private fun corrupt(hit: HitEvent) {
+        val caster = hit.source as? PlayerRef ?: return
+        val victim = hit.target as? PlayerRef ?: return
+        val kind = caster[ArceuusBuffs.CORRUPTION] ?: return
+        // "successful hit": a hit that dealt damage (OPEN-CM8); a warded or corrupted target keeps the buff waiting.
+        if (hit.damage <= 0 || victim[ArceuusBuffs.CORRUPTED] == true || SpellEffects.warded(victim)) return
+        caster[ArceuusBuffs.CORRUPTION] = null
+        val marked = SpellEffects.marked(caster)
+        if (!marked && caster.random(2) != 0) return
+        victim[ArceuusBuffs.CORRUPTED] = true
+        val interval = if (marked) MARKED_INTERVAL else CORRUPTION_INTERVAL
+        var step = 0
+        victim.timer(ArceuusBuffs.CORRUPT, interval, soft = true) {
+            step++
+            if (!SpellEffects.warded(this)) {
+                setLevel(Stat.PRAYER, level(Stat.PRAYER) - step * kind)
+            }
+            if (step >= CORRUPTION_STEPS) {
+                stopTimer(ArceuusBuffs.CORRUPT)
+                this[ArceuusBuffs.CORRUPTED] = null
+            }
         }
+    }
+
+    /** CM19: for 100 ticks, the next NPC kill within 16 tiles restores 15% special energy, once. */
+    private fun PlayerRef.deathCharge() {
+        if (!payBuff(DEATH_CHARGE_LEVEL, DEATH_CHARGE_RUNES, DEATH_CHARGE_READY, DEATH_CHARGE_COOLDOWN, DEATH_CHARGE_XP)) return
+        this[ArceuusBuffs.DEATH_CHARGE_UNTIL] = tick + DEATH_CHARGE_TICKS
+    }
+
+    private fun deathCharged(death: DeathEvent) {
+        val npc = death.entity as? NpcRef ?: return
+        val player = death.killer as? PlayerRef ?: return
+        if ((player[ArceuusBuffs.DEATH_CHARGE_UNTIL] ?: 0L) <= player.tick) return
+        if (player.distanceTo(npc) > DEATH_CHARGE_RANGE) return
+        val lastPvp = player[tp.plugin.SharedAttrs.LAST_COMBAT_TICK] ?: Long.MIN_VALUE
+        if (player[Attr.LAST_HIT_BY] is PlayerRef && player.tick - lastPvp < PVP_GRACE) return
+        player[ArceuusBuffs.DEATH_CHARGE_UNTIL] = null
+        player.setVarp(Varps.SA_ENERGY, minOf(Specials.FULL_ENERGY, player.varp(Varps.SA_ENERGY) + DEATH_CHARGE_ENERGY))
+    }
 
     private companion object {
-        /** Combat spell range 10 (Wiki "Attack range": magic 10). */
-        const val SPELL_RANGE = 10
+        /** Spellbook button op 1, "Cast". */
+        const val OP_CAST = 1
+        const val LESSER = 1
+        const val GREATER = 2
 
-        /** Combat spells: 5 ticks (AS:6). */
-        const val SPELL_SPEED = 5
-        const val CYCLES_PER_TICK = 30
-        const val SPLASH_HEIGHT = 124
+        /** Wiki "Mark of Darkness": 59, cosmic 1 + soul 1, 70 xp, cooldown 10, 3 ticks per base level, ×5 purging. */
+        const val MARK_LEVEL = 59
+        val MARK_RUNES = listOf(Objs.COSMICRUNE to 1, Objs.SOULRUNE to 1)
+        const val MARK_XP = 70.0
+        const val MARK_COOLDOWN = 10L
+        const val MARK_PER_LEVEL = 3
+        const val PURGING_MULTIPLIER = 5
+        const val MARK_WARNING = 10
+        val MARK_READY = tp.plugin.AttrKey<Long>("arceuus_mark_ready")
 
-        /** MG1: the 3×3 around the target, up to 9 targets in all. */
-        const val SPLASH_RADIUS = 1
-        const val MAX_EXTRA_TARGETS = 8
+        /** Wiki "Ward of Arceuus": 73, cosmic 1 + nature 2 + soul 4, 83 xp, cooldown 50. */
+        const val WARD_LEVEL = 73
+        val WARD_RUNES = listOf(Objs.COSMICRUNE to 1, Objs.NATURERUNE to 2, Objs.SOULRUNE to 4)
+        const val WARD_XP = 83.0
+        const val WARD_COOLDOWN = 50L
+        val WARD_READY = tp.plugin.AttrKey<Long>("arceuus_ward_ready")
 
-        /** Magic damage param unit (OPEN-D1). */
-        const val MAGIC_DAMAGE_UNIT = 10
+        /** Wiki "Lesser / Greater Corruption": 64 / 85, death 1 + soul 2 / blood 1 + soul 3, 75 / 95 xp, cooldown 50. */
+        const val LESSER_LEVEL = 64
+        val LESSER_RUNES = listOf(Objs.DEATHRUNE to 1, Objs.SOULRUNE to 2)
+        const val LESSER_XP = 75.0
+        const val GREATER_LEVEL = 85
+        val GREATER_RUNES = listOf(Objs.BLOODRUNE to 1, Objs.SOULRUNE to 3)
+        const val GREATER_XP = 95.0
+        const val CORRUPTION_COOLDOWN = 50L
+        val CORRUPTION_READY = tp.plugin.AttrKey<Long>("arceuus_corruption_ready")
 
-        /** Ancient ice spells (OSRS Wiki spell pages: level, max, runes; freeze.md Z1). */
-        @Suppress("MagicNumber")
-        val SPELLS: List<Spell> =
-            listOf(
-                Spell(
-                    Components.Magic_Spellbook.ICE_RUSH,
-                    58,
-                    16,
-                    8,
-                    listOf(Objs.DEATHRUNE to 2, Objs.CHAOSRUNE to 2, Objs.WATERRUNE to 2),
-                    SpotAnims.ICE_RUSH_IMPACT,
-                    false,
-                ),
-                Spell(
-                    Components.Magic_Spellbook.ICE_BURST,
-                    70,
-                    22,
-                    16,
-                    listOf(Objs.DEATHRUNE to 2, Objs.CHAOSRUNE to 4, Objs.WATERRUNE to 4),
-                    SpotAnims.ICE_BURST_IMPACT,
-                    false,
-                    multi = true,
-                ),
-                Spell(
-                    Components.Magic_Spellbook.ICE_BLITZ,
-                    82,
-                    26,
-                    24,
-                    listOf(Objs.DEATHRUNE to 2, Objs.BLOODRUNE to 2, Objs.WATERRUNE to 3),
-                    SpotAnims.ICE_BLITZ_IMPACT,
-                    false,
-                ),
-                Spell(
-                    Components.Magic_Spellbook.ICE_BARRAGE,
-                    94,
-                    30,
-                    32,
-                    listOf(
-                        Objs.DEATHRUNE to 4,
-                        Objs.BLOODRUNE to 2,
-                        Objs.WATERRUNE to 6,
-                    ),
-                    SpotAnims.ICE_BARRAGE_IMPACT,
-                    true,
-                    multi = true,
-                ),
-            )
+        /** Wiki "Corruption (status)": three drains 10 ticks apart (5 with Mark of Darkness). */
+        const val CORRUPTION_INTERVAL = 10
+        const val MARKED_INTERVAL = 5
+        const val CORRUPTION_STEPS = 3
+
+        /** Wiki "Death Charge": 80, cooldown 60 s, within 1 minute, 15% energy, 16 tiles, not after PvP in 10 ticks. */
+        const val DEATH_CHARGE_LEVEL = 80
+        val DEATH_CHARGE_RUNES = listOf(Objs.DEATHRUNE to 1, Objs.BLOODRUNE to 1, Objs.SOULRUNE to 1)
+        const val DEATH_CHARGE_XP = 90.0
+        const val DEATH_CHARGE_COOLDOWN = 100L
+        const val DEATH_CHARGE_TICKS = 100L
+        const val DEATH_CHARGE_RANGE = 16
+        const val DEATH_CHARGE_ENERGY = 150
+        const val PVP_GRACE = 10L
+        val DEATH_CHARGE_READY = tp.plugin.AttrKey<Long>("arceuus_death_charge_ready")
     }
 }
 
@@ -204,10 +215,14 @@ public class Magic : ContentPlugin {
 internal object Freezes {
     private const val IMMUNITY = 5
     private const val BREAK_DISTANCE = 10
-    private val WATCH = TimerId("freeze_watch")
 
-    /** Applies a freeze of [ticks] on the application tick, unless frozen or immune. */
-    fun freeze(target: EntityRef, caster: EntityRef, ticks: Int) {
+    /** OPEN-CM7: "The holding effect is beginning to fade." this many ticks before a bind ends. */
+    private const val FADE_WARNING = 5
+    private val WATCH = TimerId("freeze_watch")
+    private val FADE = TimerId("bind_fade")
+
+    /** Applies a freeze of [ticks] on the application tick, unless frozen or immune; [fade]: binds warn players (CM10). */
+    fun freeze(target: EntityRef, caster: EntityRef, ticks: Int, fade: Boolean = false) {
         val now = target.tick
         if (target.isFrozen || (target[Attr.FREEZE_IMMUNE_UNTIL] ?: 0L) > now) return
         target.frozenUntil = now + ticks
@@ -216,6 +231,12 @@ internal object Freezes {
         if (target is PlayerRef) {
             target.message("You have been frozen!")
             if (caster is PlayerRef) target.timer(WATCH, 1, soft = true) { watch(this) }
+            if (fade && ticks > FADE_WARNING) {
+                target.timer(FADE, ticks - FADE_WARNING, soft = true) {
+                    stopTimer(FADE)
+                    if (isFrozen) message("The holding effect is beginning to fade.")
+                }
+            }
         }
     }
 
