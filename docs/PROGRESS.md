@@ -196,7 +196,7 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
    11. non-combat skills;
    12. full magic;
    13. gravestones;
-   14. clans, quests, diaries, collection log;
+   14. clans, quests, diaries (tasks, tiers, rewards, lamps and the kill tasks done; the other 453 tasks wait for their content, docs/mechanics/achievement-diaries.md), collection log;
    15. generic dragonfire, ammo recovery, multi-target specials;
    16. bank leftovers, destroy confirmation (OPEN-DS1), venom from magic (OPEN-PO3).
 

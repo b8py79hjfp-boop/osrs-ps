@@ -827,3 +827,19 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
 - **Ingredient sources** (milking, wheat, windmill, shearing) live in the quest module (`FarmSupplies`) until a farming-sources
   plugin exists.
 - Rule ids are `QU`, open items `OPEN-QU` (`CL` is taken by clans).
+
+## D-058: Achievement diaries: Wiki data, saved task bitmasks, kill tasks through DeathEvent
+
+- **Data from the Wiki, shape from the cache.** The tasks, requirements and rewards are the Wiki's (`achievement_diaries.py`); the
+  number of tasks per tier is checked against the client's own table (script 4073) at import, and the area order is cache enum 595.
+  The diary task varps (1176..1199) have no varbits and no client script reads them, so only the varbits the scripts do read are
+  mirrored (counts, tier complete, reward claimed, started).
+- **State** is one saved bitmask per area and tier (`diary.<area>.<tier>`), not a varbit per task: no per-task varbit exists for 11 of
+  the 12 diaries and the largest tier has 19 tasks.
+- **API**: `Diaries.complete(player, TaskId)` in the module (content modules depend on plugin-api only, so other content reaches it
+  by publishing an event; none is defined yet). Only kill tasks are hooked, through the existing `DeathEvent`; every other trigger is
+  OPEN until its content exists, instead of adding events to plugin-api or handlers that would collide with the content's own.
+- **Taskmasters replace the generic Talk-to** (their Wiki transcript is no longer played); a claim menu is the only way to give the
+  reward without a conditional-dialogue feature in the transcript engine.
+- Sources and OPEN items: docs/mechanics/achievement-diaries.md.
+

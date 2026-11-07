@@ -46,6 +46,7 @@ include(
     ":content:magic",
     ":content:drops",
     ":content:collectionlog",
+    ":content:diaries",
     ":content:skills",
     ":services",
     ":server",

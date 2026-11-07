@@ -1,0 +1,493 @@
+area	tier	index	text	skills	quests	other
+0	0	1	Pick 5 bananas from the plantation located east of the volcano.			
+0	0	2	Use the rope swing to travel to the Moss Giant Island north-west of Karamja.	Agility:10:1		
+0	0	3	Mine some gold from the rocks on the north-west peninsula of Karamja.	Mining:40:1		Any pickaxe
+0	0	4	Travel to Port Sarim via the dock, east of Musa Point.			30 coins or a Ring of Charos(a) ; This can also be completed by travelling to Port Sarim from The Pandemonium via Seaman Morris.
+0	0	5	Travel to Ardougne via the port near Brimhaven.			30 coins or a Ring of Charos(a)
+0	0	6	Explore Cairn Island to the west of Karamja.	Agility:15:1		
+0	0	7	Use the Fishing spots north of the banana plantation.			Harpoon (or barehanded fishing), lobster pot, small fishing net, or a fishing rod with bait, depending on the spot you fish at
+0	0	8	Collect 5 seaweed from anywhere on Karamja.			Seaweed (can be found near Jiminua's Jungle Store)
+0	0	9	Attempt the TzHaar Fight Pits or Fight Cave.			
+0	0	10	Kill a jogre in the Pothole dungeon.			Weaponry
+0	1	1	Claim a ticket from the Agility Arena in Brimhaven.	Agility:40:1		200 coins
+0	1	2	Discover hidden wall in the dungeon below the volcano.		Dragon Slayer I:started	
+0	1	3	Visit the Isle of Crandor via the dungeon below the volcano.		Dragon Slayer I:started	
+0	1	4	Use Vigroy and Hajedy's cart service.		Shilo Village:complete	200 coins
+0	1	5	Earn 100% favour in the village of Tai Bwo Wannai.	Woodcutting:10:1	Jungle Potion:complete	See the recommendations
+0	1	6	Cook a spider on a stick.	Cooking:16:1		Spider carcass, and a skewer stick or an arrow shaft
+0	1	7	Charter the Lady of the Waves from Cairn Isle to Port Khazard.		Shilo Village:complete	Ship ticket or 20-50 coins (the price is random)
+0	1	8	Cut a log from a teak tree.	Woodcutting:35:1;Agility:79:1	Jungle Potion:complete;Machete:started;Legends' Quest:started;Kharazi Jungle:started	Any axe ; 100 trading sticks and having helped in Tai Bwo Wannai Cleanup (if using the Hardwood Grove)
+0	1	9	Cut a log from a mahogany tree.	Woodcutting:50:1;Agility:79:1	Jungle Potion:complete;Machete:started;Legends' Quest:started;Kharazi Jungle:started	Any axe ; 100 trading sticks and having helped in Tai Bwo Wannai Cleanup (if using the Hardwood Grove)
+0	1	10	Catch a karambwan.	Fishing:65:1	Tai Bwo Wannai Trio:partial	Karambwan vessel, some raw karambwanji, and a small fishing net
+0	1	11	Exchange gems for a machete.		Jungle Potion:complete	Gout tuber, as well one of the following: ; 300 trading sticks and 3 cut or uncut opals ; 600 trading sticks and 3 cut or uncut jades ; 1200 trading sticks and 3 cut or uncut red topaz ; You need to speak to Sharimika and go through the dialogue options and you must have picked up some trading sticks from a villager as reward before the dialogue options will show up for this diary step.
+0	1	12	Use the gnome glider to travel to Karamja.		The Grand Tree:complete	
+0	1	13	Grow a healthy fruit tree in the patch near Brimhaven.	Farming:27:1		Any fruit tree sapling, a spade, and a rake
+0	1	14	Trap a horned graahk.	Hunter:41:1		Teasing stick or Hunter's spear, knife, and any logs.
+0	1	15	Chop the vines to gain deeper access to Brimhaven Dungeon.	Woodcutting:10:1		Any axe and 875 coins
+0	1	16	Cross the lava using the stepping stones within Brimhaven Dungeon.	Woodcutting:10:1;Agility:12:1		Any axe and 875 coins
+0	1	17	Climb the stairs within Brimhaven Dungeon.	Woodcutting:10:1		Any axe and 875 coins
+0	1	18	Charter a ship from the shipyard in the far east of Karamja.		The Grand Tree:partial	Enough coins to pay the fare for a charter ship.
+0	1	19	Mine a red topaz from a gem rock.	Mining:40:1	Jungle Potion:complete;Shilo Village:complete;Tai Bwo Wannai Cleanup:complete	Any pickaxe
+0	2	1	Become the Champion of the Fight Pits.			At least one other player ; Weaponry, optionally
+0	2	2	Kill a Ket-Zek in the Fight Caves.			See the strategy guide
+0	2	3	Eat an oomlie wrap.	Cooking:50:0		
+0	2	4	Craft some nature runes from Essence.	Runecraft:44:1		Pure or daeyalt essence ; Access to the Nature Altar (nature talisman/tiara, catalytic talisman/tiara, or the Abyss)
+0	2	5	Cook a karambwan thoroughly.	Cooking:30:1	Tai Bwo Wannai Trio:complete;Tinsay:complete	Raw karambwan, multiple recommended in case of burning one
+0	2	6	Kill a deathwing in the dungeon under the Kharazi Jungle.	Agility:50:1;Thieving:50:1;Mining:52:1;Strength:50:1	Legends' Quest:partial	Any axe, any machete, any pickaxe, and a lockpick
+0	2	7	Use the crossbow shortcut south of the volcano.	Agility:53:1;Ranged:42:1;Strength:21:1		Mith grapple and any crossbow
+0	2	8	Collect 5 palm leaves.	Agility:79:1	Legends' Quest:partial	
+0	2	9	Be assigned a Slayer task by the Slayer Master in Shilo Village.	Combat:100:1;Slayer:50:1	Shilo Village:complete	
+0	2	10	Kill a metal dragon in Brimhaven Dungeon.	Woodcutting:10:1		Any axe, protection from dragonfire, and weaponry ; 875 coins (unless you have unlocked permanently free access via either Saniboch or Banisoch)
+0	3	1	Craft 56 Nature runes simultaneously from Essence without the use of Extracts.	Runecraft:91:1		28 pure or daeyalt essence (less may suffice with Raiments of the Eye pieces) ; Access to the Nature Altar (nature talisman/tiara, catalytic talisman/tiara, or the Abyss)
+0	3	2	Equip a Fire Cape or Infernal Cape in Mor Ul Rek.			See the strategy guide for the TzHaar Fight Cave ; Fire cape or infernal cape
+0	3	3	Check the health of a palm tree in Brimhaven.	Farming:68:1		Palm sapling, spade and rake ; 15 papaya fruit recommended to pay the gardener
+0	3	4	Create an antivenom potion whilst standing in the horse shoe mine.	Herblore:87:1		Antidote++ and 5-20 Zulrah's scales (5 per dose)
+0	3	5	Check the health of your Calquat tree patch.	Farming:72:1		Calquat sapling, spade and rake ; 8 poison ivy berries recommended to pay the gardener
+1	0	1	Have Wizard Cromperty teleport you to the Rune Essence mine.		Rune Mysteries:complete	
+1	0	2	Steal a cake from the Ardougne market stalls.	Thieving:5:1		
+1	0	3	Sell Silk to Silk trader in Ardougne for 60 coins each.			Silk
+1	0	4	Use the altar in East Ardougne's church.			
+1	0	5	Go out fishing on the Fishing Trawler			
+1	0	6	Enter the Combat Training Camp north of W. Ardougne.		Biohazard:complete	
+1	0	7	Have Tindel Marchant identify a Rusted Sword for you.			Rusty sword and 100 coins
+1	0	8	Use the Ardougne Lever to teleport to the Wilderness.			
+1	0	9	View Aleck's Hunter Emporium in Yanille.			
+1	0	10	Check what pets you have Insured with Probita in Ardougne.			
+1	1	1	Enter the Unicorn pen in Ardougne zoo using Fairy rings.		Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code BIS.
+1	1	2	Grapple over Yanille's south wall.	Agility:39:1;Strength:38:1;Ranged:21:1		Mith grapple and any crossbow
+1	1	3	Harvest some strawberries from the Ardougne farming patch.	Farming:31:1		3 strawberry seeds, spade, seed dibber (or Barbarian Farming), and a rake ; Basket of apples recommended to pay the nearby farmer to protect the crop
+1	1	4	Cast the Ardougne Teleport spell.	Magic:51:1	Plague City:complete	Means to cast Ardougne Teleport (2 water + 2 law)
+1	1	5	Travel to Castlewars by Hot Air Balloon.	Firemaking:50:1	Enlightened Journey:complete	Yew log ; If the route has not been unlocked yet, 11 total yew logs are required to unlock it before flying again to Castle Wars to complete this task. Upon unlocking the route, you may use 1 normal log to depart to Taverley before returning to Castle Wars for the task completion.
+1	1	6	Claim buckets of sand from Bert in Yanille.		The Hand in the Sand:complete;Ultimate Ironman:complete	Bucket
+1	1	7	Catch any fish on the Fishing Platform.		Sea Slug:started	A small fishing net
+1	1	8	Pickpocket the master farmer north of Ardougne.	Thieving:38:1		
+1	1	9	Collect some Nightshade from the Skavid Caves.		Watchtower:partial	Any light source and the Skavid map
+1	1	10	Kill a swordchick in the Tower of Life.		Tower of Life:complete	Raw chicken and raw swordfish ; Weaponry
+1	1	11	Equip Iban's upgraded staff or upgrade an Iban staff.		Underground Pass:complete	Iban's upgraded staff, or 200,000 coins and Iban's staff to have the Dark Mage in West Ardougne upgrade it
+1	1	12	Visit the Island East of the Necromancer's Tower.		Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code AIR
+1	2	1	Recharge some Jewellery at the Totem in the Legends Guild.		Legends' Quest:complete	Less than fully charged skills necklace or combat bracelet
+1	2	2	Enter the Magic Guild.	Magic:66:1		
+1	2	3	Steal from a chest in Ardougne Castle.	Thieving:72:1		Lockpick recommended
+1	2	4	Have a zookeeper put you in Ardougne Zoo's monkey cage.		Monkey Madness I:partial	Karamjan monkey greegree
+1	2	5	Teleport to the Watchtower.	Magic:58:1	Watchtower:complete	Means to cast the Watchtower teleport (2 earth + 2 law)
+1	2	6	Catch a Red Salamander.	Hunter:59:1		Rope and small fishing net
+1	2	7	Check the health of a Palm tree near tree gnome village.	Farming:68:1		Palm sapling, spade and a rake ; 15 Papaya fruit recommended to pay the gardener
+1	2	8	Pick some Poison Ivy berries from the patch south of Ardougne.	Farming:70:1		Poison ivy seed, seed dibber (or Barbarian Farming), and a rake ; Note: Poison ivy cannot get diseased while growing.
+1	2	9	Smith a Mithril platebody near Ardougne.	Smithing:68:1		5 mithril bars and a hammer
+1	2	10	Enter your POH from Yanille.	Construction:50:0		25,000 coins for an estate agent to move your house to Yanille ; Note: In Deadman Mode, the task is instead "Ask the Estate Agent to move your house to Yanille." This does not cost anything as your house will not be moved.
+1	2	11	Smith a Dragon sq shield in West Ardougne.	Smithing:60:1	Plague City:partial	Shield left half, shield right half and a hammer
+1	2	12	Craft some Death runes from Essence.	Runecraft:65:1	Mourning's End Part II:complete	Pure or daeyalt essence ; Note: Crafting runes using Guardian essence will NOT complete this achievement ; Access to the Death Altar via the Abyss
+1	3	1	Catch a Manta ray in the Fishing Trawler and cook it in Port Khazard.	Fishing:81:0;Cooking:91:1		Raw manta ray, multiple recommended in case of burning one
+1	3	2	Picklock the door to the basement of Yanille Agility Dungeon.	Thieving:82:1		Lockpick
+1	3	3	Pickpocket a Hero.	Thieving:80:1		
+1	3	4	Make a rune crossbow yourself from scratch within Witchaven or Yanille.	Crafting:10:1;Smithing:91:1;Fletching:69:1		Yew logs, runite bar, hammer, knife, and sinew or a tree root
+1	3	5	Imbue a Salve amulet at Nightmare Zone, or equip a Salve amulet that was imbued there.		Haunted Mine:complete	Access to the Nightmare Zone ; Salve amulet(i) or Salve amulet(ei), or 800,000 Nightmare Zone points points to imbue the normal one (reduced to 400,000 points with the hard tier of the Combat Achievements completed)
+1	3	6	Pick some Torstol from the patch north of Ardougne.	Farming:85:1		Torstol seed, seed dibber (or Barbarian Farming), and a rake ; Ultracompost recommended
+1	3	7	Complete a lap of Ardougne's rooftop agility course.	Agility:90:1		
+1	3	8	Cast Ice Barrage on another player within Castle Wars.	Magic:94:1	Desert Treasure I:complete	Rune pouch (Castle Wars)
+2	0	1	Find out what your family crest is from Sir Renitee	Construction:16:1		
+2	0	2	Climb over the western Falador wall.	Agility:5:1		
+2	0	3	Browse Sarah's farm shop.			
+2	0	4	Get a Haircut or a Shave from the Falador Hairdresser.			
+2	0	5	Fill a bucket from the pump north of Falador west bank.			Bucket
+2	0	6	Kill a duck in Falador Park.			None, though using Magic or a Ranged weapon is recommended
+2	0	7	Make a mind tiara.			Tiara and a mind talisman
+2	0	8	Take the boat to Entrana.			Have no weapons or armour equipped or in your inventory
+2	0	9	Repair a broken strut in the Motherlode Mine.			Hammer and any pickaxe
+2	0	10	Claim a security book from the Security guard at Port Sarim jail.			
+2	0	11	Smith some Blurite Limbs on Doric's anvil.	Mining:10:1;Smithing:13:1	The Knight's Sword:complete;Doric's Quest:complete	Hammer and a Blurite bar
+2	1	1	Light a Bullseye lantern at the Chemist's in Rimmington.	Firemaking:49:1		Tinderbox and a regular bullseye lantern
+2	1	2	Telegrab some Wine of Zamorak at the Chaos Temple by the Wilderness.	Magic:33:1		Means to cast Telegrab (1 air + 1 law)
+2	1	3	Unlock the Crystal chest in Taverley.			Crystal key
+2	1	4	Place a Scarecrow in the Falador farm flower patch.	Farming:23:1;Farming:47:1		Bronze spear, watermelon, and a hay sack (you can fill an empty sack with hay at the hay bale in the chicken coop nearby.)
+2	1	5	Kill a Mogre at Mudskipper Point.	Slayer:32:1	Skippy and the Mogres:complete	Fishing explosive. ; It is not possible to skip having to complete Skippy and the Mogres, or needing a fishing explosive, by killing them through a boat cannon through the Sailing skill.
+2	1	6	Visit the Port Sarim Rat Pits.		Ratcatchers:partial	
+2	1	7	Grapple up and then jump off the north Falador wall.	Agility:11:1;Strength:37:1;Ranged:19:1		Mith grapple and any crossbow
+2	1	8	Pickpocket a Falador guard.	Thieving:40:1		
+2	1	9	Pray at the Altar of Guthix in Taverley whilst wearing full Initiate.	Prayer:10:1;Defence:20:1	Recruitment Drive:complete	Initiate armour
+2	1	10	Mine some Gold ore at the Crafting Guild.	Crafting:40:1;Mining:40:1		Any pickaxe and a brown apron, golden apron, or Crafting cape
+2	1	11	Squeeze through the crevice in the Dwarven mines.	Agility:42:1		
+2	1	12	Chop and burn some Willow logs in Taverley.	Woodcutting:30:1;Firemaking:30:1		Any axe and a tinderbox
+2	1	13	Craft a fruit basket on the Falador Farm loom.	Crafting:36:1;Farming:30:1		6 Willow branches
+2	1	14	Teleport to Falador.	Magic:37:1		Means to cast Falador Teleport (3 air + 1 water + 1 law)
+2	2	1	Craft 140 Mind runes simultaneously from Essence without the use of Extracts.	Runecraft:56:1;Runecraft:42:1		28 pure, daeyalt, or rune essence (less may suffice at higher Runecraft levels) ; Access to the Mind Altar (mind talisman/tiara, catalytic talisman/tiara, or the Abyss)
+2	2	2	Change your family crest to the Saradomin symbol.	Prayer:70:0;Construction:16:1		5,000 coins (an additional 5,000 coins if your randomised family crest already is Saradomin, to change to another and back)
+2	2	3	Kill the Giant Mole beneath Falador Park.			Spade and light source ; See the strategy guide
+2	2	4	Kill a Skeletal Wyvern in the Asgarnia Ice Dungeon.	Slayer:72:1		Protection from the wyvern's icy breath and weaponry to slay it
+2	2	5	Complete a lap of the Falador rooftop agility course.	Agility:50:1		
+2	2	6	Enter the mining guild while wearing a Prospector helmet.	Mining:60:1		Prospector helmet or golden prospector helmet
+2	2	7	Kill the Blue Dragon under the Heroes' Guild.		Heroes' Quest:complete	Protection from dragonfire and weaponry to slay it
+2	2	8	Crack a wall safe within Rogues' Den.	Thieving:50:1		
+2	2	9	Recharge your prayer in the Port Sarim church while wearing full Proselyte.	Defence:30:1;Prayer:20:1	The Slug Menace:complete	Full Proselyte armour
+2	2	10	Enter the Warriors' Guild.			130 combined levels in and , or level 99 in either
+2	2	11	Equip a dwarven helmet within the dwarven mines.	Defence:50:1	Grim Tales:complete	Dwarven helmet
+2	3	1	Craft 252 Air Runes simultaneously from Essence without the use of Extracts.	Runecraft:88:1;Runecraft:77:1;Runecraft:66:1;Runecraft:55:1		28 pure, daeyalt, or rune essence (fewer may suffice at higher Runecraft levels) ; Access to the Air Altar (air talisman/tiara, elemental talisman/tiara, or the Abyss)
+2	3	2	Purchase a White 2h Sword from Sir Vyvin.		Wanted!:complete	1,920 coins ; Rank of White Knight Master (requires a Black Knight kill score of 1300 - this rank automatically starts at White Knight Novice, with a kill score of 100)
+2	3	3	Find at least 3 magic roots at once when digging up your magic tree in Falador.	Farming:91:1;Woodcutting:75:1		Magic sapling, spade and any axe
+2	3	4	Perform a skillcape or quest cape emote at the top of Falador Castle.			Completion of all quests or level 99 in any skill ; Any Cape of Accomplishment (except for joke skillcapes or the Max cape)
+2	3	5	Jump over the strange floor in Taverley dungeon.	Agility:80:1		
+2	3	6	Mix a Saradomin brew in Falador east bank.	Herblore:81:1		Toadflax potion (unf), crushed nest
+3	0	1	Catch a Cerulean twitch.	Hunter:11:1		Bird snare
+3	0	2	Change your boots at Yrsa's Shoe Store.		The Fremennik Trials:complete	500 coins (optional)
+3	0	3	Kill 5 Rock crabs.			Weaponry
+3	0	4	Craft a tiara from scratch in Rellekka.	Crafting:23:1;Mining:20:1;Smithing:20:1	The Fremennik Trials:complete	Any pickaxe (can be found north of the Rellekka mine) and a tiara mould
+3	0	5	Browse the Stonemasons shop.		The Giant Dwarf:started	Dramen or Lunar staff recommended to travel to Fairy ring code DKS for quick access to the city
+3	0	6	Collect 5 Snape grass on Waterbirth Island.			Waterbirth teleport tablet to directly access the island, or either 1000 coins or quest completion of The Fremennik Trials to travel via Jarvald
+3	0	7	Steal from the Keldagrim crafting or baker's stall.	Thieving:5:1	The Giant Dwarf:started	
+3	0	8	Fill a bucket with water at the Rellekka well.			Bucket
+3	0	9	Enter the Troll Stronghold.		Troll Stronghold:partial;Combat Achievements/Easy:partial;Ghommal's hilt 1:partial	
+3	0	10	Chop and burn some oak logs in the Fremennik Province.	Woodcutting:15:1;Firemaking:15:1		Any axe (can be found north of the Rellekka mine) and a tinderbox
+3	1	1	Slay a Brine rat.	Slayer:47:1	Olaf's Quest:partial	Weaponry, and a spade to enter the Brine Rat Cavern
+3	1	2	Travel to the Snowy Hunter Area via Eagle.		Eagles' Peak:complete	Rope
+3	1	3	Mine some coal in Rellekka.	Mining:30:1	The Fremennik Trials:complete	Any pickaxe (can be found north of the Rellekka mine)
+3	1	4	Steal from the Rellekka Fish stalls.	Thieving:42:1	The Fremennik Trials:complete	
+3	1	5	Travel to Miscellania by Fairy ring.		The Fremennik Trials:started;Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code CIP
+3	1	6	Catch a Snowy knight.	Hunter:45:1;Hunter:35:1		
+3	1	7	Pick up your Pet Rock from your POH Menagerie.	Construction:37:1	The Fremennik Trials:partial	30,000 coins, 4 oak planks, saw, and hammer to construct a menagerie with a pet house, if you haven't already ; Pet rock
+3	1	8	Visit the Lighthouse from Waterbirth island.	Prayer:43:1;Agility:85:1	Horror from the Deep:complete	
+3	1	9	Mine some gold at the Arzinian mine.	Mining:40:1;Defence:30:1	Between a Rock...:partial	Any pickaxe and the gold helmet
+3	2	1	Teleport to Trollheim.	Magic:61:1	Eadgar's Ruse:complete	Means to cast Trollheim Teleport (2 law + 2 fire)
+3	2	2	Catch a Sabre-toothed Kyatt.	Hunter:55:1		Teasing stick, logs, and a knife
+3	2	3	Mix a super defence potion in the Fremennik Province.	Herblore:66:1		Cadantine potion (unf) and white berries
+3	2	4	Steal from the Keldagrim Gem Stall.	Thieving:75:1	The Giant Dwarf:started	
+3	2	5	Craft a Neitiznot shield on Neitiznot.	Woodcutting:56:1	The Fremennik Isles:partial	Hammer, rope, a set of bronze nails, and 2 arctic pine logs.
+3	2	6	Mine 5 Adamantite ores on Jatizso.	Mining:70:1	The Fremennik Isles:started	Any pickaxe
+3	2	7	Obtain 100% support from your kingdom subjects.		Throne of Miscellania:partial	Rake, pickaxe, axe, harpoon and/or lobster pot, depending on how you plan to gain support
+3	2	8	Teleport to Waterbirth Island.	Magic:72:1	Lunar Diplomacy:complete	Lunar spellbook selected ; Means to cast Waterbirth Teleport (1 law + 2 astral + 1 water)
+3	2	9	Obtain the Blast Furnace Foreman's permission to use the Blast Furnace for free.	Smithing:60:0	The Giant Dwarf:started	
+3	3	1	Kill each of the Dagannoth Kings.	Agility:85:1		See the strategy guide
+3	3	2	Craft 56 astral runes simultaneously from Essence without the use of Extracts.	Runecraft:82:1	Lunar Diplomacy:complete	28 pure or daeyalt essence (this task is not bypass-able with Raiments of the Eye)
+3	3	3	Create a dragonstone amulet in the Neitiznot furnace.	Crafting:80:1	The Fremennik Isles:started	Dragonstone, gold bar, and an amulet mould
+3	3	4	Complete a lap of the Rellekka agility course.	Agility:80:1		
+3	3	5	Kill the generals of Armadyl, Bandos, Saradomin and Zamorak in the God Wars Dungeon.	Agility:70:1;Strength:70:1;Hitpoints:70:1;Ranged:70:1	Troll Stronghold:partial;Combat Achievements/Easy:partial;Ghommal's hilt 1:partial	Partial completion of the Troll Stronghold, or completion of the Easy Combat Achievements for Ghommal's hilt 1 ; See the boss overview (or see the individual strategy guides for Kree'arra, General Graardor, Commander Zilyana, and K'ril Tsutsaroth)
+3	3	6	Slay a Spiritual mage within the Godwars Dungeon.	Slayer:83:1	Troll Stronghold:partial;Combat Achievements/Easy:partial;Ghommal's hilt 1:partial	Weaponry
+4	0	1	Catch a Mackerel at Catherby.	Fishing:16:1		Big fishing net
+4	0	2	Buy a candle from the Chandler in Catherby.			3 coins
+4	0	3	Collect five Flax from the Seers' flax fields.			
+4	0	4	Play the Organ in Seers' church.			
+4	0	5	Plant some Jute seeds in the patch north of McGrubor's Wood.	Farming:13:1		3 jute seeds, rake, and a seed dibber
+4	0	6	Have Galahad make you a cup of tea.			
+4	0	7	Defeat one of each elemental in the workshop.		Elemental Workshop I:started	Battered key and weaponry
+4	0	8	Get a pet fish from Harry in Catherby.			Fishbowl with water, seaweed, and 10 coins
+4	0	9	Buy a Stew from the Seers' pub.			20 coins
+4	0	10	Speak to Sherlock.			
+4	0	11	Cross the Coal truck log shortcut.	Agility:20:1		
+4	1	1	Complete a lap of the Barbarian agility course.	Agility:35:1	Alfred Grimhand's Barcrawl:complete	
+4	1	2	Create a Super Antipoison potion from scratch in the Seers/Catherby Area.	Herblore:48:1		Vial of water, irit leaf, unicorn horn dust
+4	1	3	Enter the Ranging guild.	Ranged:40:1		
+4	1	4	Use the grapple shortcut to get from the water obelisk to Catherby shore.	Agility:36:1;Strength:22:1;Ranged:39:1;Agility:70:1		Mith grapple and any crossbow ; Protection from dragonfire recommended
+4	1	5	Catch and cook a Bass in Catherby.	Fishing:46:1;Cooking:43:1		Big fishing net
+4	1	6	Teleport to Camelot.	Magic:45:1		Means to cast Camelot Teleport (5 air + 1 law)
+4	1	7	String a Maple shortbow in Seers' Village bank.	Fletching:50:1		Maple shortbow (u) and bow string
+4	1	8	Pick some Limpwurt root from the farming patch in Catherby.	Farming:26:1		Limpwurt seed, seed dibber (or Barbarian Farming), and a rake ; Ultracompost recommended
+4	1	9	Create a Mind helmet.		Elemental Workshop II:partial	
+4	1	10	Kill a Fire Giant inside Baxtorian Waterfall.		Waterfall Quest:started	Weaponry ; Rope ; Glarial's amulet only if Waterfall Quest isn't yet completed
+4	1	11	Complete a wave of Barbarian Assault.			Completion of the Barbarian Assault tutorial to be able to play the minigame
+4	1	12	Steal from the chest in Hemenster.	Thieving:47:1		Lockpick ; Combat bracelet recommended for quick access from the nearby Ranging Guild
+4	1	13	Travel to McGrubor's Wood by Fairy Ring.		Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code ALS
+4	1	14	Mine some coal near the coal trucks.	Mining:30:1		Any pickaxe
+4	2	1	Catch a Leaping Sturgeon.	Fishing:70:1;Agility:45:1;Strength:45:1		Access to Barbarian Fishing ; Barbarian rod and suitable bait (fishing bait, feathers, fish offcuts, roe, or caviar)
+4	2	2	Complete a lap of the Seers' Village agility course.	Agility:60:1		
+4	2	3	Create a Yew Longbow from scratch around Seers' Village.	Fletching:70:1;Woodcutting:60:1		Any axe, bow string (can be spun from flax), and a knife
+4	2	4	Enter the Seers' Village courthouse with piety turned on.	Prayer:70:1;Defence:70:1	King's Ransom:complete;Knight Waves Training Grounds:complete	
+4	2	5	Charge a Water Orb.	Magic:56:1;Agility:70:1		Unpowered orb and means to cast Charge Water Orb (3 cosmic + 30 water) ; Protection from dragonfire recommended
+4	2	6	Burn some Maple logs with a bow in Seers' Village.	Firemaking:65:1		Access to Barbarian Firemaking ; Maple logs, and any bow (except the twisted, cursed, dark, crystal, ogre, rain, starter or signed oak bow)
+4	2	7	Kill a Shadow Hound in the Shadow dungeon.	Thieving:53:1	Desert Treasure I:started	Ring of visibility (or a ring of shadows) and weaponry
+4	2	8	Kill a Mithril Dragon.			Access to Barbarian Firemaking ; Weaponry and protection from dragonfire
+4	2	9	Purchase and equip a granite body from Barbarian Assault.	Strength:50:1;Defence:50:1		See the gameplay overview and the strategy guide ; 95,000 coins to purchase the granite body
+4	2	10	Have the Seers' estate agent decorate your house with Fancy Stone.	Construction:50:0		25,000 coins ; Additional 5,000 coins if already using Fancy Stone, to change to something else and back
+4	2	11	Smith an Adamant spear at Otto's Grotto.	Smithing:75:1		Access to Barbarian Smithing ; Yew logs, adamantite bar, and a hammer
+4	3	1	Read the Blackboard at Barbarian Assault after reaching level 5 in every role.			See the gameplay overview and the strategy guide
+4	3	2	Pick some Dwarf weed from the herb patch at Catherby.	Farming:79:1		Dwarf weed seed, spade, seed dibber (or Barbarian Farming), and a rake ; Ultracompost recommended
+4	3	3	Fish and Cook 5 Sharks in Catherby using the Cooking gauntlets.	Fishing:76:1;Cooking:80:1	Family Crest:complete	Harpoon (or Barbarian Fishing) and cooking gauntlets
+4	3	4	Mix a Stamina Mix on top of the Seers' Village bank.	Herblore:86:1;Agility:60:1		Access to Barbarian Herblore ; Stamina potion (2) and caviar
+4	3	5	Smith a Rune Hasta at Otto's Grotto.	Smithing:90:1		Access to Barbarian Smithing ; Runite bar, magic logs, and a hammer
+4	3	6	Construct a Pyre ship from Magic Logs.	Firemaking:85:1;Crafting:85:1		Access to Barbarian Firemaking ; Magic logs, chewed bones, tinderbox, and any woodcutting axe
+4	3	7	Teleport to Catherby.	Magic:87:1	Lunar Diplomacy:complete	Lunar spellbook selected ; Means to cast Catherby Teleport (3 law + 3 astral + 10 water)
+5	0	1	Catch a Golden Warbler.	Hunter:5:1		Bird snare ; Necklace of passage recommended for quick access to Eagle's Eyrie, near the Uzer Hunter area
+5	0	2	Mine 5 clay in the north-eastern desert.			Any pickaxe ; Necklace of passage recommended for quick access to Eagle's Eyrie, near the Uzer mine
+5	0	3	Enter the Kalphite Hive.			Rope
+5	0	4	Enter the Desert with a set of Desert robes equipped.			Desert shirt, desert robe, and desert boots
+5	0	5	Kill a Vulture			Weaponry, preferably Ranged or Magic
+5	0	6	Have the Nardah Herbalist clean a Herb for you.			Any grimy herb and 200 coins
+5	0	7	Collect 5 Potato Cactus from the Kalphite Hive.			Rope ; Antipoison and food recommended if not bringing your own potato cactus
+5	0	8	Sell some artefacts to Simon Templeton.			Players must have started Icthlarin's Little Helper for access to Sophanem. ; Any artefact from Pyramid Plunder.
+5	0	9	Open the Sarcophagus in the first room of Pyramid Plunder	Thieving:21:1	Icthlarin's Little Helper:started	
+5	0	10	Cut a desert cactus open to fill a waterskin.			Knife or a slash weapon, and an empty waterskin
+5	0	11	Travel from the Shantay Pass to Pollnivneach by Magic Carpet.			200 coins and a Shantay Pass or another 5 coins.
+5	1	1	Climb to the summit of the Agility Pyramid.	Agility:30:1		Protection against desert heat recommended
+5	1	2	Slay a desert lizard.	Slayer:22:1		Ice cooler
+5	1	3	Catch an Orange Salamander.	Hunter:47:1		Rope and a small fishing net
+5	1	4	Steal a feather from the Desert Phoenix.	Thieving:25:1		
+5	1	5	Travel to Uzer via Magic Carpet.		The Golem:complete	200 coins (or 205 coins if using the Shantay Pass)
+5	1	6	Travel to the Desert via Eagle.		Eagles' Peak:complete	Rope
+5	1	7	Pray at the Elidinis statuette in Nardah		Spirits of the Elid:complete	
+5	1	8	Create a combat potion in the desert.	Herblore:36:1		Harralander potion (unf) and goat horn dust
+5	1	9	Teleport to Enakhra's Temple with the Camulet.		Enakhra's Lament:complete	Camulet
+5	1	10	Visit the Genie.		Spirits of the Elid:started	Rope and light source
+5	1	11	Teleport to Pollnivneach with a redirected teleport to house tablet.	Construction:20:1		Scroll of redirection and a house tablet
+5	1	12	Chop some Teak Logs near Uzer.	Woodcutting:35:1		Any axe
+5	2	1	Knock out and pickpocket a Menaphite Thug.	Thieving:65:1	The Feud:partial	Any blackjack
+5	2	2	Mine some Granite.	Mining:45:1		Any pickaxe
+5	2	3	Refill your waterskins in the Desert using Lunar magic.	Magic:68:1	Dream Mentor:complete	Lunar spellbook selected ; Waterskin that isn't full and means to cast Humidify (1 astral + 1 fire + 3 water)
+5	2	4	Kill the Kalphite Queen.			See the strategy guide
+5	2	5	Complete a lap of the Pollnivneach agility course.	Agility:70:1		
+5	2	6	Slay a Dust Devil in the desert cave with a Slayer helmet equipped.	Slayer:65:1;Defence:10:1;Crafting:55:1	Desert Treasure I:started;Slayer helmet:complete;Cabin Fever:complete;Ironman mode:complete	
+5	2	7	Activate Ancient Magicks at the altar in the Jaldraocht Pyramid.		Desert Treasure I:complete	
+5	2	8	Defeat a Locust Rider with Keris.	Attack:50:1	Contact!:partial	Keris or Keris partisan, and any light source
+5	2	9	Burn some yew logs on the Nardah Mayor's balcony.	Firemaking:60:1		Yew log and a tinderbox
+5	2	10	Create a Mithril Platebody in Nardah.	Smithing:68:1		5 mithril bars and a hammer
+5	3	1	Bake a wild pie at the Nardah Clay Oven.	Cooking:85:1		Raw wild pie
+5	3	2	Cast Ice Barrage against a foe in the Desert	Magic:94:1	Desert Treasure I:complete	Means to cast Ice Barrage (4 death + 2 blood + 6 water)
+5	3	3	Fletch some Dragon darts at the Bedabin Camp.	Fletching:95:1		Dragon dart tip and feather
+5	3	4	Speak to the KQ head in your POH.	Construction:78:1	Priest in Peril:complete	2 mahogany planks, 2 gold leaves, saw, and hammer ; Kq head or Kq head (tattered), and 50,000 coins to have the taxidermist stuff it ; Additional 15,000 coins to construct a Skill Hall if you haven't already
+5	3	5	Steal from the Grand Gold Chest in the final room of Pyramid Plunder.	Thieving:91:0	Icthlarin's Little Helper:started	
+5	3	6	Restore at least 85 Prayer points when praying at the Altar in Sophanem.	Prayer:85:0	Icthlarin's Little Helper:started	
+6	0	1	Complete a lap of the Draynor Village agility course.			
+6	0	2	Slay a Cave bug beneath Lumbridge Swamp.	Slayer:7:1		Light source ; Rope if the caves haven't been entered yet
+6	0	3	Have Sedridor teleport you to the Rune essence mine.		Rune Mysteries:complete	
+6	0	4	Craft some water runes from Essence.	Runecraft:5:1		Pure, daeyalt, or rune essence ; Access to the Water Altar (water talisman/tiara, elemental talisman/tiara, or the Abyss)
+6	0	5	Learn your age from Hans in Lumbridge.			
+6	0	6	Pickpocket a man or woman in Lumbridge.			
+6	0	7	Chop and burn some oak logs in Lumbridge.	Woodcutting:15:1;Firemaking:15:1		Any axe and tinderbox
+6	0	8	Kill a Zombie in Draynor Sewers.			
+6	0	9	Catch some Anchovies in Al Kharid.	Fishing:15:1		Small fishing net
+6	0	10	Bake some Bread on the Lumbridge kitchen range.	Cooking:34:1	Cook's Assistant:complete	
+6	0	11	Mine some Iron ore at the Al Kharid mine.	Mining:15:1		Any pickaxe
+6	0	12	Enter the H.A.M. Hideout.			None, though a lockpick is recommended
+6	1	1	Complete a lap of the Al Kharid agility course.	Agility:20:1		
+6	1	2	Grapple across the River Lum.	Agility:8:1;Strength:19:1;Ranged:37:1		Mith grapple and any crossbow
+6	1	3	Purchase an upgraded device from Ava.	Ranged:50:0	Animal Magnetism:complete	75 steel arrows with Ava's attractor, or 75 steel arrows with 999 coins
+6	1	4	Travel to the Wizards' Tower by Fairy ring.		Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code DIS
+6	1	5	Cast the Teleport to Lumbridge spell.	Magic:31:1		Means to cast Lumbridge Teleport (1 law + 3 air + 1 earth)
+6	1	6	Catch some Salmon in Lumbridge.	Fishing:30:1		Fly fishing rod and some feathers
+6	1	7	Craft a coif in the Lumbridge cow pen.	Crafting:38:1		Leather, and a needle and thread or the costume needle
+6	1	8	Chop some willow logs in Draynor Village.	Woodcutting:30:1		Any axe
+6	1	9	Pickpocket Martin the Master Gardener.	Thieving:38:1		
+6	1	10	Get a slayer task from Chaeldar.	Combat:70:1	Lost City:complete	Dramen or Lunar staff to enter Zanaris
+6	1	11	Catch an Essence or Eclectic impling in Puro-Puro.	Hunter:42:1		Dramen or Lunar staff to enter Zanaris ; Butterfly net and impling jar
+6	1	12	Craft some Lava runes at the fire altar in Al Kharid.	Runecraft:23:1		Earth talisman, earth runes, and pure or daeyalt essence ; Access to the Fire Altar (fire talisman/tiara, elemental talisman/tiara, or the Abyss) ; Binding necklace recommended to guarantee the runes are successfully crafted
+6	2	1	Cast Bones to Peaches in Al Kharid palace.	Magic:60:1		Access to Bones to Peaches via the Mage Training Arena ; Bones and means to cast Bones to Peaches (2 nature + 4 earth + 4 water)
+6	2	2	Squeeze past the jutting wall on your way to the cosmic altar.	Agility:46:1	Lost City:complete	Dramen or Lunar staff to enter Zanaris, or access to the Abyss
+6	2	3	Craft 56 Cosmic runes simultaneously from Essence without the use of Extracts.	Runecraft:59:1	Lost City:complete	28 pure or daeyalt essence (less may suffice with Raiments of the Eye pieces) ; Access to the Cosmic Altar (cosmic talisman/tiara, catalytic talisman/tiara, or the Abyss)
+6	2	4	Travel from Lumbridge to Edgeville on a Waka Canoe.	Woodcutting:57:1		Any axe
+6	2	5	Collect at least 100 Tears of Guthix in one visit.		Tears of Guthix (quest):complete	Games necklace recommended for quick access
+6	2	6	Take the train from Dorgesh-Kaan to Keldagrim.		Another Slice of H.A.M.:complete	
+6	2	7	Purchase some Barrows gloves from the Lumbridge bank chest.		Recipe for Disaster:complete	130,000 coins
+6	2	8	Pick some Belladonna from the farming patch at Draynor Manor.	Farming:63:1		Belladonna seed, seed dibber (or Barbarian Farming), spade, rake and any gloves
+6	2	9	Light your mining helmet in the Lumbridge castle basement.	Firemaking:65:1		Tinderbox and mining helmet
+6	2	10	Recharge your prayer at Emir's Arena with Smite activated.	Prayer:52:1		
+6	2	11	Craft, string and enchant an Amulet of Power in Lumbridge.	Crafting:70:1;Magic:57:1		Gold bar, cut diamond, amulet mould, ball of wool ; Means to cast Lvl-4 Enchant (1 cosmic + 10 earth)
+6	3	1	Steal from a Dorgesh-Kaan rich chest.	Thieving:78:1	Death to the Dorgeshuun:complete	Lockpick
+6	3	2	Grapple across a pylon on the Dorgesh-Kaan Agility Course.	Agility:70:1;Ranged:70:1;Strength:70:1	Death to the Dorgeshuun:complete	Mith grapple, any crossbow, and a light source
+6	3	3	Chop some magic logs at the Mage Training Arena.	Woodcutting:75:1		Any axe
+6	3	4	Smith an Adamant platebody down Draynor sewer.	Smithing:88:1		5 adamantite bars and a hammer
+6	3	5	Craft 140 or more Water runes simultaneously from Essence without the use of Extracts.	Runecraft:76:1;Runecraft:57:1;Runecraft:38:1		28 pure, daeyalt, or rune essence (less may suffice at higher Runecraft levels) ; Access to the Water Altar (water talisman/tiara, elemental talisman/tiara, or the Abyss)
+6	3	6	Perform the Quest cape emote in the Wise Old Man's house.			Quest point cape
+7	0	1	Craft any Snelm from scratch in Morytania.	Crafting:15:1		Chisel ; Any blamish shell
+7	0	2	Cook a thin Snail on the Port Phasmatys range.	Cooking:12:1		Thin snail ; 2 Ecto-tokens or quest completion of Ghosts Ahoy to walk into Port Phasmatys, or enough coins for a charter ship.
+7	0	3	Get a slayer task from the Slayer Master in Canifis.	Combat:20:1		
+7	0	4	Kill a Banshee in the Slayer Tower.	Slayer:15:1		Earmuffs or Slayer helmet recommended
+7	0	5	Have Sbott in Canifis tan something for you.			Any tannable hide and 2-45 coins depending on the type of hide
+7	0	6	Enter Mort Myre Swamp.			
+7	0	7	Kill a Ghoul.			Weaponry
+7	0	8	Place a Scarecrow in the Morytania flower patch.	Farming:23:1;Farming:47:1		Bronze spear, watermelon, and a hay sack
+7	0	9	Offer some bonemeal at the Ectofuntus.			Pot, bucket, and any bones
+7	0	10	Kill a werewolf in its human form using the Wolfbane Dagger.			Wolfbane
+7	0	11	Restore your prayer points at the nature altar.		Nature Spirit:complete	Dramen or Lunar staff recommended to travel to Fairy ring code BIP
+7	1	1	Catch a swamp lizard.	Hunter:29:1		Rope and small fishing net
+7	1	2	Complete a lap of the Canifis agility course.	Agility:40:1		
+7	1	3	Obtain some Bark from a Hollow tree.	Woodcutting:45:1		Any axe
+7	1	4	Travel to Dragontooth Isle.			Ghostspeak amulet and 25 ecto-tokens (or 10 with the Ring of Charos(a))
+7	1	5	Kill a Terror Dog.	Slayer:40:1	Lair of Tarn Razorlor:complete	Weaponry ; Slayer ring recommended for quick access to Tarn's Lair
+7	1	6	Complete a game of trouble brewing.	Cooking:40:1		Completion of Cabin Fever ; Empty inventory and head slot ; At least one opposing player to start the game
+7	1	7	Board the Swampy boat at the Hollows.		Nature Spirit:complete	Dramen or Lunar staff recommended to travel to Fairy ring code BKR
+7	1	8	Make a batch of cannonballs at the Port Phasmatys furnace.	Smithing:35:1	Dwarf Cannon:complete	Steel bar and ammo mould (or 2 steel bars and double ammo mould)
+7	1	9	Kill a Fever Spider on Braindeath Island.	Slayer:42:1	Rum Deal:started	Weaponry to fight at range, or means to negate disease (such as Slayer gloves), recommended
+7	1	10	Use an ectophial to return to Port Phasmatys.		Ghosts Ahoy:complete	Ectophial
+7	1	11	Mix a Guthix Balance potion while in Morytania.	Herblore:22:1	In Aid of the Myreque:partial	Restore potion, garlic, and silver dust (made by using a silver bar on the Ectofuntus bone grinder)
+7	2	1	Enter the Kharyrll Portal in your POH.	Magic:66:1;Construction:50:1	Desert Treasure I:complete	100,000 coins, 2 limestone bricks, 3 teak planks, hammer, and saw to construct a portal chamber with an activatable teak portal and teleport focus, if you haven't already ; 200 law runes and 100 blood runes to direct a portal to Kharyrll, or 2000 law runes and 1000 blood runes if adding the portal to a portal nexus instead
+7	2	2	Climb up the advanced spike chain within Slayer Tower.	Agility:71:1		Slayer helmet or nose peg recommended against the aberrant spectres, when climbing the spikey chain on the as a shortcut to the advanced spikey chain ; Only a successful climb (not taking damage) will count as task completed.
+7	2	3	Harvest some Watermelon from the Allotment patch on Harmony Island.	Farming:47:1	The Great Brain Robbery:started	3 watermelon seeds, spade, seed dibber (or Barbarian Farming), and a rake ; Ultracompost recommended
+7	2	4	Chop and burn some mahogany logs on Mos Le'Harmless.	Woodcutting:50:1;Firemaking:50:1	Cabin Fever:complete	Any axe and a tinderbox ; Witchwood icon and a light source (if Fire of Eternal Light has not been built) recommended
+7	2	5	Complete a temple trek with a hard companion.		In Aid of the Myreque:complete	See the recommendations
+7	2	6	Kill a Cave Horror.	Slayer:58:1	Cabin Fever:complete	Witchwood icon and a light source
+7	2	7	Harvest some Bittercap Mushrooms from the patch in Canifis.	Farming:53:1		Mushroom spore, seed dibber (or Barbarian Farming), and a rake ; Ultracompost recommended
+7	2	8	Pray at the Altar of Nature with Piety activated.	Prayer:70:1;Defence:70:1	Nature Spirit:complete;Knight Waves Training Grounds:complete;King's Ransom:complete	Dramen or Lunar staff recommended to travel to Fairy ring code BIP
+7	2	9	Use the shortcut to get to the bridge over the Salve.	Agility:65:1		
+7	2	10	Mine some Mithril ore in the Abandoned Mine.	Mining:55:1	Haunted Mine:complete	Any pickaxe ; Crystal-mine key recommended (allows use of veins on Level 2, right next to the secret entrance)
+7	3	1	Catch a shark in Burgh de Rott with your bare hands.	Fishing:96:1;Strength:76:1	In Aid of the Myreque:partial	Access to Barbarian Fishing ; Shark lure recommended ; If you are boosting with the Dragon harpoon special attack, you need to bank or drop the harpoon before catching the shark, or store it in a tackle box. Having it in the inventory will use it by default and it will not count as barehanded.
+7	3	2	Cremate any Shade remains on a Magic or Redwood pyre.	Firemaking:80:1	Shades of Mort'ton:complete	Magic or Redwood pyre logs, any shade remains, and a tinderbox
+7	3	3	Fertilize the Morytania herb patch using Lunar Magic.	Magic:83:1	Lunar Diplomacy:complete	Lunar spellbook selected ; Means to cast Fertile Soil (2 nature + 3 astral + 15 earth)
+7	3	4	Craft a Black dragonhide body in Canifis bank.	Crafting:84:1		3 black dragon leather, and a needle and thread or the costume needle
+7	3	5	Kill an Abyssal demon in the Slayer Tower.	Slayer:85:1		Weaponry
+7	3	6	Loot the Barrows chest while wearing any complete barrows set.	Defence:70:0;Attack:70:1;Magic:70:1;Attack:70:1;Strength:70:1;Attack:70:1;Ranged:70:1		Various other skill requirements depending on the set used, none of which can be boosted:
+8	0	1	Browse Thessalia's store.			
+8	0	2	Have Aubury teleport you to the Essence mine.		Rune Mysteries:complete	
+8	0	3	Mine some Iron in the south-east mining patch near Varrock.	Mining:15:1		Any pickaxe
+8	0	4	Make a normal plank at the Sawmill.			100 coins ; Logs, obtainable from a dying tree here with any axe for another easy task
+8	0	5	Enter the second level of the Stronghold of Security.			Food recommended at low combat levels
+8	0	6	Jump over the fence south of Varrock.	Agility:13:1		
+8	0	7	Chop down a dying tree in the Lumber Yard.			Any axe ; 100 coins recommended, to have the Sawmill operator turn the logs from the tree into a plank for another easy task
+8	0	8	Buy a newspaper.			50 coins
+8	0	9	Give a dog a bone!			Bones
+8	0	10	Spin a bowl on the pottery wheel and fire it in the oven in Barb Village.	Crafting:8:1		Soft clay
+8	0	11	Speak to Haig Halen after obtaining at least 50 Kudos.			See Kudos for all activities that grant them
+8	0	12	Craft some Earth runes from Essence.	Runecraft:9:1		Pure, daeyalt, or rune essence ; Access to the Earth Altar (earth talisman/tiara, elemental talisman/tiara, or the Abyss)
+8	0	13	Catch some trout in the River Lum at Barbarian Village.	Fishing:20:1		Fly fishing rod and some feathers
+8	0	14	Steal from the Tea stall in Varrock.	Thieving:5:1		
+8	1	1	Have the Apothecary in Varrock make you a strength potion.			Limpwurt root, red spiders' eggs, and 5 coins
+8	1	2	Enter the Champions' Guild.	Quest:32:1		
+8	1	3	Select a colour for your kitten.		Gertrude's Cat:partial;Garden of Tranquillity:partial	100 coins ; Wear a Ring of Charos(a)
+8	1	4	Use the spirit tree north of Varrock.		Tree Gnome Village:complete	
+8	1	5	Perform the 4 emotes from the Stronghold of Security.			Jagex Account or the older RuneScape Authenticator ; Food, protection prayers, and/or enough hitpoints to run through all four floors of the stronghold
+8	1	6	Enter the Tolna dungeon after completing A Soul's Bane.		A Soul's Bane:complete	
+8	1	7	Teleport to the digsite using a Digsite pendant.	Magic:49:1	The Dig Site:complete	Digsite pendant, or a mounted digsite pendant inside any player-owned house (see the House party worlds)
+8	1	8	Cast the teleport to Varrock spell.	Magic:25:1		Means to cast Varrock Teleport (1 law + 3 air + 1 fire)
+8	1	9	Get a Slayer task from Vannaka.	Combat:40:1		
+8	1	10	Make 20 Mahogany Planks in one go.			20 mahogany logs and 30,000 coins
+8	1	11	Pick a White tree fruit.	Farming:25:1	Garden of Tranquillity:complete	
+8	1	12	Use the balloon to travel from Varrock.	Farming:30:1;Firemaking:40:1	Enlightened Journey:complete	One set of normal logs, oak logs, yew logs, or magic logs, depending on the chosen destination ; If the starting point in Varrock has not been unlocked yet, an additional 10 willow logs are needed to first fly towards it from Entrana
+8	1	13	Complete a lap of the Varrock Agility course.	Agility:30:1		
+8	2	1	Trade furs with the Fancy Dress Seller for a spottier cape and equip it.	Hunter:66:0;Hunter:69:1		800 coins
+8	2	2	Speak to Orlando Smith when you have achieved 153 Kudos.			See Kudos for all activities that grant them
+8	2	3	Make a Waka canoe near Edgeville.	Woodcutting:57:1		Any axe
+8	2	4	Teleport to Paddewwa.	Magic:54:1	Desert Treasure I:complete	Ancient Magicks selected ; Means to cast Paddewwa Teleport (2 law + 1 air + 1 fire)
+8	2	5	Teleport to Barbarian Village with a skull sceptre.			Skull sceptre, or the required items to create it
+8	2	6	Chop some yew logs in Varrock and burn them at the top of the Varrock church.	Woodcutting:60:1;Firemaking:60:1		Any axe and tinderbox
+8	2	7	Have the Varrock estate agent decorate your house with Fancy Stone.	Construction:50:0		25,000 coins ; Additional 5,000 coins if already using Fancy Stone, to change to something else and back
+8	2	8	Collect at least 2 yew roots from the Tree patch in Varrock Palace.	Farming:68:1;Woodcutting:60:1		Yew sapling, any axe, and a spade ; 10 cactus spines recommended to pay the gardener
+8	2	9	Pray at the altar in Varrock palace with Smite active.	Prayer:52:0		
+8	2	10	Squeeze through the obstacle pipe in Edgeville dungeon.	Agility:51:1		
+8	3	1	Create a super combat potion in Varrock west bank.	Herblore:90:1	Druidic Ritual:complete	Super attack (4), super strength (4), super defence (4), and a torstol
+8	3	2	Use Lunar magic to make 20 mahogany planks at the Lumberyard.	Magic:86:1	Dream Mentor:complete	Lunar spellbook selected ; 21,000 coins and 20 mahogany logs ; Means to cast Plank Make twenty times (20 nature + 40 astral + 300 earth)
+8	3	3	Bake a summer pie in the Cooking Guild.	Cooking:95:1		Raw summer pie ; Chef's hat, golden chef's hat, Varrock armour 3, or Cooking cape
+8	3	4	Smith and fletch ten rune darts within Varrock.	Smithing:89:1;Fletching:81:1	The Tourist Trap:complete	Runite bar, 10 feathers and a hammer
+8	3	5	Craft 100 or more earth runes simultaneously from Essence without the use of Extracts.	Runecraft:78:1;Runecraft:52:1		28 pure, daeyalt, or rune essence (fewer may suffice with more Raiments of the Eye pieces) ; Access to the Earth Altar (earth talisman/tiara, elemental talisman/tiara, or the Abyss)
+9	0	1	Cast Low Alchemy at the Fountain of Rune.	Magic:21:1		Item that can be alchemised (nearly any item)
+9	0	2	Enter the Wilderness from the Ardougne or Edgeville lever.			
+9	0	3	Pray at the Chaos Altar in the Western Wilderness.			
+9	0	4	Enter the Chaos Runecrafting temple.			Access to the Chaos Altar (chaos talisman/tiara, catalytic talisman/tiara, or the Abyss)
+9	0	5	Kill a Mammoth in the Wilderness.			Weaponry
+9	0	6	Kill an Earth Warrior in the Wilderness beneath Edgeville.	Agility:15:1		Weaponry
+9	0	7	Restore some prayer points at the demonic ruins.			
+9	0	8	Enter the King Black Dragon's lair.			
+9	0	9	Collect 5 Red spiders' eggs from the Wilderness			
+9	0	10	Mine some Iron ore in the Wilderness.	Mining:15:1		Any pickaxe
+9	0	11	Have the Mage of Zamorak teleport you to the Abyss.		Enter the Abyss:complete	
+9	0	12	Equip any team cape in the Wilderness.			Any team cape
+9	1	1	Mine some Mithril ore in the wilderness.	Mining:55:1		Any pickaxe
+9	1	2	Chop some yew logs from a fallen Ent.	Woodcutting:61:0		At least mithril axe and weaponry
+9	1	3	Enter the Wilderness Godwars Dungeon.	Agility:60:1;Strength:60:1		God equipment recommended if going further inside
+9	1	4	Complete a lap of the Wilderness Agility course.	Agility:52:1		
+9	1	5	Kill a Green Dragon.			Protection from dragonfire recommended if not safe spotting and weaponry to slay it
+9	1	6	Kill an Ankou in the Wilderness.			Weaponry, or sufficient combat stats to defeat a level 86 or level 98 Ankou while unarmed
+9	1	7	Charge an Earth Orb.	Magic:60:1		Unpowered orb and means to cast Charge Earth Orb (3 cosmic + 30 earth)
+9	1	8	Kill a Bloodveld in the Wilderness Godwars Dungeon.	Agility:60:1;Strength:60:1;Slayer:50:1		Weaponry and god equipment
+9	1	9	Talk to the Emblem Trader in Edgeville about emblems. (He's just north of the bank)			
+9	1	10	Smith a Golden helmet in the Resource Area.	Smithing:50:1	Between a Rock...:partial	7500 coins, 3 gold bars, and a hammer
+9	1	11	Open the Muddy Chest in the lava maze.	Agility:82:1		Muddy key
+9	2	1	Cast any of the 3 God spells against another player in the Wilderness.	Magic:60:1	Mage Arena I:complete	Any god staff and means to cast its related god spell (2 blood + 1-4 fire + 1-4 air per cast)
+9	2	2	Charge an Air Orb.	Magic:66:1		Unpowered orb and means to cast Charge Air Orb (30 air + 3 cosmic)
+9	2	3	Catch a Black Salamander in the Wilderness.	Hunter:67:1		Net trap
+9	2	4	Smith an Adamant scimitar in the Resource Area.	Smithing:75:1		Hammer and 2 adamantite bars ; 6,000-7,500 coins
+9	2	5	Kill a Lava Dragon.			Protection from dragonfire recommended if not safe spotting and weaponry to slay it
+9	2	6	Kill the Chaos Elemental.			See the strategy guide
+9	2	7	Kill the Crazy Arc., Chaos Fanatic & Scorpia.			See the individual strategy guides for the Crazy archaeologist, Chaos Fanatic, and Scorpia
+9	2	8	Take the agility shortcut from Trollheim into the Wilderness.	Agility:64:1	Troll Stronghold:partial;Combat Achievements/Easy:partial;Ghommal's hilt 1:partial	Partial completion of Troll Stronghold, or completion of the Easy Combat Achievements for Ghommal's hilt 1
+9	2	9	Kill a Spiritual warrior in the Wilderness Godwars Dungeon.	Agility:60:1;Strength:60:1;Slayer:68:1		Weaponry and god equipment
+9	2	10	Fish some Raw Lava Eel in the Wilderness.	Fishing:53:1;Herblore:25:1		Oily fishing rod, fishing bait ; Knife, Wilderness sword 1 or 2, or a slashing weapon
+9	3	1	Kill Callisto, Venenatis & Vet'ion.			Completion of the Medium Wilderness diary is required to kill the greater versions, and completion of the Hard Wilderness diary is required to kill the lesser versions ; See the individual strategy guides for Callisto, Venenatis, and Vet'ion, or those for the weaker bosses Artio, Spindel, and Calvar'ion
+9	3	2	Teleport to Ghorrock.	Magic:96:1	Desert Treasure I:complete	Ancient Magicks selected ; Means to cast Ghorrock Teleport (2 law + 8 water)
+9	3	3	Fish and Cook a Dark Crab in the Resource Area.	Fishing:85:1;Cooking:90:1		Lobster pot and dark fishing bait ; 3,750-7,500 coins
+9	3	4	Smith a rune scimitar from scratch in the Resource Area.	Mining:85:1;Smithing:90:1		Weaponry, any pickaxe, hammer, and 16 coal ; 3,750-7,500 coins
+9	3	5	Steal from the Rogues' chest.	Thieving:84:1		
+9	3	6	Slay a spiritual mage inside the wilderness Godwars Dungeon.	Agility:60:1;Strength:60:1;Slayer:83:1		Weaponry and god equipment
+9	3	7	Cut and burn some magic logs in the Resource Area.	Woodcutting:75:1;Firemaking:75:1		Any axe and tinderbox ; 3,750-7,500 coins
+10	0	1	Catch a Copper Longtail.	Hunter:9:1		Bird snare
+10	0	2	Complete a novice game of Pest Control.	Combat:40:1		
+10	0	3	Mine some Iron Ore near Piscatoris.	Mining:15:1		Any pickaxe
+10	0	4	Complete a lap of the Gnome agility course.			
+10	0	5	Score a goal in a Gnomeball match.			
+10	0	6	Claim any Chompy bird hat from Rantz.		Big Chompy Bird Hunting:complete	Ogre bellows, (comp) ogre bow, and ogre or brutal arrows ; 30 chompy or jubbly bird kills
+10	0	7	Teleport to Pest Control using the Minigame Teleport.	Combat:40:1		
+10	0	8	Collect a swamp toad at the Gnome Stronghold.			
+10	0	9	Have Brimstail teleport you to the Essence Mine.		Rune Mysteries:complete	
+10	0	10	Fletch an Oak Shortbow in the Gnome Stronghold.	Fletching:20:1		Oak shortbow (u) and bow string
+10	0	11	Kill a Terrorbird in the Terrorbird enclosure.			Weaponry
+10	1	1	Take the agility shortcut from the Grand Tree to Otto's Grotto.	Agility:37:1	Tree Gnome Village:complete;The Grand Tree:complete	
+10	1	2	Travel to the Gnome Stronghold by Spirit Tree.		Tree Gnome Village:complete	
+10	1	3	Trap a Spined Larupia.	Hunter:31:1		Teasing stick, logs, and a knife
+10	1	4	Fish some Bass on Ape Atoll.	Fishing:46:1	Monkey Madness I:partial	Big fishing net
+10	1	5	Chop and burn some teak logs on Ape Atoll.	Woodcutting:35:1;Firemaking:35:1	Monkey Madness I:partial	Any axe and tinderbox
+10	1	6	Complete an intermediate game of Pest Control.	Combat:70:1		
+10	1	7	Travel to the Feldip Hills by Gnome Glider.		The Grand Tree:partial;One Small Favour:partial	
+10	1	8	Claim a Chompy bird hat from Rantz after registering at least 125 kills.		Big Chompy Bird Hunting:complete	Ogre bellows, (comp) ogre bow, and ogre or brutal arrows ; 125 chompy or jubbly bird kills
+10	1	9	Travel from Eagles' Peak to the Feldip Hills by Eagle.		Eagles' Peak:complete	Rope
+10	1	10	Make a Chocolate Bomb at the Grand Tree.	Cooking:42:1		Gnomebowl mould, Gianne dough, 4 chocolate bars, an equa leaf, 2 pots of cream, and chocolate dust (can all be purchased at Grand Tree Groceries)
+10	1	11	Complete a delivery for the Gnome Restaurant.	Cooking:29:1		Completion of the Gnome Restaurant tutorial
+10	1	12	Turn your small crystal seed into a Crystal saw.		The Eyes of Glouphrie:complete	Crystal saw seed
+10	1	13	Mine some Gold ore underneath the Grand Tree.	Mining:40:1	The Grand Tree:complete	Any pickaxe
+10	2	1	Kill an Elf with a Crystal bow.	Ranged:70:0	Roving Elves:complete	Crystal bow or Bow of Faerdhinen
+10	2	2	Catch and cook a Monkfish in Piscatoris.	Fishing:62:1;Cooking:62:1	Swan Song:complete	Small fishing net
+10	2	3	Complete a Veteran game of Pest Control.	Combat:100:1		
+10	2	4	Catch a Dashing Kebbit.	Hunter:69:1		500 coins
+10	2	5	Complete a lap of the Ape Atoll agility course.	Agility:48:1	Monkey Madness I:partial	Ninja monkey greegree or Kruk monkey greegree (other greegrees will cause you to fail the course)
+10	2	6	Chop and burn some Mahogany logs on Ape Atoll.	Woodcutting:50:1;Firemaking:50:1	Monkey Madness I:partial	Any axe (excluding felling axes) and a tinderbox
+10	2	7	Mine some Adamantite ore in Tirannwn.	Mining:70:1	Regicide:started	Any pickaxe
+10	2	8	Check the health of your Palm tree in Lletya.	Farming:68:1	Mourning's End Part I:started	Palm sapling, rake, and spade ; 15 papayas recommended to pay the gardener
+10	2	9	Claim a Chompy bird hat from Rantz after registering at least 300 kills.		Big Chompy Bird Hunting:complete	Ogre bellows, (comp) ogre bow, and ogre or brutal arrows ; 300 chompy or jubbly bird kills
+10	2	10	Build an Isafdar painting in your POH Quest hall.	Construction:65:1	Roving Elves:complete	3 mahogany planks, saw, and hammer ; Isafdar painting (bought from Sir Renitee for 2,000 coins) ; 25,000 coins to construct a Quest Hall if you haven't already
+10	2	11	Kill Zulrah.		Regicide:started	See the strategy guide
+10	2	12	Teleport to Ape Atoll.	Magic:64:1	Recipe for Disaster/Freeing King Awowogei:complete;Recipe for Disaster:complete	Means to cast Ape Atoll Teleport (2 law + 2 fire + 2 water + 1 banana)
+10	2	13	Pickpocket a Gnome.	Thieving:75:1		
+10	3	1	Fletch a Magic Longbow in Tirannwn.	Fletching:85:1	Regicide:started	Magic longbow (u) and a bow string
+10	3	2	Kill the Thermonuclear Smoke Devil.	Slayer:93:0		See the strategy guide
+10	3	3	Have Prissy Scilla protect your Magic tree.	Farming:75:1		Magic sapling, 25 coconuts, rake, and a spade
+10	3	4	Use the Elven overpass advanced cliffside shortcut.	Agility:85:1	Underground Pass:complete	
+10	3	5	Equip any complete void set.	Combat:40:1;Prayer:22:1;Attack:42:1;Strength:42:1;Defence:42:1;Hitpoints:42:1;Ranged:42:1;Magic:42:1		Any void helm (melee, ranger, or mage helm) ; Void knight top, robe, and gloves
+10	3	6	Claim a Chompy bird hat from Rantz after registering at least 1,000 kills.		Big Chompy Bird Hunting:complete	Ogre bellows, (comp) ogre bow, and ogre or brutal arrows ; 1,000 chompy or jubbly bird kills
+10	3	7	Pickpocket an Elf.	Thieving:85:1	Mourning's End Part I:started	
+11	0	1	Mine some Iron at the Mount Karuulm mine.	Mining:15:1		Any pickaxe
+11	0	2	Kill a Sandcrab.			
+11	0	3	Hand in a book at the Arceuus Library.			
+11	0	4	Steal from a Hosidius Food Stall.	Thieving:25:1		
+11	0	5	Browse the Warrens General Store.			
+11	0	6	Take a boat to Land's End.			
+11	0	7	Pray at the Altar in Kourend Castle			
+11	0	8	Dig up some Saltpetre.			Spade
+11	0	9	Enter your Player Owned House from Hosidius.	Construction:25:0		8,750 coins for an estate agent to move your house to Hosidius (can only be done after you've visited Great Kourend)
+11	0	10	Do a lap of either tier of the Shayzien Agility Course.			
+11	0	11	Create a Strength potion in the Lovakengj Pub.	Herblore:12:1	Druidic Ritual:complete	Tarromin potion (unf) and limpwurt root
+11	0	12	Fish a Trout from the River Molch.	Fishing:20:1		Fly fishing rod and some feathers (bring enough feathers to account for fishing raw salmon multiple times before you get a raw trout)
+11	1	1	Travel to the Fairy Ring south of Mount Karuulm.		Fairytale II - Cure a Queen:started	Dramen or Lunar staff to travel to Fairy ring code CIR
+11	1	2	Kill a Lizardman.			Combat gear ; Antipoison recommended
+11	1	3	Use Kharedst's memoirs to teleport to all five cities in Great Kourend.		The Depths of Despair:complete;The Queen of Thieves:complete;Tale of the Righteous:complete;The Forsaken Tower:complete;The Ascent of Arceuus:complete	Kharedst's memoirs or the Book of the Dead
+11	1	4	Mine some Volcanic Sulphur.	Mining:42:1		Any pickaxe ; Face mask, gas mask, or slayer helmet
+11	1	5	Enter the Farming Guild.	Farming:45:1		
+11	1	6	Switch to the Necromancy Spellbook at Tyss.			
+11	1	7	Repair a Piscarilius crane.	Crafting:30:1;Construction:30:1		Hammer, 3 regular planks, and about 50 nails of any variant
+11	1	8	Deliver some intelligence to Captain Ginea.			Combat gear
+11	1	9	Catch a Bluegill on Molch Island.	Fishing:43:1;Hunter:35:1		King worms (found on the island) or fish offcuts
+11	1	10	Use the boulder leap shortcut in the Arceuus essence mine.	Agility:49:1		
+11	1	11	Subdue the Wintertodt	Firemaking:50:1		Any axe, tinderbox, and warm clothing ; Knife and a hammer or Imcando hammer recommended to score more points ; Rejuvenation potions recommended for learners (these are made in the minigame's lobby)
+11	1	12	Catch a Chinchompa in the Kourend Woodland.	Hunter:53:1	Eagles' Peak:partial	Box trap
+11	1	13	Chop some Mahogany logs north of the Farming Guild.	Woodcutting:50:1		Any axe
+11	2	1	Enter the Woodcutting Guild.	Woodcutting:60:1		
+11	2	2	Smelt an Adamantite bar in The Forsaken Tower.	Smithing:70:1	The Forsaken Tower:partial	Adamantite ore and 6 coal
+11	2	3	Kill a Lizardman Shaman in the Lizardman Temple.			See the strategy guide
+11	2	4	Mine some Lovakite.	Mining:65:1		Any pickaxe
+11	2	5	Plant some Logavano seeds at the Tithe Farm.	Farming:74:1		Seed dibber
+11	2	6	Kill a Zombie in the Shayzien Crypts.			Combat gear and a light source
+11	2	7	Teleport to Xeric's Heart using Xeric's Talisman.			Xeric's talisman charged with a lizardman fang, or a mounted xeric's talisman inside any player-owned house (see the House party worlds)
+11	2	8	Deliver an artefact to Captain Khaled.	Thieving:49:1		Lockpick
+11	2	9	Kill a Wyrm in the Karuulm Slayer Dungeon.	Slayer:62:1		Combat gear ; Boots of stone, brimstone, or granite
+11	2	10	Cast Monster Examine on a Troll south of Mount Quidamortem.	Magic:66:1	Dream Mentor:complete	Lunar spellbook selected ; Means to cast Monster Examine (1 astral + 1 mind + 1 cosmic)
+11	3	1	Craft one or more Blood runes from Dark essence.	Runecraft:77:1;Mining:38:1;Crafting:38:1		Any pickaxe and chisel
+11	3	2	Chop some Redwood logs.	Woodcutting:90:1		Any axe
+11	3	3	Defeat Skotizo in the Catacombs of Kourend.			Dark totem ; See the strategy guide
+11	3	4	Catch an Anglerfish and cook it whilst in Great Kourend.	Fishing:82:1;Cooking:84:1		Fishing rod and some sandworms
+11	3	5	Kill a Hydra in the Karuulm Slayer Dungeon.	Slayer:95:1		Weaponry ; Antipoison recommended
+11	3	6	Create an Ape Atoll teleport tablet.	Magic:90:1		Arceuus spellbook selected ; Dark essence block and the required runes (2 soul + 2 blood + 2 law)
+11	3	7	Complete a Raid in the Chambers of Xeric.			See the strategy guide
+11	3	8	Create your own Battlestaff from scratch within the Farming Guild.	Farming:85:1;Fletching:40:1		Celastrus sapling, knife, spade, rake, and any axe ; 8 potato cacti recommended to protect your sapling
