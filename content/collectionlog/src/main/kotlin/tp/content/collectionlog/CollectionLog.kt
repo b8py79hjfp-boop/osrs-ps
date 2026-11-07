@@ -7,6 +7,7 @@ import tp.plugin.ContentScope
 import tp.plugin.DeathEvent
 import tp.plugin.LootEvent
 import tp.plugin.NpcRef
+import tp.plugin.OpenCollectionLog
 import tp.plugin.PlayerRef
 import tp.plugin.TimerId
 import tp.symbols.Components
@@ -36,10 +37,8 @@ public class CollectionLog : ContentPlugin {
             onButton(layout.button) { show(tab, 0) }
             onButton(layout.background) { c -> selectRow(tab, c) }
         }
-        // Summary panel row "Collection Log" (op 1; the client builds the row, script 3310).
-        onButton(Components.Account_Summary_Sidepanel.SUMMARY_CLICK_LAYER, SUMMARY_OP) { c ->
-            if (c.slot == SUMMARY_COLLECTION_ROW) open()
-        }
+        // Summary panel row "Collection Log": routed by the journal tab (gameframe J4).
+        events.on<OpenCollectionLog> { it.player.open() }
         onCommand("collectionlog") { open() }
     }
 
@@ -340,12 +339,3 @@ private const val NOTICE_INIT = "clog.init"
 
 /** First tab struct (Bosses); the others follow. */
 private const val STRUCT_FIRST = 471
-
-/** Op 1 ("Collection Log") of a summary panel row. */
-private const val SUMMARY_OP = 1
-
-/**
- * Child index of the "Collections Logged" row in the summary click layer: six rows precede it in client script 3310's
- * order (Combat Level, Total Level, Total XP, quests, diaries, combat tasks), so its index is 6 (OPEN-CLOG8).
- */
-private const val SUMMARY_COLLECTION_ROW = 6

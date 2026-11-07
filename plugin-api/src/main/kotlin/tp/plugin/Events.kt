@@ -32,3 +32,6 @@ public class LogoutEvent(public val player: PlayerRef) : Event
  * would, or, for shops no NPC trades from, the one named [shopName] (its Wiki name). The shops plugin handles it.
  */
 public class OpenShopRequest(public val player: PlayerRef, public val npcType: Int = -1, public val shopName: String? = null) : Event
+
+/** Open [player]'s collection log (the account summary's "Collection Log" row, gameframe J4); the collection log plugin handles it. */
+public class OpenCollectionLog(public val player: PlayerRef) : Event

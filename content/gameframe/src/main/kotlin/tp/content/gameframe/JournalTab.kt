@@ -2,6 +2,7 @@ package tp.content.gameframe
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.OpenCollectionLog
 import tp.plugin.PlayerRef
 import tp.symbols.Components
 import tp.symbols.Interfaces
@@ -16,6 +17,15 @@ public class JournalTab : ContentPlugin {
         onButton(Components.Side_Journal.SUMMARY_LIST) { switchTo(TAB_SUMMARY) }
         onButton(Components.Side_Journal.QUEST_LIST) { switchTo(TAB_QUESTS) }
         onButton(Components.Side_Journal.TASK_LIST) { switchTo(TAB_TASKS) }
+        // J4: summary rows (op 1; client script 3310 builds them in this order: combat level, total level, total xp,
+        // quests, achievement diaries, combat tasks, collection log).
+        onButton(Components.Account_Summary_Sidepanel.SUMMARY_CLICK_LAYER, SUMMARY_OP) { c ->
+            when (c.slot) {
+                ROW_QUESTS -> switchTo(TAB_QUESTS)
+                ROW_DIARIES -> switchTo(TAB_TASKS)
+                ROW_COLLECTION_LOG -> events.publish(OpenCollectionLog(this))
+            }
+        }
     }
 
     private fun PlayerRef.switchTo(tab: Int) {
@@ -28,6 +38,12 @@ public class JournalTab : ContentPlugin {
         const val TAB_SUMMARY = 0
         const val TAB_QUESTS = 1
         const val TAB_TASKS = 2
+
+        /** Summary click layer: op 1 and the child index of each row (script 3310 order; OPEN-J4: from a real client). */
+        const val SUMMARY_OP = 1
+        const val ROW_QUESTS = 3
+        const val ROW_DIARIES = 4
+        const val ROW_COLLECTION_LOG = 6
 
         /**
          * Opens the sub-interface of [tab] in the journal's tab container; the client replaces the previous one. The
