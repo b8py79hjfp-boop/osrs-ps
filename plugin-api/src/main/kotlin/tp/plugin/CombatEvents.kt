@@ -143,6 +143,9 @@ public object SharedAttrs {
     /** Tick of the player's last combat (attacked, hit or attacking); aggression skips players in combat (AG2). */
     public val LAST_COMBAT_TICK: AttrKey<Long> = AttrKey("last_combat_tick")
 
+    /** Tick of the player's last attack on or from another player (PvP-only rules: POH pools, Death Charge). */
+    public val LAST_PVP_TICK: AttrKey<Long> = AttrKey("last_pvp_tick")
+
     /** Set on NPCs immune to Ring of recoil and similar reflection (Vengeance): the Wilderness bosses. */
     public val REFLECT_IMMUNE: AttrKey<Boolean> = AttrKey("reflect_immune")
 

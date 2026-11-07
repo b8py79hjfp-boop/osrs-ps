@@ -330,6 +330,10 @@ internal object CombatSystem {
         attacker.trace("attack ${style.name.lowercase()}")
         // AG2: both sides are "in combat" for hunting purposes.
         for (e in listOf(attacker, target)) if (e is PlayerRef) e[tp.plugin.SharedAttrs.LAST_COMBAT_TICK] = e.tick
+        if (attacker is PlayerRef && target is PlayerRef) {
+            attacker[tp.plugin.SharedAttrs.LAST_PVP_TICK] = attacker.tick
+            target[tp.plugin.SharedAttrs.LAST_PVP_TICK] = target.tick
+        }
         attacker.events.publish(AttackEvent(attacker, target, hitStyle(style)))
     }
 

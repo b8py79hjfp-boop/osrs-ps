@@ -84,3 +84,13 @@ public class OfferRemains(
     public var offered: Int = 0
     public var refusal: String? = null
 }
+
+/**
+ * Teleport [player] to [to] with the standard spell-cast visuals and checks (Tele Block, boss-lair delay, Wilderness
+ * level above [wildernessLimit], one teleport at a time): content/magic `Teleports` handles it (teleports.md T7) for
+ * other modules' devices (house portals, jewellery boxes). [denied] holds the refusal message when it was refused.
+ */
+public class TeleportRequest(public val player: PlayerRef, public val to: tp.util.CoordGrid, public val wildernessLimit: Int = 20) : Event {
+    public var handled: Boolean = false
+    public var denied: String? = null
+}

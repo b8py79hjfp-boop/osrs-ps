@@ -38,6 +38,19 @@ internal class TeleportSpell(
 /** Rune-costing teleport spells of the standard, ancient and lunar spellbooks, cast from the spellbook tab. */
 public class SpellTeleports : ContentPlugin {
     override fun ContentScope.register() {
+        // T7: teleports requested by other modules' devices (house portals, jewellery boxes).
+        events.on<tp.plugin.TeleportRequest> { r ->
+            if (r.handled) return@on
+            r.handled = true
+            if (Teleports.isBusy(r.player)) return@on
+            val denial = Teleports.denial(r.player, r.wildernessLimit)
+            if (denial != null) {
+                r.denied = denial
+                r.player.message(denial)
+                return@on
+            }
+            Teleports.start(r.player, CastStyle.STANDARD, r.to)
+        }
         for (spell in SPELLS) onButton(spell.component, OP_CAST) { cast(spell, confirmed = false) }
     }
 
