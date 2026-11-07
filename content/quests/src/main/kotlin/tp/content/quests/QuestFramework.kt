@@ -115,6 +115,8 @@ public class QuestFramework : ContentPlugin {
                 { Quests.BLACK_KNIGHTS_FORTRESS },
                 { Quests.VAMPYRE_SLAYER },
                 { Quests.DEMON_SLAYER },
+                { Quests.ENTER_THE_ABYSS },
+                { Quests.TEMPLE_OF_THE_EYE },
             )
     }
 }

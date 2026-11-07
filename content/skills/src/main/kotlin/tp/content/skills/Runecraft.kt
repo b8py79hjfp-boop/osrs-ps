@@ -18,7 +18,8 @@ import tp.util.CoordGrid
  * them, and making talisman tiaras. A talisman used on the ruins, or "Enter" while wearing the tiara (or a Runecraft
  * cape), takes the player to the altar's temple; the temple's portal brings them back. "Craft-rune" or essence used on the
  * altar binds every essence in the backpack at once (RC4). Combination runes, pouches, the Abyss, the Ourania and Arceuus altars
- * are in the Runecraft* files next to this one (runecraft.md RC7-RC21); the Astral altar is here. Guardians of the Rift is OPEN.
+ * are in the Runecraft* files next to this one (runecraft.md RC7-RC21); the Astral altar is here. Guardians of the Rift is
+ * `RunecraftGotr*.kt` (RC22).
  */
 public class Runecraft : ContentPlugin {
     override fun ContentScope.register() {
@@ -77,6 +78,7 @@ public class Runecraft : ContentPlugin {
 
     /** RC2: the portal returns the player to the tile beside their ruins. */
     private fun leave(p: PlayerRef, t: Temple) {
+        if (GotrAltars.returnFromAltar(p)) return
         p.teleport(outsideRuins(p, t.ruin))
     }
 
@@ -101,7 +103,11 @@ public class Runecraft : ContentPlugin {
      * RC3-RC5: every rune and pure essence in the backpack becomes runes in one action (rune essence only where the altar
      * allows it), [Temple.runesPerEssence] per essence at the level held before the action, and xp per essence.
      */
-    private fun craft(p: PlayerRef, t: Temple) = bind(p, t.name, t.rune, t.level, t.xp, t.pureOnly) { t.runesPerEssence(it) }
+    private fun craft(p: PlayerRef, t: Temple) {
+        // Guardians of the Rift visitors imbue guardian essence and uncharged cells here (runecraft.md RC22).
+        if (GotrAltars.imbue(p, t)) return
+        bind(p, t.name, t.rune, t.level, t.xp, t.pureOnly) { t.runesPerEssence(it) }
+    }
 
     private fun bind(p: PlayerRef, name: String, rune: Int, level: Int, xp: Double, pureOnly: Boolean, perEssence: (Int) -> Int) {
         val inv = p.inv(Invs.INV)

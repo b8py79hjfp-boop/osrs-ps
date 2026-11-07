@@ -912,3 +912,14 @@ SL1-SL15, OPEN-SL1-SL15. No engine, protocol, combat or plugin-api change.
 - **Superiors despawn through `NpcRef.despawn()` from the `DeathEvent` handler**: combat calls `respawnAfter` after the event and the engine ignores it
   for a removed npc, so no combat file knows about superiors.
 - **The equipment checks are proposals, not code** (docs/mechanics/slayer.md): none is a "cannot attack" in the sources, all change hits or monsters' attacks.
+
+## D-064: Guardians of the Rift as two modules' work, the tutorial as a second copy of the floor, unsourced numbers behind `GotrConfig`
+
+Guardians of the Rift needs altar crafting (`content/skills` `Runecraft`), Temple of the Eye needs quest dialogue (`content/quests`), and
+the two content modules see only plugin-api. Options: a new plugin-api event for the quest to learn about the tutorial's progress, or the
+quest reading account values the minigame writes. Chosen: the account values (`gotr.t.*`) and the cache's own quest varbits; the quest polls
+the one fact it needs (the third feeding of the Great Guardian) every 2 ticks, as Demon Slayer polls the stone circle. The cache holds the
+tutorial as an exact copy of the temple shifted by (-1152,-3776), so the same loc handlers serve both (`Arena`); it is one shared copy, not an
+instance. The Wiki gives no length for the lobby, the portal rotation, the monster waves, barrier health or the Great Guardian's drain: they
+are named constants in `GotrConfig` and listed as OPEN-GR1..GR9, and monsters are a numeric simulation without NPC combat. Heavy long-line
+dialogue follows the existing quests (strings wrapped with `+`).

@@ -90,4 +90,6 @@ internal object Quests {
     val BLACK_KNIGHTS_FORTRESS: Quest by lazy { QuestBook.row(DbRows.QUEST_BLACKKNIGHTSFORTRESS) }
     val VAMPYRE_SLAYER: Quest by lazy { QuestBook.row(DbRows.QUEST_VAMPYRESLAYER) }
     val DEMON_SLAYER: Quest by lazy { QuestBook.row(DbRows.QUEST_DEMONSLAYER) }
+    val ENTER_THE_ABYSS: Quest by lazy { QuestBook.row(DbRows.MINIQUEST_ENTERTHEABYSS) }
+    val TEMPLE_OF_THE_EYE: Quest by lazy { QuestBook.row(DbRows.QUEST_TEMPLEOFTHEEYE) }
 }

@@ -207,7 +207,7 @@ public class RuneMysteries : ContentPlugin {
             }
 
             else -> {
-                afterQuest(sed)
+                if (templeSedridorBusy(p)) readyConversation(sed) else afterQuest(sed)
             }
         }
     }
@@ -476,19 +476,35 @@ public class RuneMysteries : ContentPlugin {
     }
 
     private suspend fun PlayerScript.afterQuest(sed: NpcRef) {
+        val p = player
         me("Hello there.")
         npc(sed, "Hello again, $name. What can I do for you?")
-        // OPEN-QU7: "Can you teleport me to the Rune Essence Mine?" needs the mine's entry point and a teleport step; not implemented.
         while (true) {
-            when (
-                choice(
-                    "Select an option",
-                    "Who else knows the teleport to the Rune Essence Mine?",
-                    "Could you tell me about the old Wizards' Tower?",
-                    "I'd better get going.",
-                )
-            ) {
-                1 -> {
+            // Temple of the Eye adds its own option while it is under way (TempleOfTheEyeScenes.templeSedridorOptions).
+            val extra = templeSedridorOptions(p)
+            val labels =
+                extra.map { it.first } +
+                    listOf(
+                        "Can you teleport me to the Rune Essence Mine?",
+                        "Who else knows the teleport to the Rune Essence Mine?",
+                        "Could you tell me about the old Wizards' Tower?",
+                        "Nothing thanks, I'm just looking around.",
+                    )
+            val pick = choice("Select an option", *labels.toTypedArray())
+            when {
+                pick <= extra.size -> {
+                    extra[pick - 1].second(this, sed)
+                    return
+                }
+
+                pick == extra.size + 1 -> {
+                    me("Can you teleport me to the Rune Essence Mine?")
+                    sed.say(EssenceMineTeleports.INCANTATION)
+                    EssenceMineTeleports.teleportFrom(p, EssenceTeleporter.WIZARDS_TOWER, sed.coord)
+                    return
+                }
+
+                pick == extra.size + 2 -> {
                     me("Who else knows the teleport to the Rune Essence Mine?")
                     npc(
                         sed,
@@ -497,7 +513,7 @@ public class RuneMysteries : ContentPlugin {
                     )
                 }
 
-                2 -> {
+                pick == extra.size + 3 -> {
                     me("Could you tell me about the old Wizards' Tower?")
                     npc(
                         sed,
@@ -514,10 +530,18 @@ public class RuneMysteries : ContentPlugin {
                         "Of course, one secret I am no longer looking for is the teleportation incantation to the Rune Essence " +
                             "Mine. We have you to thank for that.",
                     )
+                    if (p.flag(MAGE_POST)) {
+                        me("I've heard a different take on how the tower burnt down. Something about a ritual gone wrong?")
+                        npc(
+                            sed,
+                            "Nothing more than Zamorakian hearsay! They burnt the tower down and are now too cowardly to even admit it!",
+                        )
+                        me("Fair enough.")
+                    }
                 }
 
                 else -> {
-                    me("I'd better get going.")
+                    me("Nothing thanks, I'm just looking around.")
                     return
                 }
             }
@@ -555,17 +579,13 @@ public class RuneMysteries : ContentPlugin {
         }
         npc(aubury, "Do you want to buy some runes?")
         val deliver = p.stage == PACKAGE
-        val options =
-            if (deliver) {
-                arrayOf(
-                    "Yes please!",
-                    "I've been sent here with a package for you.",
-                    "Oh, it's a rune shop. No thank you, then.",
-                )
-            } else {
-                arrayOf("Yes please!", "Oh, it's a rune shop. No thank you, then.")
-            }
-        val pick = choice("Select an option", *options)
+        val teleport = p.stage >= FINISHED
+        val options = ArrayList<String>()
+        options += "Yes please!"
+        if (deliver) options += "I've been sent here with a package for you."
+        if (teleport) options += "Can you teleport me to the Rune Essence?"
+        options += "Oh, it's a rune shop. No thank you, then."
+        val pick = choice("Select an option", *options.toTypedArray())
         when {
             pick == 1 -> {
                 me("Yes please!")
@@ -574,6 +594,16 @@ public class RuneMysteries : ContentPlugin {
 
             deliver && pick == 2 -> {
                 deliverPackage(aubury)
+            }
+
+            teleport && pick == 2 -> {
+                me("Can you teleport me to the Rune Essence?")
+                npc(
+                    aubury,
+                    "Of course. By the way, if you end up making any runes from the essence you mine, I'll happily buy them from you.",
+                )
+                aubury.say(EssenceMineTeleports.INCANTATION)
+                EssenceMineTeleports.teleportFrom(p, EssenceTeleporter.AUBURY, aubury.coord)
             }
 
             else -> {

@@ -785,6 +785,8 @@ public class DemonSlayer : ContentPlugin {
     private suspend fun PlayerScript.traibornTalk(traiborn: NpcRef) {
         val p = player
         npc(traiborn, "Ello young thingummywut.")
+        // Temple of the Eye's riddle (TempleOfTheEyeScenes.templeTraiborn) shares his Talk-to.
+        if (templeTraiborn(traiborn)) return
         // OPEN-QUA22: only the Demon Slayer part of his conversation is transcribed; the rest ("Talk about something else") is not.
         if (p.stage != STARTED) return
         if (choice("Select an Option", "Talk about Demon Slayer.", "Talk about something else.") != 1) return

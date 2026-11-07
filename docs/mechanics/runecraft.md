@@ -107,6 +107,7 @@ cache varp / varbit of `quest-states.tsv` (`RunecraftQuests`).
 | RC19 | **Outer ring**: twelve 3x2 multi-locs (`rcu_outer_multi1..12`, clockwise from the south) show, per configuration, blockage, rock (Mine, Mining + pickaxe), tendrils (Chop, Woodcutting + axe), boil (Burn-down, Firemaking + tinderbox), eyes (Distract, Thieving), gap (Squeeze-through, Agility) or the passage (Go-through, guaranteed). In configuration c the blockage is opening c and the passage opening c + 6; the table (`RunecraftAbyssContent.ROWS`) is the cache's. An attempt succeeds with (level + 1)% and gives 25 xp; the player moves to the other side of the opening. | Abyss, cache locs 26187-26192, 26208, 26250-26253, 26574 |
 | RC20 | **Inner ring**: the 11 rifts `abyss_exit_to_<altar>` (op 1 "Exit-through") take the player into the temple without a talisman (cosmic needs Lost City, law Troll Stronghold, death Mourning's End Part II; the blood rift, parent 43848, needs Sins of the Father). Dark essence (block or fragments) used on the blood or soul rift, after crafting runes at Kourend's altar, redirects it (message from the Wiki); the blood rift's op 2 and the soul rift then go to Kourend's altar. | Abyss, Blood Altar (Kourend), Soul Altar (Kourend) |
 | RC21 | **Astral altar** (loc 34771, Lunar Isle): needs Lunar Diplomacy (cache varbit 2448 = 190); astral runes from pure essence, level 40, 8.7 xp, a second rune per essence at level 82. | Astral Altar, Runecraft |
+| RC22 | **Guardians of the Rift visitors.** A player who entered an altar from a portal guardian (`GuardiansOfTheRift`) imbues guardian essence and uncharged cells there instead of crafting normally, and the exit portal returns them to the portal guardian (hooks `GotrAltars.imbue` / `returnFromAltar` in `craft` / `leave`). | guardians-of-the-rift.md GR5-GR6 |
 
 ### OPEN (this block)
 
@@ -126,11 +127,8 @@ cache varp / varbit of `quest-states.tsv` (`RunecraftQuests`).
   animation is the bronze pickaxe's for all tools; the Arceuus lectern tablets and the 108-fragment cap are not implemented.
 - **OPEN-RC18** the tiles inside and outside each opening are derived from the loc's placement and rotation (checked headless: the arrival tiles were
   walkable and a passage crossing moved the player 2-3 tiles toward the middle); the Mage of Zamorak's wander range (4) is ours. The monsters of the outer
-  ring (abyssal leech, guardian, walker; npc 2584-2586), the Abyssal Nexus gap, the Abyss' multicombat flag, the Mage's dialogue and shop, and the Enter the
-  Abyss miniquest itself are not implemented: the quest must be finished (varp 492 = 4) for the teleport to work. The Abyss skull uses the shared
+  ring (abyssal leech, guardian, walker; npc 2584-2586), the Abyssal Nexus gap, the Abyss' multicombat flag, the Mage's dialogue and shop, and the Abyss'
+  monsters are not implemented; the Enter the Abyss miniquest (quest-enter-the-abyss.md) sets varp 492 = 4 for the teleport to work. The Abyss skull uses the shared
   `SKULL_ICON` attribute; the PvP skull timer and ours do not know about each other.
-- **OPEN-RC19 Guardians of the Rift: not implemented.** Remaining work: Temple of the Eye (varbit 13738 = 130) as the gate, and the quest itself; the
-  minigame area, portal and lobby (Wizards' Tower basement portal, Great Guardian, Apprentice Tamara, Cordelia, Rewards Guardian); game start / end timers
-  and the elemental / catalytic energy balance; guardian remains and fragment mining; the workbench (guardian essence, chisel); guardian stones, cells and
-  portal spawning; powering guardians with runes (points); the reward shop; the pet and lantern. Pouches already hold guardian essence (RC12).
+- **OPEN-RC19 (resolved, remaining work OPEN-GR1..GR20)** Guardians of the Rift is `RunecraftGotr*.kt` / `GotrRewards.kt` (guardians-of-the-rift.md), Temple of the Eye and Enter the Abyss are in `content/quests` (quest-temple-of-the-eye.md, quest-enter-the-abyss.md).
 - **OPEN-RC20** the ruins' "Enter" is still polled every 3 ticks (OPEN-RC4); plugin-api now has an `Equipped` event that could replace it.

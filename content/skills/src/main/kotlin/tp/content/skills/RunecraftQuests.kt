@@ -8,11 +8,14 @@ import tp.plugin.PlayerRef
  * (docs/mechanics/quests.md QU1); the quest is finished when the variable has reached [end].
  */
 internal class QuestGate(val name: String, val isVarbit: Boolean, val id: Int, val end: Int) {
-    fun done(p: PlayerRef): Boolean = (if (isVarbit) p.varbit(id) else p.varp(id)) >= end
+    fun stage(p: PlayerRef): Int = if (isVarbit) p.varbit(id) else p.varp(id)
+
+    fun done(p: PlayerRef): Boolean = stage(p) >= end
 }
 
 internal object RunecraftQuests {
     val ENTER_THE_ABYSS = QuestGate("Enter the Abyss", false, 492, 4)
+    val TEMPLE_OF_THE_EYE = QuestGate("Temple of the Eye", true, 13738, 130)
     val LUNAR_DIPLOMACY = QuestGate("Lunar Diplomacy", true, 2448, 190)
     val LOST_CITY = QuestGate("Lost City", false, 147, 6)
     val TROLL_STRONGHOLD = QuestGate("Troll Stronghold", false, 317, 50)
