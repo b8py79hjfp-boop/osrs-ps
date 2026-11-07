@@ -1,0 +1,138 @@
+Beginner	Jess	Ardougne	1	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)			1:1:P:Grandfather clock	1:1:B:Bathtub	9	1	927.5
+Beginner	Jess	Ardougne	2			3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock		11	0	852.5
+Beginner	Jess	Ardougne	3	3:2:P:Drawers (W)	3:2:P:Drawers (E)			3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock		11	0	852.5
+Beginner	Noella	Ardougne	1	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand		3:2:P:Drawers	3:3:P:Table (W)		1:1:P:Grandfather clock	11	0	957.5
+Beginner	Noella	Ardougne	2	3:2:P:Dresser	3:2:P:Cupboard		1:1:P:Mirror		3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	12	0	980.0
+Beginner	Noella	Ardougne	3			1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	11	0	1062.5
+Beginner	Ross	Ardougne	1	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand				8	1	905.0
+Beginner	Ross	Ardougne	2		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		11	0	957.5
+Beginner	Ross	Ardougne	3		3:2:P:Drawers (N)	3:2:P:Drawers (S)		1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		8	0	890.0
+Beginner	Larry	Falador	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)			11	0	852.5
+Beginner	Larry	Falador	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand				8	1	905.0
+Beginner	Larry	Falador	3		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	0	980.0
+Beginner	Norman	Falador	1		1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers			11	0	852.5
+Beginner	Norman	Falador	2	1:1:B:Range	1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed		3:3:P:Drawers	3:2:P:Small table		11	1	972.5
+Beginner	Tau	Falador	1	1:1:B:Sink		3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			9	1	822.5
+Beginner	Tau	Falador	2	1:1:B:Sink	3:3:P:Table (S)		3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)	1:1:P:Hat stand		10	1	950.0
+Beginner	Tau	Falador	3	1:1:B:Sink	3:3:P:Table (S)		3:2:P:Cupboard	3:2:P:Shelves (W)		1:1:P:Hat stand		8	1	905.0
+Beginner	Tau	Falador	4		3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			12	0	770.0
+Beginner	Barbara	Hosidius	1	1:1:B:Grandfather clock		3:2:P:Table	3:3:P:Drawers	3:2:P:Bed				7	1	777.5
+Beginner	Barbara	Hosidius	2	1:1:B:Grandfather clock	1:1:P:Range				3:1:P:Chair (N)	3:1:P:Chair (S)		3	1	792.5
+Beginner	Barbara	Hosidius	3		1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed				8	0	785.0
+Beginner	Leela	Hosidius	1				3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		9	0	807.5
+Beginner	Leela	Hosidius	2	3:2:P:Small table (N)	3:2:P:Small table (S)	1:1:B:Sink	3:3:P:Double bed		1:1:P:Mirror			8	1	905.0
+Beginner	Leela	Hosidius	3			1:1:B:Sink	3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		9	1	927.5
+Beginner	Mariah	Hosidius	1	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)			11	1	867.5
+Beginner	Mariah	Hosidius	2				3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	9	0	807.5
+Beginner	Mariah	Hosidius	3		1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed			1:1:P:Hat stand	7	1	882.5
+Beginner	Bob	Varrock	1	3:4:P:Large table		3:2:P:Cabinet (S)		3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	14	0	815.0
+Beginner	Bob	Varrock	2	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)			3:2:P:Wardrobe	3:2:P:Drawers	13	0	897.5
+Beginner	Bob	Varrock	3	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)	3:2:P:Bookcase (S)	3:2:P:Bookcase (N)			13	0	897.5
+Beginner	Jeff	Varrock	1			3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers	3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	11	0	852.5
+Beginner	Jeff	Varrock	2	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves			3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	11	0	852.5
+Beginner	Jeff	Varrock	3	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers		1:1:P:Mirror		13	0	897.5
+Beginner	Sarah	Varrock	1	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table	1:1:B:Range	3:2:P:Shelves			11	1	867.5
+Beginner	Sarah	Varrock	2	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table		3:2:P:Shelves			11	0	747.5
+Novice	Jess	Ardougne	1	3:2:P:Drawers (W)	3:2:P:Drawers (E)			3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock		11	0	1890.0
+Novice	Jess	Ardougne	2			3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock		11	0	1890.0
+Novice	Jess	Ardougne	3	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)			1:1:P:Grandfather clock	1:1:B:Bathtub	9	1	1914.0
+Novice	Noella	Ardougne	1	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand		3:2:P:Drawers	3:3:P:Table (W)		1:1:P:Grandfather clock	11	0	2002.0
+Novice	Noella	Ardougne	2			1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	11	0	2114.0
+Novice	Noella	Ardougne	3	3:2:P:Dresser	3:2:P:Cupboard		1:1:P:Mirror		3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	12	0	2050.0
+Novice	Ross	Ardougne	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		11	0	2002.0
+Novice	Ross	Ardougne	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand				8	1	1866.0
+Novice	Ross	Ardougne	3		3:2:P:Drawers (N)	3:2:P:Drawers (S)		1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		8	0	1858.0
+Novice	Larry	Falador	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	0	2050.0
+Novice	Larry	Falador	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand				8	1	1866.0
+Novice	Larry	Falador	3		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)			11	0	1890.0
+Novice	Norman	Falador	1	1:1:B:Range		3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers			10	1	1850.0
+Novice	Norman	Falador	2	1:1:B:Range	1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed		3:3:P:Drawers	3:2:P:Small table		11	1	2010.0
+Novice	Norman	Falador	3		1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers			11	0	1890.0
+Novice	Tau	Falador	1		3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			12	0	1826.0
+Novice	Tau	Falador	2	1:1:B:Sink	3:3:P:Table (S)		3:2:P:Cupboard	3:2:P:Shelves (W)		1:1:P:Hat stand		8	1	1866.0
+Novice	Tau	Falador	3	1:1:B:Sink	3:3:P:Table (S)		3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)	1:1:P:Hat stand		10	1	1962.0
+Novice	Barbara	Hosidius	1		1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed				8	0	1746.0
+Novice	Barbara	Hosidius	2	1:1:B:Grandfather clock	1:1:P:Range				3:1:P:Chair (N)	3:1:P:Chair (S)		3	1	1626.0
+Novice	Barbara	Hosidius	3	1:1:B:Grandfather clock		3:2:P:Table	3:3:P:Drawers	3:2:P:Bed				7	1	1706.0
+Novice	Leela	Hosidius	1			1:1:B:Sink	3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		9	1	1914.0
+Novice	Leela	Hosidius	2				3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		9	0	1794.0
+Novice	Leela	Hosidius	3	3:2:P:Small table (N)	3:2:P:Small table (S)	1:1:B:Sink	3:3:P:Double bed		1:1:P:Mirror			8	1	1866.0
+Novice	Mariah	Hosidius	1	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)			11	1	1898.0
+Novice	Mariah	Hosidius	2				3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	9	0	1794.0
+Novice	Mariah	Hosidius	3		1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed			1:1:P:Hat stand	7	1	1818.0
+Novice	Bob	Varrock	1	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)	3:2:P:Bookcase (S)	3:2:P:Bookcase (N)			13	0	1986.0
+Novice	Bob	Varrock	2	3:4:P:Large table		3:2:P:Cabinet (S)		3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	14	0	1922.0
+Novice	Bob	Varrock	3	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)			3:2:P:Wardrobe	3:2:P:Drawers	13	0	1986.0
+Novice	Jeff	Varrock	1			3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers	3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	11	0	1890.0
+Novice	Jeff	Varrock	2	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers		1:1:P:Mirror		13	0	1986.0
+Novice	Jeff	Varrock	3	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves			3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	11	0	1890.0
+Novice	Sarah	Varrock	1	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table	1:1:B:Range	3:2:P:Shelves			11	1	1898.0
+Novice	Sarah	Varrock	2	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table		3:2:P:Shelves			11	0	1778.0
+Adept	Jess	Ardougne	1	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed		1:1:P:Grandfather clock		12	0	3232.0
+Adept	Jess	Ardougne	2	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock	1:1:B:Bathtub	15	1	3568.0
+Adept	Jess	Ardougne	3	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed		1:1:P:Grandfather clock	1:1:B:Bathtub	12	1	3352.0
+Adept	Noella	Ardougne	1	3:2:P:Dresser	3:2:P:Cupboard		1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)		13	0	3304.0
+Adept	Noella	Ardougne	2	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	15	0	3684.0
+Adept	Noella	Ardougne	3	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)			11	0	3278.0
+Adept	Ross	Ardougne	1	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)		1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		8	1	3182.0
+Adept	Ross	Ardougne	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		11	1	3398.0
+Adept	Ross	Ardougne	3	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand				8	1	3064.0
+Adept	Larry	Falador	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)			11	0	3160.0
+Adept	Larry	Falador	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)		1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		9	1	3254.0
+Adept	Larry	Falador	3	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	1	3470.0
+Adept	Norman	Falador	1	1:1:B:Range	1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers	3:2:P:Small table		13	1	3424.0
+Adept	Norman	Falador	2		1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed		3:3:P:Drawers	3:2:P:Small table		11	0	3160.0
+Adept	Norman	Falador	3	1:1:B:Range		3:3:P:Table		3:2:P:Bookshelf	3:3:P:Drawers	3:2:P:Small table		10	1	3090.0
+Adept	Tau	Falador	1		3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			12	0	3114.0
+Adept	Tau	Falador	2		3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)	1:1:P:Hat stand		13	0	3304.0
+Adept	Tau	Falador	3	1:1:B:Sink	3:3:P:Table (S)		3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			9	1	3018.0
+Adept	Barbara	Hosidius	1		1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		10	0	3088.0
+Adept	Barbara	Hosidius	2	1:1:B:Grandfather clock		3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		9	1	3018.0
+Adept	Barbara	Hosidius	3	1:1:B:Grandfather clock	1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		10	1	3208.0
+Adept	Leela	Hosidius	1	3:2:P:Small table (N)	3:2:P:Small table (S)		3:3:P:Double bed		1:1:P:Mirror	3:2:P:Cupboard		10	0	3088.0
+Adept	Leela	Hosidius	2	3:2:P:Small table (N)	3:2:P:Small table (S)	1:1:B:Sink	3:3:P:Double bed		1:1:P:Mirror	3:2:P:Cupboard		10	1	3208.0
+Adept	Leela	Hosidius	3			1:1:B:Sink	3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		9	1	3136.0
+Adept	Mariah	Hosidius	1	3:3:P:Table		3:2:P:Cooking shelves	3:2:P:Cupboard		3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	12	0	3232.0
+Adept	Mariah	Hosidius	2	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	14	1	3496.0
+Adept	Mariah	Hosidius	3	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)			11	1	3162.0
+Adept	Bob	Varrock	1	3:4:P:Large table		3:2:P:Cabinet (S)		3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	14	0	3258.0
+Adept	Bob	Varrock	2	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)	3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	17	0	3592.0
+Adept	Bob	Varrock	3	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)			3:2:P:Wardrobe	3:2:P:Drawers	13	0	3304.0
+Adept	Jeff	Varrock	1	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers	3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	16	0	3520.0
+Adept	Jeff	Varrock	2	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves			3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	11	0	3160.0
+Adept	Jeff	Varrock	3	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers		1:1:P:Mirror		13	0	3304.0
+Adept	Sarah	Varrock	1	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table	1:1:B:Range	3:2:P:Shelves			11	1	3162.0
+Adept	Sarah	Varrock	2	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table		3:2:P:Shelves			11	0	3042.0
+Expert	Jess	Ardougne	1	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table		1:1:B:Bathtub	14	1	4438.0
+Expert	Jess	Ardougne	2	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock	1:1:B:Bathtub	15	1	4678.0
+Expert	Jess	Ardougne	3	3:2:P:Drawers (W)	3:2:P:Drawers (E)	3:2:P:Cabinet (W)	3:2:P:Cabinet (E)	3:3:P:Bed	3:3:P:Table	1:1:P:Grandfather clock		15	0	4558.0
+Expert	Noella	Ardougne	1	3:2:P:Dresser	3:2:P:Cupboard		1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	14	0	4574.0
+Expert	Noella	Ardougne	2	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)	3:3:P:Table (E)	1:1:P:Grandfather clock	15	0	4814.0
+Expert	Noella	Ardougne	3	3:2:P:Dresser	3:2:P:Cupboard	1:1:P:Hat stand	1:1:P:Mirror	3:2:P:Drawers	3:3:P:Table (W)		1:1:P:Grandfather clock	12	0	4478.0
+Expert	Ross	Ardougne	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		11	0	4238.0
+Expert	Ross	Ardougne	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed	1:1:P:Mirror		11	1	4358.0
+Expert	Ross	Ardougne	3	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Double bed	1:1:P:Hat stand	3:2:P:Bed			10	1	4118.0
+Expert	Larry	Falador	1		3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	0	4350.0
+Expert	Larry	Falador	2	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	1	4470.0
+Expert	Larry	Falador	3	1:1:B:Range	3:2:P:Drawers (N)	3:2:P:Drawers (S)	3:3:P:Table (D)	1:1:P:Hat stand	3:3:P:Table (U)	1:1:P:Grandfather clock		12	1	4470.0
+Expert	Norman	Falador	1	1:1:B:Range	1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers	3:2:P:Small table		13	1	4454.0
+Expert	Norman	Falador	2	1:1:B:Range		3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers	3:2:P:Small table		12	1	4214.0
+Expert	Norman	Falador	3		1:1:P:Grandfather clock	3:3:P:Table	3:2:P:Double bed	3:2:P:Bookshelf	3:3:P:Drawers	3:2:P:Small table		13	0	4334.0
+Expert	Tau	Falador	1	1:1:B:Sink	3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)			12	1	4214.0
+Expert	Tau	Falador	2		3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)	1:1:P:Hat stand		13	0	4334.0
+Expert	Tau	Falador	3	1:1:B:Sink	3:3:P:Table (S)	3:3:P:Table (N)	3:2:P:Cupboard	3:2:P:Shelves (W)	3:2:P:Shelves (E)	1:1:P:Hat stand		13	1	4454.0
+Expert	Barbara	Hosidius	1	1:1:B:Grandfather clock	1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		10	1	4118.0
+Expert	Barbara	Hosidius	2	1:1:B:Grandfather clock		3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		9	1	3878.0
+Expert	Barbara	Hosidius	3		1:1:P:Range	3:2:P:Table	3:3:P:Drawers	3:2:P:Bed	3:1:P:Chair (N)	3:1:P:Chair (S)		10	0	3998.0
+Expert	Leela	Hosidius	1	3:2:P:Small table (N)	3:2:P:Small table (S)		3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		13	0	4334.0
+Expert	Leela	Hosidius	2	3:2:P:Small table (N)	3:2:P:Small table (S)	1:1:B:Sink	3:3:P:Double bed	3:3:P:Table (U)	1:1:P:Mirror	3:2:P:Cupboard		13	1	4454.0
+Expert	Leela	Hosidius	3	3:2:P:Small table (N)	3:2:P:Small table (S)	1:1:B:Sink	3:3:P:Double bed	3:3:P:Table (U)		3:2:P:Cupboard		12	1	4214.0
+Expert	Mariah	Hosidius	1	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	14	1	4566.0
+Expert	Mariah	Hosidius	2	3:3:P:Table		3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)	1:1:P:Hat stand	14	0	4446.0
+Expert	Mariah	Hosidius	3	3:3:P:Table	1:1:B:Sink	3:2:P:Cooking shelves	3:2:P:Cupboard	3:2:P:Bed	3:2:P:Small table (W)	3:2:P:Small table (E)		13	1	4326.0
+Expert	Bob	Varrock	1	3:4:P:Large table	1:1:P:Grandfather clock	3:2:P:Cabinet (S)	3:2:P:Cabinet (N)	3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	17	0	4782.0
+Expert	Bob	Varrock	2	3:4:P:Large table		3:2:P:Cabinet (S)	3:2:P:Cabinet (N)	3:2:P:Bookcase (S)	3:2:P:Bookcase (N)	3:2:P:Wardrobe	3:2:P:Drawers	16	0	4542.0
+Expert	Jeff	Varrock	1	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers	3:2:P:Dresser	1:1:P:Mirror	3:1:P:Chair	16	0	4670.0
+Expert	Jeff	Varrock	2	3:3:P:Table	3:2:P:Bookcase	3:2:P:Shelves	3:3:P:Bed	3:2:P:Drawers	3:2:P:Dresser		3:1:P:Chair	15	0	4430.0
+Expert	Sarah	Varrock	1	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table	1:1:B:Range	3:2:P:Shelves			11	1	4102.0
+Expert	Sarah	Varrock	2	3:3:P:Table	3:2:P:Bed	3:2:P:Dresser	3:2:P:Small table		3:2:P:Shelves			11	0	3982.0

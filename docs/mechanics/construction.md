@@ -122,8 +122,8 @@ hotspot), which is why the template level equals the floor.
   (`poh.style`) can only be changed in the saved values (no estate agent).
 - **OPEN-CO3: furniture not in the table** (see Data) and the quest/skill-hall requirements, optional inputs (any nail type in place
   of the listed one; the Wiki names one) and boosts (carpenter's outfit +2.5% xp, mythical cape 123 xp per teak plank, crystal saw
-  and tea level boosts). Built furniture is only placed: nothing built does anything yet (altars, pools, portals, larders,
-  lecterns, servants, costume storage, menagerie pets, the jewellery box, the Portal nexus, flat-pack workbenches ...).
+  and tea level boosts). Built furniture is mostly only placed (the chapel altar and burners, servants, workbenches and the cape do something: see the last section; pools, portals, larders,
+  lecterns, costume storage, menagerie pets, the jewellery box and the Portal nexus do not).
 - **OPEN-CO4: interfaces.** The furniture and room pickers are chatbox option menus (4 entries a page, "More..."), not
   `poh_furniture_creation` 458 / `poh_furniture_creation_menu` 397 / `poh_add_room` 212. Client scripts 1405, 1406, 1407, 1632 and
   7987 build 31 slots of 458 from enum 1461 and answer with a resume-pausebutton, but the script that opens it and its argument
@@ -153,3 +153,57 @@ hotspot), which is why the template level equals the floor.
   keeps the hotspot's shape and angle. Furniture is saved by its first loc id.
 - **OPEN-CO11: logout.** A player logging out inside a house is moved to the tile they entered from first (so the saved coordinate
   is outside). After a crash they are in instance space, where the engine moves them to the world spawn (instances.md IN5).
+
+## Chapel, servants, flat-packs and the cape
+
+Code: `PohAltar.kt` (altar, burners), `PohServants.kt` (servants), `PohFlatpacks.kt` (workbench), `PlayerOwnedHouse.kt` (cape op), the tables
+`construction-extra.tsv` and `construction-flatpacks.tsv`; the Mahogany Homes minigame is mahogany-homes.md. Extra sources (fetched
+2026-11-07): (K) "Chapel" (altar and lamp tables), "Gilded altar", the infoboxes of "Incense burner (Oak)", "Incense burner (Mahogany)",
+"Incense burner (Marble)", "Wooden torches"; (V) "Servant", "Hiring servants", "Servants' Guild", "Rick", "Chief servant"; (P) "Flatpack",
+"Workbench"; (T) "Construct. cape".
+
+| # | Rule | Source |
+|---|---|---|
+| CO13 | The furniture table lacks the built loc ids of the chapel's altars, lamps and the marble burners (versioned Wiki infoboxes). `construction-extra.tsv` replaces those rows (altars Oak 45 / Teak 50 / Cloth 56 / Mahogany 60 / Limestone 64 / Marble 70 / Gilded 75, with the Saradomin, Guthix, Zamorak and gnome child locs; wooden and steel torches, steel and gold candlesticks, oak / mahogany / marble incense burners with their unlit and lit locs) and adds "Marble burners" (level 69, 1,040 xp, 2 marble block, 2 steel bar) and "Bench with vice" (level 62, 580 xp as the Wiki's "Total" recipe, 8 oak plank, 5 steel bar). The first loc id is the one built. The chapel's two lamp spaces are one: building or removing on either does both (K). | K, P |
+| PO1 | The altar's op 1 "Pray" restores prayer points to the base level. | K |
+| PO2 | A bone used on a chapel altar in a house sacrifices the first bone of the backpack (not the one used; Wiki change 15 February 2023) for its bury xp times the altar's percent with 0 / 1 / 2 lit burners in the room: Oak 100 / 150 / 200, Teak 110 / 160 / 210, Cloth 125 / 175 / 225, Mahogany 150 / 200 / 250, Limestone 175 / 225 / 275, Marble 200 / 250 / 300, Gilded 250 / 300 / 350. With both burners lit the message is "The gods are very pleased with your offering.", else "The gods are pleased with your offering." The Prayer level of the bone applies as at the Chaos altar. | K |
+| PO3 | A burner's op 1 "Light" / "Re-light" needs a tinderbox and a clean marrentill (taken) and puts the lit loc on the burner; it goes out again after a time (OPEN-CO17). Torches and candlesticks are cosmetic. | K |
+| SV1 | Servants: Rick (Construction 20, 500 coins, 6 items, trip 100 ticks), Maid (25, 1,000, 10, 50), Cook (30, 3,000, 16, 28, sawmill), Butler (40, 5,000, 20, 20, sawmill), Demon butler (50, 10,000, 26, 12, sawmill). Hired by talking to one at the Servants' Guild (the guild's servants are the same npc types): the Construction level (may be boosted), two bedrooms with a bed built in each, and no servant yet. Dismiss: the servant at home or the chief servant (npc 3095). The saved type is `poh.servant`. | V |
+| SV2 | At home the hired servant stands beside the exit portal while the owner is in the house; "Talk-to": fetch one of plank, oak plank, teak plank, mahogany plank, soft clay, limestone brick, steel bar, bolt of cloth, gold leaf, marble block, magic stone from the bank (an amount up to the capacity), or (cook and better) take logs to the sawmill (planks as the sawmill, fee per plank). The request is only recorded; after the trip time the servant says it is back, and talking to it then does the move in one item transaction (bank to backpack; logs and coins to planks), so nothing is held by the servant. | V |
+| SV3 | After eight services the wage is due; the servant does nothing else until it is paid or it is dismissed. | V |
+| FP1 | "Work-at" a workbench (wooden 20, oak 40, steel framed 60, bench with vice 80, bench with lathe all) makes the flat-pack of any piece up to that level whose cache obj is known (80 pieces, `construction-flatpacks.tsv`): level (boostable), hammer and saw and the same materials as building it, 8 ticks, un-noted, with the piece's xp. | P |
+| FP2 | In build mode a flat-pack held for a piece that fits the hotspot is offered first in the build menu and builds it without the level, the materials or any xp ("No experience is received when using a flatpack on a building hotspot"). | P |
+| CP1 | The Construction cape (9789, 9790) backpack op 3 "Tele to POH" enters your own house wherever you are, unlimited; leaving puts you outside the house portal. | T |
+
+### Added OPEN
+
+- **OPEN-CO12 .. OPEN-CO15:** Mahogany Homes, see mahogany-homes.md.
+- **OPEN-CO16: still not buildable.** Pieces whose Wiki infobox is versioned or has no id and that are not in `construction-extra.tsv`: ranges,
+  ovens, sinks, firepits, shelves (the pairs of ids in the Wiki are not documented as versions or lit states), chests, wardrobes, armour
+  cases, costume boxes, toy boxes, trapdoors, statues, windows, curtains, thrones, shields, the combat dummy, banner stands, the
+  jester, pools, plants, trees. The ids the Wiki lists were fetched with `tools/wiki-import/construction_extra.py` (run it again to see them).
+- **OPEN-CO17: burner time.** "Burn longer with a high Firemaking level" (Wiki change) but no number is given; `BURN_TICKS` is 100 as a
+  placeholder. Who may light a burner (owner only, guests) is not sourced; any player in the house can.
+- **OPEN-CO18: altars.** The god of the altar (Wiki: from the chapel icon) is not modelled: the Saradomin loc is built and all four are
+  accepted. The pace between two offerings is the Chaos altar's 2 ticks (prayer-training.md OPEN-PT4); the message with one burner lit is
+  the "pleased" one. `PrayerTraining.kt` was not touched: `PohAltar` reads `remains.tsv` itself.
+- **OPEN-CO19: servants.** Not implemented: the bell-pull and the options panel's "Call servant", serving food and drinks, greeting and
+  leading guests, un-noting, "take items to the bank", the servant's money bag, following the owner. Whether hiring costs the wage up
+  front is not documented (the first wage is taken after eight services). The servant is spawned as a normal npc at the house tile and
+  despawned with the house; unverified in the real client. Texts are plausible. Hiring is by talking to any servant outside a house.
+- **OPEN-CO20: flat-packs.** Item on hotspot is not wired (hotspot loc ids are only known after a room is copied), so the build menu
+  offers held flat-packs instead. The Wiki does not say that creating a flat-pack gives the piece's xp; it is assumed (the only place
+  the xp can come from). Pieces whose cache obj name differs from the furniture name (e.g. 4-poster bed, crude wooden chair, wardrobes)
+  have no flat-pack in `construction-flatpacks.tsv` and cannot be made. The Bench with vice and Bench with lathe rows are the Wiki's
+  totals / upgrade recipes; upgrading a bench in place ("Upgrade" op 4) is not implemented.
+- **OPEN-CO21: cape.** Only the backpack op "Tele to POH"; the worn op, the "Teleport" sub-options (Home, Rimmington ... Prifddinas),
+  the teleport animation and the arrival tile ("just north of the exit portal" or outside the portal depending on the house setting)
+  are not implemented; the arrival is the usual tile beside the exit portal.
+- **OPEN-CO22: not done.** Basement and dungeon rooms are in the room table (CO6) but no stairs, trapdoors or dungeon doors connect floors;
+  the oak and other dungeon doors, the jewellery box, the ornate pool and other pools, the portal chamber / nexus teleports and the
+  mounted cape / talisman teleports, the larder, the lectern, costume storage and the menagerie have no behaviour. Proposed order: (1) floor
+  links (the "Stair space" hotspots and the dungeon entrance: a build menu entry per staircase, "Climb-up / Climb-down" moving the player
+  to the same tile on the next instance level, rooms of the floor above or below having to exist), then the dungeon doors; (2) pools
+  (op "Drink": Wiki restore values; they need the combat module's stat restore for run energy, hitpoints, prayer, special attack and
+  stat boosts, so that part is a request to the main session); (3) the portal chamber and nexus teleports through the existing
+  teleport helpers of content/magic.

@@ -63,17 +63,24 @@ internal object HouseMenus {
         if (group.built != null) return
         val options = PohFurniture.forHotspot(group.room.template.furnitureKey, group.name)
         if (options.isEmpty()) return player.message("There is nothing you can build here yet.")
-        val piece = pick("What do you want to build?", options) { "${it.name} (level ${it.furniture.level})" } ?: return
+        // A flat-pack held for one of the pieces is built without level, materials or xp (Wiki "Flatpack"; OPEN-CO14: the real
+        // game uses the flat-pack on the hotspot, here it is offered first in the build menu).
+        val held = player.inv(Invs.INV)
+        val packed = options.filter { it.furniture.flatpack > 0 && held.total(it.furniture.flatpack) > 0 }
+        val choices = packed.map { it to true } + options.map { it to false }
+        val (piece, flat) =
+            pick("What do you want to build?", choices) { (it, pack) ->
+                "${it.name} ${if (pack) "(flatpack)" else "(level ${it.furniture.level})"}"
+            } ?: return
         val f = piece.furniture
-        shortfall(player, f)?.let { return player.message(it) }
+        shortfall(player, f, flat)?.let { return player.message(it) }
         player.anim(animFor(loc.shape))
         delay(f.ticks)
         if (house.instance.destroyed || player[House.CURRENT] !== house || group.built != null) return
-        shortfall(player, f)?.let { return player.message(it) }
-        val paid = player.transaction("construction") { take(f.inputs) }
-        if (!paid) return player.message("You don't have the materials to build that.")
+        shortfall(player, f, flat)?.let { return player.message(it) }
+        if (!pay(player, f, flat)) return player.message("You don't have the materials to build that.")
         HouseBuilder.buildFurniture(player, house, group, piece)
-        player.addXp(Stats.CONSTRUCTION, f.xp)
+        if (!flat) player.addXp(Stats.CONSTRUCTION, f.xp * CarpenterOutfit.multiplier(player))
     }
 
     /** Op 5 "Remove" on built furniture: after a confirmation the hotspot is back. Nothing is refunded (Wiki "Construction"). */
@@ -89,15 +96,26 @@ internal object HouseMenus {
     }
 
     /** The first reason [f] cannot be built now (level, tools, materials) as a game message, or null. */
-    private fun shortfall(p: PlayerRef, f: Furniture): String? {
+    private fun shortfall(p: PlayerRef, f: Furniture, flat: Boolean = false): String? {
         val inv = p.inv(Invs.INV)
         return when {
-            p.level(Stats.CONSTRUCTION) < f.level -> "You need a Construction level of ${f.level} to build that."
+            !flat && p.level(Stats.CONSTRUCTION) < f.level -> "You need a Construction level of ${f.level} to build that."
             f.tools.any { inv.total(it) == 0L } -> "You need ${toolList(p, f)} to build that."
-            f.inputs.any { inv.total(it.obj) < it.count } -> "You don't have the materials to build that."
+            flat && inv.total(f.flatpack) == 0L -> "You don't have the flatpack to build that."
+            !flat && f.inputs.any { inv.total(it.obj) < it.count } -> "You don't have the materials to build that."
             else -> null
         }
     }
+
+    /** Takes the flat-pack or the materials of [f] in one item transaction. */
+    private fun pay(p: PlayerRef, f: Furniture, flat: Boolean): Boolean =
+        if (flat) {
+            p.transaction(
+                "construction flatpack",
+            ) { remove(Invs.INV, f.flatpack, 1) }
+        } else {
+            p.transaction("construction") { take(f.inputs) }
+        }
 
     private fun toolList(p: PlayerRef, f: Furniture): String = f.tools.joinToString(" and ") { "a ${p.objName(it).lowercase()}" }
 

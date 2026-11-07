@@ -3,6 +3,7 @@ package tp.content.skills
 import tp.plugin.AttrKey
 import tp.plugin.InstanceRef
 import tp.plugin.LocRef
+import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.symbols.Locs
 import tp.util.CoordGrid
@@ -38,6 +39,17 @@ internal class House(
 ) {
     val players = LinkedHashSet<PlayerRef>()
     var locked = false
+
+    /** The owner's hired servant standing in the house, and what it is doing for the owner ([PohServants]). */
+    var servant: NpcRef? = null
+    var task: ServantTask? = null
+
+    /** The incense burners (hotspot groups) that are lit now ([PohAltar]); a burner that is not built is never in it. */
+    val lit = HashSet<HotspotGroup>()
+
+    /** Which lighting of each lit burner is the current one, so an old expiry timer does not put out a refuelled burner. */
+    val litStamp = HashMap<HotspotGroup, Int>()
+    var burnStamp = 0
 
     /** The house location (portal) it was entered from; guests must use a portal of the same location. */
     var location = 0

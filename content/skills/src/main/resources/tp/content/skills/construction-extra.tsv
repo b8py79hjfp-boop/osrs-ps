@@ -1,0 +1,16 @@
+name	level	xp	room	hotspot	locs	flatpack	ticks	tools	materials
+Oak altar	45	240	Chapel	Altar space	13179,13181,13180,40872	-1	5	8794,2347	8778:4
+Teak altar	50	360	Chapel	Altar space	13182,13184,13183,40873	-1	5	8794,2347	8780:4
+Cloth altar	56	390	Chapel	Altar space	13185,13186,13187,40874	-1	5	8794,2347	8780:4,8790:2
+Mahogany altar	60	590	Chapel	Altar space	13188,13190,13189,40875	-1	5	8794,2347	8782:4,8790:2
+Limestone altar	64	910	Chapel	Altar space	13191,13193,13192,40876	-1	5	8794,2347	8782:6,8790:2,3420:2
+Marble altar	70	1030	Chapel	Altar space	13194,13196,13195,40877	-1	5	8794,2347	8786:2,8790:2
+Gilded altar	75	2230	Chapel	Altar space	13197,13199,13198,40878	-1	5	8794,2347	8786:2,8790:2,8784:4
+Incense burner	61	280	Chapel	Lamp space	13208,13209	-1	5	8794,2347	8778:4,2353:2
+Mahogany burner	65	600	Chapel	Lamp space	13210,13211	-1	5	8794,2347	8782:4,2353:2
+Marble burners	69	1040	Chapel	Lamp space	13212,13213	-1	5	8794,2347	8786:2,2353:2
+Bench with vice	62	580	Workshop	Workbench space	6794	-1	5	8794,2347	8778:8,2353:5
+Wooden torches	49	58	Chapel	Lamp space	13200,13201	-1	5	8794,2347	960:2,1539:2
+Steel torches	45	40	Chapel	Lamp space	13202,13203	-1	5	8794,2347	2353:2
+Steel candlesticks	53	124	Chapel	Lamp space	13204,13205	-1	5	8794,2347	2353:6,36:6
+Gold candlesticks	57	46	Chapel	Lamp space	13206,13207	-1	5	8794,2347	2357:6,36:6

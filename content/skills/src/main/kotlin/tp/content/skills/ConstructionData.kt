@@ -43,10 +43,24 @@ internal object ConstructionData {
     private const val FURNITURE_COLUMNS = 10
     private const val ROOM_COLUMNS = 3
 
-    /** Reads `construction-furniture.tsv`. */
-    fun furniture(): List<Furniture> =
-        rows("construction-furniture.tsv").map { c ->
-            require(c.size == FURNITURE_COLUMNS) { "construction-furniture.tsv row has ${c.size} columns: $c" }
+    /**
+     * Reads `construction-furniture.tsv` and applies `construction-extra.tsv` (docs/mechanics/construction.md CO13): a row of the
+     * extra table replaces the main table's row of the same name when that has no built loc id, and is added when the main
+     * table has no such row.
+     */
+    fun furniture(): List<Furniture> {
+        val extra = furnitureRows("construction-extra.tsv").associateBy { it.name }
+        val base = furnitureRows("construction-furniture.tsv").map { f -> extra[f.name]?.takeIf { f.locs.isEmpty() } ?: f }
+        val known = base.mapTo(HashSet()) { it.name }
+        return base + extra.values.filter { it.name !in known }
+    }
+
+    /** Furniture name to flat-pack obj (`construction-flatpacks.tsv`: cache objs `poh_flatpack_*` matched by exact name, CO14). */
+    private val flatpacks: Map<String, Int> by lazy { rows("construction-flatpacks.tsv").associate { it[0] to it[1].toInt() } }
+
+    private fun furnitureRows(file: String): List<Furniture> =
+        rows(file).map { c ->
+            require(c.size == FURNITURE_COLUMNS) { "$file row has ${c.size} columns: $c" }
             Furniture(
                 name = c[0],
                 level = c[1].toInt(),
@@ -54,7 +68,7 @@ internal object ConstructionData {
                 room = c[3],
                 hotspot = c[4],
                 locs = ints(c[5]),
-                flatpack = c[6].toInt(),
+                flatpack = flatpacks[c[0]] ?: c[6].toInt(),
                 ticks = c[7].toInt(),
                 tools = ints(c[8]),
                 inputs =

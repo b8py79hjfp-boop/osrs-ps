@@ -7,7 +7,9 @@ import tp.plugin.PlayerScript
 import tp.plugin.TimerId
 import tp.plugin.choice
 import tp.symbols.Components
+import tp.symbols.Invs
 import tp.symbols.Locs
+import tp.symbols.Objs
 import tp.symbols.Varbits
 import tp.util.CoordGrid
 
@@ -40,6 +42,7 @@ public class PlayerOwnedHouse : ContentPlugin {
         onButton(Components.Poh_Options.BUILD_MODE_ON) { setMode(this, true) }
         onButton(Components.Poh_Options.BUILD_MODE_OFF) { setMode(this, false) }
         onButton(Components.Poh_Options.LEAVE_HOUSE) { exit(this) }
+        onItemOp(OP_TELE_POH) { teleportHome(this, it) }
         onLogin { setVarbit(Varbits.POH_BUILDING_MODE, 0) }
         onLogout { exit(this) }
     }
@@ -74,6 +77,23 @@ public class PlayerOwnedHouse : ContentPlugin {
             }
         houses[key] = house
         join(p, house, p.coord)
+        Servants.spawn(p, house)
+    }
+
+    /**
+     * CO15: the Construction cape's backpack op "Tele to POH" enters your own house wherever you are, as often as you like (Wiki
+     * "Construct. cape": "unlimited teleports to the player's own house"). Leaving returns you to the house portal outside.
+     */
+    private fun teleportHome(p: PlayerRef, click: tp.plugin.ButtonClick) {
+        val inv = p.inv(Invs.INV)
+        val cape = click.obj == Objs.SKILLCAPE_CONSTRUCTION || click.obj == Objs.SKILLCAPE_CONSTRUCTION_TRIMMED
+        val held = click.slot in 0 until inv.size && inv.obj(click.slot) == click.obj
+        if (!cape || !held || p[House.CURRENT] != null) return
+        val location = (p.saved(LOCATION_KEY) ?: DEFAULT_LOCATION).toInt()
+        val portal = PORTALS.firstOrNull { it.location == location } ?: return
+        enterOwn(p, portal, buildMode = false)
+        val house = p[House.CURRENT] ?: return
+        p[House.RETURN] = portalOutside(p, house)
     }
 
     private fun create(p: PlayerRef, portal: HousePortal, buildMode: Boolean): House {
@@ -121,6 +141,7 @@ public class PlayerOwnedHouse : ContentPlugin {
         p.setVarbit(Varbits.POH_BUILDING_MODE, 0)
         house.players -= p
         if (house.players.isEmpty() && !house.instance.destroyed) {
+            Servants.despawn(house)
             houses(p).remove(house.owner)
             house.instance.destroy()
         }
@@ -177,6 +198,9 @@ public class PlayerOwnedHouse : ContentPlugin {
         const val OP_LOCK = 2
         const val OP_REMOVE = 5
         const val BUILD = "Build"
+
+        /** Cache 2757: the Construction cape's backpack action 3. */
+        const val OP_TELE_POH = "Tele to POH"
 
         /** The 1-based picks of [enterMenu]. */
         const val ENTER_HOME = 1

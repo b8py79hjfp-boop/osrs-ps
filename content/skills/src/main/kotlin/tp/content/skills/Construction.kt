@@ -53,11 +53,18 @@ public class Construction : ContentPlugin {
         val affordable = inv.total(Objs.COINS) / type.cost
         if (affordable == 0L) return p.message("You need ${type.cost} coins to make a ${p.objName(type.plank).lowercase()}.")
         val count = minOf(amount.toLong(), logs, affordable).toInt()
+        // Wiki "Plank sack" (changes, 1 November 2023): planks from the sawmill go into the sack first.
+        val toSack = if (PlankSack.owns(p)) minOf(count, PlankSack.CAPACITY - PlankSack.total(p)) else 0
         val done =
             p.transaction("sawmill") {
-                remove(Invs.INV, Objs.COINS, count * type.cost) && remove(Invs.INV, type.log, count) && add(Invs.INV, type.plank, count)
+                remove(Invs.INV, Objs.COINS, count * type.cost) &&
+                    remove(Invs.INV, type.log, count) &&
+                    (count == toSack || add(Invs.INV, type.plank, count - toSack))
             }
-        if (done) p.message("The sawmill operator makes you $count ${p.objName(type.plank).lowercase()}${if (count == 1) "" else "s"}.")
+        if (done) {
+            PlankSack.add(p, type, toSack)
+            p.message("The sawmill operator makes you $count ${p.objName(type.plank).lowercase()}${if (count == 1) "" else "s"}.")
+        }
     }
 
     private companion object {

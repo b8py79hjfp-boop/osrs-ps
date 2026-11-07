@@ -146,17 +146,35 @@ internal object HouseBuilder {
     }
 
     fun buildFurniture(p: PlayerRef, house: House, g: HotspotGroup, piece: Piece) {
-        place(p, g, piece)
-        house.layout.furniture[g.key] = piece.id
+        for (target in linked(house, g)) {
+            place(p, target, piece)
+            house.layout.furniture[target.key] = piece.id
+        }
         PohSave.save(p, house.layout)
     }
 
     fun removeFurniture(p: PlayerRef, house: House, g: HotspotGroup) {
-        show(p, g)
-        g.built = null
-        house.layout.furniture.remove(g.key)
+        for (target in linked(house, g)) {
+            house.lit -= target
+            show(p, target)
+            target.built = null
+            house.layout.furniture.remove(target.key)
+        }
         PohSave.save(p, house.layout)
     }
+
+    /**
+     * The hotspots that change together with [g]: the chapel's two lamp spaces ("building an item of furniture in either one will
+     * build it in both places at once", Wiki "Chapel"; removing it likewise removes both), else just [g].
+     */
+    private fun linked(house: House, g: HotspotGroup): List<HotspotGroup> {
+        if (g.name != LAMP_SPACE) return listOf(g)
+        val pair = house.scans[g.room]?.groups?.filter { it.name == LAMP_SPACE && (it === g || it.built === g.built) }
+        return pair.orEmpty().ifEmpty { listOf(g) }
+    }
+
+    /** The lower-case name of the chapel's lamp hotspots. */
+    private const val LAMP_SPACE = "lamp space"
 
     fun addRoom(p: PlayerRef, house: House, room: PlacedRoom) {
         house.layout.rooms += room
