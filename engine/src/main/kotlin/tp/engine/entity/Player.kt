@@ -85,6 +85,10 @@ class Player internal constructor(
         }
     private var runEnergyDirty = true
 
+    /** Run energy drain / restore multipliers in permille, set by content (stamina, ring of endurance, graceful). */
+    var runDrainPermille: Int = 1000
+    var runRestorePermille: Int = 1000
+
     override val size: Int get() = 1
 
     /** Persistent run toggle (run orb + energy arrive with stats). */

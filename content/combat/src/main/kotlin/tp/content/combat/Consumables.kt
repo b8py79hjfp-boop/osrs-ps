@@ -73,8 +73,8 @@ internal object Consumables {
             "Extended antifire" to Potion { p -> Dragonfire.drink(p, superAntifire = false, units = 40) },
             "Super antifire potion" to Potion { p -> Dragonfire.drink(p, superAntifire = true, units = 15) },
             "Extended super antifire" to Potion { p -> Dragonfire.drink(p, superAntifire = true, units = 30) },
-            // 20% run energy per dose (the drain reduction isn't modelled: run drain isn't either).
-            "Stamina potion" to Potion { p -> p.runEnergy += 2000 },
+            // 20% run energy per dose and 70% less drain for 2 minutes (run-energy.md RE4).
+            "Stamina potion" to Potion { p -> RunEffects.stamina(p) },
         )
 
     private var foods: Map<Int, Food> = emptyMap()

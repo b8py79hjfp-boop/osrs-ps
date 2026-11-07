@@ -52,10 +52,14 @@ internal object Appearance {
  */
 public class Equipment : ContentPlugin {
     override fun ContentScope.register() {
-        events.on<AppearanceChanged> { Appearance.refresh(it.player) }
+        events.on<AppearanceChanged> {
+            Appearance.refresh(it.player)
+            RunEffects.graceful(it.player)
+        }
         onWorldStart { Consumables.load(this) }
         onLogin {
             Appearance.refresh(this)
+            RunEffects.graceful(this)
             setVarbit(Varbits.COMBAT_WEAPON_CATEGORY, weaponCategory().id)
         }
         // iop1..iop3 = button ops 2..4; what an op does depends on the obj's op text (cache iops): wieldables have

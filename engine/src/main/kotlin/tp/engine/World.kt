@@ -597,7 +597,10 @@ class World(
             player.queue.process()
             player.timers.process()
             player.areaQueue.process()
-            interactions.processPlayer(player, if (player.isRunningNow) RUN_STEPS else WALK_STEPS)
+            // Running needs energy (Wiki "Energy"): with none left the player walks.
+            interactions.processPlayer(player, if (player.isRunningNow && player.runEnergy > 0) RUN_STEPS else WALK_STEPS)
+            tp.engine.move.RunEnergy
+                .process(player)
             if (player.route.isEmpty) player.routeCtrl = false
         }
         currentTurn = null

@@ -156,8 +156,23 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public var runMode: Boolean
         get() = p.runMode
         set(value) {
-            p.world.setRunMode(p, value)
-            p.vars[Varps.OPTION_RUN] = if (value) 1 else 0
+            // Run can only be turned on with at least 1% (100 units) energy (Wiki "Energy").
+            val on = value && p.runEnergy >= MIN_RUN_ENERGY
+            p.world.setRunMode(p, on)
+            p.vars[Varps.OPTION_RUN] = if (on) 1 else 0
+        }
+
+    /** Run energy multipliers in permille (run-energy.md): drain (stamina 300, ring of endurance 850), restore (graceful). */
+    public var runDrainPermille: Int
+        get() = p.runDrainPermille
+        set(value) {
+            p.runDrainPermille = value
+        }
+
+    public var runRestorePermille: Int
+        get() = p.runRestorePermille
+        set(value) {
+            p.runRestorePermille = value
         }
 
     public var runEnergy: Int
@@ -858,3 +873,6 @@ private const val MAX_CHOICES = 6
  * 1..6 recruit+..general+, 7 only the owner.
  */
 public class FriendsChatSettings(public val name: String?, public val enterRank: Int, public val talkRank: Int, public val kickRank: Int)
+
+/** Wiki "Energy": run can be switched on from 1% = 100 units. */
+private const val MIN_RUN_ENERGY = 100
