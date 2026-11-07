@@ -1,22 +1,35 @@
-creature	trap	level	xp	low	high	low2	high2	npcs	loot
-Crimson swift	bird	1	34	100	420	-	-	5549	526:1-1;9978:1-1;10088:5-10
-Golden warbler	bird	5	47	92	400	-	-	5551	526:1-1;9978:1-1;10090:5-10
-Copper longtail	bird	9	61.2	85	390	-	-	5552	526:1-1;9978:1-1;10091:5-10
-Cerulean twitch	bird	11	64.5	82	380	-	-	5550	526:1-1;9978:1-1;10089:5-10
-Tropical wagtail	bird	19	95.2	75	370	-	-	5548	526:1-1;9978:1-1;10087:5-10
-Chinchompa (Hunter)	box	53	198.4	6	268	-	-	2910	10033:1-1
-Carnivorous chinchompa	box	63	265	-78	228	-	-	2911	10034:1-1
-Black chinchompa (Hunter)	box	73	315	-78	228	-	-	2912	11959:1-1
-Black warlock	net	45	54	20	296	40	316	5553	10014:1-1
-Baby impling	net	17	20	79	402	99	422	1635,1645	11238:1-1
-Young impling	net	22	22	69	351	89	371	1636,1646	11240:1-1
-Gourmet impling	net	28	24	61	325	81	345	1637,1647	11242:1-1
-Earth impling	net	36	27	51	302	71	322	1638,1648	11244:1-1
-Essence impling	net	42	29	40	275	60	295	1639,1649	11246:1-1
-Eclectic impling	net	50	32	30	250	50	270	1640,1650	11248:1-1
-Nature impling	net	58	36	20	200	40	220	1641,1651	11250:1-1
-Magpie impling	net	65	216	15	177	35	197	1642,1652	11252:1-1
-Ninja impling	net	74	240	10	151	30	171	1643,1653	11254:1-1
-Dragon impling	net	83	300	5	125	25	145	1644,1654	11256:1-1
-Crystal impling	net	80	280	8	141	28	161	8741,8742,8743,8744,8745,8746,8747,8748,8749,8750,8751,8752,8753,8754,8755,8756,8757	23768:1-1
-Lucky impling	net	89	380	3	100	23	120	7233,7302	19732:1-1
+creature	trap	level	xp	low	high	low2	high2	npcs	loot	part
+Crimson swift	bird	1	34	100	420	-	-	5549	526:1-1;9978:1-1;10088:5-10	-
+Golden warbler	bird	5	47	92	400	-	-	5551	526:1-1;9978:1-1;10090:5-10	-
+Copper longtail	bird	9	61.2	85	390	-	-	5552	526:1-1;9978:1-1;10091:5-10	-
+Cerulean twitch	bird	11	64.5	82	380	-	-	5550	526:1-1;9978:1-1;10089:5-10	-
+Tropical wagtail	bird	19	95.2	75	370	-	-	5548	526:1-1;9978:1-1;10087:5-10	29222
+Chinchompa (Hunter)	box	53	198.4	6	268	-	-	2910	10033:1-1	29221
+Carnivorous chinchompa	box	63	265	-78	228	-	-	2911	10034:1-1	29235
+Black chinchompa (Hunter)	box	73	315	-78	228	-	-	2912	11959:1-1	-
+Black warlock	net	45	54	20	296	40	316	5553	10014:1-1	29230
+Baby impling	net	17	20	79	402	99	422	1635,1645	11238:1-1	-
+Young impling	net	22	22	69	351	89	371	1636,1646	11240:1-1	-
+Gourmet impling	net	28	24	61	325	81	345	1637,1647	11242:1-1	-
+Earth impling	net	36	27	51	302	71	322	1638,1648	11244:1-1	-
+Essence impling	net	42	29	40	275	60	295	1639,1649	11246:1-1	-
+Eclectic impling	net	50	32	30	250	50	270	1640,1650	11248:1-1	-
+Nature impling	net	58	36	20	200	40	220	1641,1651	11250:1-1	-
+Magpie impling	net	65	216	15	177	35	197	1642,1652	11252:1-1	-
+Ninja impling	net	74	240	10	151	30	171	1643,1653	11254:1-1	-
+Dragon impling	net	83	300	5	125	25	145	1644,1654	11256:1-1	-
+Crystal impling	net	80	280	8	141	28	161	8741,8742,8743,8744,8745,8746,8747,8748,8749,8750,8751,8752,8753,8754,8755,8756,8757	23768:1-1	-
+Lucky impling	net	89	380	3	100	23	120	7233,7302	19732:1-1	-
+Wild kebbit	deadfall	23	102.4	29	385	-	-	1349	526:1-1;10113:1-1;29104:1-1	29223
+Barb-tailed kebbit	deadfall	33	134.4	-220	1037	-	-	1348	526:1-1;10129:1-1;29101:1-1	29223
+Prickly kebbit	deadfall	37	147.2	-70	331	-	-	1346	526:1-1;10105:1-1	29223
+Sabre-toothed kebbit	deadfall	51	160	-434	820	-	-	1347	526:1-1;10109:1-1	29223
+Pyre fox	deadfall	57	177.6	-475	750	-	-	13138	526:1-1;29163:1-1;29110:1-1	29233
+Swamp lizard (Hunter)	nettrap	29	152	52	360	-	-	2906	10149:1-1	29225
+Orange salamander (Hunter)	nettrap	47	224	16	288	-	-	2903	10146:1-1	29231
+Red salamander (Hunter)	nettrap	59	272	0	240	-	-	2904	10147:1-1	29234
+Black salamander (Hunter)	nettrap	67	319.2	0	212	-	-	2905	10148:1-1	-
+Tecu salamander (Hunter)	nettrap	79	344	1	212	-	-	12769	28831:1-1	29238
+Spotted kebbit	falcon	43	104	26	310	-	-	5531	526:1-1;10125:1-1	29223
+Dark kebbit	falcon	57	132	0	253	-	-	5532	526:1-1;10115:1-1	29223
+Dashing kebbit	falcon	69	156	0	205	-	-	5533	526:1-1;10127:1-1;29107:1-1	29223

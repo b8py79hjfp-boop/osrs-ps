@@ -16,7 +16,7 @@ no Skilling success chart (ruby harvest, snowy knight, sapphire glacialis) are s
 
 Output (tab-separated, header first), one row per creature, written to the file given as the second argument:
   creature, trap (bird|box|net), level, xp, low, high (catch roll), low2, high2 (net line 2, - if none), npcs (comma separated
-  cache ids), loot (`obj:min-max;obj:min-max`, cache obj ids; for nets the jar obj)
+  cache ids), loot (`obj:min-max;obj:min-max`, cache obj ids; for nets the jar obj), part (the Rumour rare part obj, - if none)
 
 Usage (needs network access to oldschool.runescape.wiki; objs.txt from cache-dump):
   ./gradlew -q :tools:cache-dump:run --args="config obj --all" > objs.txt
@@ -45,7 +45,17 @@ PAGES = {
     "Essence impling": ("net", ""), "Eclectic impling": ("net", ""), "Nature impling": ("net", ""),
     "Magpie impling": ("net", ""), "Ninja impling": ("net", ""), "Dragon impling": ("net", ""),
     "Crystal impling": ("net", ""), "Lucky impling": ("net", ""),
+    # deadfall (boulder with logs), net trap (young tree; salamanders) and falconry (kebbits) - hunter.md HU9..HU11
+    "Wild kebbit": ("deadfall", ""), "Barb-tailed kebbit": ("deadfall", ""), "Prickly kebbit": ("deadfall", ""),
+    "Sabre-toothed kebbit": ("deadfall", ""), "Pyre fox": ("deadfall", ""),
+    "Swamp lizard (Hunter)": ("nettrap", ""), "Orange salamander (Hunter)": ("nettrap", ""),
+    "Red salamander (Hunter)": ("nettrap", ""), "Black salamander (Hunter)": ("nettrap", ""),
+    "Tecu salamander (Hunter)": ("nettrap", ""),
+    "Spotted kebbit": ("falcon", ""), "Dark kebbit": ("falcon", ""), "Dashing kebbit": ("falcon", ""),
 }
+
+# Creatures whose "Always" loot the importer cannot read (a 999/1000 split row): page -> cache obj name of the single product.
+LOOT_OVERRIDE = {"Tecu salamander (Hunter)": "Immature tecu salamander"}
 
 # Net creature -> the jar item it is caught in (cache name of the filled jar).
 JARS = {"Black warlock": "Black warlock"}
@@ -65,7 +75,7 @@ def wikitext(page):
     raise RuntimeError("wiki request failed: " + page)
 
 
-def obj_ids(path):
+def obj_ids(path, allow_stack2=False):
     """Cache obj name (lower case) -> id of the first tradeable, un-noted, non-placeholder obj (else the first)."""
     best = {}
     for line in open(path):
@@ -74,7 +84,7 @@ def obj_ids(path):
         if not m:
             continue
         i, name, stack, trade, cert, ph = int(m.group(1)), m.group(2).lower(), int(m.group(3)), m.group(4), int(m.group(5)), int(m.group(6))
-        if cert != -1 or ph != -1 or stack == 2:
+        if cert != -1 or ph != -1 or (stack == 2 and not allow_stack2):
             continue
         rank = 0 if trade == "true" else 1
         if name not in best or rank < best[name][0]:
@@ -111,6 +121,7 @@ def chart_rows(text):
 
 def main():
     objs, dest = obj_ids(sys.argv[1]), sys.argv[2]
+    parts = obj_ids(sys.argv[1], True)
     out = []
     for page, (trap, word) in PAGES.items():
         text = wikitext(page)
@@ -142,14 +153,22 @@ def main():
                     print(f"{page}: no cache obj named {name!r}", file=sys.stderr)
                     continue
                 loot.append(f"{obj}:{lo}-{hi or lo}")
+        if page in LOOT_OVERRIDE:
+            loot = [f"{objs[LOOT_OVERRIDE[page].lower()]}:1-1"]
+        # the rare creature part of Hunters' Rumours: the DropsLineSkill whose note names the Rumour (hunter.md HU14)
+        part = "-"
+        for name, rest in re.findall(r"\{\{DropsLineSkill\|name=([^|]*)\|([^\n]*)", text):
+            if "Rumour" in rest and parts.get(name.strip().lower()) is not None:
+                part = str(parts[name.strip().lower()])
+                break
         if not loot:
             print(f"skipped {page}: no loot / jar", file=sys.stderr)
             continue
         name = (info.get("name") or page).replace("\t", " ")
-        out.append([page, trap, int(number(info.get("level"))), f"{xp:g}", low, high, low2, high2, ",".join(ids), ";".join(loot)])
+        out.append([page, trap, int(number(info.get("level"))), f"{xp:g}", low, high, low2, high2, ",".join(ids), ";".join(loot), part])
         time.sleep(0.2)
     with open(dest, "w") as f:
-        f.write("creature\ttrap\tlevel\txp\tlow\thigh\tlow2\thigh2\tnpcs\tloot\n")
+        f.write("creature\ttrap\tlevel\txp\tlow\thigh\tlow2\thigh2\tnpcs\tloot\tpart\n")
         for r in out:
             f.write("\t".join(str(c) for c in r) + "\n")
     print(f"wrote {len(out)} creatures to {dest}", file=sys.stderr)

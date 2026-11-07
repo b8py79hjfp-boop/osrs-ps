@@ -41,7 +41,7 @@ public class Hunter : ContentPlugin {
     private class Wildlife(val npcs: LinkedHashSet<NpcRef> = LinkedHashSet())
 
     override fun ContentScope.register() {
-        val trapped = HunterData.BY_NPC.filterValues { it.kind != TrapKind.NET }.keys
+        val trapped = HunterData.BY_NPC.filterValues { it.kind == TrapKind.BIRD || it.kind == TrapKind.BOX }.keys
         onNpcSpawn {
             if (type in trapped) (worldAttr(WILDLIFE) ?: Wildlife().also { setWorldAttr(WILDLIFE, it) }).npcs += this
         }
@@ -79,6 +79,7 @@ public class Hunter : ContentPlugin {
             trap.laidAt = p.tick
             trap.expiresAt = p.tick + TRAP_LIFETIME_TICKS
             traps(p).add(trap)
+            HunterShared.setNormal(p, traps(p).size)
             p.addLoc(setLoc(kind), trap.coord, TRAP_SHAPE, 0)
             if (!p.hasTimer(TRAP_TIMER)) p.timer(TRAP_TIMER, 1, true) { runTraps() }
         }
@@ -88,7 +89,7 @@ public class Hunter : ContentPlugin {
     private fun layProblem(p: PlayerRef, kind: TrapKind): String? {
         val limit = HunterData.trapLimit(p.baseLevel(Stats.HUNTER), p[SharedAttrs.IN_WILDERNESS] == true)
         return when {
-            traps(p).size >= limit -> "You can't have more than $limit traps laid at your Hunter level."
+            traps(p).size + HunterShared.extra(p) >= limit -> "You can't have more than $limit traps laid at your Hunter level."
             p.locAt(p.coord, TRAP_SHAPE) != null -> "You can't lay a ${trapName(kind)} here."
             else -> null
         }
@@ -175,7 +176,10 @@ public class Hunter : ContentPlugin {
                 ok
             }
         if (!given) return p.message(FULL_MESSAGE)
-        if (creature != null) p.addXp(Stats.HUNTER, creature.xp)
+        if (creature != null) {
+            p.addXp(Stats.HUNTER, creature.xp)
+            HunterRumours.caught(p, creature)
+        }
         if (reset) {
             trap.state = SET
             trap.creature = null
@@ -196,6 +200,7 @@ public class Hunter : ContentPlugin {
 
     private fun remove(p: PlayerRef, trap: Trap) {
         traps(p).remove(trap)
+        HunterShared.setNormal(p, traps(p).size)
         p.deleteLoc(trap.coord, TRAP_SHAPE)
     }
 
@@ -204,6 +209,7 @@ public class Hunter : ContentPlugin {
         val list = this[TRAPS] ?: return
         for (trap in list) deleteLoc(trap.coord, TRAP_SHAPE)
         list.clear()
+        HunterShared.setNormal(this, 0)
     }
 
     // ---- butterflies and implings
@@ -273,6 +279,7 @@ public class Hunter : ContentPlugin {
         if (!stored) return p.message(FULL_MESSAGE)
         npc.respawnAfter(CREATURE_RESPAWN_TICKS)
         p.addXp(Stats.HUNTER, creature.xp)
+        HunterRumours.caught(p, creature)
         p.message("You catch the ${creature.name.lowercase()}.")
         Skilling.stop(p)
         p.stopInteraction()
