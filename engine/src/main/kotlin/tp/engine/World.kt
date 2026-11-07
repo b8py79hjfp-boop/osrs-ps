@@ -784,6 +784,18 @@ class World(
         return if (value in 0 until multi.size - 1) multi[value] else multi.last()
     }
 
+    /** Net gain per obj over all slots a transaction changed (null if nothing was created). */
+    private fun created(entries: List<tp.engine.inv.ItemJournal.SlotChange>): Map<Int, Long>? {
+        var net: HashMap<Int, Long>? = null
+        for (e in entries) {
+            if (e.oldObj == e.newObj && e.oldCount == e.newCount) continue
+            val n = net ?: HashMap<Int, Long>().also { net = it }
+            if (e.oldObj >= 0) n.merge(e.oldObj, -e.oldCount.toLong(), Long::plus)
+            if (e.newObj >= 0) n.merge(e.newObj, e.newCount.toLong(), Long::plus)
+        }
+        return net?.filterValues { it > 0 }?.takeIf { it.isNotEmpty() }
+    }
+
     /**
      * Runs [block] as one atomic item transaction for [player] (brief §12). If [block] returns false or any step fails,
      * every change is rolled back and false is returned; otherwise the changes are journaled with [reason].
@@ -795,7 +807,11 @@ class World(
             tx.rollback()
             return false
         }
-        if (!tx.isEmpty) itemJournal.record(tick, player.username, reason, tx.entries())
+        if (!tx.isEmpty) {
+            val entries = tx.entries()
+            itemJournal.record(tick, player.username, reason, entries)
+            created(entries)?.let { content.onItemsCreated(player, reason, it) }
+        }
         return true
     }
 

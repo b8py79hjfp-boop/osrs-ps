@@ -57,6 +57,9 @@ abstract class Entity internal constructor(
     /** Current entity interaction (op/ap), or null. */
     internal var interaction: Interaction? = null
 
+    /** Option number of the current interaction, or -1. */
+    val interactionOption: Int get() = interaction?.option ?: -1
+
     /** What the current interaction targets (read-only view for content). */
     val interactionTarget: tp.engine.interact.InteractionTarget? get() = interaction?.target
 

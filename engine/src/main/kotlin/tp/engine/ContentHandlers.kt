@@ -81,6 +81,9 @@ interface ContentHandlers {
     /** The modal [interfaceId] was closed (by the player, movement, another modal or content). */
     fun onModalClosed(player: Player, interfaceId: Int) {}
 
+    /** A committed transaction created these objs for [player] (net gain per obj; see plugin-api `ItemsCreated`). */
+    fun onItemsCreated(player: Player, reason: String, objs: Map<Int, Long>) {}
+
     /** [from] invited [player] to [clanName] (clans.md CL3); the clans plugin asks them. */
     fun onClanInvite(player: Player, from: String, clanName: String) {}
 

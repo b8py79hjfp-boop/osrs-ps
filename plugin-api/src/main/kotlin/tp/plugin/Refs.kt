@@ -485,6 +485,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public fun addXp(stat: Int, xp: Double): Int {
         val from = p.stats.baseLevel(stat)
         val gained = p.stats.addXp(stat, (xp * XP_TENTHS).toInt())
+        if (xp > 0) events.publish(XpGained(this, stat, xp))
         if (gained > 0) events.publish(StatAdvanceEvent(this, stat, from, from + gained))
         return gained
     }

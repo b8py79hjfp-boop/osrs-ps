@@ -214,6 +214,10 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref.handler()
     }
 
+    override fun onItemsCreated(player: Player, reason: String, objs: Map<Int, Long>) {
+        events.publish(ItemsCreated(ref(player), reason, objs))
+    }
+
     override fun onClanInvite(player: Player, from: String, clanName: String) {
         val handler = h.clanInvite ?: return
         ref(player).handler(from, clanName)
@@ -323,13 +327,21 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     private fun locScript(s: suspend PlayerScript.(LocRef) -> Unit): Script<Player> =
         {
             val t = self.interactionTarget as? InteractionTarget.Loc
-            if (t != null) run(PlayerScript(this), LocRef(t.id, t.coord, t.shape, t.angle), s)
+            if (t != null) {
+                val loc = LocRef(t.id, t.coord, t.shape, t.angle)
+                events.publish(LocInteraction(PlayerRef(self), loc, self.interactionOption))
+                run(PlayerScript(this), loc, s)
+            }
         }
 
     private fun npcScript(s: suspend PlayerScript.(NpcRef) -> Unit): Script<Player> =
         {
             val t = self.interactionTarget as? InteractionTarget.OfNpc
-            if (t != null) run(PlayerScript(this), NpcRef(t.npc), s)
+            if (t != null) {
+                val npc = NpcRef(t.npc)
+                events.publish(NpcInteraction(PlayerRef(self), npc, self.interactionOption))
+                run(PlayerScript(this), npc, s)
+            }
         }
 
     private fun objScript(s: suspend PlayerScript.(ObjRef) -> Unit): Script<Player> =
