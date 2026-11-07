@@ -32,6 +32,7 @@ import tp.symbols.Varps
  */
 public class Bank : ContentPlugin {
     private var bus: EventBus? = null
+    private val potions = PotionStore()
 
     override fun ContentScope.register() {
         bus = events
@@ -55,6 +56,7 @@ public class Bank : ContentPlugin {
         onButton(Components.Bankmain.INCINERATOR_CONFIRM) { click -> incinerate(click) }
         for (w in WORN_COMPONENTS) onButton(w.bankTab) { click -> wornItem(w.slot, click) }
         registerSettings()
+        with(potions) { registerPotions() }
         onButtonDrag(Components.Bankmain.ITEMS) { d -> dragItem(d) }
         onButtonDrag(Components.Bankmain.TABS) { d ->
             // Only a numbered tab (children 11..19) can be dragged, and only onto another tab (script 506 builds them).
@@ -186,6 +188,7 @@ public class Bank : ContentPlugin {
         setVarbit(Varbits.BANK_WITHDRAWNOTES, 0)
         SideInventory.openPair(this, Interfaces.BANKMAIN, Interfaces.BANKSIDE)
         enableEvents()
+        potions.onOpen(this)
         ifText(Components.Bankmain.CAPACITY, capacity(inv(Invs.BANK, stackAll = true)).toString())
         // RS Mod `onBankOpen`: the capacity tooltip (client script 1495 takes the text, the hover layer and the tooltip box).
         clientScript(CS_TOOLTIP, CAPACITY_TOOLTIP, Components.Bankmain.CAPACITY_LAYER, Components.Bankmain.TOOLTIP)
@@ -407,6 +410,8 @@ public class Bank : ContentPlugin {
     /** Deposits [requested] of the backpack obj in [slot] (all copies count, as in RS Mod's `transfer`). */
     private fun PlayerRef.depositOne(slot: Int, obj: Int, requested: Int) {
         if (!bankOpen() || requested <= 0 || inv(Invs.INV).obj(slot) != obj) return
+        // B22: potions and empty vials go to the potion store when it is unlocked and asked for.
+        if (potions.takes(this, obj)) return potions.deposit(this, listOf(obj to requested))
         val out = deposit(Invs.INV, listOf(obj to requested))
         when {
             out.noBank > 0 -> message(NO_BANK_MESSAGE)
@@ -426,6 +431,11 @@ public class Bank : ContentPlugin {
             if (obj >= 0 && seen.add(obj)) wants += obj to Int.MAX_VALUE
         }
         if (wants.isEmpty()) return message("You have nothing to deposit.")
+        // B22: what the potion store takes is split off first; the rest goes to the bank as before.
+        val toStore = if (source == Invs.INV) wants.filter { potions.takes(this, it.first) } else emptyList()
+        if (toStore.isNotEmpty()) potions.deposit(this, toStore)
+        wants.removeAll(toStore)
+        if (wants.isEmpty()) return
         val out = deposit(source, wants)
         when {
             out.noBank > 0 && !out.moved && out.full == 0 -> message("Your items cannot be stored in the bank.")

@@ -10,14 +10,22 @@ name and level. When a line matches several versions, its pins rotate through th
 `mtype = polygon/line` LocLines describe areas, not spawn points, and are skipped.
 Pages without LocLines (most non-combat NPCs) give their location in the infobox `map = {{Map|x,y|...}}` field (per
 version: `map1`, `id1`, ...): a pin or rectangle centre is the spawn, a polygon's centre of its bounding box; the wander
-range is half the rectangle/polygon's smaller side (rectX/rectY), at most 5, else 0 for a pin.
+range is half the rectangle/polygon's smaller side (rectX/rectY), at most 5; pins and squares (`r` is the
+map's display radius, not a wander area) don't wander and every pin of a multi-pin map is a spawn. Maps come in two spellings: positional `3185,3441` pairs (also `x:..,y:..`)
+and keywords `x=3185|y=3441|r=9|mtype=square`.
+
+Bankers: the "Banker" page itself has `map = No` and no LocLines, so only the banks with their own "Banker (...)" page have
+banker tiles on the Wiki. The optional third argument is the file written by `cache-dump banker-spawns` (every cache
+"Bank booth" with its free neighbours and collision evidence); `banker_rows` puts a banker (wander 0) behind each booth the
+Wiki's banker tiles don't cover (docs/mechanics/npc-spawns.md SP4).
 
 Output: tab-separated `npc x z level wander` rows (header first), sorted, duplicates removed. LocLine pins use wander
 -1 (= the server's default wander range).
 
 Usage (needs network access to oldschool.runescape.wiki; cache NPC list from cache-dump):
   ./gradlew -q :tools:cache-dump:run --args="config npc --all" > npcs.txt
-  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv
+  ./gradlew -q :tools:cache-dump:run --args="banker-spawns docs/research/banker-spawns.tsv"
+  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv
 
 Data licence: OSRS Wiki content is CC BY-NC-SA 3.0 (data/PROVENANCE.md).
 """
@@ -165,19 +173,37 @@ def infobox_maps(text):
                     k, v = p.split("=", 1)
                     params[k.strip().lower()] = v.strip()
             suffixes = sorted({m.group(1) for k in params for m in [re.fullmatch(r"(?:id|map)(\d*)", k)] if m}) or [""]
+            shared_used = False
             for sfx in suffixes:
                 ids = [int(x) for x in re.findall(r"\d+", clean(params.get("id" + sfx, params.get("id", ""))))]
-                raw = params.get("map" + sfx, params.get("map", ""))
+                if "map" + sfx in params:
+                    raw = params["map" + sfx]
+                elif shared_used:
+                    continue  # one `map` shared by several id versions: the NPC stands there once, not once per version
+                else:
+                    raw = params.get("map", "")
+                    shared_used = bool(raw.strip())
                 for m in templates(raw, "Map"):
                     mp = split_params(m)
                     pts = [(int(m2.group(1)), int(m2.group(2))) for q in mp for m2 in [re.fullmatch(r"(\d+),(\d+)", q)] if m2]
+                    pts += [(int(a), int(b)) for q in mp for a, b in re.findall(r"x:(\d+),y:(\d+)", q)]
+                    kv = {q.split("=", 1)[0].strip().lower(): q.split("=", 1)[1].strip() for q in mp if "=" in q}
+                    # Keyword form: {{Map|x=3185|y=3441|r=9|mtype=square}} (a centre and a radius).
+                    if not pts and re.fullmatch(r"\d+", kv.get("x", "")) and re.fullmatch(r"\d+", kv.get("y", "")):
+                        pts = [(int(kv["x"]), int(kv["y"]))]
                     if not pts or not ids:
                         continue
-                    kv = {q.split("=", 1)[0].strip().lower(): q.split("=", 1)[1].strip() for q in mp if "=" in q}
                     plane = int(re.sub(r"[^0-9]", "", kv.get("plane", "0")) or 0)
                     xs, zs = [p[0] for p in pts], [p[1] for p in pts]
+                    mtype = kv.get("mtype", "pin").lower() or "pin"
+                    if mtype == "line":
+                        continue
+                    if mtype in ("pin", ""):
+                        # Every pin is a spawn (the Wiki lists all stand tiles of the NPC), none wanders.
+                        for px, pz in dict.fromkeys(pts):
+                            out.append((ids[0], px, pz, plane, 0))
+                        break
                     x, z = (min(xs) + max(xs)) // 2, (min(zs) + max(zs)) // 2
-                    mtype = kv.get("mtype", "pin").lower()
                     if mtype == "rectangle":
                         rx = int(re.sub(r"[^0-9]", "", kv.get("rectx", "0")) or 0)
                         rz = int(re.sub(r"[^0-9]", "", kv.get("recty", "0")) or 0)
@@ -200,7 +226,66 @@ def levels_of(v):
 # Callisto, Venenatis, Vet'ion (both forms), Artio, Calvar'ion (both forms), Spindel: content/pvp Lairs spawns them.
 # Misthalin Mystery's visible forms of Mandy (kitchen, outside) and the shady figure: content/quests QuestSpawnsB spawns their
 # multi-NPCs (7433, 7434, 7435) so the quest variable shows and hides them.
-CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638, 10570, 10571, 10576, 10612, 10613}  # last five: Tempoross plugin
+CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638, 10570, 10571, 10576, 10612, 10613, 10572, 10574, 10575}  # Tempoross plugin: the pool, the crates, the retired sailor, Gita, and the boss forms (instanced)
+
+
+# Banker (cache name "Banker", ops Talk-to / Bank / Collect): the male and the female model, alternating with the tile parity.
+BANKER_IDS = (1613, 1618)
+
+# Banker offset from its booth, named as the `open` digits (W, N, E, S) and the `evidence` letter of cache-dump's
+# banker-spawns file.
+BANKER_SIDES = {"W": (-1, 0), "N": (0, 1), "E": (1, 0), "S": (0, -1)}
+
+
+def banker_rows(path, wiki):
+    """
+    Bankers behind the bank booths that the Wiki's own banker tiles (`wiki`, a set of (x, z, level)) don't cover.
+    `path` is cache-dump's `banker-spawns` file: `level x z loc angle open evidence` per booth. Which side of a booth the
+    banker stands on depends on the booth model (loc id) and is turned clockwise by the loc angle, so it is learned from
+    the booths that have a Wiki banker next to them. The side of a booth is, in order: the one all learned booths of its
+    loc id and angle share; the one most learned booths of its loc id give once turned back to angle 0, if one side
+    leads; else the collision map's evidence (which also overrules a side learned from one booth only; a side learned from
+    several booths that the evidence contradicts gives no banker). Booths with
+    none of these get no banker (Wiki-covered booths neither). Leave-one-out over the 37 learned booths: 28 right, 5 wrong, 4 without a prediction.
+    """
+    booths = []
+    for line in list(open(path))[1:]:
+        level, x, z, loc, angle, free, evidence = line.split()
+        booths.append((int(level), int(x), int(z), int(loc), int(angle), free, evidence))
+    cw = "NESW"  # banker offsets in clockwise order: one loc angle step turns the side one place on
+
+    def next_to(b):
+        return [k for k, (dx, dz) in BANKER_SIDES.items() if (b[1] + dx, b[2] + dz, b[0]) in wiki]
+
+    exact, turned = {}, {}  # (loc, angle) -> {side: booths}; loc -> {side at angle 0: booths}
+    for b in booths:
+        if len(next_to(b)) == 1:
+            side = next_to(b)[0]
+            votes = exact.setdefault((b[3], b[4]), {})
+            votes[side] = votes.get(side, 0) + 1
+            base = cw[(cw.index(side) - b[4]) % 4]
+            votes = turned.setdefault(b[3], {})
+            votes[base] = votes.get(base, 0) + 1
+    rows = set()
+    for level, x, z, loc, angle, free, evidence in booths:
+        if next_to((level, x, z, loc, angle)):
+            continue
+        side, support = None, 0
+        if len(exact.get((loc, angle), ())) == 1:
+            side, support = next(iter(exact[(loc, angle)].items()))
+        elif loc in turned:
+            ranked = sorted(turned[loc].items(), key=lambda kv: -kv[1])
+            if len(ranked) == 1 or ranked[0][1] > ranked[1][1]:
+                side, support = cw[(cw.index(ranked[0][0]) + angle) % 4], ranked[0][1]
+        if evidence != "-" and side != evidence:
+            if side is not None and support > 1:
+                continue  # a side learned from several booths and the collision map disagree
+            side = evidence  # no learned side, or one booth's only
+        if side is None or free["WNES".index(side)] != "1":
+            continue
+        dx, dz = BANKER_SIDES[side]
+        rows.add((BANKER_IDS[(x + dx + z + dz) % 2], x + dx, z + dz, level, 0))
+    return rows
 
 
 def main():
@@ -255,6 +340,9 @@ def main():
                 rows.add((choices[n % len(choices)], x, z, plane, -1))
     # NPCs content spawns itself (Wilderness lair bosses: their LocLines are the surface entrance pins).
     rows = {r for r in rows if r[0] not in CONTENT_SPAWNED}
+    if len(sys.argv) > 3:
+        wiki = {(r[1], r[2], r[3]) for r in rows if cache.get(r[0], ("",))[0] == "Banker"}
+        rows |= banker_rows(sys.argv[3], wiki)
     # Plane 0..3 and coordinates inside the 16384-tile world; anything else is a typo on the Wiki.
     rows = {r for r in rows if 0 <= r[3] <= 3 and 0 <= r[1] < 16384 and 0 <= r[2] < 16384}
     with open(dest, "w") as f:

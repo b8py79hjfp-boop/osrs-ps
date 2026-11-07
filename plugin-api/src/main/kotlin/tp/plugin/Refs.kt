@@ -788,6 +788,14 @@ public class ObjRef internal constructor(internal val g: GroundObj) {
 
 /** World-level operations for content (spawns, cache data). */
 public class WorldRef internal constructor(internal val w: World) {
+    /** World-scoped content state (one value per world; plugin instances are shared by every world in the JVM). */
+    @Suppress("UNCHECKED_CAST")
+    public fun <T : Any> worldAttr(key: AttrKey<T>): T? = w.attrs[key] as T?
+
+    public fun <T : Any> setWorldAttr(key: AttrKey<T>, value: T?) {
+        if (value == null) w.attrs.remove(key) else w.attrs[key] = value
+    }
+
     public val tick: Long get() = w.tick
 
     /** Whether a boat may occupy [tile]: sea with no blocking loc (sailing-movement.md SM1, SM5). */
