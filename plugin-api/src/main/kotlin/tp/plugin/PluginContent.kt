@@ -16,6 +16,9 @@ private val logger = KotlinLogging.logger {}
 
 /** Packed component id split (`iface << 16 | comp`). */
 private const val COMPONENT_SHIFT = 16
+
+/** `toplevel` (fixed), `toplevel_osrs_stretch` and `toplevel_pre_eoc`: their side stones are client-side tab switches. */
+private val TOPLEVELS = setOf(548, 161, 164)
 private const val COMPONENT_MASK = 0xFFFF
 
 /** OSRS's reply to using an item on something that has no use for it. */
@@ -272,6 +275,8 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         val base = component.toLong() shl ContentScope.BUTTON_OP_BITS
         val handler = h.buttons[base or option.toLong()] ?: h.buttons[base]
         if (handler == null) {
+            // The side stones of the three toplevels switch panels client-side; their IF_BUTTON needs no answer.
+            if (component ushr COMPONENT_SHIFT in TOPLEVELS) return
             // Input-driven (not per tick): lets a tester report exactly which button has no content yet.
             logger.info {
                 "unhandled button ${component ushr COMPONENT_SHIFT}:${component and COMPONENT_MASK} op=$option slot=$slot obj=$obj"
