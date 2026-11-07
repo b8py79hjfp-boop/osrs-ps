@@ -11,6 +11,9 @@ internal class Rate(val low: Int, val high: Int)
  * A cookable raw food (docs/mechanics/cooking.md CK2, CK3). [fire] / [range] / [gauntlets] are its burn rolls on a fire,
  * on a range and with cooking gauntlets worn, from the food's Wiki "Skilling success chart"
  * (tools/wiki-import/cooking_rates.py). [fire] null means a range is needed; [gauntlets] null means they do nothing for it.
+ * [lumbridge] is the roll on the Lumbridge Castle range (the charts' "Lumbridge range" line), null where it does nothing.
+ * [fallback] is what the raw item cooks into when the player's level is below [level] (karambwan: the poison karambwan).
+ * [ignoresClock] lets a make-X choice cook at once even while the player's cooking clock runs (the 1-tick karambwan trick, CK10).
  */
 internal class Food(
     val raw: Int,
@@ -21,24 +24,62 @@ internal class Food(
     val fire: Rate?,
     val range: Rate,
     val gauntlets: Rate? = null,
+    val lumbridge: Rate? = null,
+    val fallback: Food? = null,
+    val ignoresClock: Boolean = false,
 ) {
     val rangeOnly: Boolean = fire == null
 }
 
+/** Poor karambwan: level 1, 80 xp, the same 70 / 255 roll as the cooked one (Wiki "Poison karambwan" Recipe and chart). */
+private val POISON_KARAMBWAN =
+    Food(Objs.TBWT_RAW_KARAMBWAN, Objs.TBWT_POORLY_COOKED_KARAMBWAN, Objs.TBWT_BURNT_KARAMBWAN, 1, 80.0, Rate(70, 255), Rate(70, 255))
+
+/**
+ * Karambwan, cooked thoroughly: level 30, 190 xp, 70 / 255 on a fire or range (Wiki "Cooked karambwan"). Below level 30 the same raw
+ * item cooks into the [POISON_KARAMBWAN]. Cooking it thoroughly needs Tai Bwo Wannai Trio and Tinsay's lesson, which are not
+ * implemented, so only the level decides (OPEN-CK9). A make-X choice ignores the cooking clock (Wiki "Tick manipulation" > 1-tick Cooking).
+ */
+private val KARAMBWAN =
+    Food(
+        Objs.TBWT_RAW_KARAMBWAN,
+        Objs.TBWT_COOKED_KARAMBWAN,
+        Objs.TBWT_BURNT_KARAMBWAN,
+        30,
+        190.0,
+        Rate(70, 255),
+        Rate(70, 255),
+        fallback = POISON_KARAMBWAN,
+        ignoresClock = true,
+    )
+
 /** Raw obj -> food. Levels and xp: Wiki "Cooking"; burn rolls: the cooked food's Wiki page (skilling success chart). */
 internal val FOODS: Map<Int, Food> =
     listOf(
-        Food(Objs.RAW_BEEF, Objs.COOKED_MEAT, Objs.BURNT_MEAT, 1, 30.0, Rate(128, 512), Rate(128, 512)),
-        Food(Objs.RAW_CHICKEN, Objs.COOKED_CHICKEN, Objs.BURNT_CHICKEN, 1, 30.0, Rate(128, 512), Rate(128, 512)),
-        Food(Objs.RAW_SHRIMP, Objs.SHRIMP, Objs.BURNT_SHRIMP, 1, 30.0, Rate(128, 512), Rate(128, 512)),
-        Food(Objs.RAW_ANCHOVIES, Objs.ANCHOVIES, Objs.BURNTFISH1, 1, 30.0, Rate(128, 512), Rate(128, 512)),
-        Food(Objs.RAW_SARDINE, Objs.SARDINE, Objs.BURNTFISH5, 1, 40.0, Rate(118, 492), Rate(118, 492)),
-        Food(Objs.RAW_HERRING, Objs.HERRING, Objs.BURNTFISH3, 5, 50.0, Rate(108, 472), Rate(108, 472)),
-        Food(Objs.RAW_MACKEREL, Objs.MACKEREL, Objs.BURNTFISH3, 10, 60.0, Rate(98, 452), Rate(98, 452)),
-        Food(Objs.RAW_TROUT, Objs.TROUT, Objs.BURNTFISH2, 15, 70.0, Rate(88, 432), Rate(88, 432)),
-        Food(Objs.RAW_COD, Objs.COD, Objs.BURNTFISH2, 18, 75.0, Rate(83, 422), Rate(88, 432)),
-        Food(Objs.RAW_PIKE, Objs.PIKE, Objs.BURNTFISH2, 20, 80.0, Rate(78, 412), Rate(78, 412)),
-        Food(Objs.RAW_SALMON, Objs.SALMON, Objs.BURNTFISH2, 25, 90.0, Rate(68, 392), Rate(68, 392)),
+        KARAMBWAN,
+        Food(Objs.MORT_SLIMEY_EEL, Objs.MORT_SLIMEY_EEL_COOKED, Objs.BURNT_EEL, 28, 95.0, Rate(63, 382), Rate(63, 382)),
+        Food(Objs.UNCOOKED_STEW, Objs.STEW, Objs.BURNT_STEW, 25, 117.0, Rate(68, 392), Rate(68, 392), lumbridge = Rate(78, 412)),
+        Food(Objs.UNCOOKED_CURRY, Objs.CURRY, Objs.BURNT_CURRY, 60, 280.0, Rate(38, 332), Rate(38, 332)),
+        Food(Objs.RAW_BEEF, Objs.COOKED_MEAT, Objs.BURNT_MEAT, 1, 30.0, Rate(128, 512), Rate(128, 512), lumbridge = Rate(138, 532)),
+        Food(
+            Objs.RAW_CHICKEN,
+            Objs.COOKED_CHICKEN,
+            Objs.BURNT_CHICKEN,
+            1,
+            30.0,
+            Rate(128, 512),
+            Rate(128, 512),
+            lumbridge = Rate(138, 532),
+        ),
+        Food(Objs.RAW_SHRIMP, Objs.SHRIMP, Objs.BURNT_SHRIMP, 1, 30.0, Rate(128, 512), Rate(128, 512), lumbridge = Rate(138, 532)),
+        Food(Objs.RAW_ANCHOVIES, Objs.ANCHOVIES, Objs.BURNTFISH1, 1, 30.0, Rate(128, 512), Rate(128, 512), lumbridge = Rate(138, 532)),
+        Food(Objs.RAW_SARDINE, Objs.SARDINE, Objs.BURNTFISH5, 1, 40.0, Rate(118, 492), Rate(118, 492), lumbridge = Rate(128, 512)),
+        Food(Objs.RAW_HERRING, Objs.HERRING, Objs.BURNTFISH3, 5, 50.0, Rate(108, 472), Rate(108, 472), lumbridge = Rate(118, 492)),
+        Food(Objs.RAW_MACKEREL, Objs.MACKEREL, Objs.BURNTFISH3, 10, 60.0, Rate(98, 452), Rate(98, 452), lumbridge = Rate(108, 472)),
+        Food(Objs.RAW_TROUT, Objs.TROUT, Objs.BURNTFISH2, 15, 70.0, Rate(88, 432), Rate(88, 432), lumbridge = Rate(98, 452)),
+        Food(Objs.RAW_COD, Objs.COD, Objs.BURNTFISH2, 18, 75.0, Rate(83, 422), Rate(88, 432), lumbridge = Rate(93, 442)),
+        Food(Objs.RAW_PIKE, Objs.PIKE, Objs.BURNTFISH2, 20, 80.0, Rate(78, 412), Rate(78, 412), lumbridge = Rate(88, 432)),
+        Food(Objs.RAW_SALMON, Objs.SALMON, Objs.BURNTFISH2, 25, 90.0, Rate(68, 392), Rate(68, 392), lumbridge = Rate(78, 402)),
         Food(Objs.RAW_TUNA, Objs.TUNA, Objs.BURNTFISH4, 30, 100.0, Rate(58, 372), Rate(58, 372)),
         Food(Objs.RAW_CAVE_EEL, Objs.CAVE_EEL, Objs.BURNT_CAVE_EEL, 38, 115.0, Rate(38, 332), Rate(38, 332)),
         Food(Objs.RAW_LOBSTER, Objs.LOBSTER, Objs.BURNT_LOBSTER, 40, 120.0, Rate(38, 332), Rate(38, 332), Rate(55, 368)),
@@ -50,10 +91,10 @@ internal val FOODS: Map<Int, Food> =
         Food(Objs.RAW_ANGLERFISH, Objs.ANGLERFISH, Objs.BURNT_ANGLERFISH, 84, 230.0, Rate(1, 200), Rate(1, 220), Rate(12, 260)),
         Food(Objs.RAW_DARK_CRAB, Objs.DARK_CRAB, Objs.BURNT_DARK_CRAB, 90, 215.0, Rate(10, 222), Rate(10, 222)),
         Food(Objs.RAW_MANTARAY, Objs.MANTARAY, Objs.BURNT_MANTARAY, 91, 216.3, Rate(1, 202), Rate(1, 222)),
-        Food(Objs.BREAD_DOUGH, Objs.BREAD, Objs.BURNT_BREAD, 1, 40.0, null, Rate(118, 492)),
+        Food(Objs.BREAD_DOUGH, Objs.BREAD, Objs.BURNT_BREAD, 1, 40.0, null, Rate(118, 492), lumbridge = Rate(128, 512)),
         Food(Objs.UNCOOKED_PITTA_BREAD, Objs.PITTA_BREAD, Objs.BURNT_PITTA_BREAD, 58, 40.0, null, Rate(118, 492)),
-        Food(Objs.UNCOOKED_REDBERRY_PIE, Objs.REDBERRY_PIE, Objs.BURNT_PIE, 10, 78.0, null, Rate(98, 452)),
-        Food(Objs.UNCOOKED_MEAT_PIE, Objs.MEAT_PIE, Objs.BURNT_PIE, 20, 110.0, null, Rate(78, 412)),
+        Food(Objs.UNCOOKED_REDBERRY_PIE, Objs.REDBERRY_PIE, Objs.BURNT_PIE, 10, 78.0, null, Rate(98, 452), lumbridge = Rate(108, 462)),
+        Food(Objs.UNCOOKED_MEAT_PIE, Objs.MEAT_PIE, Objs.BURNT_PIE, 20, 110.0, null, Rate(78, 412), lumbridge = Rate(88, 432)),
         Food(Objs.UNCOOKED_APPLE_PIE, Objs.APPLE_PIE, Objs.BURNT_PIE, 30, 130.0, null, Rate(58, 372)),
         Food(Objs.UNCOOKED_PIZZA, Objs.PLAIN_PIZZA, Objs.BURNT_PIZZA, 35, 143.0, null, Rate(48, 352)),
         Food(Objs.UNCOOKED_CAKE, Objs.CAKE, Objs.BURNT_CAKE, 40, 180.0, null, Rate(38, 332)),

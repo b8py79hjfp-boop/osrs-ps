@@ -1,0 +1,37 @@
+output	count	skill	level	xp	ticks	first_ticks	single_ticks	members	tools	facilities	materials	name	returns
+2307	1	cooking	1	0	1	1	1	no			1933:1,1929:1	Bread dough	1931:1,1925:1
+2307	1	cooking	1	0	1	1	1	no			1933:1,1921:1	Bread dough	1931:1,1923:1
+2307	1	cooking	1	0	1	1	1	no			1933:1,1937:1	Bread dough	1931:1,1935:1
+1953	1	cooking	1	0	1	1	1	no			1933:1,1929:1	Pastry dough	1931:1,1925:1
+1953	1	cooking	1	0	1	1	1	no			1933:1,1921:1	Pastry dough	1931:1,1923:1
+1953	1	cooking	1	0	1	1	1	no			1933:1,1937:1	Pastry dough	1931:1,1935:1
+1863	1	cooking	58	0	1	1	1	yes			1933:1,1929:1	Pitta dough	1931:1,1925:1
+1863	1	cooking	58	0	1	1	1	yes			1933:1,1921:1	Pitta dough	1931:1,1923:1
+1863	1	cooking	58	0	1	1	1	yes			1933:1,1937:1	Pitta dough	1931:1,1935:1
+2283	1	cooking	35	0	1	1	1	no			1933:1,1929:1	Pizza base	1931:1,1925:1
+2283	1	cooking	35	0	1	1	1	no			1933:1,1921:1	Pizza base	1931:1,1923:1
+2283	1	cooking	35	0	1	1	1	no			1933:1,1937:1	Pizza base	1931:1,1935:1
+2285	1	cooking	35	0	2	2	2	no			2283:1,1982:1	Incomplete pizza	
+2287	1	cooking	35	0	2	2	2	no			2285:1,1985:1	Uncooked pizza	
+2293	1	cooking	45	26	2	2	2	no			2289:1,2142:1	Meat pizza	
+2293	1	cooking	45	26	2	2	2	no			2289:1,2140:1	Meat pizza	
+2297	1	cooking	55	39	2	2	2	no			2289:1,319:1	Anchovy pizza	
+2301	1	cooking	65	45	2	2	2	yes			2289:1,2118:1	Pineapple pizza	
+2301	1	cooking	65	45	2	2	2	yes			2289:1,2116:1	Pineapple pizza	
+2315	1	cooking	1	0	2	2	2	no			1953:1,2313:1	Pie shell	
+2321	1	cooking	10	0	2	2	2	no			1951:1,2315:1	Uncooked berry pie	
+2319	1	cooking	20	0	2	2	2	no			2142:1,2315:1	Uncooked meat pie	
+2319	1	cooking	20	0	2	2	2	no			2140:1,2315:1	Uncooked meat pie	
+2317	1	cooking	30	0	2	2	2	no			1955:1,2315:1	Uncooked apple pie	
+1889	1	cooking	40	0	2	2	2	no			1887:1,1944:1,1933:1,1927:1	Uncooked cake	1925:1,1931:1
+1897	1	cooking	50	30	2	2	2	no			1891:1,1973:1	Chocolate cake	
+1897	1	cooking	50	30	2	2	2	no			1891:1,1975:1	Chocolate cake	
+1999	1	cooking	25	0	2	2	2	no			2142:1,1921:1	Incomplete stew#Meat	
+1999	1	cooking	25	0	2	2	2	no			2140:1,1921:1	Incomplete stew#Meat	
+1997	1	cooking	25	0	2	2	2	no			1942:1,1921:1	Incomplete stew#Potato	
+2001	1	cooking	25	0	2	2	2	no			2142:1,1997:1	Uncooked stew	
+2001	1	cooking	25	0	2	2	2	no			2140:1,1997:1	Uncooked stew	
+2001	1	cooking	25	0	2	2	2	no			1942:1,1999:1	Uncooked stew	
+2009	1	cooking	60	0	2	2	2	yes			5970:3,2001:1	Uncooked curry	
+2009	1	cooking	60	0	2	2	2	yes			2007:1,2001:1	Uncooked curry	
+1995	1	cooking	35	0	2	3	3	no			1987:1,1937:1	Unfermented wine	

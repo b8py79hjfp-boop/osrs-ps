@@ -9,8 +9,9 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
 - **FS1: spots.** A fishing spot is an NPC; its type decides what its two ops give (op 1 = Net / Lure / Cage / Big Net, op 3 =
   Bait / Harpoon). The ids per type are the `id` lists of the spot pages: "Fishing spot (small net, bait)", "Rod Fishing spot (lure,
   bait)", "Fishing spot (cage, harpoon)", "Fishing spot (big net, harpoon)", "Fishing spot (Piscatoris Fishing Colony)" and
-  "Fishing spot (Tutorial Island)" (https://oldschool.runescape.wiki/w/Fishing_spot). 123 ids are loaded: 108 from the Wiki lists
-  and 15 more whose cache ops are unambiguous (source `cache-ops`); "Net" + "Harpoon" spots not on a Wiki list are skipped.
+  "Fishing spot (Tutorial Island)" (https://oldschool.runescape.wiki/w/Fishing_spot). 136 ids are loaded: the Wiki lists of those pages
+  and of the karambwan, barbarian, dark crab, anglerfish, eel, swamp, infernal eel and sacred eel pages (FS10 to FS13), plus those whose
+  cache ops are unambiguous (source `cache-ops`); "Net" + "Harpoon" spots not on a Wiki list are skipped.
 - **FS2: tick timeline.** Fishing is a 5-tick action: "a roll to catch a fish normally happens every five ticks" (Wiki "Tick
   manipulation" > 3-tick Fishing). Same shape as woodcutting (woodcutting.md WC1) with the 5-tick cycle:
   - Tick T (click, arrived, action clock expired): both clocks are armed to T+4. Nothing else happens.
@@ -65,12 +66,55 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
     for shrimps, anchovies, herring, sardine, trout, salmon, tuna, swordfish, mackerel, cod and bass; pike, lobster, shark,
     monkfish and rainbow fish follow the same pattern).
 
+- **FS8: where spots stand.** `fishing-spawns.tsv` (`tools/wiki-import/fishing_spawns.py`) has one row per tile of every Wiki
+  `ObjectLocLine` pin of the 14 spot types (427 tiles: the six types of FS1 plus karambwan, barbarian, dark crab, anglerfish,
+  eel, swamp, infernal eel and sacred eel), grouped by the area block it is listed in. Blocks on other maps than the surface,
+  the Mor Ul Rek map and the underground (`mapID` not 0, 23 or -1: boats, instances) are dropped. A group gets (tiles + 1) / 2
+  spots, the first on every second tile (OPEN-FS8), spawned at world start without wandering (`Fishing.kt` / `FishingSpots.kt`;
+  `-Dtp.worldSpawns=false` turns them off with the other world NPCs). Sources: Wiki "Fishing spot" and the per-type spot pages.
+- **FS9: spot movement.** After a hidden timer a spot is removed and spawned again on a random free tile of its own group; if the
+  group has no free tile it stays and draws a new timer ("fishing spots are programmed to move to a designated tile, but will not
+  do so if it is currently occupied by a fishing spot", Wiki "Fishing spot (karambwan)" trivia). The timer is uniform: 250 to 530
+  ticks (most spots), 100 to 300 (sacred and infernal eel), 8 to 830 (anglerfish); the karambwan and dark crab spots never move
+  (Wiki "Fishing spot", Mod Ash 19 Dec 2022). A player fishing at the spot that moved is sent to the new one for the next 8 ticks
+  ("if clicked on as it changes, the player will run to the new location"). plugin-api has no world tick hook, so the first
+  logged-in player's timer of each tick moves every spot that is due; with nobody online the spots stand still.
+- **FS10: karambwan.** Op "Fish" of the karambwan spots, karambwan vessel (empty or loaded) and raw karambwanji: raw karambwan, 65
+  Fishing, 50 xp, one roll 5 / 160. "Unlike regular Fishing, bait is consumed even without a catch" (Wiki "Raw karambwan"): the
+  karambwanji is removed on a failed roll too. Source: Wiki "Raw karambwan", "Fishing spot (karambwan)".
+- **FS11: gates.** Karambwan needs the fishing part of Tai Bwo Wannai Trio, sacred eels Regicide, barbarian fishing the fishing part
+  of Barbarian Training (Wiki spot pages). None is implemented in content/quests, so the gates are behind `Fishing.ENFORCE_QUESTS`
+  (off). When on they read the state varps of `quest-states.tsv` (Tai Bwo Wannai Trio varp 320 >= 6, Regicide varp 328 >= 15) and,
+  for Barbarian Training, varbit `BRUT_FISHING_R` != 0 (OPEN-FS13).
+- **FS12: barbarian fishing.** Op "Use-rod" of the barbarian spots with a barbarian rod (or the pearl barbarian rod): the leaping
+  fish roll best first 8 / 64 sturgeon (70 Fishing, 45 Strength and Agility, 80 xp, 7 Strength and 7 Agility xp), 16 / 96 salmon
+  (58 / 30, 70 xp, 6), 32 / 192 trout (48 / 15, 50 xp, 5). The bait used first is, in order, fish offcuts, fishing bait, feathers,
+  roe, caviar (Wiki "Leaping trout"). Source: Wiki "Barbarian Fishing", "Fishing spot (barbarian)".
+- **FS15: gutting** (`FishingGutting.kt`). `Knife` on a leaping fish cuts it, then one fish of the kind every 3 ticks ("a new fish is
+  cut every 3 ticks automatically", Wiki "Fish offcuts"). Roe (caviar from the sturgeon) with chance `Cooking level / 150` (trout) or
+  `Cooking level / 80`, capped at 1 (salmon, sturgeon): 1/150 at level 1 and 99/150 at 99, certain at 80 ("Trout: 1/150 at level 1,
+  99/150 at level 99. If that roll passes, 1/2 of offcuts with it", Mod Ash, 18 April 2018); on success 10 Cooking xp (15 for caviar)
+  and fish offcuts with chance 1/2, 3/4, 5/6. The fish is used up either way.
+- **FS13: other rod and net spots.** Dark crab spots (op "Cage", lobster pot): with dark fishing bait raw dark crab, 85 Fishing, 130 xp,
+  3 / 40, bait used per catch; without it raw lobster. Anglerfish (Port Piscarilius, op "Bait", fishing rod or pearl rod): 82 Fishing,
+  sandworms 120 xp 3 / 36, diabolic worms 79.2 xp 13 / 100. Eel spots (op 3 "Bait", bait): cave eel (38) and slimy eel (28),
+  80 xp each, both rolled 10 / 80 cascading; swamp spots (Mort Myre): slimy eel 65 xp. Infernal eel (oily fishing rod, bait): 80, 95 xp,
+  30 / 93. Sacred eel (rod, bait): 87, 105 xp, 0 / 60. Sources: Wiki "Raw dark crab", "Raw anglerfish", "Raw slimy eel", "Raw cave eel",
+  "Raw infernal eel", "Raw sacred eel", "Fishing spot (frog spawn, eels)", "Fishing spot (swamp)". Pearl rods work as fishing rods
+  ("an equipable version of the fishing rod", Wiki "Pearl fishing rod").
+- **FS14: xp modifiers and harpoon effects.** The full angler's outfit (any mix of normal and spirit pieces) gives 2.5% more Fishing
+  xp (Wiki "Angler's outfit", "Spirit angler's outfit"; the extra Strength, Agility and Cooking xp are not boosted). The infernal
+  harpoon, with a charge left, cooks and destroys 1 in 3 catches except the oversized ones, giving half the fish's Cooking xp (Wiki
+  "Infernal harpoon"); 5,000 charges, counted per player (OPEN-FS4).
+
 ## OPEN
 
-- **OPEN-FS1: spot movement.** The Wiki gives the rule: most spots move to another spot in the same area after between 250 and 530
-  ticks (never: karambwan, dark crab, Civitas illa Fortis big net, boat spots; 100 to 300 ticks: sacred and infernal eel; 8 to 830:
-  anglerfish; Wiki "Fishing spot", Mod Ash 19 Dec 2022). The data for it, the set of tiles each spot may move to, is not in any
-  source we have, and there is no NPC relocation call in plugin-api. Spots therefore stay where the NPC spawn puts them.
+- **OPEN-FS1 (closed by FS8, FS9).** Spots are spawned and move. The Wiki's "never move" list also names the Civitas illa Fortis and
+  Stranglewood big net spots, the fly fishing spots south-east of Prifddinas and the Dorgesh-Kaan eel spot; they have no spawn rows
+  (Civitas and Stranglewood are not in our tables) or are treated like any other spot.
+- **OPEN-FS8:** how many spots an area has at once is not published (the Wiki lists observed tiles). One spot per two tiles, rounded up,
+  is used (`FishingSpots.spotsOf`). Tutorial Island, Mor Ul Rek and the dungeons use the same rule. Spots are spawned only where the Wiki
+  has pins; Piscatoris has pins for one NPC id only.
 - **OPEN-FS2:** the first-roll offset after a click (T+4) is assumed to match woodcutting; the Wiki only gives the 5-tick cycle.
   Barbarian-style "needs two consecutive ticks on the spot" behaviour is not modelled.
 - **OPEN-FS3:** the fishing animation is replayed once per cycle (5 ticks); real animation timing is not sourced.
@@ -80,8 +124,31 @@ Shared rules (success roll, clocks, tools, messages): skilling.md.
 - **OPEN-FS5:** which feather is used when the player has both is not sourced.
 - **OPEN-FS6:** message texts other than the catch lines (FS7) are the game's wording as the Wiki leaves them out; no message for the
   big net's junk items or the oyster/casket.
-- **OPEN-FS7:** not implemented: barbarian fishing (barbarian rod, heavy rod, leaping fish), the harpoon-less barehand method,
-  karambwan, dark crab (needs dark fishing bait and the Wilderness), anglerfish (sandworms/diabolic worms), eels (slimy, cave,
-  infernal, sacred), minnows, aerial fishing, drift nets, Fishing Trawler, Tempoross and sailing spots, shark lures, Rada's blessing,
-  spirit flakes, skills necklace (casket odds), the big net's mackerel `bonus` rates, the Fishing Guild and other level boosts,
-  clue bottles and the heron pet, and Tutorial Island's own raw shrimps item (the normal item is given).
+- **OPEN-FS9:** the Elite Wilderness Diary's dark crab roll (13 / 55 instead of 3 / 40, Wiki "Raw dark crab") is not applied: diary state is
+  not readable from content/skills. Lobster at the dark crab spots uses the ordinary cage rate (not stated for these spots).
+- **OPEN-FS10:** the karambwan vessel is a tool here, empty or loaded alike; the Wiki's loading (the vessel empties and refills from the
+  karambwanji in the backpack) and the filtered snatch message ("A Karambwan deftly snatches the Karambwanji from your vessel!") are not
+  modelled; the vessel animation is the rod's.
+- **OPEN-FS11 / OPEN-FS13:** the three quest gates are off (FS11). Which Barbarian Training varbit marks the fishing part is not sourced:
+  `BRUT_FISHING_R` (cache name only) is assumed. The refusal wording is not sourced; Tinsay's lesson for cooking karambwan thoroughly is
+  OPEN-CK9.
+- **OPEN-FS12:** the eel spot's op 1 (net: frog spawn 11/256 and swamp weed 43/1000 per Wiki drop lines, level 33, 75 xp) is not
+  implemented: the Wiki gives drop rarities, not a skilling roll. Eels, slimy and cave, are fished with op 3.
+- **OPEN-FS14:** only the full angler's set is sourced (2.5%); the per-piece shares of a partial outfit are not. Rada's blessing and
+  spirit flakes (extra catch), the Fishing Guild's +7 boost and other invisible boosts are not applied.
+- **OPEN-FS15:** what happens to a leaping fish when gutting "fails" ("Gutting may fail", Wiki "Barbarian Fishing"; here it is used up)
+  and the knife's animation (`BRUT_HUMAN_KNIFEUSE`, a cache name only) are not on the Wiki pages read. A level-up does not stop the
+  batch, and the roe/offcuts messages are not sourced.
+- **OPEN-FS16: not implemented, with the Wiki rules read.**
+  - *Minnows* (Fishing Guild, small net, level 82, 26.1 xp, 10 to 14 minnows per catch by level): the catch-count formula, the roll and the
+    flying fish (1/10 after a rotation, eats 16 to 26 minnows) are not given; the spots rotate one tile every 25 ticks.
+  - *Aerial fishing* (Lake Molch): cormorant's glove, king worms or offcuts as bait, the fish picked by `X = (2 * Fishing + Hunter) / 3`
+    (random 0 to X-1: 82+ greater siren, 67+ mottled eel, 52+ common tench, else bluegill, each if the levels allow), 1/2/3 ticks by
+    distance, frenzied spots, golden tench and pearls. Needs the cormorant NPC and glove equipment, not present.
+  - *Drift net fishing* (Fossil Island): needs the shoal NPCs, net locs and the tidal swim; not present.
+  - *Tempoross*: a full minigame (instanced boat area, waves, fires, totem poles, harpoonfish, Spirit pool); not started.
+  - *Fishing Trawler* (sea turtle, manta ray), Sailing trawling/boat fishing, Leechfin, Chambers of Xeric fish: minigames and Sailing
+    systems absent.
+  - Sacred eel dissecting (Zulrah's scales), infernal eel hammering (onyx bolt tips), barehanded fishing, the dragon harpoon's
+    Fishstabber special attack (combat), crystal harpoon extras, skills necklace casket odds, clue bottles and the heron pet.
+  - Tutorial Island's own raw shrimps item (the normal item is given).

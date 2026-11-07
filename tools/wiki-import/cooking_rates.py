@@ -24,6 +24,10 @@ PAGES = [
     "Cooked meat", "Cooked chicken", "Shrimps", "Anchovies", "Sardine", "Herring", "Mackerel", "Trout", "Cod", "Pike",
     "Salmon", "Tuna", "Cave eel", "Lobster", "Bass", "Swordfish", "Monkfish", "Shark", "Sea turtle", "Anglerfish",
     "Dark crab", "Manta ray", "Bread", "Pitta bread", "Redberry pie", "Meat pie", "Apple pie", "Plain pizza", "Cake",
+    # Added with the karambwan, eel and multi-step food work (docs/mechanics/cooking.md CK9-CK13).
+    "Cooked karambwan", "Poison karambwan", "Stew", "Curry", "Scrambled egg", "Fried onions", "Fried mushrooms", "Cooked slimy eel",
+    "Infernal eel", "Sacred eel", "Jug of wine", "Garden pie", "Fish pie", "Admiral pie", "Wild pie", "Summer pie", "Mud pie",
+    "Meat pizza", "Anchovy pizza", "Pineapple pizza", "Chocolate cake",
 ]
 
 

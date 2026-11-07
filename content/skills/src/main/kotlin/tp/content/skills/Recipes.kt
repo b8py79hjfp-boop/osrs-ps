@@ -12,6 +12,7 @@ internal class Ingredient(val obj: Int, val count: Int)
  * used up; [facility] is the lower-case Wiki facility ("furnace", "spinning wheel", ...) or empty; [inputs] are used up.
  * [thread] is set when the recipe also needs thread, which is used up one spool per 5 actions rather than per action
  * (it is not in [inputs]; Wiki "Thread"). [firstTicks] is the first action's delay when the Wiki gives one ("Make-X is 2, then 3").
+ * [returns] are items a step gives back besides [output] (the pot and bucket of a dough; `cooking-prep.tsv` only).
  */
 internal class Recipe(
     val output: Int,
@@ -26,11 +27,13 @@ internal class Recipe(
     val thread: Boolean,
     val name: String,
     val firstTicks: Int = ticks,
+    val returns: List<Ingredient> = emptyList(),
 )
 
 internal object RecipeTable {
-    /** The columns of `recipes.tsv`; the file's header names them. */
+    /** The columns of `recipes.tsv`; the file's header names them. `cooking-prep.tsv` has one more, `returns`. */
     private const val COLUMNS = 13
+    private const val RETURNS = 13
 
     /** The `skill` column of `recipes.tsv` (lower-case Wiki skill names) to stat ids. */
     private val STATS =
@@ -39,11 +42,12 @@ internal object RecipeTable {
             "crafting" to Stats.CRAFTING,
             "fletching" to Stats.FLETCHING,
             "herblore" to Stats.HERBLORE,
+            "cooking" to Stats.COOKING,
         )
 
-    /** Reads `recipes.tsv`. */
-    fun load(): List<Recipe> {
-        val text = RecipeTable::class.java.getResource("recipes.tsv")?.readText() ?: error("recipes.tsv missing")
+    /** Reads `recipes.tsv`, or another table of the same shape (`cooking-prep.tsv`). */
+    fun load(file: String = "recipes.tsv"): List<Recipe> {
+        val text = RecipeTable::class.java.getResource(file)?.readText() ?: error("$file missing")
         return text
             .lineSequence()
             .drop(1)
@@ -53,7 +57,7 @@ internal object RecipeTable {
     }
 
     private fun parse(cols: List<String>): Recipe {
-        require(cols.size == COLUMNS) { "recipes.tsv row has ${cols.size} columns: $cols" }
+        require(cols.size == COLUMNS || cols.size == COLUMNS + 1) { "recipe table row has ${cols.size} columns: $cols" }
         val stat = STATS[cols[2]] ?: error("recipes.tsv: unknown skill ${cols[2]}")
         val inputs =
             cols[11].split(',').filter { it.isNotEmpty() }.map {
@@ -73,6 +77,11 @@ internal object RecipeTable {
             thread = stat == Stats.CRAFTING && inputs.any { it.obj == Objs.THREAD },
             name = cols[12],
             firstTicks = cols[6].toInt(),
+            returns =
+                cols.getOrElse(RETURNS) { "" }.split(',').filter { it.isNotEmpty() }.map {
+                    val (obj, count) = it.split(':')
+                    Ingredient(obj.toInt(), count.toInt())
+                },
         )
     }
 }

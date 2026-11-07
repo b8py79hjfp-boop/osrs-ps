@@ -11,6 +11,14 @@ fish the two ops of the spot give (op 1 = Net / Lure / Cage / Big Net, op 3 = Ba
   BIGNET_HARPOON  Fishing spot (big net, harpoon)              big net: mackerel, cod, bass, junk; harpoon: shark
   NET_HARPOON     Fishing spot (Piscatoris Fishing Colony)     net: monkfish; harpoon: tuna, swordfish
   TUTORIAL        Fishing spot (Tutorial Island)               net: shrimps
+  KARAMBWAN       Fishing spot (karambwan)                     karambwan vessel: raw karambwan (op "Fish")
+  BARBARIAN       Fishing spot (barbarian)                     barbarian rod: leaping fish (op "Use-rod")
+  DARK_CRAB       Fishing spot (dark crab)                     lobster pot: lobster, dark crab with dark fishing bait (op "Cage")
+  ANGLER          Rod Fishing spot (anglerfish)                fishing rod and sandworms: anglerfish (op "Bait")
+  EEL             Fishing spot (frog spawn, eels)              net: frog spawn; bait: slimy and cave eels
+  SWAMP           Fishing spot (swamp)                         bait: slimy eel (op "Bait")
+  INFERNAL_EEL    Fishing spot (infernal eel)                  oily fishing rod: infernal eel (op "Bait")
+  SACRED_EEL      Fishing spot (sacred eel)                    fishing rod: sacred eel (op "Bait")
 
 Ids are kept only if the cache has an NPC of that id named "Fishing spot" / "Rod Fishing spot". Spots the Wiki pages do not
 list but whose cache ops are unambiguous ("Small Net"/"Net" + "Bait", "Lure" + "Bait", "Cage" + "Harpoon", "Big Net" +
@@ -41,6 +49,14 @@ PAGES = [
     ("BIGNET_HARPOON", "Fishing spot (big net, harpoon)"),
     ("NET_HARPOON", "Fishing spot (Piscatoris Fishing Colony)"),
     ("TUTORIAL", "Fishing spot (Tutorial Island)"),
+    ("KARAMBWAN", "Fishing spot (karambwan)"),
+    ("BARBARIAN", "Fishing spot (barbarian)"),
+    ("DARK_CRAB", "Fishing spot (dark crab)"),
+    ("ANGLER", "Rod Fishing spot (anglerfish)"),
+    ("EEL", "Fishing spot (frog spawn, eels)"),
+    ("SWAMP", "Fishing spot (swamp)"),
+    ("INFERNAL_EEL", "Fishing spot (infernal eel)"),
+    ("SACRED_EEL", "Fishing spot (sacred eel)"),
 ]
 
 # (op1, op3) texts of a cache NPC -> spot type, for spots no Wiki page lists.
