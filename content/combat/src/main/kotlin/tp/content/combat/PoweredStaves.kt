@@ -231,6 +231,7 @@ internal object PoweredStaves {
         (if (staff.effect == Effect.SHADOW) ProjType.TUMEKENS else ProjType.MAGIC).launch(player, target, staff.projectile, delay)
         CombatVisuals.block(target, delay)
         val multiplier = if (staff.effect == Effect.SHADOW) SHADOW_MULTIPLIER else 1
+        player[Attr.LAST_SPELL] = null // a powered staff's own spell is not Magic Dart (slayer-equipment.md SE9)
         val attackRoll = Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier, target = target)
         val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)

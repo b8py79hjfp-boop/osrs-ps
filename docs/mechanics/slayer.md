@@ -80,7 +80,7 @@ Song of the Elves and Priest in Peril (or Fairytale II). They need no code chang
 ## Protective equipment (proposals for content/combat, not implemented)
 
 Nothing the Wiki lists as protective equipment (E) is a check in this module: in game the player can attack without it and it changes what
-the monster does or what the hit does, which is combat. Proposals, each from the "Slayer equipment" page: earmuffs (or a Slayer helmet) against
+the monster does or what the hit does, which is combat (implemented where the Wiki gives numbers: slayer-equipment.md). Proposals, each from the "Slayer equipment" page: earmuffs (or a Slayer helmet) against
 banshees' stat-draining screech; nose peg against aberrant spectres' stench; spiny helmet against wall beasts; facemask against dust devils'
 attack and the Smoke Dungeon; witchwood icon against cave horrors; mirror shield against basilisks and cockatrice; reinforced goggles against
 sourhogs; insulated boots against killerwatts and rune dragons' electricity; slayer gloves against fever spiders; Shayzien armour against the

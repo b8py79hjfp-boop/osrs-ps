@@ -24,6 +24,7 @@ internal object SpellCasting {
      */
     fun cast(player: PlayerRef, target: EntityRef, spell: CombatSpell, manual: Boolean, defensive: Boolean = false): Boolean {
         if (!canCast(player, target, spell, manual)) return false
+        player[Attr.LAST_SPELL] = spell.name
         if (!payCharges(player, target, spell)) return false
         if (!player.transaction("spell runes") { SpellRunes.take(this, player, spell.runes) }) {
             player.message(NO_RUNES)

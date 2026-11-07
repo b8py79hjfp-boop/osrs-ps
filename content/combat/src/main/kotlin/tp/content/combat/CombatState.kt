@@ -8,6 +8,9 @@ import tp.symbols.Varps
 
 /** Per-entity combat state (world-scoped attributes). Clocks are absolute ticks. */
 internal object Attr {
+    /** Name of the combat spell the player cast last (Magic Dart against leafy monsters, slayer-equipment.md SE9). */
+    val LAST_SPELL = AttrKey<String>("last_combat_spell")
+
     /** Next tick the entity may attack (combat-timeline.md C1). */
     val ATTACK_CLOCK = AttrKey<Long>("attack_clock")
 
@@ -122,6 +125,7 @@ internal object Stat {
     const val RANGED = 4
     const val PRAYER = 5
     const val MAGIC = 6
+    const val AGILITY = 16
 }
 
 /** NPC level indices (cache NpcType stats order). */

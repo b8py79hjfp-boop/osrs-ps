@@ -26,6 +26,10 @@ import tp.util.CoordGrid
  */
 public class Combat : ContentPlugin {
     override fun ContentScope.register() {
+        // SE10: finishing items used on their monster.
+        for ((item, npc, finish) in SlayerGear.finishUses()) {
+            onUseOnNpc(item, npc) { target -> SlayerGear.use(player, target, finish, item) }
+        }
         // Parse the Wiki NPC table at boot, not on the first NPC hit (no tick-time allocation spike).
         onWorldStart { check(NpcCombatTable.size > 0) { "npc-combat.tsv is empty" } }
         onLogin {
@@ -186,6 +190,8 @@ internal object CombatSystem {
         if (source is NpcRef && SpellEffects.warded(target) && NpcCombatTable.of(source.type)?.attributes?.contains("demon") == true) {
             adjusted -= adjusted / WARD_DIVISOR
         }
+        // SE9: leafy monsters, harpie bug swarms and warped creatures only take damage from their required gear.
+        adjusted = SlayerGear.adjust(source, target, style, adjusted)
         val dealt = minOf(adjusted, target.hitpoints)
         target.hitpoints -= dealt
         if (dealt > 0) {
@@ -252,7 +258,10 @@ internal object CombatSystem {
 
     /** N12: content may keep an NPC alive at 0 hitpoints (quest NPCs that need a special killing blow). */
     private fun lethalCheck(target: EntityRef, source: EntityRef?) {
-        if (target !is NpcRef || target.hitpoints > 0) return
+        if (target !is NpcRef) return
+        // SE10: finishing-item monsters don't die to hits (an auto-finish unlock kills them at the threshold instead).
+        SlayerGear.finishOnHit(source as? PlayerRef, target)
+        if (target.hitpoints > 0) return
         val lethal = LethalHitEvent(target, source)
         target.events.publish(lethal)
         if (lethal.surviveWith > 0) target.hitpoints = minOf(lethal.surviveWith, target.maxHitpoints)
@@ -395,11 +404,7 @@ internal object NpcCombat {
                 CombatStyle.MAGIC -> Formulas.npcDefenceRoll(npc.level(NpcStat.MAGIC), def?.magicAttack ?: 0)
             }
         val defenceRoll = Attacks.defenceRoll(victim, type)
-        val max = def?.maxFor(style) ?: Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
-        // P5: protection prayers block NPC attacks fully.
-        val protected = victim is PlayerRef && victim.protects(style)
-        val hit = !protected && Formulas.hits(attackRoll, defenceRoll, npc::random)
-        val damage = if (hit) Formulas.damage(max, npc::random) else 0
+        val damage = npcDamage(npc, def, style, victim, attackRoll, defenceRoll)
         val delay =
             when (style) {
                 CombatStyle.MELEE -> 0
@@ -414,6 +419,24 @@ internal object NpcCombat {
         CombatVisuals.block(victim, delay)
         CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(style), delay)
         if (def != null) Toxic.onNpcAttack(npc, def, victim)
+    }
+
+    /**
+     * The NPC's damage: SE2-SE8 (missing Slayer protective equipment: the attack always lands, some prayers still block
+     * it), else the accuracy roll (P5: protection prayers block NPC attacks fully) and the max hit (SE6-SE7 overrides).
+     */
+    private fun npcDamage(npc: NpcRef, def: NpcCombatDef?, style: CombatStyle, victim: EntityRef, attackRoll: Int, defenceRoll: Int): Int {
+        val protected = victim is PlayerRef && victim.protects(style)
+        val unprotected = SlayerGear.unprotected(npc, victim)
+        if (unprotected != null) {
+            if (victim is PlayerRef) unprotected.effect(victim)
+            return if (protected && unprotected.prayerBlocks) 0 else unprotected.damage
+        }
+        val max =
+            SlayerGear.unprotectedMax(npc, victim) ?: def?.maxFor(style)
+                ?: Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
+        val hit = !protected && Formulas.hits(attackRoll, defenceRoll, npc::random)
+        return if (hit) Formulas.damage(max, npc::random) else 0
     }
 
     /** Hand-written fights (bosses.md B1): the script picks the attack; poisonous hits still poison (N7). */
