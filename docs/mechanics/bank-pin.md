@@ -9,7 +9,7 @@ Implementation: `content/gameframe/.../BankPin.kt` (main session: security and p
 | # | Rule | Source |
 |---|---|---|
 | BP1 | A PIN is four digits. Four equal digits and runs up or down by one (3456, 8765) are refused. | Wiki "Choosing a PIN" |
-| BP2 | With an active PIN, opening the bank (booths, chests, "Bank" ops, bankers, `OpenBankRequest`, `::openbank`), the Grand Exchange ("Exchange") and the PIN settings asks for it once; it then stays unlocked until logout. | Wiki "Using a bank PIN" |
+| BP2 | With an active PIN, opening the bank (booths, chests, "Bank" ops, bankers, `OpenBankRequest`, `::openbank`), the Grand Exchange ("Exchange"), the PIN settings, the Tool Leprechaun's store and the Blast Furnace coffer and conveyor belt, the GotR Rewards Guardian searches (plugin-api `BankPinRequest`) asks for it once; it then stays unlocked until logout. | Wiki "Using a bank PIN" |
 | BP3 | The PIN stays unlocked for 5 minutes after logout when the "logout behaviour" setting allows it (the default for new accounts) and the next login comes from the same address (compared as a hash). | Wiki 9 March 2017, 20 September 2018 |
 | BP4 | Failures: the 2nd wrong entry locks the keypad for 10 s (and reminds the player of "Exit"), the 3rd for 15 s, the 4th and later for 10 minutes. The count and the lock are real time and survive logout; a correct entry resets them. | Wiki; Wiki 16 April 2015 |
 | BP5 | Setting a first PIN: entered twice, then pending for the recovery delay (3 or 7 days, 7 by default), shown as "PIN coming in N days"; the pending PIN can be cancelled. | Wiki "Obtaining a bank PIN" |
@@ -30,8 +30,6 @@ phase and resumes the script -> keypad closes and the feature opens in that same
 - **OPEN-BP2** Whether "Change your PIN" and "Delete your PIN" are immediate or delayed when the PIN is known; the Wiki only says deletion takes 3 or 7 days.
 - **OPEN-BP3** A correct entry cancels a pending deletion (RS2's recovery rule, protects against a hijacker's "I don't know it.").
 - **OPEN-BP4** The 20 extra bank slots for having a PIN (Wiki "Advantages") are not added; bank capacity stays at B3.
-- **OPEN-BP5** Other PIN-protected features (Wiki list: seed vault, STASH, NMZ coffer, Blast Furnace coffer, Tool Leprechaun, clan
-  settings, POH building mode, ...) are not gated yet; content can call `BankPin.unlock` (gameframe) or should get a plugin-api hook
-  when the first one outside gameframe needs it.
+- **OPEN-BP5** Other PIN-protected features on the Wiki list (seed vault, STASH, NMZ coffer, clan settings, POH building mode, ...) publish `BankPinRequest` when they are built; those that exist today are wired (BP2).
 - **OPEN-BP6** `bankmain:locks` (the padlock in the bank's bottom bar, ops "*") is not handled.
 - **OPEN-BP7** The "buy more bank slots" banker option (OPEN-B1).

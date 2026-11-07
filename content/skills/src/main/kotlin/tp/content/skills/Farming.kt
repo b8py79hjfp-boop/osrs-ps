@@ -31,6 +31,7 @@ public class Farming : ContentPlugin {
     private val bins = FarmingBins(patches)
     private val tools = FarmingTools(crops, chains)
     private val contracts = FarmingContracts(patches, chains)
+    private val guild = FarmingGuild()
 
     /** What a farmed tree needs to be chopped (Wiki "Woodcutting": the regular tree of the kind, or [OPEN-FA2] for the new hardwoods). */
     private class ChopSpec(val level: Int, val xp: Double, val rates: AxeRates)
@@ -79,6 +80,7 @@ public class Farming : ContentPlugin {
         with(bins) { registerBins() }
         with(tools) { registerTools() }
         with(contracts) { registerContracts() }
+        with(guild) { registerGuild() }
         onLogin {
             syncSite()
             saplings.process(this)

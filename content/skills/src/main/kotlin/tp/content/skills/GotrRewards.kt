@@ -2,6 +2,7 @@
 
 package tp.content.skills
 
+import tp.plugin.BankPinRequest
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.EventBus
@@ -31,10 +32,14 @@ public class GotrRewards : ContentPlugin {
 
     override fun ContentScope.register() {
         bus = events
-        onOpLoc(Locs.GOTR_REWARD_RIFT, OP_SEARCH) { search(player, 1) }
+        // Wiki "Bank PIN": searching the Rewards Guardian asks for the bank PIN (bank-pin.md BP2).
+        onOpLoc(Locs.GOTR_REWARD_RIFT, OP_SEARCH) { player.events.publish(BankPinRequest(player) { weakQueue(0) { search(player, 1) } }) }
         onOpLoc(Locs.GOTR_REWARD_RIFT, OP_CHECK) { check(player) }
-        onOpLoc(Locs.GOTR_REWARD_RIFT, OP_BIG_SEARCH) { search(player, GotrConfig.BIG_SEARCH) }
-        onUseOnLoc(Objs.ABYSSAL_PEARL, Locs.GOTR_REWARD_RIFT) { pearlSearch(player) }
+        onOpLoc(
+            Locs.GOTR_REWARD_RIFT,
+            OP_BIG_SEARCH,
+        ) { player.events.publish(BankPinRequest(player) { weakQueue(0) { search(player, GotrConfig.BIG_SEARCH) } }) }
+        onUseOnLoc(Objs.ABYSSAL_PEARL, Locs.GOTR_REWARD_RIFT) { player.events.publish(BankPinRequest(player) { pearlSearch(this) }) }
         onUseOnLoc(Objs.NEEDLE, Locs.GOTR_REWARD_RIFT) { needle(player) }
         onOpNpc(Npcs.GOTR_REWARD_TRADER, OP_TALK) { felix(it) }
     }

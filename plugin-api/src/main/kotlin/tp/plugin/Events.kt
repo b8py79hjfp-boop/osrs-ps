@@ -36,6 +36,12 @@ public class OpenShopRequest(public val player: PlayerRef, public val npcType: I
 /** Open [player]'s bank for a banker-like NPC that has its own conditions (Eniola charges 20 runes); the bank plugin handles it. */
 public class OpenBankRequest(public val player: PlayerRef) : Event
 
+/**
+ * Asks [player] for the bank PIN when one is set and not yet entered this session (docs/mechanics/bank-pin.md BP2); [then]
+ * runs once it is, at once without a PIN, and never on a wrong PIN or "Exit". The gameframe bank plugin handles it.
+ */
+public class BankPinRequest(public val player: PlayerRef, public val then: PlayerRef.() -> Unit) : Event
+
 /** Open [player]'s Grand Exchange collection box (bankers' "I'd like to collect items."); the GE plugin handles it. */
 public class OpenCollectionBox(public val player: PlayerRef) : Event
 

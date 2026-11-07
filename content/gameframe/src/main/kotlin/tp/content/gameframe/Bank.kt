@@ -43,6 +43,7 @@ public class Bank : ContentPlugin {
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
         // The OSRS client keeps "::bank" for itself (it says "Hey, everyone, I just tried to do something very silly!").
         onCommand("openbank") { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        events.on<tp.plugin.BankPinRequest> { r -> r.player.weakQueue(0) { if (with(BankPin) { unlock() }) r.then(player) } }
         onLogin { BankPin.onLogin(this) }
         onLogout { BankPin.onLogout(this) }
 

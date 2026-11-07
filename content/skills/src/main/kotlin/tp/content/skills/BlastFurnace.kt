@@ -1,6 +1,7 @@
 package tp.content.skills
 
 import tp.plugin.AttrKey
+import tp.plugin.BankPinRequest
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.LocRef
@@ -33,7 +34,8 @@ public class BlastFurnace : ContentPlugin {
         }
         onLogout { leave(this) }
         events.on<Teleported> { e -> if (BlastFurnaceData.inside(e.to)) enter(e.player) else leave(e.player) }
-        onOpLoc(Locs.BLAST_FURNACE_CONVEYER_BELT_CLICKABLE, OP_FIRST) { putOre(player) }
+        // Wiki "Bank PIN": adding ore and using the coffer ask for the bank PIN (bank-pin.md BP2).
+        onOpLoc(Locs.BLAST_FURNACE_CONVEYER_BELT_CLICKABLE, OP_FIRST) { player.events.publish(BankPinRequest(player) { putOre(this) }) }
         onOpLoc(Locs.BLAST_FURNACE_CHIMNEY, OP_FIRST) { checkPot(player) }
         for (dispenser in BlastFurnaceData.DISPENSERS) {
             onOpLoc(dispenser, OP_FIRST) { take(player) }
@@ -47,8 +49,12 @@ public class BlastFurnace : ContentPlugin {
         onOpLoc(Locs.BLAST_FURNACE_PUMP, OP_FIRST) { pump() }
         onOpLoc(Locs.BLAST_FURNACE_CONVEYER_COGS2_BROKEN, OP_FIRST) { repair(player, COGS) }
         onOpLoc(Locs.BLAST_FURNACE_CONVEYER_COGS_BROKEN, OP_FIRST) { repair(player, BELT) }
-        onOpLoc(Locs.BLAST_FURNACE_AUTOMATA_COFFER_EMPTY, OP_FIRST) { coffer(player) }
-        onOpLoc(Locs.BLAST_FURNACE_AUTOMATA_COFFER_FULL, OP_FIRST) { coffer(player) }
+        onOpLoc(Locs.BLAST_FURNACE_AUTOMATA_COFFER_EMPTY, OP_FIRST) {
+            player.events.publish(BankPinRequest(player) { weakQueue(0) { coffer(player) } })
+        }
+        onOpLoc(Locs.BLAST_FURNACE_AUTOMATA_COFFER_FULL, OP_FIRST) {
+            player.events.publish(BankPinRequest(player) { weakQueue(0) { coffer(player) } })
+        }
         onOpNpc(Npcs.BLAST_FURNACE_INSTRUCTOR, OP_FIRST) { npc -> foreman(npc) }
         onOpNpc(Npcs.BLAST_FURNACE_INSTRUCTOR, OP_THIRD) { payForeman(player) }
     }

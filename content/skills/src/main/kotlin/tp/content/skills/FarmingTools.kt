@@ -1,5 +1,6 @@
 package tp.content.skills
 
+import tp.plugin.BankPinRequest
 import tp.plugin.ButtonClick
 import tp.plugin.ContentScope
 import tp.plugin.IfEvents
@@ -109,7 +110,7 @@ internal class FarmingTools(private val crops: CropTable, private val chains: Sa
 
     fun ContentScope.registerTools() {
         for (npc in FarmingSites.LEPRECHAUNS) {
-            onOpNpc(npc, OP_EXCHANGE) { open(player) }
+            onOpNpc(npc, OP_EXCHANGE) { player.events.publish(BankPinRequest(player) { open(this) }) }
             onOpNpc(npc, OP_DEPOSIT_ALL) { depositAll(player) }
         }
         onModalClosed(Interfaces.FARMING_TOOLS) { restoreBackpack(this) }

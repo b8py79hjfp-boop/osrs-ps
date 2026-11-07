@@ -46,6 +46,7 @@ Shared skilling rules: skilling.md. Sources, fetched as wikitext from oldschool.
 | FB2 | **Bin drawing.** Bin values follow RuneLite's `COMPOST` / `BIG_COMPOST` layouts (filling by item count, rotting stage, ready, taking by bucket count). | V |
 | FT1 | **Tool store.** "Exchange" (op 3) on a tool leprechaun opens interface 125 (side 126) and mirrors the counts into the `FARMING_TOOLS_*` varbits; "Deposit-all" (op 4) stores the backpack's tools. Limits: 100 rakes, spades, seed dibbers, secateurs, trowels; 1 watering can (any dose count); 1,000 plant cure, empty buckets, compost, supercompost, ultracompost. Noted items can be stored. | W, C |
 | FT2 | **Varbit split.** A count above a varbit's width continues in the "extra" varbits as their high bits (rakes: `FARMING_TOOLS_RAKE` 1 bit + `FARMING_TOOLS_EXTRARAKES` 6 bits; buckets 5 + 3 + 2 bits ...). The widths add up to the Wiki limits for every tool, which is the evidence for the split (OPEN-FA13). | C |
+| FG1 | **Farming Guild entrance.** "Open" on the guild's door (locs 34463 / 34464, `FarmingGuild.kt`) moves the player across it when their Farming level (boosts count) is 45 or more, else a message. | Wiki "Farming Guild" (https://oldschool.runescape.wiki/w/Farming_Guild), C |
 | FC1 | **Contracts.** Guildmaster Jane (npc 8586 / 8587, "Contract" op 3) gives a task equally likely among the 71 tasks whose unlock level the player's Farming level (boosts count) has reached, not the same crop twice in a row. | C2 |
 | FC2 | **Completion.** A task is done when the health of its crop in a Farming Guild patch is checked (crops with a health check), or when its patch is fully harvested (the others), whether the crop was planted before or after the task was given. | C2 |
 | FC3 | **Reward and bookkeeping.** Jane hands out a seed pack of the task's tier and counts the contract. "Do you have anything easier?" swaps the task for one of a lower difficulty (easy ones cannot be swapped). A spirit seed, seedling or sapling is exchanged for a tier 5 pack. | C2 |
@@ -119,3 +120,15 @@ Shared skilling rules: skilling.md. Sources, fetched as wikitext from oldschool.
   The Troll Stronghold, Weiss and Harmony herb patches are disease-free without the unlock quests.
 - **OPEN-FA18.** The Crystal tree's planting xp differs between its page (126) and the Wiki "Sapling" table (180); the page's is used. Seaweed
   patches need no diving gear here. Gardeners' and Jane's dialogue is not imported: only the functional messages exist.
+- **OPEN-FA19.** Farming Guild tiers (Wiki "Farming Guild"): 45 Farming for the main area and east wing, 65 for the west wing and 85 for the
+  north wing (a boost is enough to enter, and a drop below the level inside does not expel). Only the entrance door (FG1) has a loc; the
+  Wiki says the inner doors "remain open with invisible barriers", which the cache has no clickable loc for. The 65 / 85 gates need a
+  movement restriction by area (plugin-api has none: engine need) and are not implemented; the crop levels still gate planting (Hespori
+  65, anima 76, spirit tree 83, celastrus 85, redwood 90 as in `farming-crops.tsv`). The refusal text of the door is not on the Wiki
+  (placeholder), and the player is moved across the door instead of walking (it has no open model).
+- **FA20 (closed).** The tool leprechaun's store asks for the bank PIN first (plugin-api `BankPinRequest`, bank-pin.md BP2); the Wiki's
+  leprechaun dialogue lines carry `mtype = pin`.
+- **OPEN-FA21.** Bottomless compost bucket (items 22994 empty / 22997 filled; Wiki "Bottomless compost bucket": holds up to 10,000 charges of
+  one compost type, 2 charges per bucket of compost added, filled from a bin or buckets, used on patches, emptied by "Empty", stored by
+  the leprechaun in its own slot). The charges and the compost type belong to the item, and plugin-api has no per-item data, so it is not
+  implemented (a per-player stand-in would break trading and storage). Needs an item-instance charge API.
