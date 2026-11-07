@@ -923,3 +923,16 @@ tutorial as an exact copy of the temple shifted by (-1152,-3776), so the same lo
 instance. The Wiki gives no length for the lobby, the portal rotation, the monster waves, barrier health or the Great Guardian's drain: they
 are named constants in `GotrConfig` and listed as OPEN-GR1..GR9, and monsters are a numeric simulation without NPC combat. Heavy long-line
 dialogue follows the existing quests (strings wrapped with `+`).
+
+## D-065: Hunter: pitfalls per player through the pit varbits, loot sacks from the Wiki tables, RuneLite's Herbiboar plugin read for data only
+
+Pitfalls (`HunterPitfalls`): the 25 pits are multi-locs whose varbits are per player, so a pit is a player value, not a world loc (no
+`addLoc`, no other player sees it); the click reports the parent id, so the plugin registers ops 1, 2 and 3 on the 25 parent ids and chooses
+by the player's own state. Teasing, jumping and the chase were not given numbers by the Wiki and are named constants (OPEN-HU25); the
+creature does not walk to the pit (that needs npc movement and combat, which stay with the main session), the jump carries the player.
+Loot sacks (`HunterLootSacks`): every row of a tier is equally likely per roll (the Wiki lists 1/7, 1/12, 1/15 for each), the two cascade
+rows follow the Wiki charts like fishing does. Herbiboar: the RuneLite plugin (BSD-2, `herbiboars/HerbiboarSearchSpot.java` etc.) was
+read to extract which varbit joins which search objects (docs/mechanics/hunter.md OPEN-HU21); no code was adapted or copied, so no licence
+header is needed, but the reading is logged here as the brief asks. The puzzle stays unimplemented: the start-to-first-spot mapping, the tunnel
+of each ending and the varbit values the server writes (the cache's multi-locs show footprints at 3 / 4, RuneLite compares 1 / 2) are not in
+any source. The number D-065 is a placeholder if another branch used it first.

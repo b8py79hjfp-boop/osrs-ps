@@ -43,7 +43,7 @@ public class HunterRumours : ContentPlugin {
         val taken = GUILD_HUNTERS.keys.mapNotNull { p.saved(KEY_ACTIVE + it)?.toInt() }.toSet()
         val options =
             ASSIGNABLE.indices.filter { i ->
-                hunter in ASSIGNABLE[i].hunters && (i + 1) !in taken && HunterData.BY_NAME.getValue(ASSIGNABLE[i].creature).level <= level
+                hunter in ASSIGNABLE[i].hunters && (i + 1) !in taken && ASSIGNABLE[i].level <= level
             }
         if (options.isEmpty()) return mesbox("I have no rumours for you right now.")
         val pick = options[p.random(options.size)]
@@ -68,7 +68,10 @@ public class HunterRumours : ContentPlugin {
     private class Tier(val level: Int, val xpModifier: Int, val sack: Int)
 
     /** One creature a Guild Hunter can assign, with the Guild Hunters (npc ids) that can (Wiki table, Yes columns). */
-    private class Assignable(val creature: String, val hunters: Set<Int>)
+    private class Assignable(val creature: String, val hunters: Set<Int>, minLevel: Int = 0) {
+        /** The Hunter level of the rumour: the creature's, or [minLevel] for moths (Wiki: "not assigned until ... barehanded"). */
+        val level: Int = maxOf(minLevel, HunterData.BY_NAME.getValue(creature).level)
+    }
 
     /** How a hunting method drops the rare part: 1 in [rate], and for sure after [pity] catches ([pityOutfit] in the guild outfit). */
     private class Method(val rate: Int, val pity: Int, val pityOutfit: Int)
@@ -88,6 +91,8 @@ public class HunterRumours : ContentPlugin {
         private const val ADEPT_LEVEL = 57
         private const val EXPERT_LEVEL = 72
         private const val MASTER_LEVEL = 91
+        private const val SUNLIGHT_MOTH_LEVEL = 75
+        private const val MOONLIGHT_MOTH_LEVEL = 85
         private const val NOVICE_XP = 50
         private const val EXPERT_XP = 55
         private const val MASTER_XP = 60
@@ -123,6 +128,7 @@ public class HunterRumours : ContentPlugin {
                 TrapKind.DEADFALL to Method(15, 30, 28),
                 TrapKind.FALCON to Method(10, 20, 18),
                 TrapKind.NETTRAP to Method(25, 50, 46),
+                TrapKind.PITFALL to Method(15, 30, 28),
             )
 
         private fun hunters(vararg offsets: Int): Set<Int> = offsets.map { Npcs.HG_GILMAN + it }.toSet()
@@ -146,6 +152,14 @@ public class HunterRumours : ContentPlugin {
                 Assignable("Carnivorous chinchompa", hunters(0, 1, 2, 3, 4, 5)),
                 Assignable("Dashing kebbit", hunters(0, 3, 4, 5)),
                 Assignable("Tecu salamander (Hunter)", hunters(0, 3, 5)),
+                // The Wiki table's pitfall and moth rows (Hunters' Rumours, creature table): moths from the barehanded levels 75 / 85.
+                Assignable("Spined larupia", hunters(0, 2)),
+                Assignable("Horned graahk", hunters(0, 1)),
+                Assignable("Sabre-toothed kyatt", hunters(0, 2, 3, 4)),
+                Assignable("Sunlight antelope", hunters(0, 3, 4, 5)),
+                Assignable("Sunlight moth", hunters(0, 1, 4), SUNLIGHT_MOTH_LEVEL),
+                Assignable("Moonlight moth", hunters(0, 3, 5), MOONLIGHT_MOTH_LEVEL),
+                Assignable("Moonlight antelope", hunters(0, 5)),
             )
 
         /** Every rare part, so that holding one blocks the next (Wiki: "Having a rare part in your inventory prevents..."). */

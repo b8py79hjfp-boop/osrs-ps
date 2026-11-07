@@ -5,7 +5,7 @@ import tp.plugin.PlayerRef
 
 /**
  * How a creature is caught (hunter.tsv `trap`): a bird snare, a box trap, by hand with a butterfly net, a deadfall, a net trap
- * (salamanders) or with a falcon (kebbits).
+ * (salamanders), with a falcon (kebbits) or a pitfall (large cats and antelopes).
  */
 internal enum class TrapKind(val tsv: String) {
     BIRD("bird"),
@@ -14,6 +14,7 @@ internal enum class TrapKind(val tsv: String) {
     DEADFALL("deadfall"),
     NETTRAP("nettrap"),
     FALCON("falcon"),
+    PITFALL("pitfall"),
 }
 
 /** [obj] items, [min]..[max] of them, given every time (Wiki `DropsLineSkill` rarity "Always"). */
@@ -54,6 +55,12 @@ internal object HunterData {
     private const val C_PART = 10
     private const val COLUMNS = 10
 
+    /**
+     * Catch roll of a creature whose Wiki page has no Skilling success chart (written as `-`): 255 / 255 always succeeds (a chance of
+     * 256/256). The Wiki says the antelopes "always" succeed; for the large cats it is OPEN-HU24 (docs/mechanics/hunter.md).
+     */
+    private const val UNCHARTED_ROLL = 255
+
     /** Hunter level and traps allowed from it (Wiki "Hunter", Multiple traps: 1 -> 2, 40 -> 3, 60 -> 4, 80 -> 5). */
     private val TRAP_LIMITS = listOf(1 to 2, 40 to 3, 60 to 4, 80 to 5)
 
@@ -81,8 +88,8 @@ internal object HunterData {
             .map { it.split('\t') }
             .filter { it.size >= COLUMNS }
             .map { c ->
-                val low = c[C_LOW].toInt()
-                val high = c[C_HIGH].toInt()
+                val low = c[C_LOW].toIntOrNull() ?: UNCHARTED_ROLL
+                val high = c[C_HIGH].toIntOrNull() ?: UNCHARTED_ROLL
                 Creature(
                     c[C_NAME],
                     TrapKind.entries.first { it.tsv == c[C_TRAP] },

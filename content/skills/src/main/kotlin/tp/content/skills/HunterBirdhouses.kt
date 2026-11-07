@@ -258,9 +258,21 @@ public class HunterBirdhouses : ContentPlugin {
         val chance = t.nestPermille / PERMILLE * (HALF_SCALE + HALF_SCALE * over)
         val foot = wearsRabbitFoot(p)
         repeat(NEST_ROLLS) {
-            if (p.random(PERMILLE_INT) < (chance * PERMILLE_INT).toInt()) out += nestTable(p, foot)
+            if (p.random(PERMILLE_INT) < (chance * PERMILLE_INT).toInt()) out += clueNest(p, out) ?: nestTable(p, foot)
         }
         return out
+    }
+
+    /**
+     * After a successful nest roll the clue nests are tried from elite down to beginner, each with its 1500ths (Wiki "Pre-roll clue
+     * nests"); a level the player already holds (backpack, bank or already in [won]) is not given again. Null if none drops.
+     */
+    private fun clueNest(p: PlayerRef, won: List<Int>): Int? {
+        for ((nest, chance) in CLUE_NESTS) {
+            val owned = nest in won || p.inv(Invs.INV).total(nest) + p.inv(Invs.BANK).total(nest) > 0
+            if (!owned && p.random(CLUE_DENOMINATOR) < chance) return nest
+        }
+        return null
     }
 
     /** The ring / egg / empty nest table, out of 100 (or 95 with a strung rabbit foot, which drops 5 empty-nest points). */
@@ -332,6 +344,17 @@ public class HunterBirdhouses : ContentPlugin {
 
         /** Seed nest chart: `low1=0 high1=200` (Wiki "Bird house trapping"; 0% at level 1, 78.5% at 99 as Mod Ash says). */
         const val SEED_NEST_HIGH = 200
+
+        /** Wiki "Pre-roll clue nests", out of 1500: elite 1, hard 2, medium 3, easy 4, beginner 30 (no Combat Achievement bonus). */
+        const val CLUE_DENOMINATOR = 1500
+        val CLUE_NESTS =
+            listOf(
+                Objs.WC_CLUE_NEST_ELITE to 1,
+                Objs.WC_CLUE_NEST_HARD to 2,
+                Objs.WC_CLUE_NEST_MEDIUM to 3,
+                Objs.WC_CLUE_NEST_EASY to 4,
+                Objs.WC_CLUE_NEST_BEGINNER to 30,
+            )
 
         /** The nest table is rolled 5 times per house (Wiki, Aug 2026 change). */
         const val NEST_ROLLS = 5

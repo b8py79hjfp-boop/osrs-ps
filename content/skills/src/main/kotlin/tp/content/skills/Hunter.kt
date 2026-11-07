@@ -293,7 +293,7 @@ public class Hunter : ContentPlugin {
 
     private fun trapName(kind: TrapKind): String = if (kind == TrapKind.BIRD) "bird snare" else "box trap"
 
-    private fun jarFor(creature: Creature): Int = if (creature.name == BUTTERFLY) Objs.BUTTERFLY_JAR else Objs.II_IMPLING_JAR
+    private fun jarFor(creature: Creature): Int = if (creature.name in BUTTERFLIES) Objs.BUTTERFLY_JAR else Objs.II_IMPLING_JAR
 
     private fun setLoc(kind: TrapKind): Int = if (kind == TrapKind.BIRD) Locs.HUNTING_OJIBWAY_TRAP else Locs.HUNTING_BOXTRAP_EMPTY
 
@@ -361,7 +361,9 @@ public class Hunter : ContentPlugin {
         const val CHINCHOMPA_GREY = "Chinchompa (Hunter)"
         const val CHINCHOMPA_RED = "Carnivorous chinchompa"
         const val CHINCHOMPA_BLACK = "Black chinchompa (Hunter)"
-        const val BUTTERFLY = "Black warlock"
+
+        /** The net creatures that go in a butterfly jar (Wiki "Butterfly jar": butterflies and moths); the others are implings. */
+        val BUTTERFLIES = setOf("Black warlock", "Sunlight moth", "Moonlight moth")
 
         /** The full-trap locs, which carry the "Check" and "Reset" ops (cache loc configs). */
         val FULL_LOCS =

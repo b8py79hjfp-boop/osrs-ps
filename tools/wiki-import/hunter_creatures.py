@@ -15,7 +15,7 @@ Net creatures (butterflies and implings) have no drop lines: the product is the 
 no Skilling success chart (ruby harvest, snowy knight, sapphire glacialis) are skipped (hunter.md OPEN-HU7).
 
 Output (tab-separated, header first), one row per creature, written to the file given as the second argument:
-  creature, trap (bird|box|net), level, xp, low, high (catch roll), low2, high2 (net line 2, - if none), npcs (comma separated
+  creature, trap (bird|box|net|deadfall|nettrap|falcon|pitfall), level, xp, low, high (catch roll), low2, high2 (net line 2, - if none), npcs (comma separated
   cache ids), loot (`obj:min-max;obj:min-max`, cache obj ids; for nets the jar obj), part (the Rumour rare part obj, - if none)
 
 Usage (needs network access to oldschool.runescape.wiki; objs.txt from cache-dump):
@@ -52,13 +52,23 @@ PAGES = {
     "Red salamander (Hunter)": ("nettrap", ""), "Black salamander (Hunter)": ("nettrap", ""),
     "Tecu salamander (Hunter)": ("nettrap", ""),
     "Spotted kebbit": ("falcon", ""), "Dark kebbit": ("falcon", ""), "Dashing kebbit": ("falcon", ""),
+    # moths of Varlamore (caught like butterflies), pitfall creatures (hunter.md HU43 .. HU46)
+    "Sunlight moth": ("net", ""), "Moonlight moth": ("net", ""),
+    "Spined larupia": ("pitfall", ""), "Horned graahk": ("pitfall", ""), "Sabre-toothed kyatt": ("pitfall", ""),
+    "Sunlight antelope": ("pitfall", ""), "Moonlight antelope": ("pitfall", ""),
 }
+
+# Pitfall creatures have no Skilling success chart (hunter.md OPEN-HU24): their catch columns are written as "-".
+NO_CHART = {"pitfall"}
+
+# Rumour parts whose cache name is shared by two objs (the first would be picked for both): page -> obj id.
+PART_OVERRIDE = {"Antelope hoof shard (moonlight)": 29241, "Antelope hoof shard (sunlight)": 29236}
 
 # Creatures whose "Always" loot the importer cannot read (a 999/1000 split row): page -> cache obj name of the single product.
 LOOT_OVERRIDE = {"Tecu salamander (Hunter)": "Immature tecu salamander"}
 
 # Net creature -> the jar item it is caught in (cache name of the filled jar).
-JARS = {"Black warlock": "Black warlock"}
+JARS = {"Black warlock": "Black warlock", "Sunlight moth": "Sunlight moth", "Moonlight moth": "Moonlight moth"}
 for _imp in ["Baby", "Young", "Gourmet", "Earth", "Essence", "Eclectic", "Nature", "Magpie", "Ninja", "Dragon", "Crystal",
              "Lucky"]:
     JARS[_imp + " impling"] = _imp + " impling jar"
@@ -127,12 +137,12 @@ def main():
         text = wikitext(page)
         info = fields(template(text, "Hunter info") or "")
         rows = chart_rows(text)
-        if not info or not rows:
+        if not info or (not rows and trap not in NO_CHART):
             print(f"skipped {page}: no Hunter info / Skilling success chart", file=sys.stderr)
             continue
         if word:
             rows = [r for r in rows if word.lower() in r[0].lower()]
-        low, high = rows[0][1], rows[0][2]
+        low, high = (rows[0][1], rows[0][2]) if rows else ("-", "-")
         low2, high2 = (rows[1][1], rows[1][2]) if trap == "net" and len(rows) > 1 else ("-", "-")
         xp = number(info.get("wildxp") or info.get("xp"))
         ids = []
@@ -158,6 +168,9 @@ def main():
         # the rare creature part of Hunters' Rumours: the DropsLineSkill whose note names the Rumour (hunter.md HU14)
         part = "-"
         for name, rest in re.findall(r"\{\{DropsLineSkill\|name=([^|]*)\|([^\n]*)", text):
+            if "Rumour" in rest and name.strip() in PART_OVERRIDE:
+                part = str(PART_OVERRIDE[name.strip()])
+                break
             if "Rumour" in rest and parts.get(name.strip().lower()) is not None:
                 part = str(parts[name.strip().lower()])
                 break
