@@ -118,7 +118,16 @@ public class Bank : ContentPlugin {
         onButton(Components.Bankmain.SIDEOPS_TOGGLE) { toggle(Varbits.BANK_HIDESIDEOPS) }
         onButton(Components.Bankmain.DEPOSITINV_TOGGLE) { toggle(Varbits.BANK_HIDEDEPOSITINV) }
         onButton(Components.Bankmain.DEPOSITWORN_TOGGLE) { toggle(Varbits.BANK_HIDEDEPOSITWORN) }
-        onButton(Components.Bankmain.RELEASE_PLACEHOLDERS) { releasePlaceholders(0, Int.MAX_VALUE) }
+        // B9b: asked first (RS Mod `BankInvScript` release-all).
+        onButton(Components.Bankmain.RELEASE_PLACEHOLDERS) {
+            confirmOverlay(
+                Components.Bankmain.POPUP,
+                "Release all placeholders?",
+                RELEASE_ALL_TEXT,
+                "<col=ff0000>Cancel</col>",
+                "<col=0dc10d>Release them all</col>",
+            ) { yes -> if (yes && bankOpen()) releasePlaceholders(0, Int.MAX_VALUE) }
+        }
         // Bank fillers: the amount buttons set `bank_fillermode` (client script 2210 / enum 1907: children 1, 10, 50, X = 1..4,
         // All = anything else, RS Mod `BankFillerMode` 0), "Fill" adds them.
         onButton(Components.Bankmain.BANK_FILLER_1) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_ONE) }
@@ -585,15 +594,25 @@ public class Bank : ContentPlugin {
 
     /** A bank filler's ops (script 278): "Clear" removes this one, "Clear-All" every filler of the bank. */
     private fun PlayerRef.fillerOp(op: Int, slot: Int) {
-        val bank = inv(Invs.BANK, stackAll = true)
         when (op) {
             OP_FILLER_CLEAR -> {
                 clearSlots("bank clear filler", listOf(slot))
             }
 
-            // OPEN-B9: RS Mod asks "Clear all fillers?" first (popup overlay + client script 4212), which needs a callback API.
+            // B16 / B9b: asked first (RS Mod `removeFillers`); the bank is read again after the answer.
             OP_FILLER_CLEAR_ALL -> {
-                clearSlots("bank clear fillers", (0 until BankLayout.used(bank)).filter { bank.obj(it) == Objs.BANK_FILLER })
+                confirmOverlay(
+                    Components.Bankmain.POPUP,
+                    "Clear all fillers?",
+                    CLEAR_ALL_TEXT,
+                    "<col=ff0000>Cancel</col>",
+                    "<col=0dc10d>Clear them all</col>",
+                ) { yes ->
+                    val now = inv(Invs.BANK, stackAll = true)
+                    if (yes && bankOpen()) {
+                        clearSlots("bank clear fillers", (0 until BankLayout.used(now)).filter { now.obj(it) == Objs.BANK_FILLER })
+                    }
+                }
             }
         }
     }
@@ -751,6 +770,13 @@ public class Bank : ContentPlugin {
         /** A bank filler's own ops (script 278): "Clear" one, "Clear-All". */
         const val OP_FILLER_CLEAR = 7
         const val OP_FILLER_CLEAR_ALL = 8
+
+        const val RELEASE_ALL_TEXT =
+            "This option will release <col=ffb83f>all</col> the placeholders throughout your <col=ffb83f>whole bank</col>." +
+                "<br><br>Are you sure?"
+        const val CLEAR_ALL_TEXT =
+            "This option will clear <col=ffb83f>all</col> the bank fillers throughout your <col=ffb83f>whole bank</col>." +
+                "<br><br>Are you sure?"
 
         /** Deposit ops on the backpack grid (RS Mod `sideInvOp`): left-click quantity, 1, 5, 10, last X, X, All. */
         const val OP_SIDE_LEFT = 2

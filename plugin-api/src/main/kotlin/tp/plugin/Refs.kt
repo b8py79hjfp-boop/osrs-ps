@@ -341,6 +341,27 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.ClientScript(MESLAYER_STRING, listOf(title, 0)))
     }
 
+    /**
+     * A Yes/No popup over [target] (`popupoverlay` 289, client script 4212 "title|text|cancel|confirm"; RS Mod
+     * `confirmOverlay`) that keeps the main modal open; the client answers with a count, nonzero = [confirm]
+     * (scripts 4207 / 4209). [answer] runs with true for confirm; the popup closes either way.
+     */
+    public fun confirmOverlay(
+        target: Int,
+        title: String,
+        text: String,
+        cancel: String,
+        confirm: String,
+        answer: PlayerRef.(Boolean) -> Unit,
+    ) {
+        dialogs()[p] = { value ->
+            closeOverlay(target)
+            (value as? Int)?.let { answer(it != 0) }
+        }
+        openOverlay(target, POPUP_OVERLAY)
+        clientScript(CS_CONFIRM_OVERLAY, "$title|$text|$cancel|$confirm", target)
+    }
+
     /** Asks for a number (client script 108 `meslayer_mode7`); [answer] runs with the (non-negative) count. */
     public fun countDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
         dialogs()[p] = { (it as? Int)?.let { n -> answer(kotlin.math.abs(n)) } }
@@ -895,6 +916,10 @@ public class GeOffer(
 
 /** Client scripts that open chatbox input dialogs (cache clientscript names; RS Mod `ClientScripts.mesLayerMode7/9`). */
 private const val MESLAYER_COUNT = 108
+
+/** `popupoverlay` and its init script (RS Mod `ClientScripts.confirmOverlayInit`). */
+private const val POPUP_OVERLAY = 289
+private const val CS_CONFIRM_OVERLAY = 4212
 private const val MESLAYER_STRING = 110
 private const val OBJ_SEARCH = 750
 
