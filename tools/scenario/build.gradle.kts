@@ -19,6 +19,7 @@ dependencies {
     runtimeOnly(project(":content:drops"))
     runtimeOnly(project(":content:shops"))
     runtimeOnly(project(":content:sailing"))
+    runtimeOnly(project(":content:quests"))
     runtimeOnly(project(":content:skills"))
     testImplementation(project(":symbols"))
     testRuntimeOnly(libs.logback.classic)

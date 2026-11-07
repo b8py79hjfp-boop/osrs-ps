@@ -811,3 +811,19 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
 - **`LootEvent`** (plugin-api) is the one hook for "player was given X": published by content/drops after the ground objs exist; other
   sources (chests, caskets, rewards) publish the same event when they exist.
 - Sources and OPEN items: docs/mechanics/collection-log.md.
+
+## D-059: Quests are one module; the cache's Quest table is the data, a derived TSV maps rows to variables
+
+- **`content/quests`** holds the shared quest API (`Quest`, `QuestCompletion`, `QuestFramework`) and one plugin per quest. A quest's
+  state is the varp or varbit the client reads (client script 4024 maps a `Quest` db row to it), so the client colours the quest
+  list itself; the server writes the variable (docs/mechanics/quests.md QU1-QU2).
+- **`quest-states.tsv`** (219 rows) is generated from `cache-dump dbrows 0` plus the switch of client script 4024, because the
+  variable is not in the db table. `QuestFramework` compares the file with the live rows at world start (fail fast on a revision
+  bump), the same pattern as `ShipbuildingData.check`. It lets the server keep the "Completed x/y" varbits right for quests that
+  other plugins implement later.
+- **Intermediate stage values are ours** (the cache only gives not-started and finished); every quest file lists them as OPEN-QU1.
+- **Quest NPCs that the Wiki spawn import misses are spawned by `QuestSpawns`**; sheared sheep in Fred's pen are turned into
+  shearable ones there (the import picked the sheared infobox version).
+- **Ingredient sources** (milking, wheat, windmill, shearing) live in the quest module (`FarmSupplies`) until a farming-sources
+  plugin exists.
+- Rule ids are `QU`, open items `OPEN-QU` (`CL` is taken by clans).

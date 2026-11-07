@@ -42,6 +42,7 @@ include(
     ":content:world",
     ":content:shops",
     ":content:sailing",
+    ":content:quests",
     ":content:magic",
     ":content:drops",
     ":content:collectionlog",
