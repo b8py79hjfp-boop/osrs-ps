@@ -120,3 +120,13 @@ no utility spell script. Messages without a Wiki quote are listed in OPEN-MU4.
 - **OPEN-MU26:** Energy Transfer's refusal in single-way PvP areas and on recently engaged targets.
 - **OPEN-MU27:** a combat spell cast during a Spellbook Swap doesn't end it (content/combat does not call `Spellbooks.onCast`); the 200-tick limit still does.
 - **OPEN-TP5:** quest and unlock requirements (Lunar Diplomacy, Desert Treasure I, Dream Mentor, Tyss, Priest in Peril, Biohazard, The Great Brain Robbery, hard Fremennik Diary, Mage Training Arena) are not checked, as for the teleports.
+
+## Offerings (Demonic / Sinister Offering)
+
+| # | Rule | Source |
+|---|---|---|
+| OF1 | Demonic Offering (Arceuus 84, 175 xp, soul + wrath) offers up to the first three demonic ashes in the backpack, Sinister Offering (92, 180 xp, blood + wrath) up to three bones, each for 300% of its scatter / bury xp; remains above the Prayer level are skipped. Shared 9-tick (5.4 s) cooldown. | Wiki "Demonic Offering", "Sinister Offering" |
+| OF2 | Sinister Offering needs A Kingdom Divided (cache Quest row 81, varbit 12296 = 150). | Wiki "Sinister Offering" |
+| OF3 | Nothing offered: no runes are used and no xp is given. | - |
+
+- **OPEN-OF1:** the refusal texts (quest, no remains) are ours. The Fountain of Rune free-rune rule is the shared rune rule.

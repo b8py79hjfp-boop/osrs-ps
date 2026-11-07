@@ -69,3 +69,18 @@ public class EmotePerformed(public val player: PlayerRef, public val name: Strin
 
 /** [player] ate ([drink] false) or drank a dose of [obj] (content/combat food and potions; e.g. Wintertodt warmth). */
 public class Consumed(public val player: PlayerRef, public val obj: Int, public val drink: Boolean) : Event
+
+/**
+ * Offer up to [max] of the player's bones ([ashes] false) or demonic ashes from the backpack for [multiplier] times
+ * their Prayer xp (Sinister / Demonic Offering). The Prayer plugin removes them, grants the xp and sets [offered];
+ * [refusal] is set instead when nothing could be offered.
+ */
+public class OfferRemains(
+    public val player: PlayerRef,
+    public val ashes: Boolean,
+    public val max: Int,
+    public val multiplier: Double,
+) : Event {
+    public var offered: Int = 0
+    public var refusal: String? = null
+}

@@ -60,7 +60,7 @@ Sources, fetched as wikitext from oldschool.runescape.wiki on 2026-11-06:
 - **OPEN-PT9: gilded altar and incense burners (Construction).** `construction-furniture.tsv` lists the Gilded altar (level 75) and the burners but
   its `locs` column is empty for them, and the house hotspots are not interactive for altars, so the 3.5x offering at a POH altar cannot be hooked
   without loc ids. Nothing is implemented.
-- **OPEN-PT10: Sinister and Demonic Offering (content/magic).** Not implemented here (content/magic owns the spellbooks). Proposal, from the Wiki
+- **OPEN-PT10: Sinister and Demonic Offering:** implemented (magic-utility.md OF1-OF3, content/skills RemainsOffering). Original proposal kept for reference: Not implemented here (content/magic owns the spellbooks). Proposal, from the Wiki
   pages: Sinister Offering is Arceuus level 92, 180 Magic xp, one blood and one wrath rune (free at the Fountain of Rune), needs A Kingdom Divided,
   offers up to three bones in the backpack for 300% of their burying xp each (superior dragon bones need level 70 Prayer: "You require a Prayer
   level of 70 to do that."), shared 5.4 second (9 tick) cooldown. Demonic Offering is level 84, 175 Magic xp, one soul and one wrath rune, offers
