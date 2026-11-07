@@ -31,10 +31,26 @@ public class PolygonAreas private constructor(private val areas: List<Area>) {
 
     private fun Area.contains(c: CoordGrid): Boolean {
         if (c.level !in levels || c.x !in minX..maxX || c.z !in minZ..maxZ) return false
-        // Tile (x, z) is tested at its centre (x + 0.5, z + 0.5) against the vertex polygon (even-odd rule).
-        val px = c.x + HALF
-        val pz = c.z + HALF
-        return polygons.any { poly -> inside(poly, px, pz) }
+        // Vertices are inclusive tile coordinates (RS Mod `multiway.json`): a tile is in when it lies inside the polygon
+        // through the vertex tiles (even-odd rule) or on one of its edges.
+        val px = c.x.toDouble()
+        val pz = c.z.toDouble()
+        return polygons.any { poly -> onEdge(poly, c.x, c.z) || inside(poly, px, pz) }
+    }
+
+    private fun onEdge(poly: IntArray, x: Int, z: Int): Boolean {
+        val n = poly.size / 2
+        var j = n - 1
+        for (i in 0 until n) {
+            val x1 = poly[j * 2]
+            val z1 = poly[j * 2 + 1]
+            val x2 = poly[i * 2]
+            val z2 = poly[i * 2 + 1]
+            val cross = (x2 - x1).toLong() * (z - z1) - (z2 - z1).toLong() * (x - x1)
+            if (cross == 0L && x in minOf(x1, x2)..maxOf(x1, x2) && z in minOf(z1, z2)..maxOf(z1, z2)) return true
+            j = i
+        }
+        return false
     }
 
     private fun inside(poly: IntArray, px: Double, pz: Double): Boolean {
@@ -53,8 +69,6 @@ public class PolygonAreas private constructor(private val areas: List<Area>) {
     }
 
     public companion object {
-        private const val HALF = 0.5
-
         public fun fromJson(text: String): PolygonAreas {
             val list =
                 Json.parseToJsonElement(text).jsonArray.map { a ->

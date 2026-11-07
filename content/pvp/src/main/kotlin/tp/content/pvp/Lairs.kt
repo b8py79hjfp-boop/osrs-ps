@@ -140,7 +140,7 @@ public class Lairs : ContentPlugin {
         val entrance: Int,
         val boss: Int,
         val multi: Boolean,
-        /** Wilderness level of the lair: its entrance's level (BL7). */
+        /** The surface tile beside the lair's entrance (exits and BL3). */
         val entranceTile: CoordGrid,
         val minX: Int,
         val maxX: Int,
@@ -197,7 +197,7 @@ public class Lairs : ContentPlugin {
                     Npcs.CALLISTO,
                     true,
                     CoordGrid(3291, 3849),
-                    3351,
+                    3350,
                     3367,
                     10317,
                     10336,
@@ -210,7 +210,7 @@ public class Lairs : ContentPlugin {
                     ARTIO,
                     false,
                     CoordGrid(3115, 3676),
-                    1751,
+                    1750,
                     1767,
                     11533,
                     11552,
@@ -223,7 +223,7 @@ public class Lairs : ContentPlugin {
                     VETION,
                     true,
                     CoordGrid(3221, 3787),
-                    3286,
+                    3285,
                     3304,
                     10190,
                     10214,
@@ -236,7 +236,7 @@ public class Lairs : ContentPlugin {
                     CALVARION,
                     false,
                     CoordGrid(3180, 3683),
-                    1878,
+                    1877,
                     1896,
                     11534,
                     11558,
@@ -281,15 +281,12 @@ public class Lairs : ContentPlugin {
         /** The lair the coordinate is in, or null. */
         public fun lairAt(c: CoordGrid): String? = LAIRS.firstOrNull { it.contains(c) }?.name
 
-        /** Wilderness level inside a lair: its entrance's level (BL7). */
-        internal fun levelAt(c: CoordGrid): Int? = LAIRS.firstOrNull { it.contains(c) }?.let { Wilderness.level(it.entranceTile) }
-
         internal fun multiAt(c: CoordGrid): Boolean = LAIRS.any { it.multi && it.contains(c) } || inEscapeCaves(c)
 
         internal fun singlesPlusAt(c: CoordGrid): Boolean = LAIRS.any { !it.multi && it.contains(c) }
 
         /** The Escape Caves (cache square 52,160 walkable area). */
         @Suppress("MagicNumber") // cache bounds
-        internal fun inEscapeCaves(c: CoordGrid): Boolean = c.level == 0 && c.x in 3332..3387 && c.z in 10245..10298
+        internal fun inEscapeCaves(c: CoordGrid): Boolean = c.level == 0 && c.x in 3331..3387 && c.z in 10245..10298
     }
 }

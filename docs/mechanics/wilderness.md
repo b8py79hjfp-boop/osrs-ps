@@ -39,3 +39,22 @@ Logout button (LO), Tele Block (TB), Vengeance (VG), Ring of recoil (RR), Multic
   `Wilderness.updateArea` keeps `SharedAttrs.WILDERNESS_LEVEL` current for the level-20 / level-30 limits.
 - Area changes are detected by a 1-tick soft timer, then queued on the area queue; Jagex triggers area scripts from
   zone/area configs (OPEN-A1).
+
+## Zones (docs/research/wilderness-zones.md)
+
+- **W1 (resolved OPEN-W1) / W14:** the level is the client's own rule, clientscript 384, on all four planes: surface
+  2944..3391 × 3520..3967 `(z−3520)/8+1` (z 3520..3521 safe, W2); Wilderness God Wars Dungeon 3008..3071 ×
+  10112..10175 `(z−9920)/8−1`; Vet'ion's Rest and Silk Chasm 35, Callisto's Den 40, Hunter's End and Skeletal Tomb 21,
+  Web Chasm 29 (their map squares); Escape Caves `33 + 7·((z mod 64)−6)/50`; underground 2944..3455 × 9920..10879
+  `(z−9920)/8+1`, except Bryophyta's lair and the template / under-Ferox squares (OPEN-Z4).
+- **W13:** the Revenant Caves are singles-plus, not multi; the Agility Course pit (2992..3006 × 10340..10364) is
+  singles-plus too (OPEN-Z2).
+- **W15:** Ferox Enclave (the 414-tile ground floor fill, its wall ring 3123..3155 × 3617..3646 above, OPEN-F1) is
+  safe on normal worlds: only a teleblocked player there may be attacked, and may retaliate.
+- **W16:** `SharedAttrs.WILDERNESS_LEVEL` is the real level; the PvP-world +15 is only for combat brackets (OPEN-P1).
+- **W17:** the server sets varbits `inside_wilderness` (5963), `combatlevel_transmit` (13027), on PvP worlds
+  `pvp_area_client` (8121) and bit 2 of varp `map_flags_cached` (3717).
+- **W18:** multi-combat polygon vertices are inclusive tile coordinates (RS Mod `multiway.json`).
+- OPEN-M3 (Wiki vs RS Mod surface multi shape), OPEN-H1 (pvp_icons open policy) and the rest of the research OPEN
+  list stand.
+

@@ -20,6 +20,13 @@ public class Wilderness : ContentPlugin {
         // The multi-combat map for other modules (combat's multi-target attacks): a world attr, set once per world.
         onLogin { if (worldAttr(tp.plugin.SharedAttrs.MULTI_AREA) == null) setWorldAttr(tp.plugin.SharedAttrs.MULTI_AREA, ::isMulti) }
         onLogin { timer(AREA_CHECK, 1, soft = true) { updateArea() } }
+        // W17: varp `map_flags_cached` bit 2 tells the client this is a PvP world (its range text adds 15).
+        onLogin { if (isPvpWorld) setVarp(tp.symbols.Varps.MAP_FLAGS_CACHED, varp(tp.symbols.Varps.MAP_FLAGS_CACHED) or PVP_WORLD_FLAG) }
+        events.on<tp.plugin.HitEvent> { hit ->
+            val target = hit.target as? PlayerRef ?: return@on
+            val source = hit.source as? PlayerRef ?: return@on
+            target[LAST_HIT_BY_PLAYER] = source
+        }
         events.on<AttackCheck> { check ->
             val attacker = check.attacker as? PlayerRef ?: return@on
             val target = check.target as? PlayerRef ?: return@on
@@ -28,6 +35,11 @@ public class Wilderness : ContentPlugin {
             val a = level(attacker.coord, attacker.isPvpWorld)
             val b = level(target.coord, target.isPvpWorld)
             when {
+                // W15: Ferox Enclave is safe; only a teleblocked player there may be attacked, and may hit back.
+                feroxDenies(attacker, target) -> {
+                    check.deny("You can't attack players in Ferox Enclave.")
+                }
+
                 a <= 0 -> {
                     check.deny("You can't attack players outside the Wilderness.")
                 }
@@ -47,15 +59,38 @@ public class Wilderness : ContentPlugin {
         }
     }
 
+    private fun feroxDenies(attacker: PlayerRef, target: PlayerRef): Boolean {
+        if (attacker.isPvpWorld) return false
+        val inFerox = isFerox(attacker.coord) || isFerox(target.coord)
+        if (!inFerox) return false
+
+        fun teleblocked(p: PlayerRef) = (p[SharedAttrs.TELEBLOCK_UNTIL] ?: 0L) > p.tick
+        if (teleblocked(target)) return false
+        // The teleblocked player retaliating against whoever hit them.
+        return !(teleblocked(attacker) && attacker[LAST_HIT_BY_PLAYER] == target)
+    }
+
     /** Border crossings run through the area queue (brief §8: "single/multi-way (area queue on borders)"). */
     private fun PlayerRef.updateArea() {
-        val wildLevel = level(coord, isPvpWorld)
-        val inWild = wildLevel > 0
+        // W16: WILDERNESS_LEVEL is the real level (teleport limits, death rules); +15 on PvP worlds is for brackets only.
+        val wildLevel = realLevel(coord)
+        val inWild = level(coord, isPvpWorld) > 0
         if ((this[tp.plugin.SharedAttrs.WILDERNESS_LEVEL] ?: 0) != wildLevel) this[tp.plugin.SharedAttrs.WILDERNESS_LEVEL] = wildLevel
         if (this[IN_WILD] != inWild) {
             this[IN_WILD] = inWild
             this[tp.plugin.SharedAttrs.IN_WILDERNESS] = inWild
-            areaQueue { playerOp(ATTACK_OP, if (inWild) "Attack" else null, top = true) }
+            areaQueue {
+                playerOp(ATTACK_OP, if (inWild) "Attack" else null, top = true)
+                // W17: the client's `inside_wilderness` (K/D panel, RuneLite) and, on PvP worlds, `pvp_area_client`.
+                setVarbit(Varbits.INSIDE_WILDERNESS, if (realLevel(coord) > 0) 1 else 0)
+                if (isPvpWorld) setVarbit(Varbits.PVP_AREA_CLIENT, if (inWild) 1 else 0)
+            }
+        }
+        val combat = combatLevel
+        if (this[SENT_COMBAT] != combat) {
+            this[SENT_COMBAT] = combat
+            // W17: `combatlevel_transmit`, the base of the pvp_icons attack-range text.
+            setVarbit(Varbits.COMBATLEVEL_TRANSMIT, combat)
         }
         val inMulti = isMulti(coord)
         if (this[IN_MULTI] != inMulti) {
@@ -76,6 +111,25 @@ public class Wilderness : ContentPlugin {
         private val IN_WILD = tp.plugin.AttrKey<Boolean>("in_wilderness")
         private val IN_MULTI = tp.plugin.AttrKey<Boolean>("in_multi")
         private val IN_SINGLES_PLUS = tp.plugin.AttrKey<Boolean>("in_singles_plus")
+
+        /** Who last hit this player (set from HitEvent), for Ferox retaliation. */
+        private val LAST_HIT_BY_PLAYER = tp.plugin.AttrKey<PlayerRef>("wild_last_hit_by_player")
+        private val SENT_COMBAT = tp.plugin.AttrKey<Int>("wild_sent_combat_level")
+
+        /** W15: Ferox Enclave's safe tiles (plane 0 flood fill from the cache; upper floors: its wall ring, OPEN-F1). */
+        private val FEROX: Set<Long> =
+            (Wilderness::class.java.getResource("ferox-safe.tsv")?.readText() ?: error("ferox-safe.tsv missing"))
+                .lineSequence()
+                .drop(1)
+                .filter { it.isNotBlank() }
+                .flatMap { line ->
+                    val c = line.split('\t')
+                    (c[1].toInt()..c[2].toInt()).asSequence().map { x -> pack(0, x, c[3].toInt()) }
+                }.toHashSet()
+
+        @Suppress("MagicNumber") // Ferox wall ring, docs/research/wilderness-zones.md §6
+        public fun isFerox(c: CoordGrid): Boolean =
+            if (c.level == 0) pack(0, c.x, c.z) in FEROX else c.level <= 2 && c.x in 3123..3155 && c.z in 3617..3646
 
         /**
          * W12 PvP-world safe zones, packed tiles (`pvp-safe-zones.tsv`, derived from the cache by
@@ -114,7 +168,9 @@ public class Wilderness : ContentPlugin {
         public fun isSinglesPlus(c: CoordGrid): Boolean =
             Lairs.singlesPlusAt(c) ||
                 (c.x in REV_MIN_X..REV_MAX_X && c.z in REV_MIN_Z..REV_MAX_Z) ||
-                (c.level == 0 && c.x in AGIL_MIN_X..AGIL_MAX_X && c.z in AGIL_MIN_Z..AGIL_MAX_Z)
+                (c.level == 0 && c.x in AGIL_MIN_X..AGIL_MAX_X && c.z in AGIL_MIN_Z..AGIL_MAX_Z) ||
+                // OPEN-Z2: the Agility Course's underground pit (the Wiki: "The area is now Singles-plus combat").
+                (c.x in AGIL_PIT_MIN_X..AGIL_PIT_MAX_X && c.z in AGIL_PIT_MIN_Z..AGIL_PIT_MAX_Z)
 
         private const val REV_MIN_X = 3136
         private const val REV_MAX_X = 3263
@@ -124,6 +180,10 @@ public class Wilderness : ContentPlugin {
         private const val AGIL_MAX_X = 3008
         private const val AGIL_MIN_Z = 3931
         private const val AGIL_MAX_Z = 3966
+        private const val AGIL_PIT_MIN_X = 2992
+        private const val AGIL_PIT_MAX_X = 3006
+        private const val AGIL_PIT_MIN_Z = 10340
+        private const val AGIL_PIT_MAX_Z = 10364
 
         /** Multi-combat polygons (RS Mod `multiway.json`, ISC; data/PROVENANCE.md). */
         public val MULTI: PolygonAreas =
@@ -134,39 +194,78 @@ public class Wilderness : ContentPlugin {
         /** PvP worlds: outside the Wilderness counts as level 15 (Wiki "Wilderness"), except in safe zones (W12). */
         private const val PVP_WORLD_LEVEL = 15
 
+        /** Client procs 1138 / 6941: bit 2 of `map_flags_cached` = PvP world. */
+        private const val PVP_WORLD_FLAG = 1 shl 2
+
         /** Player op slot for "Attack" (matches content/combat `Combat.ATTACK_OP`). */
         private const val ATTACK_OP = 2
 
-        // OPEN-W1: main Wilderness bounds and the level formula are not stated by the Wiki (the client computes the level
-        // overlay in a clientscript). Implemented: x 2944..3391, z 3520..3967, level = (z - 3520) / 8 + 1, the first
-        // two rows (z 3520..3521) safe ("The first two steps ... of the Wilderness are 'safe' zones").
+        // W1 / W14 (docs/research/wilderness-zones.md §1): the client's own level rule, clientscript 384, as an ordered list
+        // of boxes on all four planes; the first match wins. The server keeps the surface to z ≤ 3967 (real content ends
+        // there, OPEN-Z5), the first two rows above the ditch safe (W2), and leaves out the non-Wilderness pockets
+        // inside the underground box (OPEN-Z4).
         private const val MIN_X = 2944
         private const val MAX_X = 3391
         private const val MIN_Z = 3520
         private const val MAX_Z = 3967
         private const val SAFE_ROWS = 2
         private const val ROWS_PER_LEVEL = 8
+        private const val UNDER_MAX_X = 3455
+        private const val UNDER_MIN_Z = 9920
+        private const val UNDER_MAX_Z = 10879
+
+        /** CS384 boxes with a fixed level (x1, z1, x2, z2, level): the boss-lair squares. */
+        private val FIXED: List<IntArray> =
+            listOf(
+                intArrayOf(3264, 10176, 3327, 10239, 35), // Vet'ion's Rest
+                intArrayOf(3392, 10176, 3455, 10239, 35), // Silk Chasm
+                intArrayOf(3328, 10304, 3391, 10367, 40), // Callisto's Den
+                intArrayOf(1728, 11520, 1791, 11583, 21), // Hunter's End
+                intArrayOf(1856, 11520, 1919, 11583, 21), // Skeletal Tomb
+                intArrayOf(1600, 11520, 1663, 11583, 29), // Web Chasm
+            )
+
+        /** OPEN-Z4: tiles inside the underground box that are not Wilderness (Bryophyta's lair, templates, under Ferox). */
+        private val NOT_WILD: List<IntArray> =
+            listOf(
+                intArrayOf(3200, 9920, 3235, 9951),
+                intArrayOf(2944, 9920, 3071, 9983),
+                intArrayOf(3135, 9990, 3197, 10046),
+            )
+
+        private fun IntArray.has(c: CoordGrid): Boolean = c.x in this[0]..this[2] && c.z in this[1]..this[3]
 
         /** Wilderness level at [c] (+15 on PvP worlds), 0 outside or in the safe rows. */
         public fun level(c: CoordGrid, pvpWorld: Boolean = false): Int {
-            val wild = Lairs.levelAt(c) ?: surfaceLevel(if (isUnderground(c)) CoordGrid(c.x, c.z - UNDERGROUND_OFFSET, 0) else c)
+            val wild = realLevel(c)
             if (!pvpWorld) return wild
             return if (wild == 0 && isSafeZone(c)) 0 else wild + PVP_WORLD_LEVEL
         }
 
-        private fun surfaceLevel(c: CoordGrid): Int {
-            val inBounds = c.level == 0 && c.x in MIN_X..MAX_X && c.z in MIN_Z + SAFE_ROWS..MAX_Z
-            return if (inBounds) (c.z - MIN_Z) / ROWS_PER_LEVEL + 1 else 0
+        /** The Wilderness level by clientscript 384 at [c], without the PvP-world bonus. */
+        @Suppress("MagicNumber") // clientscript 384 constants
+        public fun realLevel(c: CoordGrid): Int {
+            val x = c.x
+            val z = c.z
+            return when {
+                x in MIN_X..MAX_X && z in MIN_Z..MAX_Z -> if (z < MIN_Z + SAFE_ROWS) 0 else (z - MIN_Z) / ROWS_PER_LEVEL + 1
+
+                // Wilderness God Wars Dungeon: 2 below the generic underground rule.
+                x in 3008..3071 && z in 10112..10175 -> (z - UNDER_MIN_Z) / ROWS_PER_LEVEL - 1
+
+                else -> FIXED.firstOrNull { it.has(c) }?.get(4) ?: underground(c)
+            }
         }
 
-        /**
-         * W14: the underground Wilderness (dungeons below it, e.g. the Revenant Caves) has the level of the surface 6,400
-         * tiles north: the Revenant Caves (z 10048..10239) come out at levels 17–40, as the Wiki states for them.
-         */
-        private fun isUnderground(c: CoordGrid): Boolean =
-            c.x in MIN_X..MAX_X && c.z in MIN_Z + UNDERGROUND_OFFSET..MAX_Z + UNDERGROUND_OFFSET
-
-        private const val UNDERGROUND_OFFSET = 6400
+        @Suppress("MagicNumber") // clientscript 384 constants
+        private fun underground(c: CoordGrid): Int {
+            val x = c.x
+            val z = c.z
+            // Escape Caves: 33 + 7 * ((z mod 64) - 6) / 50.
+            if (x in 3328..3391 && z in 10240..10303) return 33 + 7 * (z % 64 - 6) / 50
+            if (x !in MIN_X..UNDER_MAX_X || z !in UNDER_MIN_Z..UNDER_MAX_Z || NOT_WILD.any { it.has(c) }) return 0
+            return (z - UNDER_MIN_Z) / ROWS_PER_LEVEL + 1
+        }
 
         /** Multi-combat: the RS Mod polygons, the multi boss lairs and the Escape Caves. */
         public fun isMulti(c: CoordGrid): Boolean = c in MULTI || Lairs.multiAt(c)
