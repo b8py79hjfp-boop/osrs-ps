@@ -1,6 +1,7 @@
 package tp.hub
 
 import tp.services.ChannelSettings
+import tp.services.ClanRecord
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
 import tp.services.Rights
@@ -64,6 +65,14 @@ interface HubStore : AutoCloseable {
 
     /** Sets (rank >= 0) or removes (rank < 0) a friends chat rank. */
     fun setChannelRank(id: Long, name: String, rank: Int)
+
+    /** Every clan (loaded once at hub start; clans are few and small). */
+    fun clans(): List<ClanRecord>
+
+    /** Inserts or replaces a clan, members and bans included. */
+    fun putClan(clan: ClanRecord)
+
+    fun deleteClan(id: Long)
 
     /** Guide prices (obj -> price) and their trade weight, for the moving average. */
     fun guidePrices(): Map<Int, Pair<Int, Int>>

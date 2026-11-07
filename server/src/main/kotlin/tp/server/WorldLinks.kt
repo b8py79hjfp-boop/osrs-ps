@@ -88,6 +88,10 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 )
             }
 
+            is SocialEvent.ClanState, is SocialEvent.ClanMessage, is SocialEvent.ClanInvite -> {
+                clanLinks.onEvent(player, e)
+            }
+
             is SocialEvent.Muted -> {
                 player.mutedUntil = e.until
                 player.session.send(ServerMessage.GameMessage(if (e.until == 0L) "You have been unmuted." else "You have been muted."))
@@ -99,6 +103,8 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
 
     /** Per-world private-message counter (the client drops a repeated world + counter pair). World thread. */
     private var pmCounter = 0
+
+    private val clanLinks = ClanLinks(world.config.id) { ++pmCounter }
 
     override fun close() {
         subscriptions.forEach { it.close() }

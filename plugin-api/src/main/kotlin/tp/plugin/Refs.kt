@@ -97,6 +97,17 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         }
     }
 
+    /** The player's clan (null: none), their rank in it, and the clan they are a guest in (docs/mechanics/clans.md). */
+    public val clanName: String? get() = p.clanName
+    public val clanRank: Int get() = p.clanRank
+    public val guestClanName: String? get() = p.guestClanName
+
+    /** A clan action at the hub; [reply] runs later on the world thread with null on success, else the message. */
+    public fun clan(action: ClanAction, reply: PlayerRef.(String?) -> Unit = { it?.let(::message) }) {
+        val bridge = p.world.accounts ?: return reply(tp.engine.AccountBridge.NO_HUB)
+        bridge.clan(p, action.request()) { player, err -> PlayerRef(player).reply(err) }
+    }
+
     /** Sends a staff command to the hub (moderation, broadcasts, system update); the reply arrives as a game message. */
     public fun staffCommand(command: String, args: List<String>) {
         val bridge = p.world.accounts

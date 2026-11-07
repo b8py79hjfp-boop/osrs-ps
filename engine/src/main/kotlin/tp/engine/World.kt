@@ -441,6 +441,13 @@ class World(
             is ClientCommand.PublicChat -> {
                 if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
                 if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(MUTED_MESSAGE))
+                if (command.type == CHAT_TYPE_CLAN || command.type == CHAT_TYPE_GUEST_CLAN) {
+                    // RSProt MessagePublic chat types: 3 = clan, 4 = guest clan.
+                    val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
+                    return bridge.clan(player, ClanRequest.Message(command.type == CHAT_TYPE_GUEST_CLAN, command.text)) { p, err ->
+                        err?.let { p.session.send(ServerMessage.GameMessage(it)) }
+                    }
+                }
                 if (command.type == CHAT_TYPE_FRIENDS_CHANNEL) {
                     // "/" lines go to the friends chat (RSProt MessagePublic chat types: 2 = friend channel).
                     val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
@@ -464,6 +471,15 @@ class World(
                 val nameOk = command.action == SocialAction.CHANNEL_LEAVE || command.name.length in 1..MAX_NAME_LENGTH
                 if (!nameOk || !textOk || command.rank !in CHANNEL_RANKS) return invalid(player, command)
                 val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
+                if (command.action == SocialAction.CLAN_KICK || command.action == SocialAction.CLAN_BAN) {
+                    // CL7: kick (or ban) from the clan channel's member menu; the hub checks the kicker's rank.
+                    return bridge.clan(player, ClanRequest.Kick(command.name, command.action == SocialAction.CLAN_BAN)) { p, err ->
+                        err?.let { p.session.send(ServerMessage.GameMessage(it)) }
+                    }
+                }
+                if (command.action == SocialAction.CLAN_MESSAGE || command.action == SocialAction.CLAN_GUEST_MESSAGE) {
+                    return invalid(player, command)
+                }
                 bridge.social(player, command.action, command.name, command.text, command.rank)
             }
 
@@ -1185,6 +1201,8 @@ class World(
 
         /** Public chat type for friends-chat lines (RSProt `MessagePublic` chat types). */
         private const val CHAT_TYPE_FRIENDS_CHANNEL = 2
+        private const val CHAT_TYPE_CLAN = 3
+        private const val CHAT_TYPE_GUEST_CLAN = 4
 
         /** Friends chat ranks a client may set: -1 (unranked) .. 6 (general); others carry 0. */
         private val CHANNEL_RANKS = -1..6

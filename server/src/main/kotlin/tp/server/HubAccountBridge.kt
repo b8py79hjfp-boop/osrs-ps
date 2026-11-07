@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import tp.engine.AccountBridge
 import tp.engine.AccountProfile
 import tp.engine.ChannelConfig
+import tp.engine.ClanRequest
 import tp.engine.ExchangeOffer
 import tp.engine.ExchangeRequest
 import tp.engine.World
@@ -257,6 +258,17 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 }
             val config = settings?.let { ChannelConfig(it.name, it.enterRank, it.talkRank, it.kickRank) }
             world.execute { world.playerByAccount(account)?.let { reply(it, config) } }
+        }
+    }
+
+    override fun clan(player: Player, request: ClanRequest, reply: (Player, String?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply(player, AccountBridge.NO_HUB)
+        io.execute {
+            // call() answers null when the hub failed; a successful action answers Optional.empty().
+            val answer = call("clan") { java.util.Optional.ofNullable(hub.social.clan(account, request)) }
+            val err = if (answer == null) AccountBridge.NO_HUB else answer.orElse(null)
+            world.execute { world.playerByAccount(account)?.let { reply(it, err) } }
         }
     }
 

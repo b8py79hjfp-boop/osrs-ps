@@ -99,4 +99,39 @@ interface AccountBridge {
     fun exchange(player: Player, request: ExchangeRequest, reply: (Player, List<ExchangeOffer>?) -> Unit) {
         reply(player, null)
     }
+
+    /**
+     * Clan call (docs/mechanics/clans.md); [reply] runs on the world thread with null on success or the message to
+     * show, only if the player is still online. The clan channel itself arrives through the social stream.
+     */
+    fun clan(player: Player, request: ClanRequest, reply: (Player, String?) -> Unit) {
+        reply(player, NO_HUB)
+    }
+
+    companion object {
+        const val NO_HUB = "Clans are unavailable right now."
+    }
+}
+
+/** A clan action for the hub (docs/mechanics/clans.md CL1-CL8). */
+sealed interface ClanRequest {
+    data class Found(val name: String) : ClanRequest
+
+    data class Invite(val name: String) : ClanRequest
+
+    data object Accept : ClanRequest
+
+    data object Leave : ClanRequest
+
+    data class SetRank(val name: String, val rank: Int) : ClanRequest
+
+    data class Kick(val name: String, val ban: Boolean) : ClanRequest
+
+    data class SetRules(val talkRank: Int, val kickRank: Int, val allowGuests: Boolean, val recruitRank: Int) : ClanRequest
+
+    data class JoinGuest(val clanName: String) : ClanRequest
+
+    data object LeaveGuest : ClanRequest
+
+    data class Message(val guest: Boolean, val text: String) : ClanRequest
 }

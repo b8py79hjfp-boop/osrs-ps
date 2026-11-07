@@ -25,7 +25,7 @@ public class NpcTalk : ContentPlugin {
         }
     }
 
-    private sealed interface Node {
+    internal sealed interface Node {
         class Line(val player: Boolean, val next: Int, val text: String) : Node
 
         class Message(val next: Int, val text: String) : Node
@@ -35,9 +35,9 @@ public class NpcTalk : ContentPlugin {
         data object End : Node
     }
 
-    private class Tree(val nodes: Array<Node>)
+    internal class Tree(val nodes: Array<Node>)
 
-    private suspend fun PlayerScript.play(tree: Tree, npc: NpcRef) {
+    internal suspend fun PlayerScript.play(tree: Tree, npc: NpcRef) {
         var at = 0
         while (at in tree.nodes.indices) {
             at =
@@ -65,7 +65,7 @@ public class NpcTalk : ContentPlugin {
         }
     }
 
-    private companion object {
+    internal companion object {
         /** The importer's marker for the player's name (`[player name]` in the Wiki transcripts). */
         const val NAME_TOKEN = "{name}"
 
@@ -138,4 +138,10 @@ public class NpcTalk : ContentPlugin {
             return Node.Menu(if (title.equals(DEFAULT_TITLE, ignoreCase = true)) DEFAULT_TITLE else title, options, targets)
         }
     }
+}
+
+/** Plays [npc]'s transcript from a handler that replaced the generic Talk-to (the clan clerk). */
+internal suspend fun PlayerScript.talkTranscript(npc: NpcRef) {
+    val tree = NpcTalk.TREES[npc.type] ?: return
+    with(NpcTalk()) { play(tree, npc) }
 }

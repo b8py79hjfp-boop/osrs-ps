@@ -213,6 +213,36 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             return EMPTY
         }
 
+        override suspend fun clanFound(request: NameRequest): ErrorReply = error(hub.social.clanFound(request.accountId, request.name))
+
+        override suspend fun clanInvite(request: NameRequest): ErrorReply = error(hub.social.clanInvite(request.accountId, request.name))
+
+        override suspend fun clanAccept(request: AccountRef): ErrorReply = error(hub.social.clanAccept(request.accountId))
+
+        override suspend fun clanLeave(request: AccountRef): ErrorReply = error(hub.social.clanLeave(request.accountId))
+
+        override suspend fun clanSetRank(request: RankRequest): ErrorReply =
+            error(hub.social.clanSetRank(request.accountId, request.name, request.rank))
+
+        override suspend fun clanKick(request: tp.services.grpc.ClanKickRequest): ErrorReply =
+            error(hub.social.clanKick(request.accountId, request.name, request.ban))
+
+        override suspend fun clanSetRules(request: tp.services.grpc.ClanRulesRequest): ErrorReply =
+            error(hub.social.clanSetRules(request.accountId, tp.services.ClanPb.rules(request.rules)))
+
+        override suspend fun clanJoinGuest(request: NameRequest): ErrorReply =
+            error(
+                hub.social.clanJoinGuest(request.accountId, request.name),
+            )
+
+        override suspend fun clanLeaveGuest(request: AccountRef): PbEmpty {
+            hub.social.clanLeaveGuest(request.accountId)
+            return EMPTY
+        }
+
+        override suspend fun clanMessage(request: tp.services.grpc.ClanMessageRequest): ErrorReply =
+            error(hub.social.clanMessage(request.accountId, request.guest, request.text))
+
         override suspend fun joinChannel(request: NameRequest): ErrorReply = error(hub.social.joinChannel(request.accountId, request.name))
 
         override suspend fun leaveChannel(request: AccountRef): PbEmpty {
@@ -317,6 +347,18 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                         .setWorldId(e.worldId)
                                         .setText(e.text),
                                 )
+                            }
+
+                            is tp.services.SocialEvent.ClanState -> {
+                                b.setClanState(tp.services.ClanPb.state(e))
+                            }
+
+                            is tp.services.SocialEvent.ClanMessage -> {
+                                b.setClanMessage(tp.services.ClanPb.message(e))
+                            }
+
+                            is tp.services.SocialEvent.ClanInvite -> {
+                                b.setClanInvite(tp.services.ClanPb.invite(e))
                             }
 
                             is tp.services.SocialEvent.Muted -> {

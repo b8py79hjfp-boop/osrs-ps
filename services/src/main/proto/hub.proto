@@ -128,7 +128,71 @@ message SocialEvent {
     ChannelLeft channel_left = 6;
     ChannelMemberUpdate channel_member = 7;
     ChannelMessage channel_message = 8;
+    ClanState clan_state = 9;
+    ClanMessage clan_message = 10;
+    ClanInvite clan_invite = 11;
   }
+}
+
+message ClanRules {
+  sint32 talk_rank = 1;
+  sint32 kick_rank = 2;
+  bool allow_guests = 3;
+  sint32 recruit_rank = 4;
+}
+
+message ClanMemberRow {
+  int64 account_id = 1;
+  string name = 2;
+  sint32 rank = 3;
+  int32 joined_day = 4;
+}
+
+message ClanRecord {
+  int64 id = 1;
+  string name = 2;
+  int64 created_minute = 3;
+  repeated ClanMemberRow members = 4;
+  repeated string banned = 5;
+  ClanRules rules = 6;
+}
+
+message ClanState {
+  bool guest = 1;
+  ClanRecord clan = 2; // absent = left
+  repeated ChannelMember online = 3;
+}
+
+message ClanMessage {
+  bool guest = 1;
+  string clan_name = 2;
+  string from = 3;
+  string from_rights = 4;
+  sint32 rank = 5;
+  int32 world_id = 6;
+  string text = 7;
+}
+
+message ClanInvite {
+  string from = 1;
+  string clan_name = 2;
+}
+
+message ClanKickRequest {
+  int64 account_id = 1;
+  string name = 2;
+  bool ban = 3;
+}
+
+message ClanRulesRequest {
+  int64 account_id = 1;
+  ClanRules rules = 2;
+}
+
+message ClanMessageRequest {
+  int64 account_id = 1;
+  bool guest = 2;
+  string text = 3;
 }
 
 message ChannelLeft {
@@ -210,6 +274,16 @@ service Social {
   rpc SetChannelRank(RankRequest) returns (ErrorReply);
   rpc GetChannelSettings(AccountRef) returns (ChannelSettings);
   rpc SetChannelSettings(ChannelSettingsRequest) returns (Empty);
+  rpc ClanFound(NameRequest) returns (ErrorReply);
+  rpc ClanInvite(NameRequest) returns (ErrorReply);
+  rpc ClanAccept(AccountRef) returns (ErrorReply);
+  rpc ClanLeave(AccountRef) returns (ErrorReply);
+  rpc ClanSetRank(RankRequest) returns (ErrorReply);
+  rpc ClanKick(ClanKickRequest) returns (ErrorReply);
+  rpc ClanSetRules(ClanRulesRequest) returns (ErrorReply);
+  rpc ClanJoinGuest(NameRequest) returns (ErrorReply);
+  rpc ClanLeaveGuest(AccountRef) returns (Empty);
+  rpc ClanMessage(ClanMessageRequest) returns (ErrorReply);
   rpc Subscribe(WorldRef) returns (stream SocialEvent);
 }
 

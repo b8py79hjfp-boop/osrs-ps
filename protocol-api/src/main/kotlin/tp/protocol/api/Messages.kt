@@ -131,10 +131,28 @@ enum class SocialAction {
 
     /** Owner ranks a friend ([ClientCommand.Social.rank]). */
     CHANNEL_RANK,
+
+    /** Clan chat line (public chat type 3; "//" in the client). */
+    CLAN_MESSAGE,
+
+    /** Guest clan chat line (public chat type 4; "///"). */
+    CLAN_GUEST_MESSAGE,
+
+    /** Clan channel kick of [ClientCommand.Social.name] (CLANCHANNEL_KICKUSER). */
+    CLAN_KICK,
+
+    /** Ban from the channel's member menu (AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL). */
+    CLAN_BAN,
 }
 
 /** A friends chat member row ([rank]: -1 guest, 0 friend, 1..6 recruit..general, 7 owner, 127 Jagex moderator). */
 data class ChannelRow(val name: String, val worldId: Int, val rank: Int)
+
+/** A clan channel member: rank (-1 guest) and world. */
+data class ClanRow(val name: String, val rank: Int, val worldId: Int)
+
+/** A ranked clan member as the clan settings carry it ([joinedDay]: rune day). */
+data class ClanAffined(val name: String, val rank: Int, val joinedDay: Int)
 
 /** A friends-list row: [worldId] 0 = offline. */
 data class FriendRow(val name: String, val worldId: Int, val added: Boolean, val rank: Int = 0)
@@ -344,6 +362,46 @@ sealed interface ServerMessage {
         val text: String,
     ) :
         ServerMessage
+
+    /**
+     * Clan channel (docs/mechanics/clans.md CL9): the full member list of the player's clan, or of the clan they
+     * listen to as a guest ([guest]); [members] rank -1 = guest, world 0 = offline (not sent). [updateNum] grows
+     * with every change.
+     */
+    data class ClanChannel(
+        val guest: Boolean,
+        val clanName: String,
+        val kickRank: Int,
+        val talkRank: Int,
+        val members: List<ClanRow>,
+        val updateNum: Long,
+    ) : ServerMessage
+
+    /** Clan channel left: the client clears that clan's chat. */
+    data class ClanChannelLeft(val guest: Boolean) : ServerMessage
+
+    /** Clan settings (CL10): the ranked members (rank, rune day joined), the ban list and the channel ranks. */
+    data class ClanSettings(
+        val guest: Boolean,
+        val clanName: String,
+        val createdMinute: Int,
+        val allowGuests: Boolean,
+        val talkRank: Int,
+        val kickRank: Int,
+        val members: List<ClanAffined>,
+        val banned: List<String>,
+        val updateNum: Int,
+    ) : ServerMessage
+
+    /** Clan settings cleared (left the clan). */
+    data class ClanSettingsLeft(val guest: Boolean) : ServerMessage
+
+    /** Clan chat line ([crown] 0 none, 1 mod, 2 admin; [counter] as [PrivateMessage]). */
+    data class ClanMessage(val guest: Boolean, val from: String, val worldId: Int, val counter: Int, val crown: Int, val text: String) :
+        ServerMessage
+
+    /** Clan system line (joins, leaves, rank changes) in the clan chat. */
+    data class ClanSystemMessage(val guest: Boolean, val worldId: Int, val counter: Int, val text: String) : ServerMessage
 
     /** World hop: the client logs out and connects to [host] as world [worldId] ([flags]: world-list properties). */
     data class LogoutTransfer(val host: String, val worldId: Int, val flags: Int) : ServerMessage

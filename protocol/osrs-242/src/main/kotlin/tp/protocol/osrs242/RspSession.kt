@@ -157,7 +157,8 @@ internal class RspSession(
     private var beforeFirstInfo: MutableList<OutgoingGameMessage>? = ArrayList()
 
     private fun ServerMessage.isChat(): Boolean =
-        this is ServerMessage.GameMessage || this is ServerMessage.PrivateMessage || this is ServerMessage.ChannelMessage
+        this is ServerMessage.GameMessage || this is ServerMessage.PrivateMessage || this is ServerMessage.ChannelMessage ||
+            this is ServerMessage.ClanMessage
 
     override fun syncAvatar(coord: AvatarState) {
         val ext = infos.playerInfo.avatar.extendedInfo
@@ -488,6 +489,12 @@ internal class RspSession(
                 is ServerMessage.ChannelMember, is ServerMessage.ChannelMessage,
                 -> {
                     socialProt(message)
+                }
+
+                is ServerMessage.ClanChannel, is ServerMessage.ClanChannelLeft, is ServerMessage.ClanSettings,
+                is ServerMessage.ClanSettingsLeft, is ServerMessage.ClanMessage, is ServerMessage.ClanSystemMessage,
+                -> {
+                    clanProt(message)
                 }
 
                 is ServerMessage.LogoutTransfer -> {

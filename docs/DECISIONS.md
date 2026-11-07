@@ -787,3 +787,12 @@ summon), `BoatStats`, `ShipbuildingData`, `BoatItems`; `Boats` gained `rebuild`;
 `SpecialTable.kt` is generated from `docs/research/special-attacks.tsv` (cache enum 906 lists the objs, so no weapon is missed). Numbers the
 Wiki gives as plain multipliers are data; the formula specials, hit patterns, multi-target shapes and effects are code in `SpecialEffects.kt`
 keyed by the special's name, so one rule serves every variant obj. Leagues / Deadman specials keep only their generic row (OPEN-SP2).
+
+## D-056: Clans live in the hub; worlds forward requests and draw full snapshots
+
+Clan state (members, ranks, bans, rules) is cross-world, so it is owned by the hub (`Clans.kt`, PostgreSQL tables `clans`, `clan_members`,
+`clan_bans`), like friends chat. Every change resends the whole channel and settings to each online listener (CLANCHANNEL_FULL /
+CLANSETTINGS_FULL) instead of deltas: clans are at most 500 members and change rarely, and full snapshots cannot drift. Content asks
+for actions through `PlayerRef.clan(ClanAction)`; client packets (clan chat types 3/4, kick, ban) are validated by the engine and go to the
+same hub calls. Founding, recruiting and guest joins are driven from content buttons because the client's own join packet is unconfirmed
+(docs/mechanics/clans.md OPEN-CL8).

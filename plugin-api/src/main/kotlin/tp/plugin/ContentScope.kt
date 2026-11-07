@@ -74,6 +74,12 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.examine = handler
     }
 
+    /** Another player invited this one to a clan (from, clan name); one handler (the clans plugin). */
+    public fun onClanInvite(handler: PlayerRef.(String, String) -> Unit) {
+        check(handlers.clanInvite == null) { "duplicate handler: clan invite" }
+        handlers.clanInvite = handler
+    }
+
     /** The player at a boat's helm chose a heading (0..15 = angle / 128); one handler (the sailing plugin). */
     public fun onHeading(handler: PlayerRef.(Int) -> Unit) {
         check(handlers.heading == null) { "duplicate handler: heading" }
@@ -272,6 +278,7 @@ internal class Handlers {
     val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
     var examine: (PlayerRef.(Examined) -> Unit)? = null
     var heading: (PlayerRef.(Int) -> Unit)? = null
+    var clanInvite: (PlayerRef.(String, String) -> Unit)? = null
     var worldEntityTick: (WorldRef.() -> Unit)? = null
     var opWorldEntity: (PlayerRef.(WorldEntityRef, Int) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

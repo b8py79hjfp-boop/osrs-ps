@@ -98,6 +98,28 @@ sealed interface SocialEvent {
     /** One member joined, left ([removed]) or changed rank. */
     class ChannelMemberUpdate(override val toAccount: Long, val member: ChannelMember, val removed: Boolean) : SocialEvent
 
+    /** The player's clan ([guest] = the clan they listen to as a guest) changed, or they left it ([clan] null). */
+    class ClanState(
+        override val toAccount: Long,
+        val guest: Boolean,
+        val clan: ClanRecord?,
+        val online: List<ClanChannelMember>,
+    ) : SocialEvent
+
+    class ClanMessage(
+        override val toAccount: Long,
+        val guest: Boolean,
+        val clanName: String,
+        val from: String,
+        val fromRights: Rights,
+        val rank: Int,
+        val worldId: Int,
+        val text: String,
+    ) : SocialEvent
+
+    /** An invitation to join (or found) [clanName] from [from]. */
+    class ClanInvite(override val toAccount: Long, val from: String, val clanName: String) : SocialEvent
+
     class ChannelMessage(
         override val toAccount: Long,
         val from: String,
@@ -124,6 +146,25 @@ class ChannelSettings(val name: String?, val enterRank: Int, val talkRank: Int, 
         val DEFAULT = ChannelSettings(null, -1, -1, 7)
     }
 }
+
+/** A clan as the hub stores it (docs/mechanics/clans.md). [createdMinute] is the epoch minute it was founded. */
+class ClanRecord(
+    val id: Long,
+    val name: String,
+    val createdMinute: Long,
+    val members: List<ClanMemberRow>,
+    val banned: List<String>,
+    val rules: ClanRules,
+)
+
+/** A ranked clan member; [joinedDay] is the rune day (days since 2002-02-27) they joined. */
+class ClanMemberRow(val accountId: Long, val name: String, val rank: Int, val joinedDay: Int)
+
+/** Minimum ranks for talking / kicking in the clan channel, whether guests may join, and who may recruit. */
+class ClanRules(val talkRank: Int, val kickRank: Int, val allowGuests: Boolean, val recruitRank: Int)
+
+/** A clan channel member as the client shows it: rank (-1 guest) and world (0 offline). */
+class ClanChannelMember(val name: String, val rank: Int, val worldId: Int)
 
 interface SocialService {
     suspend fun friends(accountId: Long): List<FriendEntry>
@@ -159,6 +200,28 @@ interface SocialService {
 
     /** The channel owner ranks a friend ([rank] -1 removes the rank). */
     suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String?
+
+    // Clans (docs/mechanics/clans.md). Each returns null on success, else the game message to show.
+
+    suspend fun clanFound(accountId: Long, name: String): String?
+
+    suspend fun clanInvite(accountId: Long, name: String): String?
+
+    suspend fun clanAccept(accountId: Long): String?
+
+    suspend fun clanLeave(accountId: Long): String?
+
+    suspend fun clanSetRank(accountId: Long, name: String, rank: Int): String?
+
+    suspend fun clanKick(accountId: Long, name: String, ban: Boolean): String?
+
+    suspend fun clanSetRules(accountId: Long, rules: ClanRules): String?
+
+    suspend fun clanJoinGuest(accountId: Long, clanName: String): String?
+
+    suspend fun clanLeaveGuest(accountId: Long)
+
+    suspend fun clanMessage(accountId: Long, guest: Boolean, text: String): String?
 
     /** Events for players on [worldId] (stream). */
     fun subscribe(worldId: Int, sink: (SocialEvent) -> Unit): AutoCloseable

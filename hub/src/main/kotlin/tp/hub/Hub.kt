@@ -133,6 +133,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     store.audit(row.displayName, "login", "world $worldId", ip)
                 }
                 notifyFriendStatus(row.displayName, worldId)
+                db { clans.presenceChanged(row.id) }
                 return LoginGrant(LoginResult.OK, row.id, row.displayName, row.rights, save, row.mutedUntil)
             }
 
@@ -150,6 +151,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                             onlineNames.remove(row.username)
                             notifyFriendStatus(row.displayName, 0)
                         }
+                        db { clans.presenceChanged(accountId) }
                     }
                     pendingLogout.remove(accountId, pending)
                     pending.complete(Unit)
@@ -208,6 +210,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     }
 
     private val friendChats = FriendChats(store, online, ::deliver)
+    private val clans by lazy { Clans(store, online, ::deliver) }
 
     override val social: SocialService =
         object : SocialService {
@@ -227,6 +230,40 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
 
             override suspend fun setChannelRank(accountId: Long, name: String, rank: Int): String? =
                 db { friendChats.setRank(accountId, name, rank) }
+
+            override suspend fun clanFound(accountId: Long, name: String): String? = db { clans.found(accountId, name) }
+
+            override suspend fun clanInvite(accountId: Long, name: String): String? = db { clans.invite(accountId, name) }
+
+            override suspend fun clanAccept(accountId: Long): String? = db { clans.accept(accountId) }
+
+            override suspend fun clanLeave(accountId: Long): String? = db { clans.leave(accountId) }
+
+            override suspend fun clanSetRank(accountId: Long, name: String, rank: Int): String? =
+                db {
+                    clans.setRank(
+                        accountId,
+                        name,
+                        rank,
+                    )
+                }
+
+            override suspend fun clanKick(accountId: Long, name: String, ban: Boolean): String? = db { clans.kick(accountId, name, ban) }
+
+            override suspend fun clanSetRules(accountId: Long, rules: tp.services.ClanRules): String? =
+                db {
+                    clans.setRules(
+                        accountId,
+                        rules,
+                    )
+                }
+
+            override suspend fun clanJoinGuest(accountId: Long, clanName: String): String? = db { clans.joinGuest(accountId, clanName) }
+
+            override suspend fun clanLeaveGuest(accountId: Long) = db { clans.leaveGuest(accountId) }
+
+            override suspend fun clanMessage(accountId: Long, guest: Boolean, text: String): String? =
+                db { clans.message(accountId, guest, text.take(MAX_MESSAGE)) }
 
             override suspend fun friends(accountId: Long): List<FriendEntry> =
                 db {

@@ -53,6 +53,11 @@ class Player internal constructor(
     /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
     var mutedUntil: Long = 0
 
+    /** The player's clan and their rank in it, and the clan they are a guest in (set live by the world node). */
+    var clanName: String? = null
+    var clanRank: Int = 0
+    var guestClanName: String? = null
+
     override var hitpoints: Int
         get() = stats.level(PlayerStats.HITPOINTS)
         set(value) {

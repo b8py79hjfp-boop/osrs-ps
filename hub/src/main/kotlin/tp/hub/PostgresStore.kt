@@ -328,6 +328,103 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
     override fun audit(actor: String, action: String, target: String, detail: String) =
         exec("INSERT INTO audit_log (actor, action, target, detail) VALUES (?, ?, ?, ?)", actor, action, target, detail)
 
+    @Suppress("MagicNumber") // JDBC column / parameter indexes
+    override fun clans(): List<tp.services.ClanRecord> =
+        sql { c ->
+            val members = HashMap<Long, MutableList<tp.services.ClanMemberRow>>()
+            val q = "SELECT clan_id, account_id, name, rank, joined_day FROM clan_members ORDER BY clan_id, joined_day"
+            c.prepareStatement(q).use { ps ->
+                ps.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        members.getOrPut(rs.getLong(1)) { ArrayList() } +=
+                            tp.services.ClanMemberRow(rs.getLong(2), rs.getString(3), rs.getInt(4), rs.getInt(5))
+                    }
+                }
+            }
+            val bans = HashMap<Long, MutableList<String>>()
+            c.prepareStatement("SELECT clan_id, name FROM clan_bans").use { ps ->
+                ps.executeQuery().use { rs -> while (rs.next()) bans.getOrPut(rs.getLong(1)) { ArrayList() } += rs.getString(2) }
+            }
+            c.prepareStatement("SELECT id, name, created_minute, talk_rank, kick_rank, allow_guests, recruit_rank FROM clans").use { ps ->
+                ps.executeQuery().use { rs ->
+                    val out = ArrayList<tp.services.ClanRecord>()
+                    while (rs.next()) {
+                        val id = rs.getLong(1)
+                        out +=
+                            tp.services.ClanRecord(
+                                id,
+                                rs.getString(2),
+                                rs.getLong(3),
+                                members[id].orEmpty(),
+                                bans[id].orEmpty(),
+                                tp.services.ClanRules(rs.getInt(4), rs.getInt(5), rs.getBoolean(6), rs.getInt(7)),
+                            )
+                    }
+                    out
+                }
+            }
+        }
+
+    @Suppress("MagicNumber") // JDBC column / parameter indexes
+    override fun putClan(clan: tp.services.ClanRecord) {
+        sql { c ->
+            c.autoCommit = false
+            try {
+                c
+                    .prepareStatement(
+                        "INSERT INTO clans (id, name, created_minute, talk_rank, kick_rank, allow_guests, recruit_rank) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, talk_rank = EXCLUDED.talk_rank, " +
+                            "kick_rank = EXCLUDED.kick_rank, " +
+                            "allow_guests = EXCLUDED.allow_guests, recruit_rank = EXCLUDED.recruit_rank",
+                    ).use { ps ->
+                        ps.setLong(1, clan.id)
+                        ps.setString(2, clan.name)
+                        ps.setLong(3, clan.createdMinute)
+                        ps.setInt(4, clan.rules.talkRank)
+                        ps.setInt(5, clan.rules.kickRank)
+                        ps.setBoolean(6, clan.rules.allowGuests)
+                        ps.setInt(7, clan.rules.recruitRank)
+                        ps.executeUpdate()
+                    }
+                for (table in listOf("clan_members", "clan_bans")) {
+                    c.prepareStatement("DELETE FROM $table WHERE clan_id = ?").use { ps ->
+                        ps.setLong(1, clan.id)
+                        ps.executeUpdate()
+                    }
+                }
+                val insert = "INSERT INTO clan_members (clan_id, account_id, name, rank, joined_day) VALUES (?, ?, ?, ?, ?)"
+                c.prepareStatement(insert).use { ps ->
+                    for (m in clan.members) {
+                        ps.setLong(1, clan.id)
+                        ps.setLong(2, m.accountId)
+                        ps.setString(3, m.name)
+                        ps.setInt(4, m.rank)
+                        ps.setInt(5, m.joinedDay)
+                        ps.addBatch()
+                    }
+                    ps.executeBatch()
+                }
+                c.prepareStatement("INSERT INTO clan_bans (clan_id, name) VALUES (?, ?)").use { ps ->
+                    for (b in clan.banned) {
+                        ps.setLong(1, clan.id)
+                        ps.setString(2, b)
+                        ps.addBatch()
+                    }
+                    ps.executeBatch()
+                }
+                c.commit()
+            } finally {
+                c.autoCommit = true
+            }
+        }
+    }
+
+    override fun deleteClan(id: Long) {
+        for (table in listOf("clan_members", "clan_bans")) exec("DELETE FROM $table WHERE clan_id = ?", id)
+        exec("DELETE FROM clans WHERE id = ?", id)
+    }
+
     override fun close() = ds.close()
 
     private companion object {
@@ -367,6 +464,13 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 "ALTER TABLE ge_history ADD COLUMN IF NOT EXISTS tax bigint NOT NULL DEFAULT 0",
                 """CREATE TABLE IF NOT EXISTS hiscores (
                     account_id bigint PRIMARY KEY REFERENCES accounts(id), name text NOT NULL, xp int[] NOT NULL)""",
+                """CREATE TABLE IF NOT EXISTS clans (
+                    id bigint PRIMARY KEY, name text UNIQUE NOT NULL, created_minute bigint NOT NULL, talk_rank int NOT NULL,
+                    kick_rank int NOT NULL, allow_guests boolean NOT NULL, recruit_rank int NOT NULL)""",
+                """CREATE TABLE IF NOT EXISTS clan_members (
+                    clan_id bigint REFERENCES clans(id), account_id bigint REFERENCES accounts(id), name text NOT NULL,
+                    rank int NOT NULL, joined_day int NOT NULL, PRIMARY KEY (clan_id, account_id))""",
+                "CREATE TABLE IF NOT EXISTS clan_bans (clan_id bigint REFERENCES clans(id), name text, PRIMARY KEY (clan_id, name))",
                 """CREATE TABLE IF NOT EXISTS audit_log (
                     id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(), actor text NOT NULL, action text NOT NULL,
                     target text NOT NULL, detail text NOT NULL)""",

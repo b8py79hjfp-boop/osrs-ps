@@ -327,6 +327,16 @@ class Osrs242Network(
         }
     }
 
+    /** Clan channel member menu: kick and ban (docs/mechanics/clans.md CL7). */
+    private fun clanConsumers(b: GameMessageConsumerRepositoryBuilder<RspSession>) {
+        b.addListener(net.rsprot.protocol.game.incoming.clan.ClanChannelKickUser::class.java) { s, m ->
+            s.deliver(ClientCommand.Social(SocialAction.CLAN_KICK, m.name, rank = m.clanId))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.clan.AffinedClanSettingsAddBannedFromChannel::class.java) { s, m ->
+            s.deliver(ClientCommand.Social(SocialAction.CLAN_BAN, m.name, rank = m.clanId))
+        }
+    }
+
     /** Decoded packets -> [ClientCommand]s, delivered to the session currently being polled. */
     private fun consumers(): GameMessageConsumerRepositoryProvider<RspSession> {
         val b = GameMessageConsumerRepositoryBuilder<RspSession>()
@@ -389,6 +399,7 @@ class Osrs242Network(
                 },
             )
         }
+        clanConsumers(b)
         b.addListener(FriendChatKick::class.java) { s, m -> s.deliver(ClientCommand.Social(SocialAction.CHANNEL_KICK, m.name)) }
         b.addListener(FriendChatSetRank::class.java) { s, m ->
             // Client rank byte: 0 = friend .. 6 = general; "not ranked" arrives as 255 (-1 as a signed byte).

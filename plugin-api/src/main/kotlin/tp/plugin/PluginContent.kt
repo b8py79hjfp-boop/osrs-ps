@@ -214,6 +214,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref.handler()
     }
 
+    override fun onClanInvite(player: Player, from: String, clanName: String) {
+        val handler = h.clanInvite ?: return
+        ref(player).handler(from, clanName)
+    }
+
     override fun onHeading(player: Player, heading: Int) {
         val handler = h.heading ?: return
         ref(player).handler(heading)

@@ -106,6 +106,18 @@ class MemoryStore : HubStore {
         if (rank >= 0) map[name.lowercase()] = rank else map.remove(name.lowercase())
     }
 
+    private val clans = ConcurrentHashMap<Long, tp.services.ClanRecord>()
+
+    override fun clans(): List<tp.services.ClanRecord> = clans.values.toList()
+
+    override fun putClan(clan: tp.services.ClanRecord) {
+        clans[clan.id] = clan
+    }
+
+    override fun deleteClan(id: Long) {
+        clans.remove(id)
+    }
+
     private val prices = ConcurrentHashMap<Int, Pair<Int, Int>>()
 
     override fun guidePrices(): Map<Int, Pair<Int, Int>> = prices.toMap()

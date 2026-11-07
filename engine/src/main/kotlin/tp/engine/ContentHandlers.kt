@@ -81,6 +81,9 @@ interface ContentHandlers {
     /** The modal [interfaceId] was closed (by the player, movement, another modal or content). */
     fun onModalClosed(player: Player, interfaceId: Int) {}
 
+    /** [from] invited [player] to [clanName] (clans.md CL3); the clans plugin asks them. */
+    fun onClanInvite(player: Player, from: String, clanName: String) {}
+
     /** An NPC was added to the world or respawned (content may set its hunt range, boss state). */
     fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
 

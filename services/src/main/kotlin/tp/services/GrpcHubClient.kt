@@ -15,6 +15,9 @@ import tp.services.grpc.BroadcastEvent
 import tp.services.grpc.BroadcastRequest
 import tp.services.grpc.BroadcastsGrpcKt
 import tp.services.grpc.ChannelSettingsRequest
+import tp.services.grpc.ClanKickRequest
+import tp.services.grpc.ClanMessageRequest
+import tp.services.grpc.ClanRulesRequest
 import tp.services.grpc.ExchangeGrpcKt
 import tp.services.grpc.Heartbeat
 import tp.services.grpc.HiscoreQuery
@@ -176,6 +179,8 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
             .setName(name)
             .build()
 
+    private fun ref(account: Long): AccountRef = AccountRef.newBuilder().setAccountId(account).build()
+
     override val social: SocialService =
         object : SocialService {
             override suspend fun friends(accountId: Long): List<FriendEntry> =
@@ -259,6 +264,75 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         ).error,
                 )
 
+            override suspend fun clanFound(accountId: Long, name: String): String? = err(socialStub.clanFound(name(accountId, name)).error)
+
+            override suspend fun clanInvite(accountId: Long, name: String): String? =
+                err(
+                    socialStub.clanInvite(name(accountId, name)).error,
+                )
+
+            override suspend fun clanAccept(accountId: Long): String? = err(socialStub.clanAccept(ref(accountId)).error)
+
+            override suspend fun clanLeave(accountId: Long): String? = err(socialStub.clanLeave(ref(accountId)).error)
+
+            override suspend fun clanSetRank(accountId: Long, name: String, rank: Int): String? =
+                err(
+                    socialStub
+                        .clanSetRank(
+                            RankRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setName(name)
+                                .setRank(rank)
+                                .build(),
+                        ).error,
+                )
+
+            override suspend fun clanKick(accountId: Long, name: String, ban: Boolean): String? =
+                err(
+                    socialStub
+                        .clanKick(
+                            ClanKickRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setName(name)
+                                .setBan(ban)
+                                .build(),
+                        ).error,
+                )
+
+            override suspend fun clanSetRules(accountId: Long, rules: ClanRules): String? =
+                err(
+                    socialStub
+                        .clanSetRules(
+                            ClanRulesRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setRules(ClanPb.rules(rules))
+                                .build(),
+                        ).error,
+                )
+
+            override suspend fun clanJoinGuest(accountId: Long, clanName: String): String? =
+                err(socialStub.clanJoinGuest(name(accountId, clanName)).error)
+
+            override suspend fun clanLeaveGuest(accountId: Long) {
+                socialStub.clanLeaveGuest(ref(accountId))
+            }
+
+            override suspend fun clanMessage(accountId: Long, guest: Boolean, text: String): String? =
+                err(
+                    socialStub
+                        .clanMessage(
+                            ClanMessageRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setGuest(guest)
+                                .setText(text)
+                                .build(),
+                        ).error,
+                )
+
             override fun subscribe(worldId: Int, sink: (SocialEvent) -> Unit): AutoCloseable =
                 stream({ socialStub.subscribe(WorldRef.newBuilder().setWorldId(worldId).build()) }) { e ->
                     when {
@@ -300,6 +374,18 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
                         e.hasChannelMember() -> {
                             sink(SocialEvent.ChannelMemberUpdate(e.toAccount, e.channelMember.member.toModel(), e.channelMember.removed))
+                        }
+
+                        e.hasClanState() -> {
+                            sink(ClanPb.state(e.toAccount, e.clanState))
+                        }
+
+                        e.hasClanMessage() -> {
+                            sink(ClanPb.message(e.toAccount, e.clanMessage))
+                        }
+
+                        e.hasClanInvite() -> {
+                            sink(ClanPb.invite(e.toAccount, e.clanInvite))
                         }
 
                         e.hasChannelMessage() -> {
