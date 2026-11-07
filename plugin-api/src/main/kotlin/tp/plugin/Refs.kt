@@ -657,6 +657,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 
+    /** String param [param] of obj [obj], or null. */
+    public fun objParamString(obj: Int, param: Int): String? =
+        p.world
+            .objType(obj)
+            ?.params
+            ?.string(param)
+
     /** Tradeable, unnoted objs whose name contains [query] (case-insensitive), at most [limit] (search boxes). */
     public fun tradeableObjsContaining(
         query: String,
@@ -718,8 +725,12 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     }
 
     /** One atomic, journaled item transaction (brief §12): all steps happen or none. */
-    public fun transaction(reason: String, block: ItemTx.() -> Boolean): Boolean =
-        p.world.transaction(p, reason) { ItemTx(this, this@PlayerRef).block() }
+    public fun transaction(reason: String, block: ItemTx.() -> Boolean): Boolean {
+        var steps: ItemTx? = null
+        val ok = p.world.transaction(p, reason) { ItemTx(this, this@PlayerRef).also { steps = it }.block() }
+        if (ok) steps?.committed()
+        return ok
+    }
 
     override fun equals(other: Any?): Boolean = other is PlayerRef && other.p === p
 
@@ -765,6 +776,20 @@ public class InvView internal constructor(internal val inv: Inventory) {
 public class ItemTx internal constructor(private val tx: ItemTransaction, private val player: PlayerRef) {
     private fun of(invId: Int) = player.p.world.inventory(player.p, invId)
 
+    private val afterCommit = ArrayList<() -> Unit>()
+
+    /**
+     * Runs [action] only if the whole transaction commits (after it): state kept outside inventories, such as the rune
+     * pouch's varbits, changes together with the items or not at all.
+     */
+    public fun onCommit(action: () -> Unit) {
+        afterCommit += action
+    }
+
+    internal fun committed() {
+        for (action in afterCommit) action()
+    }
+
     public fun add(invId: Int, obj: Int, count: Int = 1): Boolean = tx.add(of(invId), obj, count)
 
     public fun remove(invId: Int, obj: Int, count: Int = 1): Boolean = tx.remove(of(invId), obj, count)
@@ -801,6 +826,9 @@ public class ItemTx internal constructor(private val tx: ItemTransaction, privat
      */
     public fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String, lifetime: Int = -1): Boolean =
         tx.createOnGround(obj, count, at, owner, lifetime)
+
+    /** Creates [count] of [obj] on the ground at [at], visible to everyone at once (a destroyed looting bag's contents). */
+    public fun createOnGroundPublic(obj: Int, count: Int, at: CoordGrid): Boolean = tx.createOnGround(obj, count, at, null)
 
     /** Adds to [invId], or drops at the player's feet (private to them) if it doesn't fit. */
     public fun addOrDrop(invId: Int, obj: Int, count: Int): Boolean =

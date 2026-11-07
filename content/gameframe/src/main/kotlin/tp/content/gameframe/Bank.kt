@@ -2,6 +2,8 @@ package tp.content.gameframe
 
 import tp.content.gameframe.BankLayout.MAIN
 import tp.plugin.AppearanceChanged
+import tp.plugin.BankItemOp
+import tp.plugin.BankTransfer
 import tp.plugin.ButtonClick
 import tp.plugin.ConsumeRequest
 import tp.plugin.ContentPlugin
@@ -14,6 +16,7 @@ import tp.plugin.ItemTx
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
+import tp.plugin.RunePouch
 import tp.plugin.chatNpc
 import tp.plugin.chatPlayer
 import tp.plugin.choice
@@ -30,6 +33,7 @@ import tp.symbols.Varps
  * `content/interfaces/bank` (ISC, DECISIONS D-029); the layout and tab bookkeeping are in [BankLayout], the drag
  * operations in [BankDrag]. Every item movement is one item transaction.
  */
+@Suppress("LargeClass") // one plugin owns every handler of the bank interface; its helpers are private to it
 public class Bank : ContentPlugin {
     private var bus: EventBus? = null
     private val potions = PotionStore()
@@ -45,6 +49,7 @@ public class Bank : ContentPlugin {
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
         // The OSRS client keeps "::bank" for itself (it says "Hey, everyone, I just tried to do something very silly!").
         onCommand("openbank") { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        events.on<BankTransfer> { t -> t.player.transfer(t) }
         events.on<tp.plugin.BankPinRequest> { r -> r.player.weakQueue(0) { if (with(BankPin) { unlock() }) r.then(player) } }
         onLogin { BankPin.onLogin(this) }
         onLogout { BankPin.onLogout(this) }
@@ -190,6 +195,7 @@ public class Bank : ContentPlugin {
         SideInventory.openPair(this, Interfaces.BANKMAIN, Interfaces.BANKSIDE)
         enableEvents()
         potions.onOpen(this)
+        BankStorage.onOpen(this)
         ifText(Components.Bankmain.CAPACITY, capacity(inv(Invs.BANK, stackAll = true)).toString())
         // RS Mod `onBankOpen`: the capacity tooltip (client script 1495 takes the text, the hover layer and the tooltip box).
         clientScript(CS_TOOLTIP, CAPACITY_TOOLTIP, Components.Bankmain.CAPACITY_LAYER, Components.Bankmain.TOOLTIP)
@@ -232,8 +238,8 @@ public class Bank : ContentPlugin {
 
     /**
      * Script 2576, per backpack slot: bit n of varp 262 = a wearable obj whose wear op (obj param 148, default 2) is a
-     * Wield / Wear / Equip text; bit n of varp 263 = food or a potion (iop1 "Eat" / "Drink"). Varps 261 (rune and essence
-     * pouches, coal bag: "Empty" / "Fill") and 264 ("Fill") stay clear: OPEN-B4b.
+     * Wield / Wear / Equip text; bit n of varp 263 = food or a potion (iop1 "Eat" / "Drink"). Varp 261 holds one bit per
+     * storage item kind ([BankStorage.storageBits]: essence pouches "Empty" when full, coal bag "Fill"); 264 stays clear.
      */
     private fun PlayerRef.setBanksideExtraOps(backpack: InvView) {
         var wear = 0
@@ -247,7 +253,7 @@ public class Bank : ContentPlugin {
                 consume = consume or (1 shl slot)
             }
         }
-        setVarp(Varps.IF1, 0)
+        setVarp(Varps.IF1, BankStorage.storageBits(this))
         setVarp(Varps.IF2, wear)
         setVarp(Varps.IF3, consume)
         setVarp(Varps.IF4, 0)
@@ -322,6 +328,17 @@ public class Bank : ContentPlugin {
         val asNote = varbit(Varbits.BANK_WITHDRAWNOTES) == 1
         val note = if (asNote) noted(obj) else -1
         val out = if (note >= 0) note else obj
+        // B32: with the rune pouch panel open, runes withdrawn go into the pouch while it has room.
+        val pouched = if (note < 0) BankStorage.pouchRoom(this, obj) else 0
+        if (pouched >
+            0
+        ) {
+            return transfer(
+                BankTransfer(this, obj, minOf(want, pouched), deposit = false, onMoved = { n ->
+                    RunePouch.add(this, obj, n)
+                }),
+            )
+        }
         val room = backpackRoom(out, want)
         if (room <= 0) return message("You don't have enough inventory space.")
         val emptied = room == bank.count(slot)
@@ -342,7 +359,7 @@ public class Bank : ContentPlugin {
         val emptied = count == bank.count(slot)
         val ok =
             transaction("bank withdraw") {
-                add(Invs.INV, out, count) &&
+                (out < 0 || add(Invs.INV, out, count)) &&
                     when {
                         !emptied -> removeAt(Invs.BANK, slot, obj, count)
                         keep >= 0 -> replaceAt(Invs.BANK, slot, obj, keep, 1)
@@ -354,6 +371,29 @@ public class Bank : ContentPlugin {
             BankLayout.finish(this, sizes)
         }
         return ok
+    }
+
+    /**
+     * B31 [BankTransfer]: moves up to [t].requested of [t].obj between the bank and storage outside the
+     * inventories (pouch varbits): a deposit through the normal plan with nothing removed, a withdrawal from the obj's
+     * bank slot (placeholder rules as for any withdrawal). [t].onMoved then changes the storage by the amount moved.
+     */
+    private fun PlayerRef.transfer(t: BankTransfer) {
+        if (!bankOpen() || t.requested <= 0) return
+        if (t.deposit) {
+            val out = deposit(if (t.source >= 0) t.source else SOURCE_EXTERNAL, listOf(t.obj to t.requested))
+            if (out.full > 0) message("You don't have enough space in your bank account.")
+            t.moved = out.deposited
+        } else {
+            val bank = inv(Invs.BANK, stackAll = true)
+            val slot = BankLayout.find(bank, t.obj, BankLayout.used(bank))
+            if (slot < 0) return
+            val n = minOf(t.requested, bank.count(slot))
+            val emptied = n == bank.count(slot)
+            val keep = if (emptied && varbit(Varbits.BANK_LEAVEPLACEHOLDERS) == 1) placeholderOf(t.obj) else -1
+            if (takeOut(slot, t.obj, -1, n, keep)) t.moved = n
+        }
+        if (t.moved > 0) t.onMoved(t.moved)
     }
 
     /** How many of [want] objs [out] the backpack can take: stackables need one slot or an existing stack. */
@@ -372,6 +412,9 @@ public class Bank : ContentPlugin {
         val obj = click.obj
         if (!validSlot(inv(Invs.INV), slot, obj)) return
         when (click.op) {
+            // Script 297: op 1 is the looting bag's "View" / the rune pouch's "Configure" (a client-side panel).
+            OP_SIDE_PANEL -> BankStorage.panelOpened(this, obj)
+
             OP_SIDE_LEFT -> depositOne(slot, obj, leftClickQuantity())
 
             OP_SIDE_ONE -> depositOne(slot, obj, 1)
@@ -405,6 +448,11 @@ public class Bank : ContentPlugin {
             events.publish(EquipRequest(this, Invs.INV, slot, obj))
         } else if (consumeOp(obj)) {
             events.publish(ConsumeRequest(this, Invs.INV, slot, obj))
+        } else {
+            // B30: storage items (essence pouches, coal bag, rune pouch) "Fill" / "Empty" against the bank.
+            val text = BankStorage.extraOpText(this, obj) ?: return
+            events.publish(BankItemOp(this, slot, obj, text))
+            setVarp(Varps.IF1, BankStorage.storageBits(this))
         }
     }
 
@@ -448,6 +496,7 @@ public class Bank : ContentPlugin {
 
     private class Outcome {
         var moved = false
+        var deposited = 0
         var noBank = 0
         var full = 0
         var overflow = 0
@@ -488,6 +537,7 @@ public class Bank : ContentPlugin {
             plan.steps.isNotEmpty() &&
                 transaction("bank deposit") { applyPlan(plan, source) && (tab == MAIN || rotateBank(end, plan.used, plan.next)) }
         plan.out.moved = ok
+        if (ok) plan.out.deposited = plan.steps.sumOf { it.amount }
         if (ok && tab != MAIN && plan.created > 0) {
             sizes[tab] += plan.created
             BankLayout.writeSizes(this, sizes)
@@ -498,7 +548,7 @@ public class Bank : ContentPlugin {
 
     private fun ItemTx.applyPlan(plan: Plan, source: Int): Boolean =
         plan.steps.all { s ->
-            remove(source, s.obj, s.amount) &&
+            (source == SOURCE_EXTERNAL || remove(source, s.obj, s.amount)) &&
                 when (s.kind) {
                     Kind.REPLACE -> replaceAt(Invs.BANK, s.slot, s.placeholder, s.real, s.amount)
                     else -> add(Invs.BANK, s.real, s.amount)
@@ -512,7 +562,8 @@ public class Bank : ContentPlugin {
             return
         }
         val real = unnoted(obj)
-        val amount = minOf(requested.toLong(), inv(source).total(obj)).toInt()
+        val held = if (source == SOURCE_EXTERNAL) requested.toLong() else inv(source).total(obj)
+        val amount = minOf(requested.toLong(), held).toInt()
         if (amount <= 0) return
         val target = plan.targets[real] ?: findTarget(bank, real, plan.used)
         if (target == null) {
@@ -791,6 +842,10 @@ public class Bank : ContentPlugin {
                 "<br><br>Are you sure?"
 
         /** Deposit ops on the backpack grid (RS Mod `sideInvOp`): left-click quantity, 1, 5, 10, last X, X, All. */
+        const val OP_SIDE_PANEL = 1
+
+        /** [deposit] source for [BankTransfer]: storage outside the inventories, nothing to remove. */
+        const val SOURCE_EXTERNAL = -1
         const val OP_SIDE_LEFT = 2
         const val OP_SIDE_ONE = 3
         const val OP_SIDE_FIVE = 4

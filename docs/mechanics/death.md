@@ -21,6 +21,8 @@ Sources: OSRS Wiki "Items Kept on Death" (IK), "Gravestone" (GR), "Death/Item Re
 | DE8 | Death's Office (Death 9855 at 3180, 5727): entered by the Death's Domain coffins next to the respawn points (locs 38426, 39535, 39546, 39547, 39548, 39637, 42344, 42345, 52570, "Enter"); the portal (39549, "Use") at 3169, 5726 returns to the tile the player entered from, else the respawn point. "Collect" gives back the stored items: 5% of the value of each item worth 100,000 or more, from the coffer, else the bank. It also collects a live grave early at that rate. | DO, DN, DD, PO |
 | DE9 | Death's coffer (loc 39550, "Sacrifice"): an item worth 10,000 or more, tradeable, adds 105% of its Grand Exchange price to the coffer (varp `death_coffer`), at most 2,100,000,000 per item and 2,147,483,647 in total; "You cannot trade that item to Death." / "The coffer is too full to accommodate that." The coffer only pays reclaim fees. | DC |
 | DE10 | Untradeable items are never dropped for a killer: in a PvP death they go to the victim's grave as in DE3-DE5 (OPEN-DE6: breaking and the above-20-Wilderness rules are not modelled). | IK "Mechanics" |
+| DE11 | Never among the kept items: the looting bag on any Wilderness death or PvP death, an unlocked rune pouch on a PvP death. | Wiki "Looting bag", "Rune pouch" |
+| DE12 | PvP death: the rune pouch's runes drop for the killer (also from a trouver-locked pouch), the unlocked pouch is deleted; the looting bag is deleted and its contents drop for the killer except food and potions (deleted). PvM death in the Wilderness: the looting bag is destroyed and its contents go to the grave. | Wiki "Looting bag", "Rune pouch" (rune-pouch.md RP15, looting-bag.md LB8) |
 
 ## Tick timeline
 

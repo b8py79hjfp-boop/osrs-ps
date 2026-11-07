@@ -1,5 +1,7 @@
 package tp.content.skills
 
+import tp.plugin.BankItemOp
+import tp.plugin.BankTransfer
 import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
@@ -122,6 +124,9 @@ public class RunecraftPouches : ContentPlugin {
         for (pouch in RunecraftPouchData.POUCHES.take(COLOSSAL_PARTS)) {
             onUseOnItem(Objs.ABYSSAL_NEEDLE, pouch.obj) { stitch(this) }
         }
+        events.on<BankItemOp> { op ->
+            RunecraftPouchData.POUCHES.firstOrNull { op.obj == it.obj || op.obj == it.degraded }?.let { bankOp(op, it) }
+        }
         onOpNpc(Npcs.RCU_ZAMMY_MAGE2, OP_REPAIRS) { repairAll(player) }
         onWorldStart { spawnNpc(Npcs.RCU_ZAMMY_MAGE2, DARK_MAGE_AT, 0) }
     }
@@ -231,6 +236,59 @@ public class RunecraftPouches : ContentPlugin {
         val contents = p.varbit(pouch.size)
         val kind = PouchEssence.entries.firstOrNull { it.type == p.varbit(pouch.type) }
         p.message(if (contents == 0 || kind == null) "The pouch is empty." else "The pouch contains $contents ${kind.label}.")
+    }
+
+    // ---- in the bank
+
+    /**
+     * Bank B30: "Fill" takes essence from the bank (the kind in the pouch, else the first kind banked, pure first), with the
+     * same wear as filling from the backpack; "Empty" puts the pouch's essence into the bank.
+     */
+    private fun bankOp(op: BankItemOp, pouch: Pouch) {
+        op.handled = true
+        if (!usable(op.player, pouch)) return
+        if (op.text == "Fill") bankFill(op, pouch) else bankEmpty(op.player, pouch)
+    }
+
+    private fun bankEmpty(p: PlayerRef, pouch: Pouch) {
+        val contents = p.varbit(pouch.size)
+        val kind = PouchEssence.entries.firstOrNull { it.type == p.varbit(pouch.type) }
+        if (contents == 0 || kind == null) return p.message("There is no essence in the pouch.")
+        p.events.publish(
+            BankTransfer(p, kind.obj, contents, deposit = true, onMoved = { n ->
+                p.setVarbit(pouch.size, contents - n)
+                if (n == contents) p.setVarbit(pouch.type, 0)
+            }),
+        )
+    }
+
+    private fun bankFill(op: BankItemOp, pouch: Pouch) {
+        val p = op.player
+        val contents = p.varbit(pouch.size)
+        val wear = wear(p, pouch)
+        val room = capacity(p, pouch, wear) - contents
+        if (room <= 0) return p.message("Your pouch is full.")
+        val kinds = if (contents > 0) PouchEssence.entries.filter { it.type == p.varbit(pouch.type) } else PouchEssence.entries
+        for (kind in kinds) {
+            val t = BankTransfer(p, kind.obj, room, deposit = false, onMoved = { n -> stored(p, pouch, op.slot, kind, contents, wear, n) })
+            p.events.publish(t)
+            if (t.moved > 0) return
+        }
+        p.message("You have no essence in your bank to put in the pouch.")
+    }
+
+    /** After [n] essence came out of the bank: the pouch's count and kind, and its wear (RC13) as if filled from the backpack. */
+    private fun stored(p: PlayerRef, pouch: Pouch, slot: Int, kind: PouchEssence, contents: Int, wear: Int, n: Int) {
+        p.setVarbit(pouch.size, contents + n)
+        p.setVarbit(pouch.type, kind.type)
+        val worn = wearAfter(p, pouch, wear, n)
+        if (worn == wear) return
+        // OPEN-RC23: a pouch that would break while filling from the bank keeps its essence and stops one short of breaking.
+        p.setSaved(wearKey(pouch), minOf(worn, pouch.destroyAt - 1).toLong())
+        if (capacity(p, pouch, worn) < capacity(p, pouch, wear)) p.message("Your pouch has decayed through use.")
+        if (pouch.isDegraded(worn) && !pouch.isDegraded(wear) && p.inv(Invs.INV).obj(slot) == pouch.obj) {
+            p.transaction("essence pouch degrade") { replaceAt(Invs.INV, slot, pouch.obj, pouch.degraded) }
+        }
     }
 
     // ---- repair

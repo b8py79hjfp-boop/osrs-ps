@@ -63,18 +63,30 @@ public object SpellRunes {
         for ((rune, count) in runes) {
             if (!staffSupplies(player, rune)) need.merge(rune, count, Int::plus)
         }
-        val backpack = player.inv(Invs.INV)
         for (combo in COMBOS) {
-            val held = backpack.total(combo.rune)
+            val held = held(player, combo.rune)
             var used = 0
             while (used < held && covers(need, combo)) {
                 reduce(need, combo.first)
                 reduce(need, combo.second)
                 used++
             }
-            if (used > 0 && !tx.remove(Invs.INV, combo.rune, used)) return false
+            if (used > 0 && !spend(tx, player, combo.rune, used)) return false
         }
-        return need.all { (rune, count) -> count <= 0 || tx.remove(Invs.INV, rune, count) }
+        return need.all { (rune, count) -> count <= 0 || spend(tx, player, rune, count) }
+    }
+
+    /** Runes the player can spend: the backpack's and the rune pouch's (docs/mechanics/rune-pouch.md RP5). */
+    private fun held(player: PlayerRef, rune: Int): Long = player.inv(Invs.INV).total(rune) + RunePouch.count(player, rune)
+
+    /** RP5 (OpenRune `MagicRunes`): the backpack's runes go first, the rest come out of the pouch when the transaction commits. */
+    private fun spend(tx: ItemTx, player: PlayerRef, rune: Int, count: Int): Boolean {
+        val fromBackpack = minOf(player.inv(Invs.INV).total(rune), count.toLong()).toInt()
+        val rest = count - fromBackpack
+        if (rest > RunePouch.count(player, rune)) return false
+        if (fromBackpack > 0 && !tx.remove(Invs.INV, rune, fromBackpack)) return false
+        if (rest > 0) tx.onCommit { RunePouch.remove(player, rune, rest) }
+        return true
     }
 
     /** Whether [player] could pay [runes] now (staff, combination and plain runes), without taking anything. */
@@ -83,9 +95,8 @@ public object SpellRunes {
         for ((rune, count) in runes) {
             if (!staffSupplies(player, rune)) need.merge(rune, count, Int::plus)
         }
-        val backpack = player.inv(Invs.INV)
         for (combo in COMBOS) {
-            val held = backpack.total(combo.rune)
+            val held = held(player, combo.rune)
             var used = 0
             while (used < held && covers(need, combo)) {
                 reduce(need, combo.first)
@@ -93,7 +104,7 @@ public object SpellRunes {
                 used++
             }
         }
-        return need.all { (rune, count) -> count <= 0 || backpack.total(rune) >= count }
+        return need.all { (rune, count) -> count <= 0 || held(player, rune) >= count }
     }
 
     private fun covers(need: Map<Int, Int>, combo: Combo): Boolean = (need[combo.first] ?: 0) > 0 || (need[combo.second] ?: 0) > 0

@@ -1073,3 +1073,16 @@ anguish, Masori (f)), and both are summed now (they were 189-blind before); and 
 "(broken)" void pieces, so the matrix names those by id. Blowpipe scales and darts are kept per player, not per item:
 our objs carry no state, and the blowpipe only trades empty, so one player's pipes share one store (a PvP death drops
 the pipe empty with its charges, as the Wiki says).
+
+## D-077 Rune pouch adapted from OpenRune; storage items reach the bank through one transfer event
+
+The rune pouch's varbit layout (rune = enum 55 compact id in `rune_pouch_type_n`, amount in `rune_pouch_quantity_n`), its
+interface ops and messages are adapted from OpenRune-Server `content/skills/magic/rune-pouch` (ISC, Copyright (c) 2025
+RS Mod); the adapted files (`plugin-api` `RunePouch.kt`, `content/gameframe` `RunePouchItems.kt`) keep that licence
+header. Keeping the contents in the client's own varbits means the pouch interface, the spellbook and RuneLite show them
+with no extra packets. Storage that is not an inventory (pouch varbits, essence pouch varbits, the coal bag's saved
+count) moves to and from the bank only through `BankTransfer`, which the bank plugin runs through its normal deposit plan
+or slot withdrawal and then reports the amount moved; the storage changes by that amount after the bank's transaction
+committed (same tick, single thread). The looting bag is an inventory (516), so its deposits are taken in the bank's own
+transaction. Load-out varbits and the name list's index rule come from the rev-242 client scripts (4895, 8092), checked
+against packets logged in game.

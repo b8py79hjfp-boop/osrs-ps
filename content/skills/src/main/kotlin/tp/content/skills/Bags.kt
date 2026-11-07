@@ -1,5 +1,7 @@
 package tp.content.skills
 
+import tp.plugin.BankItemOp
+import tp.plugin.BankTransfer
 import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
@@ -24,6 +26,7 @@ public class Bags : ContentPlugin {
             onItemOp(bag, "Empty") { holds(this, it, Objs.GEM_BAG, Objs.GEM_BAG_OPEN)?.let { emptyGems(this) } }
             onItemOp(bag, "Check") { holds(this, it, Objs.GEM_BAG, Objs.GEM_BAG_OPEN)?.let { checkGems(this) } }
         }
+        events.on<BankItemOp> { op -> if (op.obj == Objs.COAL_BAG || op.obj == Objs.COAL_BAG_OPEN) bankCoal(op) }
         onItemOp(Objs.COAL_BAG, "Open") { toggle(this, it, Objs.COAL_BAG, Objs.COAL_BAG_OPEN, "coal") }
         onItemOp(Objs.COAL_BAG_OPEN, "Close") { toggle(this, it, Objs.COAL_BAG_OPEN, Objs.COAL_BAG, "coal") }
         onItemOp(Objs.GEM_BAG, "Open") { toggle(this, it, Objs.GEM_BAG, Objs.GEM_BAG_OPEN, "gem") }
@@ -44,6 +47,32 @@ public class Bags : ContentPlugin {
     }
 
     // ---- coal
+
+    /** Bank B30: "Fill" takes coal from the bank into the bag, "Empty" puts the bag's coal into the bank. */
+    private fun bankCoal(op: BankItemOp) {
+        op.handled = true
+        val p = op.player
+        if (op.text == "Fill") {
+            val room = coalCapacity(p) - coal(p)
+            if (room <= 0) return p.message("Your coal bag is full.")
+            val t = BankTransfer(p, Objs.COAL, room, deposit = false, onMoved = { n -> p.setSaved(COAL_KEY, (coal(p) + n).toLong()) })
+            p.events.publish(t)
+            if (t.moved == 0) p.message("You don't have any coal in your bank.")
+        } else {
+            if (coal(p) == 0) return p.message("Your coal bag is empty.")
+            p.events.publish(
+                BankTransfer(p, Objs.COAL, coal(p), deposit = true, onMoved = { n ->
+                    p.setSaved(
+                        COAL_KEY,
+                        (coal(p) - n).toLong().takeIf {
+                            it >
+                                0
+                        },
+                    )
+                }),
+            )
+        }
+    }
 
     private fun fillCoal(p: PlayerRef) {
         val room = coalCapacity(p) - coal(p)

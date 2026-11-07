@@ -30,6 +30,8 @@ public class Backpack : ContentPlugin {
                 val count = inv.count(slot)
                 weakQueue(0) {
                     if (!confirmDestroy(obj, count, DESTROY_MESSAGE)) return@weakQueue
+                    // LB7: a destroyed looting bag takes its contents with it (dropped in the Wilderness).
+                    if (obj in LootingBag.BAGS) return@weakQueue LootingBag.destroy(player, slot, obj)
                     player.transaction("destroy") { removeAt(Invs.INV, slot, obj, count) }
                 }
             } else {
@@ -37,6 +39,8 @@ public class Backpack : ContentPlugin {
             }
         }
         onOpObjDefault(OP_TAKE) { obj ->
+            // LB4: an open looting bag in the Wilderness takes tradeable pickups first.
+            if (LootingBag.pickUp(player, obj)) return@onOpObjDefault
             if (!player.transaction("take") { take(obj, Invs.INV) }) {
                 player.message("You don't have enough inventory space to hold that item.")
             }

@@ -128,3 +128,29 @@ public class PoisonRequest(public val target: EntityRef, public val severity: In
 
 /** One IF_SCRIPTTRIGGER: [component] / [sub] / [obj] and the decoded [args] (Int, String, IntArray or Array<String>). */
 public class ScriptTrigger(public val component: Int, public val sub: Int, public val obj: Int, public val args: List<Any>)
+
+/**
+ * The bank's backpack-column extra op (script 2576: "Fill" / "Empty") on a storage item at [slot] ([obj]): essence
+ * pouches, the coal bag, the rune pouch. The plugin that owns the item sets [handled] and moves its contents with
+ * [BankTransfer] (docs/mechanics/bank.md B30).
+ */
+public class BankItemOp(public val player: PlayerRef, public val slot: Int, public val obj: Int, public val text: String) : Event {
+    public var handled: Boolean = false
+}
+
+/**
+ * Moves up to [requested] of [obj] between the open bank and some storage that is not an inventory (pouch varbits):
+ * [deposit] adds to the bank, else takes from it, through the bank's own tabs and placeholders. The bank plugin sets
+ * [moved] to the amount and then calls [onMoved] with it, so the storage changes by exactly that much. A deposit from an
+ * inventory ([source] >= 0, e.g. the looting bag) is taken from it in the bank's own transaction instead.
+ */
+public class BankTransfer(
+    public val player: PlayerRef,
+    public val obj: Int,
+    public val requested: Int,
+    public val deposit: Boolean,
+    public val source: Int = -1,
+    public val onMoved: (Int) -> Unit = {},
+) : Event {
+    public var moved: Int = 0
+}

@@ -131,7 +131,7 @@ class ItemTransaction internal constructor(
         if (!removeAt(inv, slot, obj, count)) return false
         val tradeable = objTypes[obj]?.tradeable == true
         val lifetime = if (tradeable) timing.tradeableDespawn else timing.untradeableDespawn
-        val publicAt = if (tradeable) tick + timing.privateTicks else -1L
+        val publicAt = if (tradeable && owner != null) tick + timing.privateTicks else -1L
         val g = GroundObj(obj, count, at, owner, publicAt, tick + lifetime)
         ground.add(g)
         groundChanges += GroundChange(g, added = true)
@@ -159,7 +159,7 @@ class ItemTransaction internal constructor(
      * Creates [count] of [obj] on the ground at [at], private to [owner] first (loot: e.g. a lost lair fee). [lifetime]
      * overrides the drop lifetime in ticks (marks of grace: 1000); -1 = the tradeable / untradeable default.
      */
-    fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String, lifetime: Int = -1): Boolean {
+    fun createOnGround(obj: Int, count: Int, at: CoordGrid, owner: String?, lifetime: Int = -1): Boolean {
         if (failed) return false
         if (count <= 0 || objTypes[obj] == null) return fail()
         val tradeable = objTypes[obj]?.tradeable == true

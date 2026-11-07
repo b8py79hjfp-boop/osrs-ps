@@ -121,6 +121,8 @@ cache varp / varbit of `quest-states.tsv` (`RunecraftQuests`).
 - **OPEN-RC13** colossal capacity between level bands: the Wiki says it "linearly scales downward starting from 27 for levels 75-84, ..."; we use the
   band's starting value. The colossal pouch is capped by the lower of its level capacity and its wear stage. The abyssal lantern (redwood) is not read.
 - **OPEN-RC14** Apprentice Cordelia's repairs (25 abyssal pearls to unlock) and dropping a pouch on death (contents vanish) are not implemented.
+- **OPEN-RC23** filling a pouch from the bank (bank.md B30) wears it as filling from the backpack; a pouch that would break
+  instead stops one short of breaking (no source covers breaking during a bank fill).
 - **OPEN-RC16** the crack / ladder landing tiles are the nearest walkable tiles beside the loc (`RcTiles.beside`); no source gives them. Eniola takes the
   first stack of 20 non-combination runes in the backpack: his payment-selection interface and quick-pay setting are not implemented, nor are runes from a
   rune pouch. Raiments of the Eye (+60% runes) are not read.

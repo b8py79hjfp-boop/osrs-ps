@@ -63,13 +63,16 @@ internal object DeathRules {
      */
     fun dropItems(dead: PlayerRef, killer: EntityRef?) {
         val keep = (if (dead[SharedAttrs.SKULL_ICON] != null) 0 else KEPT) + if (dead.hasPrayer("Protect Item")) 1 else 0
+        val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
+        val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
         val units = ArrayList<Triple<Int, Int, Int>>() // inv, slot, value
         for (invId in intArrayOf(Invs.INV, Invs.WORN)) {
             val inv = dead.inv(invId)
             for (slot in 0 until inv.size) {
                 val obj = inv.obj(slot)
                 if (obj < 0) continue
-                val value = if (inv.count(slot) > 1) -1 else dead.objValue(obj)
+                // DE11 / DE12: never kept: the looting bag on any Wilderness death, an unlocked rune pouch on a PvP death.
+                val value = if (inv.count(slot) > 1 || StorageDeath.alwaysLost(obj, pvp, inWilderness)) -1 else dead.objValue(obj)
                 units += Triple(invId, slot, value)
             }
         }
@@ -80,12 +83,19 @@ internal object DeathRules {
                 .take(keep)
                 .toSet()
         var lost = units.filter { it !in kept }
-        val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
-        val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
         // DE3: a death in instance space leaves the grave at the respawn point.
         val at = if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
-        if (!pvp) return Graves.bury(dead, lost.map { it.first to it.second }, at, inWilderness)
+        if (!pvp) {
+            val bag = if (inWilderness) StorageDeath.destroyLootingBag(dead, lost) else emptyList()
+            return Graves.bury(
+                dead,
+                (lost - bag.toSet()).map { it.first to it.second } + StorageDeath.bagSlots(dead, bag),
+                at,
+                inWilderness,
+            )
+        }
         val owner = (killer as PlayerRef).username
+        lost = lost - StorageDeath.pvpLoss(dead, lost, owner).toSet()
         // GE64 Wiki "Toxic blowpipe": unprotected in PvP, it drops empty with its scales and darts beside it.
         val blowpipes = lost.filter { (invId, slot, _) -> Blowpipe.isLoaded(dead.inv(invId).obj(slot)) }
         for ((invId, slot, _) in blowpipes) Blowpipe.dropOnDeath(dead, invId, slot, dead.coord, owner)

@@ -203,7 +203,12 @@ internal object CombatSystem {
         } else {
             target.hitsplat(source, 0, HITMARK_BLOCK_LIT, HITMARK_BLOCK_LIT, HITMARK_BLOCK_TINT)
         }
-        target.headbar(source, HEADBAR_HEALTH_30, target.hitpoints * HEADBAR_SEGMENTS / maxOf(1, target.maxHitpoints))
+        // Overheal (Guthan's damned set, boosts) can exceed max: the bar shows full.
+        target.headbar(
+            source,
+            HEADBAR_HEALTH_30,
+            (target.hitpoints * HEADBAR_SEGMENTS / maxOf(1, target.maxHitpoints)).coerceIn(0, HEADBAR_SEGMENTS),
+        )
         if (source != null) {
             target[Attr.LAST_HIT_BY] = source
             target[Attr.LAST_HIT_TICK] = target.tick
