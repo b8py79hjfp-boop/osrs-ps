@@ -12,8 +12,11 @@ internal class BoxTeleport(val name: String, x: Int, z: Int) {
     val tile: CoordGrid = CoordGrid(x, z, 0)
 }
 
-/** The teleports of one kind of jewellery the box holds (Wiki "Basic jewellery box", Locations). */
-internal class BoxItem(val item: String, val teleports: List<BoxTeleport>)
+/**
+ * The teleports of one kind of jewellery the box holds (Wiki "Basic jewellery box", Locations), with the jewellery's Wilderness
+ * limit (teleports.md T4: 20 for dueling and games, 30 for glory, combat bracelet, skills and wealth).
+ */
+internal class BoxItem(val item: String, val wildernessLimit: Int, val teleports: List<BoxTeleport>)
 
 /**
  * The jewellery boxes of the achievement gallery (docs/mechanics/construction.md CO27): op 2 "Teleport Menu" asks for the kind of
@@ -33,7 +36,7 @@ public class PohJewellery : ContentPlugin {
         val kinds = ITEMS.take(KINDS_PER_TIER.take(tier + 1).sum())
         val kind = with(HouseMenus) { pick("Teleport menu", kinds) { it.item } } ?: return
         val to = with(HouseMenus) { pick(kind.item, kind.teleports) { it.name } } ?: return
-        with(PohTravel) { travel(to.tile) }
+        with(PohTravel) { travel(to.tile, kind.wildernessLimit) }
     }
 
     private companion object {
@@ -51,6 +54,7 @@ public class PohJewellery : ContentPlugin {
             listOf(
                 BoxItem(
                     "Ring of dueling",
+                    20,
                     listOf(
                         BoxTeleport("Emir's Arena", 3315, 3235),
                         BoxTeleport("Castle Wars Arena", 2440, 3090),
@@ -60,6 +64,7 @@ public class PohJewellery : ContentPlugin {
                 ),
                 BoxItem(
                     "Games necklace",
+                    20,
                     listOf(
                         BoxTeleport("Burthorpe", 2899, 3553),
                         BoxTeleport("Barbarian Outpost", 2520, 3571),
@@ -70,6 +75,7 @@ public class PohJewellery : ContentPlugin {
                 ),
                 BoxItem(
                     "Combat bracelet",
+                    30,
                     listOf(
                         BoxTeleport("Warriors' Guild", 2882, 3547),
                         BoxTeleport("Champions' Guild", 3192, 3368),
@@ -79,6 +85,7 @@ public class PohJewellery : ContentPlugin {
                 ),
                 BoxItem(
                     "Skills necklace",
+                    30,
                     listOf(
                         BoxTeleport("Fishing Guild", 2611, 3390),
                         BoxTeleport("Mining Guild", 3049, 9763),
@@ -90,6 +97,7 @@ public class PohJewellery : ContentPlugin {
                 ),
                 BoxItem(
                     "Ring of wealth",
+                    30,
                     listOf(
                         BoxTeleport("Miscellania", 2534, 3862),
                         BoxTeleport("Grand Exchange", 3163, 3478),
@@ -99,6 +107,7 @@ public class PohJewellery : ContentPlugin {
                 ),
                 BoxItem(
                     "Amulet of glory",
+                    30,
                     listOf(
                         BoxTeleport("Edgeville", 3087, 3496),
                         BoxTeleport("Karamja", 2918, 3176),

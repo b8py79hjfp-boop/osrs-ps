@@ -5,36 +5,20 @@ import tp.plugin.ContentScope
 import tp.plugin.LocRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
-import tp.plugin.SharedAttrs
 import tp.plugin.Stats
-import tp.plugin.Teleported
+import tp.plugin.TeleportRequest
 import tp.plugin.choice
 import tp.symbols.Invs
-import tp.symbols.Seqs
-import tp.symbols.SpotAnims
 import tp.util.CoordGrid
 
-/** The teleport every house device uses (docs/mechanics/construction.md CO26): the standard cast animation, then the move. */
+/** The teleport every house device uses (docs/mechanics/construction.md CO26, teleports.md T7): content/magic casts it. */
 internal object PohTravel {
-    /** The Tele Block text, ours (teleports.md OPEN-TP1). */
-    private const val BLOCKED = "A magical force stops you from teleporting."
+    /** Wilderness limit of the portals and the nexus: they are spells, limit 20 (teleports.md T4). */
+    const val SPELL_LIMIT = 20
 
-    /** Ticks between the cast animation and the move: the standard spells' stall (teleports.md T2, speed 4 - 1). */
-    private const val TICKS = 3
-
-    /** Animation id -1 stops the current animation (protocol `Animate`). */
-    private const val RESET_ANIM = -1
-
-    suspend fun PlayerScript.travel(to: CoordGrid) {
-        val p = player
-        if ((p[SharedAttrs.TELEBLOCK_UNTIL] ?: 0L) > p.tick) return p.message(BLOCKED)
-        p.anim(Seqs.HUMAN_CASTTELEPORT)
-        p.spotAnim(SpotAnims.TELEPORT_CASTING)
-        delay(TICKS)
-        val from = p.coord
-        p.teleport(to)
-        p.events.publish(Teleported(p, from, to))
-        p.anim(RESET_ANIM)
+    /** Publishes the request; content/magic applies the checks (Tele Block, Wilderness [limit], busy) and the standard cast. */
+    fun PlayerScript.travel(to: CoordGrid, limit: Int = SPELL_LIMIT) {
+        player.events.publish(TeleportRequest(player, to, limit))
     }
 }
 

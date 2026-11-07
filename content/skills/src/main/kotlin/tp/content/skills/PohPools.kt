@@ -3,6 +3,7 @@ package tp.content.skills
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
+import tp.plugin.SharedAttrs
 import tp.plugin.Stats
 import tp.symbols.Varps
 
@@ -20,6 +21,8 @@ public class PohPools : ContentPlugin {
     }
 
     private fun drink(p: PlayerRef, tier: Int) {
+        val lastPvp = p[SharedAttrs.LAST_PVP_TICK]
+        if (lastPvp != null && p.tick - lastPvp < PVP_COMBAT_TICKS) return p.message(IN_COMBAT)
         if (tier >= Restores.SPECIAL.ordinal) p.setVarp(Varps.SA_ENERGY, FULL_SPECIAL)
         if (tier >= Restores.RUN_ENERGY.ordinal) p.runEnergy = FULL_RUN_ENERGY
         if (tier >= Restores.PRAYER.ordinal) p.setLevel(Stats.PRAYER, p.baseLevel(Stats.PRAYER))
@@ -33,6 +36,15 @@ public class PohPools : ContentPlugin {
     }
 
     private companion object {
+        /**
+         * Ticks after the last PvP attack during which the pools refuse (Wiki "Restoration pool": "recently in PvP combat"; the
+         * time is OPEN-CO30: the logout lock of 16 ticks, wilderness.md W7, is used).
+         */
+        const val PVP_COMBAT_TICKS = 16
+
+        /** Wiki "Restoration pool": the refusal message. */
+        const val IN_COMBAT = "You can't drink from the pool during combat."
+
         /** Cache 2757: op 1 "Drink" on the five pools. */
         const val OP_DRINK = 1
 
