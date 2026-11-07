@@ -305,6 +305,12 @@ class Osrs242Network(
         b.addListener(net.rsprot.protocol.game.incoming.locs.OpLoc6V2::class.java) { s, m -> s.deliver(ClientCommand.Examine(0, m.id)) }
         b.addListener(net.rsprot.protocol.game.incoming.npcs.OpNpc6::class.java) { s, m -> s.deliver(ClientCommand.Examine(1, m.id)) }
         b.addListener(net.rsprot.protocol.game.incoming.objs.OpObj6::class.java) { s, m -> s.deliver(ClientCommand.Examine(2, m.id)) }
+        b.addListener(net.rsprot.protocol.game.incoming.misc.user.SetHeading::class.java) { s, m ->
+            s.deliver(ClientCommand.SetHeading(m.heading))
+        }
+        b.addListener(net.rsprot.protocol.game.incoming.worldentities.OpWorldEntity::class.java) { s, m ->
+            s.deliver(ClientCommand.OpWorldEntity(m.op, m.index, m.controlKey))
+        }
         b.addListener(net.rsprot.protocol.game.incoming.locs.OpLocTV1::class.java) { s, m ->
             s.deliver(ClientCommand.OpLocT(m.id, m.x, m.z, m.selectedCombinedId, m.selectedSub, m.selectedObj, m.controlKey))
         }

@@ -30,6 +30,13 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
   - These messages are addressed to the entity's world, with zone offsets counted from the deck's base. The session
     holds them until RSProt reports that world in view, and sends them inside its block after its NPC info.
   - For a player on board, root zone sync is centred on the entity's pivot.
+- **WE8: steering and entity clicks.**
+  - SET_HEADING (0..15, the angle / 128) goes to the sailing plugin.
+  - OPWORLDENTITY1..5 goes to content only if the entity is shown and its pivot is within 31 tiles of the player's root
+    position; anything else is an invalid packet.
+  - SET_INTERACTION_MODE (`PlayerRef.setInteractionMode`) switches a world's tile clicks between walk and heading,
+    and entity clicks between enabled and examine-only.
+  - Sources: RSProt `SetHeading`, `OpWorldEntity`, `SetInteractionMode`.
 - **WE7: NPCs on decks** stand on deck tiles like any NPC. RSProt's per-world NPC info shows them on the entity.
 
 ## Verified

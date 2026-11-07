@@ -344,6 +344,15 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.IfText(component, text))
     }
 
+    /**
+     * What clicks do for this player (SET_INTERACTION_MODE): in [world] (a world entity's index, -1 the root world, -2
+     * every world) a tile click walks (1), sets a heading (2) or does nothing (0); an entity click works (1), only
+     * examines (2) or does nothing (0). Sailing switches the root world to heading mode while navigating.
+     */
+    public fun setInteractionMode(world: Int, tileMode: Int, entityMode: Int) {
+        p.session.send(ServerMessage.InteractionMode(world, tileMode, entityMode))
+    }
+
     /** Shows or hides packed [component]. */
     public fun ifHide(component: Int, hidden: Boolean) {
         p.session.send(ServerMessage.IfHide(component, hidden))

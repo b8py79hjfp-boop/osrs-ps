@@ -367,6 +367,17 @@ class World(
                 )
             }
 
+            is ClientCommand.SetHeading -> {
+                if (command.heading !in 0 until HEADINGS) return invalid(player, command)
+                content.onHeading(player, command.heading)
+            }
+
+            is ClientCommand.OpWorldEntity -> {
+                val entity = worldEntities.byIndex(command.index)
+                if (command.option !in OP_RANGE || entity == null || !worldEntityInView(player, entity)) return invalid(player, command)
+                content.onOpWorldEntity(player, command.index, command.option)
+            }
+
             is ClientCommand.Examine -> {
                 val known =
                     when (command.kind) {
@@ -473,6 +484,14 @@ class World(
     private fun inBuildArea(player: Player, x: Int, z: Int): Boolean =
         (x - player.buildArea.x in 0 until BuildArea.SIZE && z - player.buildArea.z in 0 until BuildArea.SIZE) ||
             onSameWorldEntity(player, x, z)
+
+    /** WE8: a world entity is in view when it is shown and its pivot is near the player's root position. */
+    private fun worldEntityInView(player: Player, entity: tp.engine.map.WorldEntities.WorldEntity): Boolean {
+        if (!entity.visible) return false
+        val root = worldEntities.at(player.coord)?.rootCoord ?: player.coord
+        val pivot = entity.rootCoord
+        return pivot.level == root.level && maxOf(kotlin.math.abs(pivot.x - root.x), kotlin.math.abs(pivot.z - root.z)) <= WORLD_ENTITY_VIEW
+    }
 
     /** WE5: clicks on the deck of the world entity the player stands on name the deck's own tiles. */
     private fun onSameWorldEntity(player: Player, x: Int, z: Int): Boolean {
@@ -1056,6 +1075,12 @@ class World(
     fun pidOf(slot: Int): Int = pidOrder.indexOf(slot)
 
     companion object {
+        /** SET_HEADING values: 16 directions (sailing-movement.md). */
+        private const val HEADINGS = 16
+
+        /** RSProt `WorldEntityInfo.DEFAULT_RENDER_DISTANCE` (tiles). */
+        private const val WORLD_ENTITY_VIEW = 31
+
         /** [Player.regionStamp] of a normal (non-instanced) build area. */
         private const val NO_REGION = -1L
 

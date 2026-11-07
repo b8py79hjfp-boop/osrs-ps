@@ -61,6 +61,8 @@ object CommandCodec {
             is ClientCommand.OpLocT -> "oploct ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.OpObjT -> "opobjt ${c.id} ${c.x} ${c.z} ${c.component} ${c.sub} ${c.obj} ${c.ctrl}"
             is ClientCommand.Examine -> "examine ${c.kind} ${c.id}"
+            is ClientCommand.SetHeading -> "heading ${c.heading}"
+            is ClientCommand.OpWorldEntity -> "opworldentity ${c.option} ${c.index} ${c.ctrl}"
             is ClientCommand.ButtonT -> "buttont ${c.fromComponent} ${c.fromSub} ${c.fromObj} ${c.toComponent} ${c.toSub} ${c.toObj}"
             is ClientCommand.Button -> "button ${c.component} ${c.option} ${c.sub} ${c.obj} ${c.subop}"
             is ClientCommand.PublicChat -> "chat ${str(c.text)} ${c.colour} ${c.effect} ${c.type}"
@@ -126,6 +128,14 @@ object CommandCodec {
 
             "examine" -> {
                 ClientCommand.Examine(i(1), i(2))
+            }
+
+            "heading" -> {
+                ClientCommand.SetHeading(i(1))
+            }
+
+            "opworldentity" -> {
+                ClientCommand.OpWorldEntity(i(1), i(2), b(3))
             }
 
             "buttont" -> {

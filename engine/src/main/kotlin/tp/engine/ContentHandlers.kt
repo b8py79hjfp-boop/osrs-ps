@@ -66,6 +66,12 @@ interface ContentHandlers {
     /** A string/count dialog answer that no script was waiting for (a button's pending dialog callback). */
     fun onDialogAnswer(player: Player, value: Any) {}
 
+    /** The player at a boat's helm chose [heading] (0..15; sailing-movement.md). */
+    fun onHeading(player: Player, heading: Int) {}
+
+    /** Option [option] (1..5) on world entity [index], validated to exist and be in view (world-entities.md WE8). */
+    fun onOpWorldEntity(player: Player, index: Int, option: Int) {}
+
     /** IF_BUTTOND: slot [fromSub] of [fromComponent] dropped on slot [toSub] of [toComponent] (both interfaces open). */
     fun onButtonDrag(player: Player, fromComponent: Int, fromSub: Int, toComponent: Int, toSub: Int) {}
 

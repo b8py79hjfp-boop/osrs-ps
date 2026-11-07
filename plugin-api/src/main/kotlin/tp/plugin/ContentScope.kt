@@ -66,6 +66,18 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.examine = handler
     }
 
+    /** The player at a boat's helm chose a heading (0..15 = angle / 128); one handler (the sailing plugin). */
+    public fun onHeading(handler: PlayerRef.(Int) -> Unit) {
+        check(handlers.heading == null) { "duplicate handler: heading" }
+        handlers.heading = handler
+    }
+
+    /** Option 1..5 on a world entity (boat) in view; one handler (the sailing plugin). */
+    public fun onOpWorldEntity(handler: PlayerRef.(WorldEntityRef, Int) -> Unit) {
+        check(handlers.opWorldEntity == null) { "duplicate handler: world entity op" }
+        handlers.opWorldEntity = handler
+    }
+
     private fun useKey(a: Int, b: Int): Long = (a.toLong() shl Int.SIZE_BITS) or Integer.toUnsignedLong(b)
 
     /** Runs for every NPC added to the world (spawn data, content), e.g. to set its hunt range. */
@@ -244,6 +256,8 @@ internal class Handlers {
     val opObjT = HashMap<Int, suspend PlayerScript.(ObjRef) -> Unit>()
     val buttonT = HashMap<Int, PlayerRef.(ItemOnItem) -> Unit>()
     var examine: (PlayerRef.(Examined) -> Unit)? = null
+    var heading: (PlayerRef.(Int) -> Unit)? = null
+    var opWorldEntity: (PlayerRef.(WorldEntityRef, Int) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

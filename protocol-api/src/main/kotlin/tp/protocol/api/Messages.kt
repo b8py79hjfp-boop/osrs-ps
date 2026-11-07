@@ -54,6 +54,12 @@ sealed interface ClientCommand {
     /** Examine a loc / NPC type / ground obj by config id (OPLOC6 / OPNPC6 / OPOBJ6). [kind]: 0 loc, 1 npc, 2 obj. */
     data class Examine(val kind: Int, val id: Int) : ClientCommand
 
+    /** SET_HEADING: the player at a boat's helm chose heading [heading] (0..15, the angle / 128; sailing-movement.md). */
+    data class SetHeading(val heading: Int) : ClientCommand
+
+    /** OPWORLDENTITY1..5: option [option] on world entity [index] (a boat). */
+    data class OpWorldEntity(val option: Int, val index: Int, val ctrl: Boolean) : ClientCommand
+
     /** One component slot used on another (IF_BUTTONT: item on item, spell on item). */
     data class ButtonT(
         val fromComponent: Int,
@@ -239,6 +245,13 @@ sealed interface ServerMessage {
      * [reload] forces the client to rebuild even if the centre did not change.
      */
     class RebuildRegion(val x: Int, val z: Int, val reload: Boolean, val zones: IntArray) : ServerMessage
+
+    /**
+     * SET_INTERACTION_MODE for [world] (a world entity's index, or -1 the root world, -2 every world): what a click on a
+     * tile does ([tileMode] 0 disabled, 1 walk, 2 heading) and on an entity ([entityMode] 0 disabled, 1 enabled,
+     * 2 examine only). RSProt `SetInteractionMode`.
+     */
+    data class InteractionMode(val world: Int, val tileMode: Int, val entityMode: Int) : ServerMessage
 
     /**
      * Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops

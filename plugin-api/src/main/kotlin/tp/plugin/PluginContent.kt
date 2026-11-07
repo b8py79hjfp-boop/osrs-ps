@@ -204,6 +204,17 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         ref.handler(event)
     }
 
+    override fun onHeading(player: Player, heading: Int) {
+        val handler = h.heading ?: return
+        ref(player).handler(heading)
+    }
+
+    override fun onOpWorldEntity(player: Player, index: Int, option: Int) {
+        val handler = h.opWorldEntity ?: return
+        val entity = player.world.worldEntities.byIndex(index) ?: return
+        ref(player).handler(WorldEntityRef(entity, player.world), option)
+    }
+
     override fun onExamine(player: Player, kind: Int, id: Int) {
         val handler = h.examine ?: return
         ref(player).handler(Examined(Examined.Kind.entries[kind], id))

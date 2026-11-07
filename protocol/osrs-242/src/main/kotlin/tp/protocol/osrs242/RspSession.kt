@@ -446,6 +446,11 @@ internal class RspSession(
                     rebuildRegion(message)
                 }
 
+                is ServerMessage.InteractionMode -> {
+                    net.rsprot.protocol.game.outgoing.misc.client
+                        .SetInteractionMode(message.world, message.tileMode, message.entityMode)
+                }
+
                 is ServerMessage.ZoneReset -> {
                     UpdateZoneFullFollows(message.dx, message.dz, message.level)
                 }
