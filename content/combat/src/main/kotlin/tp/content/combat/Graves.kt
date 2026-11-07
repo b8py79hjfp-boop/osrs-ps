@@ -116,6 +116,12 @@ internal object Graves {
         player[GRAVE] = npc
         player.stopTimer(COUNTDOWN)
         player.timer(COUNTDOWN, 1, soft = true) { countdown(this) }
+        hud(player)
+    }
+
+    /** The grave timer HUD (client script 3459 counts varbit `gravestone_duration`, in ticks, down by itself). */
+    private fun hud(player: PlayerRef) {
+        player.setVarbit(tp.symbols.Varbits.GRAVESTONE_DURATION, ticksLeft(player).toInt())
     }
 
     /** DE5: one tick of the owner's online time, paused while the grave interface is open. */
@@ -145,12 +151,14 @@ internal object Graves {
         player.stopTimer(COUNTDOWN)
         player.setSaved(TICKS_KEY, null)
         player.setSaved(COORD_KEY, null)
+        player.setVarbit(tp.symbols.Varbits.GRAVESTONE_DURATION, 0)
     }
 
     /** Called after items left the grave: the timer restarts (DE5), or the grave goes when it is empty. */
     fun changed(player: PlayerRef) {
         if (player.inv(Invs.GRAVESTONE, stackAll = true).isEmpty()) return clear(player)
         player.setSaved(TICKS_KEY, DURATION)
+        hud(player)
     }
 
     /** DE2: cooked food and potions (their first backpack op is Eat or Drink). */

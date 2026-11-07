@@ -40,5 +40,9 @@ Sources: OSRS Wiki "Items Kept on Death" (IK), "Gravestone" (GR), "Death/Item Re
   ("This isn't your gravestone."), of Death with nothing stored, of the paid fee and of the coffer total are ours.
 - **OPEN-DE9:** the grave NPC is removed while its owner is logged out and comes back at login (the timer is paused
   then anyway); Death's dialogue (Talk-to) and his shop are not transcribed.
+- **OPEN-DE10:** the grave (602 / 672), Death's Office (669) and coffer (670) windows are not opened: their init
+  scripts take 8-18 component arguments whose roles need a real client to confirm (docs/research/death-interfaces.md).
+  Loot and Collect take everything that fits at once, Sacrifice is "use an item on the coffer". The grave timer HUD
+  (varbit `gravestone_duration`) is set.
 - **OPEN-DE7:** the first-death tutorial in Death's Office (Death explains graves; the mechanic "is enabled after the
   first time visiting Death"): graves are always enabled here.
