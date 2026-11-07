@@ -582,6 +582,7 @@ class World(
             player.buildArea = BuildArea.originFor(root)
             player.session.send(ServerMessage.Rebuild(root.x, root.z))
             player.zoneSync.reset()
+            player.deckSync.reset()
             return
         }
         val stamp = instance?.let { (it.id.toLong() shl Int.SIZE_BITS) or it.version.toLong() } ?: NO_REGION
@@ -598,6 +599,7 @@ class World(
             }
         player.session.send(message)
         player.zoneSync.reset()
+        player.deckSync.reset()
     }
 
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
@@ -609,7 +611,9 @@ class World(
                 player.session.syncAvatar(player.avatarState())
                 player.teleportedThisTick = false
                 player.flushState()
-                player.zoneSync.process(player, ground, locs)
+                val root = worldEntities.at(player.coord)?.rootCoord ?: player.coord
+                player.zoneSync.process(player, ground, locs, root)
+                player.deckSync.process(player, root, worldEntities, locs, ground)
             }
         }
         ground.clearEvents()

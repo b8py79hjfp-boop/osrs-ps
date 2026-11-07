@@ -169,6 +169,11 @@ sealed interface ZoneOp {
 
 /** Outgoing messages, revision-independent. Info packets and rebuilds are handled by the session itself. */
 sealed interface ServerMessage {
+    companion object {
+        /** [ZoneReset.world] / [ZoneOps.world] of the root world. */
+        const val ROOT: Int = -1
+    }
+
     /**
      * A chatbox line: [type] is the client's message type (0 game; 101 trade request and 103 duel request, which the
      * client makes clickable for [name]).
@@ -235,11 +240,15 @@ sealed interface ServerMessage {
      */
     class RebuildRegion(val x: Int, val z: Int, val reload: Boolean, val zones: IntArray) : ServerMessage
 
-    /** Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops refill it. */
-    data class ZoneReset(val dx: Int, val dz: Int, val level: Int) : ServerMessage
+    /**
+     * Zone header (full): the client clears the zone at ([dx], [dz]) from the build-area origin, then the following ops
+     * refill it. [world] is [ROOT], or a world entity's index: then ([dx], [dz]) count from its deck's base and the
+     * session sends it inside that world's block of the info packets (docs/mechanics/world-entities.md WE6).
+     */
+    data class ZoneReset(val dx: Int, val dz: Int, val level: Int, val world: Int = ROOT) : ServerMessage
 
-    /** A batch of [ops] for the zone at ([dx], [dz]) from the build-area origin (one enclosed zone packet). */
-    class ZoneOps(val dx: Int, val dz: Int, val level: Int, val ops: List<ZoneOp>) : ServerMessage
+    /** A batch of [ops] for the zone at ([dx], [dz]) from the build-area origin (one enclosed zone packet); [world] as for [ZoneReset]. */
+    class ZoneOps(val dx: Int, val dz: Int, val level: Int, val ops: List<ZoneOp>, val world: Int = ROOT) : ServerMessage
 
     /** System update countdown in ticks (0 clears it): the client shows "System update in: m:ss". */
     data class SystemUpdate(val ticks: Int) : ServerMessage

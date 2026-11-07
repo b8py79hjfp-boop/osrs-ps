@@ -101,6 +101,9 @@ class Player internal constructor(
     /** South-west tile of the current 104x104 build area (client map region). */
     internal var buildArea: CoordGrid = BuildArea.originFor(spawn)
 
+    /** Deck zone sync of the world entities in view (world-entities.md WE6). */
+    internal val deckSync = tp.engine.zone.DeckSync()
+
     /** Instance id and version of the last region rebuild sent, or -1 for a normal build area (instances.md IN4). */
     internal var regionStamp: Long = -1
 

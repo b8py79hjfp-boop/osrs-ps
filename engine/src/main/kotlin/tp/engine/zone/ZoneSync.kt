@@ -23,8 +23,9 @@ internal class ZoneSync {
         lastZone = -1
     }
 
-    fun process(player: Player, objs: GroundObjs, locs: tp.engine.map.DynamicLocs) {
-        val zone = ZoneKey.of(player.coord)
+    /** [centre]: the player's tile, or the pivot of the world entity they stand on (world-entities.md WE4). */
+    fun process(player: Player, objs: GroundObjs, locs: tp.engine.map.DynamicLocs, centre: tp.util.CoordGrid = player.coord) {
+        val zone = ZoneKey.of(centre)
         if (zone.packed == lastZone) {
             for (i in 0 until observedCount) sendEvents(player, ZoneKey(observed[i]), objs, locs)
             return

@@ -121,6 +121,9 @@ class WorldEntities internal constructor(
         return byInstance[instance.id]?.takeIf { coord in it }
     }
 
+    /** Every world entity (check [WorldEntity.visible]); a live view, no copy (info-pass hot loop). */
+    fun all(): Collection<WorldEntity> = byIndex.values
+
     /** The world entity built on [instance], or null. */
     fun of(instance: Instances.Instance): WorldEntity? = byInstance[instance.id]
 

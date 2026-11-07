@@ -24,17 +24,22 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
   root world around the entity's pivot, and it is rebuilt with REBUILD_NORMAL as the entity sails, not with
   REBUILD_REGION.
 - **WE5: clicks on the deck** name deck tiles. They are accepted when the player is on that entity.
+- **WE6: deck zones.** Each player gets the zone state of every deck whose pivot is within 31 tiles of the player's
+  root position (RSProt `DEFAULT_RENDER_DISTANCE`):
+  - The first tick a deck is seen it gets full zone state; after that, each tick's loc changes and ground items.
+  - These messages are addressed to the entity's world, with zone offsets counted from the deck's base. The session
+    holds them until RSProt reports that world in view, and sends them inside its block after its NPC info.
+  - For a player on board, root zone sync is centred on the entity's pivot.
+- **WE7: NPCs on decks** stand on deck tiles like any NPC. RSProt's per-world NPC info shows them on the entity.
 
 ## Verified
 
 In the real client: a raft (config 1, deck copied from the template zone at (1496, 4512), level 1) spawned in the sea
 off Port Sarim with the player on board. Moving it north and west carried the player and camera along, and the sail
-turned with the angle.
+turned with the angle. A loc added to the deck after it was shown (WE6) and an NPC spawned on the deck (WE7) both
+showed on the raft.
 
 ## OPEN
 
-- **OPEN-WE1:** zone updates (loc changes, ground items) on a deck are not sent to observers in the entity's world.
-  Decks are drawn from their template only.
-- **OPEN-WE2:** NPCs on decks (crew) are not placed in the entity's NPC info yet.
 - **OPEN-WE3:** the pivot's position relative to the deck (config bounds ops 4–9) and the config fields beyond id,
   category and bounds are not interpreted.

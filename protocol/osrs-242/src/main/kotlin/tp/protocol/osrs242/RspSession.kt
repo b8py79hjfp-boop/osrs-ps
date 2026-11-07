@@ -112,14 +112,22 @@ internal class RspSession(
         }
     }
 
+    /** Zone messages of world entities, held until that world's block of the info packets (WE6). */
+    private val worldZones = HashMap<Int, ArrayList<ServerMessage>>()
+
     override fun send(message: ServerMessage) {
-        if (message is ServerMessage.ZoneOps) {
-            // Obj ops are only accepted inside UPDATE_ZONE_PARTIAL_ENCLOSED (RSProt `Session.validateMessage`).
-            val ops = message.ops.map(::zoneProt)
-            val buf = zoneBuffers.computeZoneForClient(OldSchoolClientType.DESKTOP, ops)
-            session.queue(UpdateZonePartialEnclosed(message.dx, message.dz, message.level, buf))
+        val world =
+            when (message) {
+                is ServerMessage.ZoneOps -> message.world
+                is ServerMessage.ZoneReset -> message.world
+                else -> ServerMessage.ROOT
+            }
+        if (world != ServerMessage.ROOT) {
+            val held = worldZones.getOrPut(world) { ArrayList() }
+            if (held.size < MAX_HELD_WORLD_ZONES) held += message
             return
         }
+        if (message is ServerMessage.ZoneOps) return queueZoneOps(message)
         if (message is ServerMessage.Rebuild) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         if (message is ServerMessage.RebuildRegion) infos.updateRootBuildAreaCenteredOnPlayer(message.x, message.z)
         val held = beforeFirstInfo
@@ -184,6 +192,13 @@ internal class RspSession(
             .setChat(colour, effects, 0, false, text, null)
     }
 
+    /** Obj ops are only accepted inside UPDATE_ZONE_PARTIAL_ENCLOSED (RSProt `Session.validateMessage`). */
+    private fun queueZoneOps(message: ServerMessage.ZoneOps) {
+        val ops = message.ops.map(::zoneProt)
+        val buf = zoneBuffers.computeZoneForClient(OldSchoolClientType.DESKTOP, ops)
+        session.queue(UpdateZonePartialEnclosed(message.dx, message.dz, message.level, buf))
+    }
+
     /** Info packets in the order of RSProt's README example; npc info is omitted (and released) when empty. */
     override fun flushInfos() {
         val packets = infos.getPackets()
@@ -208,7 +223,11 @@ internal class RspSession(
                 session.queue(world.npcUpdateOrigin)
                 world.npcInfo.onSuccess(session::queue).onFailure { throw it }
             }
+            worldZones.remove(world.worldId)?.forEach { zone ->
+                if (zone is ServerMessage.ZoneOps) queueZoneOps(zone) else session.queue(toRsprot(zone))
+            }
         }
+        for (removed in packets.removedWorldIndices) worldZones.remove(removed)
         session.queue(root.activeWorld)
         beforeFirstInfo?.let { held ->
             held.forEach(session::queue)
@@ -236,6 +255,9 @@ internal class RspSession(
         /** REBUILD_REGION covers 13 zones per axis, the centre zone ± 6 (RSProt `RebuildRegionV2`). */
         private const val REGION_AXIS = 13
         private const val REGION_RADIUS = 6
+
+        /** Cap on held world-entity zone messages for a world the client has not been given yet. */
+        private const val MAX_HELD_WORLD_ZONES = 512
 
         /** REBUILD_WORLDENTITY_V4: the map behind a world entity, from its instance's reference zones (WE2). */
         private fun rebuildWorldEntity(spec: WorldEntitySpec): RebuildWorldEntityV4 {
