@@ -93,11 +93,9 @@ internal object SpellCasting {
     private fun strike(player: PlayerRef, target: EntityRef, spell: CombatSpell, defensive: Boolean): Boolean {
         val def = (target as? NpcRef)?.let { NpcCombatTable.of(it.type) }
         val weakness = if (spell.element != null && def?.weakElement == spell.element.word) def.weakPercent else 0
-        val attackRoll =
-            Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC, target = target) *
-                (PERCENT + weakness + demonbaneAccuracy(player, spell)) /
-                PERCENT
-        val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
+        val info = info(spell)
+        val attackRoll = Attacks.attackRoll(player, Stance.SPELL, AttackType.MAGIC, target = target, spell = info, weakness = weakness)
+        val defenceRoll = PostRoll.brimstone(player, Attacks.defenceRoll(target, AttackType.MAGIC))
         val distance = if (spell.toSouthWest) southWestDistance(player, target) else player.distanceTo(target)
         val delay = Formulas.magicDelay(distance)
         val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
@@ -111,9 +109,10 @@ internal object SpellCasting {
             if (spell.effect is SpellEffect.Debuff) {
                 0
             } else {
-                var max = TargetGear.apply(maxHit(player, target, spell, weakness), TargetGear.of(player, target, CombatStyle.MAGIC))
+                var max = maxHit(player, target, spell, weakness)
                 if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
-                minOf(Formulas.DAMAGE_CAP, Formulas.damage(max, player::random))
+                val rolled = Formulas.damage(max, player::random)
+                minOf(Formulas.DAMAGE_CAP, PostRoll.ahrim(player, PostRoll.markOfDarkness(player, target, info, rolled)))
             }
         val style = if (spell.effect is SpellEffect.Debuff) HitStyle.TYPELESS else HitStyle.MAGIC
         if (spell.effect !is SpellEffect.Debuff) {
@@ -121,7 +120,10 @@ internal object SpellCasting {
                 SpellEffects.land(player, target, spell, damage)
                 // PO10: spells cast with the toxic staff of the dead can envenom (the staff is a venom weapon).
                 Toxic.onPlayerHit(player, target, CombatStyle.MAGIC, damage)
+                SetEffects.onLanded(player, target, CombatStyle.MAGIC, damage)
             }
+            val twin = PostRoll.twinflame(player, spell.name, info.standard, damage)
+            if (twin > 0) CombatSystem.queueHit(target, player, twin, style, delay + 1)
         } else {
             target.queueHit(delay) { SpellEffects.land(player, target, spell, damage) }
         }
@@ -129,16 +131,24 @@ internal object SpellCasting {
         return true
     }
 
-    /** CM4-CM7: the spell's base max with the caster's bonuses and the target's elemental weakness. */
+    /** CM4-CM7: the spell's base max with the caster's bonuses, gear effects and the target's elemental weakness. */
     private fun maxHit(player: PlayerRef, target: EntityRef, spell: CombatSpell, weakness: Int): Int {
-        val base = baseMax(player, target, spell)
-        val percent = player.bonus(Param.MAGIC_DAMAGE) / MAGIC_DAMAGE_UNIT + player.activePrayers().sumOf { it.effect.magicDamage }
-        var max = Formulas.magicMaxHit(base, percent) + base * weakness / PERCENT
-        if (spell.only == SpellTarget.DEMON && SpellEffects.marked(player)) {
-            max = max * (PERCENT + if (player.worn(Wear.WEAPON) == Objs.PURGING_STAFF) PURGING_DAMAGE else MARK_DAMAGE) / PERCENT
-        }
-        return max
+        val c = GearContext.ctx(player, target, AttackType.MAGIC)
+        val info = info(spell)
+        val tenths = player.bonus(Param.MAGIC_DAMAGE) + player.activePrayers().sumOf { it.effect.magicDamage } * TENTHS
+        val amulet = with(GearEffects) { c.kit.elementalAmulet(info.element) }
+        return GearEffects.magicMax(c, baseMax(player, target, spell), tenths, info, weakness, amulet)
     }
+
+    /** The spell traits gear effects read (gear-effects.md GE30-GE37). */
+    fun info(spell: CombatSpell): GearEffects.SpellInfo =
+        GearEffects.SpellInfo(
+            standard = spell.book == SpellBook.STANDARD,
+            element = spell.element?.word,
+            demonbane = spell.only == SpellTarget.DEMON,
+            bind = spell.name in BINDS,
+            ancient = spell.book == SpellBook.ANCIENT,
+        )
 
     private fun baseMax(player: PlayerRef, target: EntityRef, spell: CombatSpell): Int {
         val magic = player.level(Stat.MAGIC)
@@ -184,12 +194,6 @@ internal object SpellCasting {
             }
         val cape = player.worn(Wear.CAPE)
         return cape >= 0 && player.objName(cape).lowercase().let { "$god cape" in it || "$god max cape" in it }
-    }
-
-    private fun demonbaneAccuracy(player: PlayerRef, spell: CombatSpell): Int {
-        if (spell.only != SpellTarget.DEMON) return 0
-        if (!SpellEffects.marked(player)) return DEMONBANE_ACCURACY
-        return if (player.worn(Wear.WEAPON) == Objs.PURGING_STAFF) PURGING_ACCURACY else MARK_ACCURACY
     }
 
     /** CM8: per damage 2 Magic, or defensively 1.33 Magic and 1 Defence; 1.33 Hitpoints either way. */
@@ -262,8 +266,11 @@ internal object SpellCasting {
     private const val CYCLES_PER_TICK = 30
     private const val PERCENT = 100
 
-    /** Magic damage param unit (OPEN-D1). */
-    private const val MAGIC_DAMAGE_UNIT = 10
+    /** Magic damage % is carried in tenths of a percent (cache param 299, prayers ×10; OPEN-D1). */
+    private const val TENTHS = 10
+
+    /** The bind spells (Tome of water's accuracy bonus applies to them, Wiki "Tome of water"). */
+    private val BINDS = setOf("Bind", "Snare", "Entangle")
     private const val SPLASH_RADIUS = 1
     private const val MAX_EXTRA_TARGETS = 8
 
@@ -286,11 +293,4 @@ internal object SpellCasting {
     private const val IBAN_USED = "combat.iban_charges_used"
     private const val IBAN_U_USED = "combat.iban_u_charges_used"
     private const val DART_E_USED = "combat.slayer_staff_e_charges_used"
-
-    /** Wiki "Demonbane spells": accuracy +20%, +40% marked, +80% marked with a purging staff; damage +25% / +50%. */
-    private const val DEMONBANE_ACCURACY = 20
-    private const val MARK_ACCURACY = 40
-    private const val PURGING_ACCURACY = 80
-    private const val MARK_DAMAGE = 25
-    private const val PURGING_DAMAGE = 50
 }

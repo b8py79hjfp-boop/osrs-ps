@@ -19,6 +19,9 @@ internal object Param {
     const val PRAYER = 11
     const val RANGED_STRENGTH = 12
 
+    /** The second ranged strength param (twisted bow 20, necklace of anguish 5, Masori (f) 2): summed with [RANGED_STRENGTH]. */
+    const val RANGED_STRENGTH_ALT = 189
+
     /** Ranged weapon attack range (magic shortbow 7, rune crossbow 7). */
     const val ATTACK_RANGE = 13
 

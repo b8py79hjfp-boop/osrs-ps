@@ -79,13 +79,17 @@ internal object DeathRules {
                 .sortedByDescending { it.third }
                 .take(keep)
                 .toSet()
-        val lost = units.filter { it !in kept }
+        var lost = units.filter { it !in kept }
         val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
         val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
         // DE3: a death in instance space leaves the grave at the respawn point.
         val at = if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
         if (!pvp) return Graves.bury(dead, lost.map { it.first to it.second }, at, inWilderness)
         val owner = (killer as PlayerRef).username
+        // GE64 Wiki "Toxic blowpipe": unprotected in PvP, it drops empty with its scales and darts beside it.
+        val blowpipes = lost.filter { (invId, slot, _) -> Blowpipe.isLoaded(dead.inv(invId).obj(slot)) }
+        for ((invId, slot, _) in blowpipes) Blowpipe.dropOnDeath(dead, invId, slot, dead.coord, owner)
+        lost = lost - blowpipes.toSet()
         val untradeable = lost.filter { (invId, slot, _) -> !dead.objTradeable(dead.inv(invId).obj(slot)) }
         dead.transaction("death drop") {
             (lost - untradeable.toSet()).all { (invId, slot, _) ->

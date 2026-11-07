@@ -57,7 +57,11 @@ internal fun PlayerRef.bonus(param: Int): Int {
     var total = 0
     for (slot in 0 until inv.size) {
         val obj = inv.obj(slot)
-        if (obj >= 0) total += objParam(obj, param, 0)
+        if (obj < 0) continue
+        total += objParam(obj, param, 0)
+        // Ranged strength is stored in two params: 12 (ammo, bows such as the bow of faerdhinen, the blowpipe) and
+        // 189 (twisted / scorching bow, necklace of anguish, Masori (f), Ava's assembler): `cache-dump config obj`.
+        if (param == Param.RANGED_STRENGTH) total += objParam(obj, Param.RANGED_STRENGTH_ALT, 0)
     }
     return total
 }

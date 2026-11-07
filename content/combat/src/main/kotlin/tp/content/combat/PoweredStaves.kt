@@ -233,7 +233,7 @@ internal object PoweredStaves {
         val multiplier = if (staff.effect == Effect.SHADOW) SHADOW_MULTIPLIER else 1
         player[Attr.LAST_SPELL] = null // a powered staff's own spell is not Magic Dart (slayer-equipment.md SE9)
         val attackRoll = Attacks.attackRoll(player, stance, AttackType.MAGIC, magicBonusMultiplier = multiplier, target = target)
-        val defenceRoll = Attacks.defenceRoll(target, AttackType.MAGIC)
+        val defenceRoll = PostRoll.brimstone(player, Attacks.defenceRoll(target, AttackType.MAGIC))
         val hit = Formulas.hits(attackRoll, defenceRoll, player::random)
         val arrive = target.ticksUntilHit(delay) * CYCLES_PER_TICK
         target.spotAnim(if (hit) staff.impact else SpotAnims.FAILEDSPELL_IMPACT, height = IMPACT_HEIGHT, delay = arrive)
@@ -243,18 +243,19 @@ internal object PoweredStaves {
     }
 
     private fun land(player: PlayerRef, target: EntityRef, staff: Staff, stance: Stance, multiplier: Int, delay: Int) {
-        val damagePercent =
-            minOf(MAX_SHADOW_PERCENT, player.bonus(Param.MAGIC_DAMAGE) / MAGIC_DAMAGE_UNIT * multiplier) +
-                player.activePrayers().sumOf { it.effect.magicDamage }
-        var max = Formulas.magicMaxHit(staff.max(player.level(Stat.MAGIC)), damagePercent)
-        max = TargetGear.apply(max, TargetGear.of(player, target, CombatStyle.MAGIC))
+        val tenths =
+            minOf(MAX_SHADOW_TENTHS, player.bonus(Param.MAGIC_DAMAGE) * multiplier) +
+                player.activePrayers().sumOf { it.effect.magicDamage } * TENTHS
+        val c = GearContext.ctx(player, target, AttackType.MAGIC)
+        var max = GearEffects.magicMax(c, staff.max(player.level(Stat.MAGIC)), tenths, null, 0, elementalAmulet = false)
         if (target is PlayerRef && target.protects(CombatStyle.MAGIC)) max = Formulas.protectedMaxHit(max)
-        var damage = Formulas.damage(max, player::random)
+        var damage = PostRoll.ahrim(player, Formulas.damage(max, player::random))
         val sanguine = staff.effect == Effect.SANGUINE && player.random(SANGUINE_CHANCE) == 0
         if (sanguine) damage += SANGUINE_BONUS
         damage = minOf(Formulas.DAMAGE_CAP, damage)
         CombatSystem.queueHit(target, player, damage, HitStyle.MAGIC, delay) {
             if (staff.effect == Effect.VENOM && player.random(PERCENT) < VENOM_CHANCE) Poison.envenom(target)
+            SetEffects.onLanded(player, target, CombatStyle.MAGIC, damage)
             if (sanguine) {
                 player.hitpoints = minOf(player.maxHitpoints, player.hitpoints + damage / 2)
                 target.spotAnim(SpotAnims.SANGUINESTI_STAFF_HEAL)
@@ -320,11 +321,13 @@ internal object PoweredStaves {
     private const val IMPACT_HEIGHT = 124
     private const val CYCLES_PER_TICK = 30
     private const val PERCENT = 100
-    private const val MAGIC_DAMAGE_UNIT = 10
+
+    /** Magic damage % in tenths of a percent (cache param 299; prayers ×10). */
+    private const val TENTHS = 10
 
     /** Wiki "Tumeken's shadow": gear magic attack and damage × 3, damage capped at 100%. */
     private const val SHADOW_MULTIPLIER = 3
-    private const val MAX_SHADOW_PERCENT = 100
+    private const val MAX_SHADOW_TENTHS = 1000
 
     /** Wiki "Sanguinesti staff": 1 in 5, +8 damage. */
     private const val SANGUINE_CHANCE = 5

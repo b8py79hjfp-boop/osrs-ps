@@ -133,7 +133,15 @@ internal object SpecialEffects {
         val defenceType = row.defenceType ?: type
         val accuracy = accuracyPermille(target, row, energyUsed)
         val sure = accuracy >= GUARANTEED
-        val attackRoll = if (sure) 0 else (Attacks.attackRoll(player, stance, type, target = target).toLong() * accuracy / PERMILLE).toInt()
+        val attackRoll =
+            if (sure) {
+                0
+            } else {
+                (
+                    Attacks.attackRoll(player, stance, type, target = target, special = true).toLong() * accuracy /
+                        PERMILLE
+                ).toInt()
+            }
         var defenceRoll = Attacks.defenceRoll(target, defenceType, Attacks.rangedDefenceOf(category))
         if (row.name == "Feint") defenceRoll /= FEINT_DEFENCE_DIVISOR
         var max = baseMax(player, row, stance, type, energyUsed, target)
@@ -177,7 +185,7 @@ internal object SpecialEffects {
 
     /** SP11: the max hit before protection prayers, with the specials whose numbers are formulas. */
     private fun baseMax(player: PlayerRef, row: SpecialRow, stance: Stance, type: AttackType, energyUsed: Int, target: EntityRef?): Int {
-        val normal = Attacks.maxHit(player, stance, type, target)
+        val normal = Attacks.maxHit(player, stance, type, target, special = true)
         return when (row.name) {
             "The Judgement", "Echo slash", "Power of the Gods" -> {
                 normal * GODSWORD_BASE / PERMILLE * AGS_FACTOR / PERMILLE

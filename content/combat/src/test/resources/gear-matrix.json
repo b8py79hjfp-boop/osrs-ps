@@ -1,0 +1,836 @@
+[
+ {
+  "id": "void-melee",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   4151,
+   11665,
+   8839,
+   8840,
+   8842
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 27,
+  "maxAttackRoll": 17666
+ },
+ {
+  "id": "obsidian",
+  "style": "crush",
+  "stance": "Accurate",
+  "gear": [
+   6528,
+   21298,
+   21301,
+   21304
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 28,
+  "maxAttackRoll": 17424
+ },
+ {
+  "id": "inquisitor",
+  "style": "crush",
+  "stance": "Accurate",
+  "gear": [
+   24417,
+   24419,
+   24420,
+   24421
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 29,
+  "maxAttackRoll": 23001
+ },
+ {
+  "id": "arclight",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   19675
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 20,
+  "maxAttackRoll": 19074
+ },
+ {
+  "id": "emberlight",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   29589
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Greater demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 3,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 22,
+  "maxAttackRoll": 25058
+ },
+ {
+  "id": "darklight",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   6746
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 20,
+  "maxAttackRoll": 14080
+ },
+ {
+  "id": "dhl",
+  "style": "stab",
+  "stance": "Controlled",
+  "gear": [
+   22978
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Black dragon",
+   "attributes": [
+    "dragon",
+    "fiery"
+   ],
+   "size": 4,
+   "magic": 100,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 27,
+  "maxAttackRoll": 19310
+ },
+ {
+  "id": "keris-breaching",
+  "style": "stab",
+  "stance": "Accurate",
+  "gear": [
+   25981
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Kalphite Soldier",
+   "attributes": [
+    "kalphite"
+   ],
+   "size": 3,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 23,
+  "maxAttackRoll": 17848
+ },
+ {
+  "id": "salve-e",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   4151,
+   10588
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Skeleton",
+   "attributes": [
+    "undead"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 28,
+  "maxAttackRoll": 19272
+ },
+ {
+  "id": "mask-melee",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   4151,
+   26674
+  ],
+  "spell": null,
+  "buffs": {
+   "onSlayerTask": true
+  },
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 28,
+  "maxAttackRoll": 18736
+ },
+ {
+  "id": "fang",
+  "style": "stab",
+  "stance": "Accurate",
+  "gear": [
+   26219
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 4,
+  "max": 24,
+  "maxAttackRoll": 18590
+ },
+ {
+  "id": "colossal",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   27021
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Black dragon",
+   "attributes": [
+    "dragon",
+    "fiery"
+   ],
+   "size": 4,
+   "magic": 100,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 35,
+  "maxAttackRoll": 17820
+ },
+ {
+  "id": "soulreaper-3",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   28338
+  ],
+  "spell": null,
+  "buffs": {
+   "soulreaperStacks": 3
+  },
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 37,
+  "maxAttackRoll": 21780
+ },
+ {
+  "id": "leaf-axe",
+  "style": "slash",
+  "stance": "Accurate",
+  "gear": [
+   20727
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Kurask",
+   "attributes": [
+    "leafy"
+   ],
+   "size": 3,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 30,
+  "maxAttackRoll": 14960
+ },
+ {
+  "id": "chainmace-wild",
+  "style": "crush",
+  "stance": "Accurate",
+  "gear": [
+   22545
+  ],
+  "spell": null,
+  "buffs": {
+   "inWilderness": true
+  },
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 33,
+  "maxAttackRoll": 21615
+ },
+ {
+  "id": "tbow-1",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   20997,
+   11212
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 13,
+  "maxAttackRoll": 5896
+ },
+ {
+  "id": "tbow-200",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   20997,
+   11212
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Kree'arra",
+   "attributes": [
+    "flying"
+   ],
+   "size": 5,
+   "magic": 200,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 47,
+  "maxAttackRoll": 19014
+ },
+ {
+  "id": "tbow-300",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   20997,
+   11212
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Zulrah",
+   "attributes": [],
+   "size": 5,
+   "magic": 300,
+   "magicAttack": 50
+  },
+  "min": 0,
+  "max": 53,
+  "maxAttackRoll": 20636
+ },
+ {
+  "id": "bofa-crystal",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   25865,
+   23971,
+   23975,
+   23979
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 33,
+  "maxAttackRoll": 35750
+ },
+ {
+  "id": "dhcb",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   21012,
+   21905
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Black dragon",
+   "attributes": [
+    "dragon",
+    "fiery"
+   ],
+   "size": 4,
+   "magic": 100,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 40,
+  "maxAttackRoll": 22737
+ },
+ {
+  "id": "dhcb-mask",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   21012,
+   21905,
+   26674
+  ],
+  "spell": null,
+  "buffs": {
+   "onSlayerTask": true
+  },
+  "monster": {
+   "name": "Black dragon",
+   "attributes": [
+    "dragon",
+    "fiery"
+   ],
+   "size": 4,
+   "magic": 100,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 44,
+  "maxAttackRoll": 26640
+ },
+ {
+  "id": "void-ranged",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   9185,
+   9144,
+   11664,
+   8839,
+   8840,
+   8842
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 34,
+  "maxAttackRoll": 18634
+ },
+ {
+  "id": "elite-void-ranged",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   9185,
+   9144,
+   11664,
+   13072,
+   13073,
+   8842
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 34,
+  "maxAttackRoll": 18634
+ },
+ {
+  "id": "scorching",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   29591,
+   11212
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 36,
+  "maxAttackRoll": 26884
+ },
+ {
+  "id": "atlatl",
+  "style": "ranged",
+  "stance": "Accurate",
+  "gear": [
+   29000,
+   28991
+  ],
+  "spell": null,
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 18,
+  "maxAttackRoll": 16610
+ },
+ {
+  "id": "smoke-bolt",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   11998
+  ],
+  "spell": {
+   "name": "Fire Bolt",
+   "image": "Fire Bolt.png",
+   "max_hit": 12,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 13,
+  "maxAttackRoll": 9028
+ },
+ {
+  "id": "void-mage",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   1387,
+   11663,
+   8839,
+   8840,
+   8842
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 24,
+  "maxAttackRoll": 11544
+ },
+ {
+  "id": "elite-void-mage",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   1387,
+   11663,
+   13072,
+   13073,
+   8842
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 25,
+  "maxAttackRoll": 11544
+ },
+ {
+  "id": "tome-fire",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   1387,
+   20714
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 26,
+  "maxAttackRoll": 8856
+ },
+ {
+  "id": "virtus",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   4675,
+   26241,
+   26243,
+   26245
+  ],
+  "spell": {
+   "name": "Ice Barrage",
+   "image": "Ice Barrage.png",
+   "max_hit": 30,
+   "spellbook": "ancient",
+   "element": null
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 34,
+  "maxAttackRoll": 15984
+ },
+ {
+  "id": "dhw",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   30070
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Black dragon",
+   "attributes": [
+    "dragon",
+    "fiery"
+   ],
+   "size": 4,
+   "magic": 100,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 36,
+  "maxAttackRoll": 15120
+ },
+ {
+  "id": "mask-magic",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   1387,
+   26674
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {
+   "onSlayerTask": true
+  },
+  "monster": {
+   "name": "Abyssal demon",
+   "attributes": [
+    "demon"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 27,
+  "maxAttackRoll": 9563
+ },
+ {
+  "id": "salve-ei-magic",
+  "style": "magic",
+  "stance": "Manual Cast",
+  "gear": [
+   1387,
+   26782
+  ],
+  "spell": {
+   "name": "Fire Surge",
+   "image": "Fire Surge.png",
+   "max_hit": 24,
+   "spellbook": "standard",
+   "element": "fire"
+  },
+  "buffs": {},
+  "monster": {
+   "name": "Skeleton",
+   "attributes": [
+    "undead"
+   ],
+   "size": 1,
+   "magic": 1,
+   "magicAttack": 0
+  },
+  "min": 0,
+  "max": 28,
+  "maxAttackRoll": 9590
+ }
+]

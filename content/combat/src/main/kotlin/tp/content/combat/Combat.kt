@@ -194,6 +194,7 @@ internal object CombatSystem {
         }
         // SE9: leafy monsters, harpie bug swarms and warped creatures only take damage from their required gear.
         adjusted = SlayerGear.adjust(source, target, style, adjusted)
+        adjusted = Immunities.adjust(source, target, style, adjusted)
         val dealt = minOf(adjusted, target.hitpoints)
         target.hitpoints -= dealt
         if (dealt > 0) {
@@ -344,12 +345,13 @@ internal object CombatSystem {
      * from the weapon slot (not the blowpipe, which uses charges). False when there is none.
      */
     fun useAmmo(player: PlayerRef, target: EntityRef, category: WeaponCategory): Boolean {
+        if (Blowpipe.isBlowpipe(player.worn(Wear.WEAPON))) return Blowpipe.fire(player, target)
         val weapon = player.objName(player.worn(Wear.WEAPON)).lowercase()
         if (NO_AMMO_BOWS.any { it in weapon }) return true
         val slot =
             when {
                 category === Weapons.BOW || category === Weapons.CROSSBOW -> Wear.AMMO
-                category === Weapons.THROWN && "blowpipe" !in weapon -> Wear.WEAPON
+                category === Weapons.THROWN -> Wear.WEAPON
                 else -> return true
             }
         val ammo = player.worn(slot)
