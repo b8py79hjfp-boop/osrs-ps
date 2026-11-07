@@ -86,6 +86,7 @@ comes from the Wiki pages named in the rule. Shared rules (success roll, clocks,
   is not sourced.
 - **OPEN-MN4:** amethyst's 2-or-3 choice is assumed uniform and drawn when the first amethyst is mined.
 - **OPEN-MN5:** message texts other than the empty-rock one are not from a cited source.
+- **OPEN-MN7:** blurite rocks (level 10, 17.5 xp, 42-tick respawn; Wiki "Blurite ore") use copper's success rates (100 / 350); the Wiki has no blurite curve.
 - **OPEN-MN6:** not implemented: the amulet of glory (gem table 1/64.2 and the gem rock rates 84 / 210), mining gloves, Varrock
   armour, mining cape, prospector outfit xp, celestial ring/signet, bracelet of clay and soft clay, gem/coal bags, clue geodes and
   the unidentified minerals / golden nugget / pet tertiary drops, Mining Guild and Wilderness respawn reductions (adamantite 2 min,

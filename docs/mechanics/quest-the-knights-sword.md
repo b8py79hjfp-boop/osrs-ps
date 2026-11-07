@@ -12,8 +12,7 @@ row 83 (id 14): varp 122, end state 7, 1 quest point, (13, 127250 tenths) Smithi
 | KS4 | After the quest Thurgo makes another sword for a blurite ore and two iron bars ("Can you make me another of Sir Vyvin's swords?"). |
 | KS5 | Reward: 1 quest point, 12,725 Smithing XP (cache). |
 
-OPEN-QUA9: Sir Vyvin catching the player in his room is not modelled. OPEN-QUA10: blurite rocks of the Asgarnian Ice Dungeon are not
-minable (mining.md OPEN-MN6); blurite ore needs a rock entry in content/skills `MiningData` (level 10, Wiki "Blurite rocks") before the
+OPEN-QUA9: Sir Vyvin catching the player in his room is not modelled. Blurite ore is mined from the Asgarnian Ice Dungeon rocks (mining.md).md OPEN-MN6); blurite ore needs a rock entry in content/skills `MiningData` (level 10, Wiki "Blurite rocks") before the
 quest is completable by players (administrators: `::quest 83 7`). OPEN-QUA11: Reldo's offer of Shield of Arrav gives no quest (the book
 does not exist). OPEN-QUA12: the Wiki's "Before starting this quest, be aware..." box is shown when Mining is below 10 or combat below 20.
 OPEN-QUA13: Sir Vyvin's White Knights armoury (ranks) answers "No, I'm sorry." only. Thurgo's skillcape, crowbar, Camdozaal and Wise Old Man

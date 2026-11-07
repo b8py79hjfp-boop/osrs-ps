@@ -57,7 +57,7 @@ Sources: cache 2757 (db table 0 `Quest`, 219 rows; client scripts 4024, 4029, 26
 - **OPEN-QUA7:** blue dye has no woad leaf source (Wyson's sale is not in his generic tree).
 - **OPEN-QUA8:** what the goblin generals say during the quest is not published beyond the wrong-colour lines.
 - **OPEN-QUA9:** Sir Vyvin catching the player at the cupboard is not modelled.
-- **OPEN-QUA10:** blurite rocks are not minable (mining.md OPEN-MN6).
+- **QUA10 (resolved):** blurite rocks are minable (mining.md, OPEN-MN7 success rates).
 - **OPEN-QUA11:** Shield of Arrav is not implemented (Reldo's offer).
 - **OPEN-QUA12:** the start warning of The Knight's Sword shows when Mining < 10 or combat < 20 (the Wiki's condition is ambiguous).
 - **OPEN-QUA13:** the White Knights' ranks / armoury (Sir Vyvin) are not modelled.

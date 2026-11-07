@@ -102,6 +102,9 @@ private val COPPER = ore(1, 17.5, Objs.COPPER_ORE, 100, 350, 4, "copper")
 private val TIN = ore(1, 17.5, Objs.TIN_ORE, 100, 350, 4, "tin")
 private val CLAY = ore(1, 5.0, Objs.CLAY, 128, 400, 2, "clay", "clay")
 private val IRON = ore(15, 35.0, Objs.IRON_ORE, 96, 350, 9, "iron")
+
+/** Wiki "Blurite ore": level 10, 17.5 xp, respawn ~25 s = 42 ticks; success rates OPEN-MN7 (copper's used). */
+private val BLURITE = ore(10, 17.5, Objs.BLURITE_ORE, 100, 350, 42, "blurite")
 private val SILVER = ore(20, 40.0, Objs.SILVER_ORE, 25, 200, 100, "silver")
 private val COAL = ore(30, 50.0, Objs.COAL, 16, 100, 50, "coal", "coal")
 private val GOLD = ore(40, 65.0, Objs.GOLD_ORE, 7, 75, 100, "gold")
@@ -222,6 +225,7 @@ internal val ROCKS: Map<Int, RockLoc> =
             ),
         )
         putAll(locs(CLAY, Locs.CLAYROCK1 to EMPTY_1, Locs.CLAYROCK2 to EMPTY_2))
+        putAll(locs(BLURITE, Locs.BLURITE_ROCK_1 to EMPTY_1, Locs.BLURITE_ROCK_2 to EMPTY_2))
         putAll(locs(IRON, Locs.IRONROCK1 to EMPTY_1, Locs.IRONROCK2 to EMPTY_2, Locs.PRIF_MINE_IRONROCK1 to Locs.PRIF_MINE_ROCKS1_EMPTY))
         putAll(
             locs(

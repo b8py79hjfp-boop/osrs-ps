@@ -19,9 +19,9 @@ import tp.symbols.Objs
  * The Knight's Sword (docs/mechanics/quest-the-knights-sword.md): the White Knights' squire lost Sir Vyvin's sword; Reldo points to
  * the Imcando dwarf Thurgo, who wants a redberry pie, the sword's portrait, two iron bars and a blurite ore. The quest variable
  * (varp 122) is 0 / 1 started / 2 Reldo told the player about the dwarves / 3 Thurgo ate the pie / 4 portrait given / 5 sword
- * made / 7 finished (cache `endstate`; the stages between are ours, OPEN-QU1). Blurite rocks of the Asgarnian Ice Dungeon are not
- * minable yet (OPEN-QUA10). Dialogue is the Wiki "Transcript:The Knight's Sword", "Transcript:Reldo", "Transcript:Thurgo",
- * "Transcript:Squire" and "Transcript:Sir Vyvin".
+ * made / 7 finished (cache `endstate`; the stages between are ours, OPEN-QU1).
+ * Blurite ore comes from the Asgarnian Ice Dungeon rocks (content/skills mining). Dialogue is the Wiki
+ * "Transcript:The Knight's Sword", "Transcript:Reldo", "Transcript:Thurgo", "Transcript:Squire" and "Transcript:Sir Vyvin".
  */
 public class KnightsSword : ContentPlugin {
     override fun ContentScope.register() {
