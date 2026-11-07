@@ -106,6 +106,15 @@ public class QuestFramework : ContentPlugin {
                 { Quests.RUNE_MYSTERIES },
                 { Quests.ROMEO_AND_JULIET },
                 { Quests.RESTLESS_GHOST },
+                { Quests.IMP_CATCHER },
+                { Quests.DORICS_QUEST },
+                { Quests.WITCHS_POTION },
+                { Quests.ERNEST_THE_CHICKEN },
+                { Quests.GOBLIN_DIPLOMACY },
+                { Quests.KNIGHTS_SWORD },
+                { Quests.BLACK_KNIGHTS_FORTRESS },
+                { Quests.VAMPYRE_SLAYER },
+                { Quests.DEMON_SLAYER },
             )
     }
 }

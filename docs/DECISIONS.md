@@ -843,3 +843,17 @@ same hub calls. Founding, recruiting and guest joins are driven from content but
   reward without a conditional-dialogue feature in the transcript engine.
 - Sources and OPEN items: docs/mechanics/achievement-diaries.md.
 
+## D-060: Static item spawns from the Wiki; F2P quests that need world puzzles ship with named gaps instead of invented mechanics
+
+- **Static item spawns** (`item-spawns.tsv`, tools/wiki-import/item_spawns.py, `content/world` `ItemSpawns`): 2,615 spawns from
+  `{{ItemSpawnLine}}`. Rows of instanced / minigame Wiki maps (map id 10000 and up) are skipped, quantity ranges take the lower bound,
+  every spawn respawns after 100 ticks (the Wiki's optional `respawn:n` has no published unit; ground-items.md OPEN-G6). Members rows are
+  included: the server is members-enabled.
+- **Quest-owned rules go in the quest plugin, not in other modules.** The rat's tail (Witch's Potion) is dropped by the quest plugin
+  because content/drops attaches the Wiki row to the wrong NPC version (OPEN-QUA4); Count Draynor / Delrith use `DeathEvent` and
+  `AttackCheck` only. Where a rule needs a combat hook the plugin API lacks (death prevention until a condition, area entry) the step
+  is marked OPEN (OPEN-QUA16, OPEN-QUA19) and a hook is proposed rather than worked around in combat code.
+- **Walls without an open model** (closet door, sturdy doors, fake walls): `stepAcross` moves the player to the other side of the wall
+  (OPEN-QUA6). The Ernest the Chicken lever maze is not implemented because the door / lever locs cannot be tied to the Wiki's labels
+  from published sources (OPEN-QUA1).
+- Open items of these quests are `OPEN-QUA<n>` (docs/mechanics/quests.md) to stay apart from the parallel `OPEN-QU` list.

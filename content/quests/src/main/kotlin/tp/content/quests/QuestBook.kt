@@ -81,4 +81,13 @@ internal object Quests {
     val RUNE_MYSTERIES: Quest by lazy { QuestBook.row(DbRows.QUEST_RUNEMYSTERIES) }
     val ROMEO_AND_JULIET: Quest by lazy { QuestBook.row(DbRows.QUEST_ROMEOANDJULIET) }
     val RESTLESS_GHOST: Quest by lazy { QuestBook.row(DbRows.QUEST_RESTLESSGHOST) }
+    val IMP_CATCHER: Quest by lazy { QuestBook.row(DbRows.QUEST_IMPCATCHER) }
+    val DORICS_QUEST: Quest by lazy { QuestBook.row(DbRows.QUEST_DORICS) }
+    val WITCHS_POTION: Quest by lazy { QuestBook.row(DbRows.QUEST_WITCHSPOTION) }
+    val ERNEST_THE_CHICKEN: Quest by lazy { QuestBook.row(DbRows.QUEST_ERNESTTHECHICKEN) }
+    val GOBLIN_DIPLOMACY: Quest by lazy { QuestBook.row(DbRows.QUEST_GOBLINDIPLOMACY) }
+    val KNIGHTS_SWORD: Quest by lazy { QuestBook.row(DbRows.QUEST_KNIGHTSSWORD) }
+    val BLACK_KNIGHTS_FORTRESS: Quest by lazy { QuestBook.row(DbRows.QUEST_BLACKKNIGHTSFORTRESS) }
+    val VAMPYRE_SLAYER: Quest by lazy { QuestBook.row(DbRows.QUEST_VAMPYRESLAYER) }
+    val DEMON_SLAYER: Quest by lazy { QuestBook.row(DbRows.QUEST_DEMONSLAYER) }
 }

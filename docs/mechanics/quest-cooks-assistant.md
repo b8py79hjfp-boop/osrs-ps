@@ -13,5 +13,7 @@ cache `Quest` row 17 (id 1): varp 29 (`cookquest`), end state 2, 1 quest point.
 | CA5 | Millie Miller (4627, 3167,3307) and Gillie Groats (4628, 3253,3275) answer as in their standard transcripts. |
 | CA6 | Sources: see quests.md QU10 (dairy cow loc 8689 / 60788, wheat 15506-15508, hopper 24960-24963, controls 24964-24966, flour bin 1781 / 1782). Milking without a bucket plays Gillie's "Tee hee!" lines. |
 
-OPEN: the egg, bucket and pot ground spawns (no static ground spawns), the Cook-o-matic gate ("Hey, who said you could use that?"),
+Ground spawns (closed with static item spawns, ground-items.md G6, `content/world` `ItemSpawns`): the egg at the Lumbridge chicken farms (3169,3291, 3172,3301, 3175,3305, 3185,3297, 3226,3301, 3229,3299), the bucket (3225,3294) and the pot in the kitchen (3209,3214), all from the Wiki's item spawn tables; they reappear 100 ticks after being taken (OPEN-G6).
+
+OPEN: the Cook-o-matic gate ("Hey, who said you could use that?"),
 journal wording. The Wiki cook page lists a 3 November 2026 change (the cook now gives cooking tips); not applied.

@@ -29,6 +29,7 @@ a dropped item becomes visible only to players who were logged in before it was 
 
 ## OPEN
 
+- **OPEN-G6:** the Wiki gives no respawn time for item spawns (an optional `respawn:n` in `{{ItemSpawnLine}}`, e.g. 45 for runes, has no published unit and is not used). `content/world` `ItemSpawns` spawns every row of `item-spawns.tsv` (tools/wiki-import/item_spawns.py: 2,615 spawns, instanced-map rows skipped, quantity ranges take the lower bound) with 100 ticks.
 - **OPEN-G2:** where in the tick obj timers run. We run them in post-tick, after players; not documented.
 - Seconds-to-ticks: 60 s / 0.6 = 100 ticks exactly; same for 120 s and 180 s.
 
