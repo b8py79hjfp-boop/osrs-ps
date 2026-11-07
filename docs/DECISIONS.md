@@ -946,3 +946,11 @@ OPEN in docs/mechanics/sailing-charting.md and sailing-salvaging.md (OPEN-C3..C1
 Deep sea trawling (no shoal paths, no catch chance, nothing that moves on the sea) and the Barracuda Trials (course rules only as map drawings) are not
 implemented: a plausible stand-in would invent the mechanic. Their needs and the S10 hook list are in sailing-trawling.md, sailing-barracuda.md and
 sailing-combat.md. Wiki tables were imported with python scripts under tools/wiki-import in the repo's pattern (`sailing_charting.py`, `sailing_salvage.py`).
+
+## D-067 Bank PIN storage and real-time clocks
+
+The PIN is saved as the first 8 bytes of SHA-256 over "bankpin:<account id>:<pin>" (the display name stands in without a hub), never as
+the digits. Four digits cannot resist a search by someone holding the save, so this only keeps the PIN out of plain sight; the real
+protection is the server-side lockout (BP4). Lockouts, the recovery delay and the 5-minute logout grace run on wall-clock seconds
+(`PlayerRef.epochSeconds`), because the Wiki states them in real time and they must survive logout. "Same place" for the grace is a
+SHA-256 hash of the login address (`PlayerRef.loginAddressHash`); the address itself never reaches content or the save.

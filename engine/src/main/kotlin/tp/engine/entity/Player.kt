@@ -42,6 +42,10 @@ class Player internal constructor(
 
     internal val zoneSync = ZoneSync()
 
+    /** The client's IP as the login saw it (PROXY-protocol source when trusted); never saved. */
+    var loginAddress: String = ""
+        internal set
+
     /** Hub account id (0 without an account authority). */
     var accountId: Long = 0
         internal set

@@ -26,6 +26,9 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     override val e: Entity get() = p
     public val username: String get() = p.username
 
+    /** Hub account id: stable across display-name changes (0 without an account authority). */
+    public val accountId: Long get() = p.accountId
+
     /** Staff level from the account: 0 player, 1 moderator, 2 administrator. */
     public val staffLevel: Int get() = p.staffLevel
 
@@ -255,6 +258,15 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     /** Real time in whole minutes since the Unix epoch (cooldowns the client shows as real time, e.g. home teleport). */
     public val epochMinutes: Long get() = System.currentTimeMillis() / MILLIS_PER_MINUTE
+
+    /** Real time in whole seconds since the Unix epoch (real-time lockouts and delays, e.g. the bank PIN). */
+    public val epochSeconds: Long get() = System.currentTimeMillis() / MILLIS_PER_SECOND
+
+    /**
+     * A one-way hash of the address this session logged in from: lets content tell "the same place" apart (bank PIN
+     * logout grace) without the IP itself ever reaching content or the save.
+     */
+    public val loginAddressHash: Long get() = addressHash(p.loginAddress)
 
     /** Persisted content value [key] (saved with the account), or null. */
     public fun saved(key: String): Long? = p.saved[key]
@@ -815,6 +827,18 @@ public class DbRowRef internal constructor(private val row: tp.cache.config.dbro
 
 /** A map loc an interaction targets. */
 private const val MILLIS_PER_MINUTE = 60_000L
+private const val MILLIS_PER_SECOND = 1_000L
+
+/** First 8 bytes of SHA-256 over the address. */
+private fun addressHash(address: String): Long {
+    val d =
+        java.security.MessageDigest
+            .getInstance("SHA-256")
+            .digest(address.toByteArray(Charsets.UTF_8))
+    return java.nio.ByteBuffer
+        .wrap(d)
+        .long
+}
 
 /** Client chat message types (RuneLite `ChatMessageType` TRADEREQ / CHALREQ_TRADE). */
 private const val TRADE_REQUEST_TYPE = 101

@@ -47,7 +47,8 @@ internal fun printInterface(cache: Js5Cache, interfaceId: Int) {
     for (component in type.components.values.sortedBy { it.componentId }) {
         println(
             "packed=${component.packedId} component=${component.componentId} type=${component.type} " +
-                "isIf3=${component.isIf3} parent=${component.parentId} actions=${formatValue(component.actions)}",
+                "isIf3=${component.isIf3} parent=${component.parentId} hidden=${component.isHidden} " +
+                "actions=${formatValue(component.actions)} text=\"${component.text}\"",
         )
     }
 }

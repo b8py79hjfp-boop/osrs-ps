@@ -122,6 +122,12 @@ public suspend fun PlayerScript.confirmDestroy(obj: Int, count: Int, message: St
     return input.component == Components.Confirmdestroy.YES
 }
 
+/** Waits for a click on a pause button (IfEvents.PAUSE_BUTTON): its component, or null if something else answered. */
+public suspend fun PlayerScript.awaitPauseButton(): Int? = (awaitInput() as? PauseInput)?.component
+
+/** Waits for a count answer (also what client-built keypads send, e.g. the bank PIN): null if something else answered. */
+public suspend fun PlayerScript.awaitCount(): Int? = awaitInput() as? Int
+
 /** Waits for the continue click; false if something else answered (the script should stop). */
 private suspend fun PlayerScript.awaitContinue(): Boolean {
     val input = awaitInput()

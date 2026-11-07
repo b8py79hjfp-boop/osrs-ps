@@ -8,7 +8,10 @@ import tp.util.CoordGrid
 
 /** Developer `::commands` (Phase 3 stand-ins; an admin rights check arrives with accounts in Phase 5). */
 public class DevCommands : ContentPlugin {
+    private var world: tp.plugin.WorldRef? = null
+
     override fun ContentScope.register() {
+        onWorldStart { world = this }
         onLogin { message("Dev: ::pos ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace") }
         onCommand("pos") { message("$coord tick $tick pid $pid") }
         onCommand("run") {
@@ -38,6 +41,14 @@ public class DevCommands : ContentPlugin {
         onCommand("wild") { teleport(CoordGrid(WILD_X, WILD_Z)) }
         onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
         onCommand("item") { args -> item(args) }
+        // ::if <interface id>: opens it as the main modal (interface layout checks against the real client).
+        onCommand("if") { args ->
+            args.getOrNull(0)?.toIntOrNull()?.let { openModal(tp.symbols.Components.Toplevel.MAINMODAL, it) }
+        }
+        // ::npc <type>: spawns that NPC next to you (no wandering).
+        onCommand("npc") { args ->
+            args.getOrNull(0)?.toIntOrNull()?.let { world?.spawnNpc(it, CoordGrid(coord.x + 1, coord.z, coord.level), 0) }
+        }
         onCommand("empty") {
             val inv = inv(Invs.INV)
             transaction("dev ::empty") {

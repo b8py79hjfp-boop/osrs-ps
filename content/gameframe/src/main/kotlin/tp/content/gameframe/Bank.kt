@@ -11,7 +11,12 @@ import tp.plugin.EventBus
 import tp.plugin.IfEvents
 import tp.plugin.InvView
 import tp.plugin.ItemTx
+import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
+import tp.plugin.PlayerScript
+import tp.plugin.chatNpc
+import tp.plugin.chatPlayer
+import tp.plugin.choice
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
@@ -30,13 +35,16 @@ public class Bank : ContentPlugin {
 
     override fun ContentScope.register() {
         bus = events
-        events.on<tp.plugin.OpenBankRequest> { it.player.openBank() }
-        onOpLocNamed("Bank booth", "Bank") { player.openBank() }
-        onOpLocNamed("Bank chest", "Use") { player.openBank() }
-        onOpNpcOption("Bank") { player.openBank() }
-        onOpNpcNamed("Banker", "Talk-to") { player.openBank() }
+        // BP2: every way in asks for the bank PIN first (BankPin.unlock returns at once without one).
+        events.on<tp.plugin.OpenBankRequest> { it.player.weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        onOpLocNamed("Bank booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
+        onOpLocNamed("Bank chest", "Use") { if (with(BankPin) { unlock() }) player.openBank() }
+        onOpNpcOption("Bank") { if (with(BankPin) { unlock() }) player.openBank() }
+        onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
         // The OSRS client keeps "::bank" for itself (it says "Hey, everyone, I just tried to do something very silly!").
-        onCommand("openbank") { openBank() }
+        onCommand("openbank") { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        onLogin { BankPin.onLogin(this) }
+        onLogout { BankPin.onLogout(this) }
 
         onButton(Components.Bankmain.ITEMS) { click -> mainItem(click) }
         onButton(Components.Bankside.ITEMS) { click -> sideItem(click) }
@@ -119,6 +127,42 @@ public class Bank : ContentPlugin {
         onButton(Components.Bankmain.BANK_FILLER_X) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_X) }
         onButton(Components.Bankmain.BANK_FILLER_ALL) { setVarbit(Varbits.BANK_FILLERMODE, FILLER_ALL) }
         onButton(Components.Bankmain.BANK_FILLER_CONFIRM) { fill() }
+    }
+
+    /**
+     * B1 / BP5: Wiki "Transcript:Banker" standard dialogue. OPEN-B1: "I'd like to buy more bank slots." is left out until
+     * bought bank space exists.
+     */
+    private suspend fun PlayerScript.banker(npc: NpcRef) {
+        chatNpc(npc, "Good day, how may I help you?")
+        when (
+            choice(
+                "Select an Option",
+                "I'd like to access my bank account, please.",
+                "I'd like to check my PIN settings.",
+                "I'd like to collect items.",
+                "What is this place?",
+            )
+        ) {
+            1 -> {
+                if (with(BankPin) { unlock() }) player.openBank()
+            }
+
+            2 -> {
+                with(BankPin) { settings() }
+            }
+
+            3 -> {
+                bus?.publish(tp.plugin.OpenCollectionBox(player))
+            }
+
+            4 -> {
+                chatPlayer("What is this place?")
+                chatNpc(npc, "This is a branch of the Bank of Gielinor. We have branches in many towns.")
+                chatPlayer("And what do you do?")
+                chatNpc(npc, "We will look after your items and money for you. Leave your valuables with us if you want to keep them safe.")
+            }
+        }
     }
 
     // ---- opening and closing

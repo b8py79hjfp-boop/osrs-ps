@@ -1063,6 +1063,7 @@ class World(
                 return
             }
         val player = newPlayer(slot, profile?.displayName ?: request.username, session, config.spawn)
+        player.loginAddress = request.address
         if (profile != null) {
             player.accountId = profile.accountId
             player.staffLevel = profile.staffLevel

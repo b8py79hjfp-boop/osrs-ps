@@ -36,6 +36,9 @@ public class OpenShopRequest(public val player: PlayerRef, public val npcType: I
 /** Open [player]'s bank for a banker-like NPC that has its own conditions (Eniola charges 20 runes); the bank plugin handles it. */
 public class OpenBankRequest(public val player: PlayerRef) : Event
 
+/** Open [player]'s Grand Exchange collection box (bankers' "I'd like to collect items."); the GE plugin handles it. */
+public class OpenCollectionBox(public val player: PlayerRef) : Event
+
 /** Open [player]'s collection log (the account summary's "Collection Log" row, gameframe J4); the collection log plugin handles it. */
 public class OpenCollectionLog(public val player: PlayerRef) : Event
 

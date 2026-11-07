@@ -58,7 +58,5 @@ slots in the cache), `inv` (93), `worn` (94).
   callback like `countDialog` (register the pending answer, open the overlay, send CS 4212).
 - **OPEN-B10** Wording of the filler messages (B16). **OPEN-B11** Wording of the capacity tooltip (B19). **OPEN-B12** Defence line
   mapping on the worn page (B18).
-- **OPEN-B13** Bank PIN (Wiki "Bank PIN"; interfaces `bankpin_settings` 14, `bankpin_keypad` 213 exist): needs a stored PIN
-  (hash), the recovery delay and a once-per-session check on every bank, Grand Exchange and STASH opening - persistence and
-  security, so it stays with the main session.
+- **OPEN-B13** (closed) Bank PIN: docs/mechanics/bank-pin.md. Bankers' "Talk-to" now runs the Wiki dialogue (OPEN-B3 closed).
 - **OPEN-B14** "Configure-Charges" (op 9 of a bank slot, only with `bank_bankops_toggle_on`) and the bank item options.
