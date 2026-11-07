@@ -1,0 +1,359 @@
+task	level	type	hazard	sea	ocean	x	z	x2	z2	hint
+7	1	Generic		Kharidian Sea	Ardent Ocean	2987	3010			Find a crashed glider south of the Karamja Shipyard.
+15	1	Generic		Kharidian Sea	Ardent Ocean	2973	2994			Find the wreck of the Pandemonium II west of the Pandemonium.
+16	1	Generic		Kharidian Sea	Ardent Ocean	3143	2979			Find the wreck of the Pandemonium III west of the Kharidian Bandit Camp.
+357	1	Spyglass		Kharidian Sea	Ardent Ocean	3051	9388			Use your spyglass to admire Chartin' Charles McAtless in the cave on the Pandemonium.
+14	1	Spyglass		Kharidian Sea	Ardent Ocean	3045	2995			Use your spyglass to get a good view of the Pandemonium from the cave entrance on the island.
+11	12	Crate		Kharidian Sea	Bonus charts	3013	2998			Find a Sealed crate near the Pandemonium and sample the contents.
+13	22	Current		Kharidian Sea	Bonus charts	3145	2963	3049	2962	Test the currents south west of the Kharidian Bandit Camp.
+12	38	Diving		Kharidian Sea	Bonus charts	2988	2949			With help from a mermaid guide, document the water depth south west of the Pandemonium.; Answer to the riddle: Willow stock
+4	1	Generic		Bay of Sarim	Ardent Ocean	3079	3231			Find a treacherous rock formation near Draynor Village.
+5	1	Generic		Bay of Sarim	Ardent Ocean	3126	3202			Find the wreck of the Grandyozenaym north east of the Wizards' Tower.
+1	1	Generic		Bay of Sarim	Ardent Ocean	3029	3207			Interact with the salvaging station in Port Sarim.
+0	1	Generic		Bay of Sarim	Ardent Ocean	3030	3198			Look at the port task board in Port Sarim.
+2	1	Spyglass		Bay of Sarim	Bonus charts	3104	3181			Use your spyglass to get a good view of the Wizards' Tower from the north.
+3	22	Current		Bay of Sarim	Bonus charts	3082	3201	3033	3152	Test the currents south of the small island in the Bay of Sarim.
+18	1	Generic		Lumbridge Basin	Ardent Ocean	3182	3136			Find a treacherous rock formation south of Lumbridge Swamp.
+17	1	Generic		Lumbridge Basin	Ardent Ocean	3133	3053			Find an unfortunate corpse on a small island south east of Tutorial Island.
+19	1	Spyglass		Lumbridge Basin	Ardent Ocean	3145	3134			Use your spyglass to get a good view of the western mine in Lumbridge Swamp from the south.
+39	12	Crate		Lumbridge Basin	Bonus charts	3277	3135			Find a Sealed crate in the Lum Lagoon and sample the contents.; Note: A raft is recommended but not required to reach this location.
+20	22	Current		Lumbridge Basin	Bonus charts	3209	3134	3158	3020	Test the currents west of the Lum Lagoon.
+6	1	Generic		Mudskipper Sound	Ardent Ocean	2944	3138			Find a strange stone tablet south east of Musa Point.
+8	1	Generic		Mudskipper Sound	Ardent Ocean	3054	3051			Find the wreck of the Salty Grouper south west of Tutorial Island.
+10	1	Spyglass		Mudskipper Sound	Ardent Ocean	3008	3049			Use your spyglass to get a good view of the Karamja Shipyard from the east.
+38	12	Crate		Mudskipper Sound	Bonus charts	2994	3134			Find a Sealed crate near Mudskipper Point and sample the contents.
+9	22	Current		Mudskipper Sound	Bonus charts	2890	3121	2967	3065	Test the currents at the mouth of the River Amja south of Musa Point.
+44	38	Diving		Mudskipper Sound	Bonus charts	2979	3085			With help from a mermaid guide, document the water depth south of Mudskipper Point.; Answer to the riddle: Pie dish, pot of flour, and cooking apple
+21	1	Generic		Rimmington Strait	Ardent Ocean	2905	3281			Find a treacherous rock formation west of the Crafting Guild.
+22	1	Generic		Rimmington Strait	Ardent Ocean	2873	3260			Find a warning about dragons east of Crandor.
+23	1	Spyglass		Rimmington Strait	Ardent Ocean	2839	3210			Use your spyglass to get a good view of the Karamja Volcano from the north.
+24	22	Current		Rimmington Strait	Bonus charts	2902	3317	2872	3273	Test the currents south west of the Makeover Mage's home.
+42	57	Weather		Rimmington Strait	Bonus charts	2912	3213	2840	3315	Help the meteorologist document the local weather on a small island west of Rimmington.
+26	1	Generic		Catherby Bay	Ardent Ocean	2760	3364			Find evidence of megashrimp activity east of the Legends' Guild.
+25	1	Generic		Catherby Bay	Ardent Ocean	2897	3335			Find some odd aquatic plant life west of the Dark Wizards' Tower.
+27	1	Spyglass		Catherby Bay	Ardent Ocean	2784	3401			Use your spyglass to get a good view of Keep le Faye from the east.
+40	12	Crate		Catherby Bay	Ardent Ocean	2869	3378			Find a Sealed crate near Entrana and sample the contents.
+28	22	Current		Catherby Bay	Bonus charts	2835	3417	2802	3322	Test the currents south west of the Obelisk of Water.
+45	38	Diving		Catherby Bay	Bonus charts	2873	3397			With help from a mermaid guide, document the water depth west of the entrance to Taverley Dungeon.; Answer to the riddle: Iron med helm and bronze chainbody
+30	1	Generic		Brimhaven Passage	Ardent Ocean	2769	3267			Find a set of someone else's charts south of the Fishing Platform and copy them.
+29	1	Generic		Brimhaven Passage	Ardent Ocean	2741	3270			Find the wreck of the Shelled Snail east of Witchaven.
+31	1	Spyglass		Brimhaven Passage	Ardent Ocean	2779	3265			Use your spyglass to get a good view of the Fishing Platform from the south.
+32	22	Current		Brimhaven Passage	Ardent Ocean	2648	3244	2743	3215	Test the currents south east of Ardougne Zoo.
+35	1	Generic		Strait of Khazard	Ardent Ocean	2681	3134			Find a notice from General Khazard south east of Port Khazard.
+33	1	Generic		Strait of Khazard	Ardent Ocean	2702	3151			Find a rowboat off the west coast of Karamja near Port Khazard.
+34	1	Generic		Strait of Khazard	Ardent Ocean	2720	3103			Find what remains of Colbansea Island in the middle of the Strait of Khazard.
+36	1	Spyglass		Strait of Khazard	Ardent Ocean	2664	3219			Use your spyglass to get a good view of the Tower of Life from the east.
+41	12	Crate		Strait of Khazard	Ardent Ocean	2674	3103			Find a Sealed crate near the Yanille Chain and sample the contents.
+37	22	Current		Strait of Khazard	Ardent Ocean	2664	3172	2640	3095	Test the currents west of the trawler in Port Khazard.
+46	38	Diving		Strait of Khazard	Bonus charts	2757	3138			With help from a mermaid guide, document the water depth south west of Brimhaven.; Answer to the riddle: 5 cabbage seeds
+43	57	Weather		Strait of Khazard	Bonus charts	2656	3195	2742	3100	Help the meteorologist document the local weather on a small island north of Port Khazard.
+135	1	Generic		Gu'tanoth Bay	Ardent Ocean	2633	3039			Find the wreck of an ogre ship in Gu'tanoth Bay.
+108	1	Spyglass		Gu'tanoth Bay	Ardent Ocean	2597	3027			Use your spyglass to get a good view of the island in Gu'tanoth Bay from the east.
+115	12	Crate		Gu'tanoth Bay	Ardent Ocean	2624	3069			Find a Sealed crate near Yanille and sample the contents.
+125	38	Diving		Gu'tanoth Bay	Ardent Ocean	2676	3035			With help from a mermaid guide, document the water depth south of the Yanille Chain.; Answer to the riddle: Earth impling jar
+104	57	Weather		Gu'tanoth Bay	Bonus charts	2638	3009	2618	2879	Help the meteorologist document the local weather north east of Rantz's cave.
+136	1	Generic		Feldip Gulf	Ardent Ocean	2695	2981			Find an odd geological phenomenon in the middle of the Feldip Gulf.
+116	12	Crate		Feldip Gulf	Ardent Ocean	2691	2940			Find a Sealed crate in the middle of the Feldip Gulf and sample the contents.
+130	22	Current		Feldip Gulf	Ardent Ocean	2645	2974	2749	2971	Test the currents south east of Rantz's cave.
+90	1	Generic		Kharazi Strait	Ardent Ocean	2781	2815			Find a crashed glider north of Ape Atoll.
+92	1	Generic		Kharazi Strait	Ardent Ocean	2798	2891			Find a map south west of the Kharazi Jungle and copy it.
+93	1	Generic		Kharazi Strait	Ardent Ocean	2843	2837			Find some curious rapids west of Rock Island Prison.
+70	22	Current		Kharazi Strait	Ardent Ocean	2767	2895	2764	2994	Test the currents off the south western coast of the Kharazi Jungle.
+63	12	Crate		Kharazi Strait	Ardent Ocean	2888	2857			Find a Sealed crate near Rock Island Prison and sample the contents.
+78	24	Spyglass	Stormy seas	Kharazi Strait	Ardent Ocean	2945	2878			Use your spyglass to get a good view of a cave in the Kharazi Jungle from the south.
+137	1	Generic		Oo'glog Channel	Ardent Ocean	2634	2882			Find the corpse of a sea monster north east of Corsair Cove.
+85	1	Generic		Oo'glog Channel	Ardent Ocean	2693	2793			Find the wreck of the bananaless boat west of Ape Atoll.
+109	1	Spyglass		Oo'glog Channel	Ardent Ocean	2605	2867			Use your spyglass to get a good view of the throne in Corsair Cove from the east.
+117	12	Crate		Oo'glog Channel	Ardent Ocean	2595	2787			Find a Sealed crate south of Corsair Cove and sample the contents.
+126	38	Diving		Oo'glog Channel	Ardent Ocean	2529	2829			With help from a mermaid guide, document the water depth south west of Corsair Cove.; Answer to the riddle: Coal; Note: To be able to do this task at 38 Sailing, one must board another player's boat, provided that they have an innoculation station to stand the fetid waters.
+91	1	Generic		Arrow Passage	Ardent Ocean	2881	2750			Find some interesting aquatic life north west of Crash Island.
+77	1	Spyglass		Arrow Passage	Ardent Ocean	2828	2785			Use your spyglass to get a good view of the temple on Ape Atoll from the east.
+62	12	Crate		Arrow Passage	Ardent Ocean	2816	2733			Find a Sealed crate off the eastern coast of Ape Atoll and sample the contents.
+49	38	Diving		Arrow Passage	Ardent Ocean	2917	2765			With help from a mermaid guide, document the water depth north of Crash Island.; Answer to the riddle: Harralander potion (unf)
+56	57	Weather		Arrow Passage	Bonus charts	2903	2698	2869	2805	Help the meteorologist document the local weather on a small island south of Crash Island.
+193	1	Generic		Menaphite Sea	Ardent Ocean	3143	2770			Find some collected sand on an island west of Menaphos.
+191	1	Spyglass		Menaphite Sea	Ardent Ocean	3145	2734			Use your spyglass to get a good view of the pyramid in Menaphos from the west.
+195	12	Crate		Menaphite Sea	Ardent Ocean	3190	2706			Find a Sealed crate near Menaphos and sample the contents.
+194	22	Current		Menaphite Sea	Ardent Ocean	3185	2654	3146	2599	Test the currents north of the island south of Menaphos.
+192	38	Diving		Menaphite Sea	Ardent Ocean	3044	2722			With help from a mermaid guide, document the water depth in the middle of the Menaphite Sea.; Answer to the riddle: Sandwich lady bottom
+84	1	Generic		The Simian Sea	Ardent Ocean	2681	2714			Find a makeshift flag near Cape Atoll.
+76	1	Spyglass		The Simian Sea	Ardent Ocean	2654	2682			Use your spyglass to get a good view of the Void Knights' Outpost from the north.
+60	12	Crate		The Simian Sea	Ardent Ocean	2677	2654			Find a Sealed crate near the Void Knights' Outpost and sample the contents.
+69	22	Current		The Simian Sea	Ardent Ocean	2665	2560	2654	2610	Test the currents south of the pest-filled island near the Void Knights' Outpost.
+68	22	Current		The Simian Sea	Ardent Ocean	2691	2703	2807	2700	Test the currents south west of Cape Atoll.
+97	24	Generic	Stormy seas	The Storm Tempor	Ardent Ocean	3065	2885			Find something trying to leech power from the Storm Tempor.
+96	24	Generic	Stormy seas	The Storm Tempor	Ardent Ocean	3033	2796			Find the wreck of the Desert Trout south of Tempoross Cove.
+72	24	Current	Stormy seas	The Storm Tempor	Ardent Ocean	3001	2847	3058	2833	Test the currents west of Tempoross Cove.
+80	24	Spyglass	Stormy seas	The Storm Tempor	Ardent Ocean	3144	2854			Use your spyglass to get a good view of the Ruins of Unkah from north of the docks.
+57	57	Weather	Stormy seas	The Storm Tempor	Bonus charts	2979	2905	3058	2866	Help the meteorologist document the local weather on a small island east of the Kharazi Jungle.
+94	1	Generic		Turtle Belt	Unquiet Ocean	3075	2601			Find a treasure chest south east of Dognose Island.
+64	12	Crate		Turtle Belt	Unquiet Ocean	3046	2665			Find a Sealed crate near Dognose Island and sample the contents.
+266	22	Current		Turtle Belt	Unquiet Ocean	2947	2584	2969	2610	Test the currents south west of the remote island in the Turtle Belt.
+50	38	Diving		Turtle Belt	Unquiet Ocean	3014	2556			With help from a mermaid guide, document the water depth in the middle of the Turtle Belt.; Answer to the riddle: Papaya fruit
+79	40	Spyglass		Turtle Belt	Unquiet Ocean	3050	2656			Use your spyglass to get a good view of the surrounding sea from Dognose Island.
+275	47	Generic		Sea of Shells	Unquiet Ocean	2963	2264			Find the nest of a fearless bird on the Onyx Crest.
+81	45	Spyglass		Sea of Shells	Unquiet Ocean	3187	2430			Use your spyglass to get a good view of the Summer Shore from the cliffs above it on the Great Conch.; Note: Accessing the Great Conch requires partial completion of Troubled Tortugans.
+65	12	Crate		Sea of Shells	Unquiet Ocean	3098	2458			Find a Sealed crate off the western coast of the Great Conch and sample the contents.
+73	22	Current		Sea of Shells	Unquiet Ocean	3204	2367	3279	2398	Test the currents near the Summer Shore docks on the Great Conch.
+271	38	Diving		Sea of Shells	Unquiet Ocean	2963	2203			With help from a mermaid guide, document the water depth south of the Onyx Crest.; Answer to the riddle: Nose peg
+86	1	Generic		Red Reef	Unquiet Ocean	2804	2460			Find the corpse of a wayward shifter on a small island south of Red Rock.
+278	12	Crate		Red Reef	Unquiet Ocean	2778	2523			Find a Sealed crate near Red Rock and sample the contents.
+71	22	Current		Red Reef	Unquiet Ocean	2902	2548	2906	2494	Test the currents north east of Red Rock.
+47	38	Diving		Red Reef	Unquiet Ocean	2788	2548			With help from a mermaid guide, document the water depth north of Red Rock.; Answer to the riddle: 10 watermelons
+103	1	Generic		Anglerfish's Light	Unquiet Ocean	2719	2296			Find an odd light south west of Last Light.
+83	1	Spyglass		Anglerfish's Light	Unquiet Ocean	2895	2326			Use your spyglass to get a good view of Last Light from the east.
+67	12	Crate		Anglerfish's Light	Unquiet Ocean	2840	2280			Find a Sealed crate near Last Light and sample the contents.
+53	38	Diving		Anglerfish's Light	Unquiet Ocean	2766	2382			With help from a mermaid guide, document the water depth in the middle of Anglerfish's Light.; Answer to the riddle: Barley
+59	57	Weather		Anglerfish's Light	Bonus charts	2864	2311	2789	2193	Help the meteorologist document the local weather on a small island south of Last Light.
+276	1	Generic		Bay of Elidinis	Unquiet Ocean	3243	2702			Find a damaged golem east of Menaphos.
+82	1	Spyglass		Bay of Elidinis	Unquiet Ocean	3154	2548			Use your spyglass to get a good view of the Abalone Cliffs from the north east.
+279	12	Crate		Bay of Elidinis	Unquiet Ocean	3239	2598			Find a Sealed crate south of Menaphos and sample the contents.
+267	22	Current		Bay of Elidinis	Unquiet Ocean	3248	2703	3275	2748	Test the currents to the south west of the Elid Delta.
+272	38	Diving		Bay of Elidinis	Unquiet Ocean	3338	2622			With help from a mermaid guide, document the water depth in the south east of the Bay of Elidinis.; Answer to the riddle: Charcoal
+98	1	Generic		Tortugan Sea	Unquiet Ocean	3284	2514			Find a notable small shell north east of the Great Conch.
+99	45	Generic		Tortugan Sea	Unquiet Ocean	3216	2466			Find a strange apple tree somewhere on the Great Conch.; Note: Accessing the Great Conch requires partial completion of Troubled Tortugans.
+270	1	Spyglass		Tortugan Sea	Unquiet Ocean	3261	2506			Use your spyglass to get a good view of the coast of the Great Conch from the north east.
+268	22	Current		Tortugan Sea	Unquiet Ocean	3279	2463	3403	2509	Test the currents to the east of the eastern pier on the Great Conch.
+51	38	Diving		Tortugan Sea	Unquiet Ocean	3282	2445			With help from a mermaid guide, document the water depth east of the Great Conch.; Answer to the riddle: Ashes, or any demonic ashes
+277	1	Generic		Pearl Bank	Unquiet Ocean	3375	2135			Find a ship in a bottle south of the Little Pearl.
+280	12	Crate		Pearl Bank	Unquiet Ocean	3301	2146			Find a Sealed crate south west of the Little Pearl and sample the contents.
+269	22	Current		Pearl Bank	Unquiet Ocean	3337	2179	3414	2134	Test the currents to the south west of the Little Pearl.
+273	38	Diving		Pearl Bank	Unquiet Ocean	3276	2130			With help from a mermaid guide, document the water depth in the south of the Pearl Bank.; Answer to the riddle: 2 woad leaves and 2 onions
+58	57	Weather		Pearl Bank	Bonus charts	3321	2327	3177	2456	Help the meteorologist document the local weather at the south east tip of Cape Conch.
+102	1<!--This one does not require level 60-->	Generic		The Lonely Sea	Unquiet Ocean	2634	2392			Find some dragon scales on Charred Island. It is not necessary to dock onto the island to chart this.
+281	12	Crate		The Lonely Sea	Unquiet Ocean	2522	2248			Find a Sealed crate north of the cathedral on Wyrmscraig and sample the contents.
+75	22	Current		The Lonely Sea	Unquiet Ocean	2624	2415	2534	2515	Test the currents west of Charred Island.
+274	38	Diving		The Lonely Sea	Unquiet Ocean	2528	2149			With help from a mermaid guide, document the water depth in the far south of the Lonely Sea.; Answer to the riddle: Swamp weed
+297	1	Generic		Fortis Bay	Shrouded Ocean	1896	2994			Find a nest on Vatrachos Island.
+285	1	Spyglass		Fortis Bay	Shrouded Ocean	1823	3046			Use your spyglass to get a good view of the Fortis Colosseum from the south.
+290	12	Crate		Fortis Bay	Shrouded Ocean	1826	2957			Find a Sealed crate east of Stonecutter Outpost and sample the contents.
+303	22	Current		Fortis Bay	Shrouded Ocean	1779	2988	1900	2984	Test the currents north east of Stonecutter Outpost.
+307	38	Diving		Fortis Bay	Shrouded Ocean	1898	3048			With help from a mermaid guide, document the water depth north of Vatrachos Island.; Answer to the riddle: Stripy feather
+298	1	Generic		Aureum Coast	Shrouded Ocean	1845	2824			Find the wreck of the Counterweight north west of Deepfin Point.
+286	1	Spyglass		Aureum Coast	Shrouded Ocean	1737	2907			Use your spyglass to get a good view of the south eastern temple in the Avium Savannah from the south.
+291	12	Crate		Aureum Coast	Shrouded Ocean	1762	2854			Find a Sealed crate in the middle of the Aureum Coast and sample the contents.
+308	38	Diving		Aureum Coast	Shrouded Ocean	1889	2882			With help from a mermaid guide, document the water depth south of Vatrachos Island.; Answer to the riddle: 2 tomatoes, and one each of equa leaves, batta tin, cheese, dwellberries, onion, cabbage, and gianne dough
+282	57	Weather		Aureum Coast	Bonus charts	1779	2940	1802	2808	Help the meteorologist document the local weather south east of Stonecutter Outpost.
+299	1	Generic		Wyrm's Waters	Shrouded Ocean	1593	2755			Find an interesting book on the Shimmering Atoll.
+287	1	Spyglass		Wyrm's Waters	Shrouded Ocean	1634	2883			Use your spyglass to get a good view of the Colossal Wyrm Remains from the south.
+292	12	Crate		Wyrm's Waters	Shrouded Ocean	1570	2808			Find a Sealed crate near the Shimmering Atoll and sample the contents.
+304	22	Current		Wyrm's Waters	Shrouded Ocean	1543	2785	1583	2773	Test the currents within the Shimmering Atoll.
+309	38	Diving		Wyrm's Waters	Shrouded Ocean	1711	2818			With help from a mermaid guide, document the water depth east of the Shimmering Atoll.; Answer to the riddle: Lime
+118	12	Crate		Mythic Sea	Shrouded Ocean	2556	2664			Find a Sealed crate west of the Void Knights' Outpost and sample the contents.
+138	51	Generic	Fetid waters	Mythic Sea	Shrouded Ocean	2476	2707			Find an abandoned camp on Anglers' Retreat.
+131	40	Current	Fetid waters	Mythic Sea	Shrouded Ocean	2495	2708	2533	2736	Test the currents east of Anglers' Retreat.
+127	40	Diving	Fetid waters	Mythic Sea	Shrouded Ocean	2446	2784			With help from a mermaid guide, document the water depth south of the Myths' Guild.; Answer to the riddle: Cabbage, onion, and tomato
+140	40	Generic	Fetid waters	Breakbone Strait	Shrouded Ocean	2460	2881			Find a chest of equipment north of the Myths' Guild.
+119	40	Crate	Fetid waters	Breakbone Strait	Shrouded Ocean	2334	2781			Find a Sealed crate near the Tear of the Soul and sample the contents.
+132	40	Current	Fetid waters	Breakbone Strait	Shrouded Ocean	2340	2896	2456	2895	Test the currents off the eastern coast of the Isle of Souls.
+110	40	Spyglass	Fetid waters	Breakbone Strait	Shrouded Ocean	2429	2852			Use your spyglass to get a good view of the Myths' Guild from the west.
+105	57	Weather	Fetid waters	Breakbone Strait	Bonus charts	2335	2921	2473	2725	Help the meteorologist document the local weather on the eastern coast of the Isle of Souls.
+120	40	Crate	Fetid waters	Backwater	Shrouded Ocean	2318	2966			Find a Sealed crate off the north eastern coast of the Isle of Souls and sample the contents.
+121	40	Crate	Fetid waters	Backwater	Shrouded Ocean	2476	2969			Find a Sealed crate off the western coast of the Feldip Hills and sample the contents.
+141	40	Generic	Fetid waters	Backwater	Shrouded Ocean	2300	3043			Find some interesting coral south east of the Poison Waste.
+134	40	Current	Fetid waters	Backwater	Shrouded Ocean	2318	3057	2233	3028	Test the currents at the mouth of the River Dougne west of Chompy Marsh.
+112	40	Spyglass	Fetid waters	Backwater	Shrouded Ocean	2399	3027			Use your spyglass to get a good view of Chompy Marsh from the south.
+128	40	Diving	Fetid waters	Backwater	Shrouded Ocean	2469	3006			With help from a mermaid guide, document the water depth south of Jiggig.; Answer to the riddle: Grimy kwuarm
+113	1	Spyglass		Zul-Egil	Shrouded Ocean	2128	2983			Use your spyglass to get a good view of the ruined tower on the Isle of Souls from the south.
+124	40	Crate	Fetid waters	Zul-Egil	Shrouded Ocean	2279	3036			Find a Sealed crate south of the poison waste and sample the contents.
+144	40	Generic	Fetid waters	Zul-Egil	Shrouded Ocean	2165	3030			Find a toxic hazard in the middle of Zul-Egil.
+114	40	Spyglass	Fetid waters	Zul-Egil	Shrouded Ocean	2199	3036			Use your spyglass to get a good view of Zul-Andra from the south.
+87	1	Generic		The Skullhorde	Shrouded Ocean	2587	2593			Find the wreck of the Balanced Ballast south west of the Void Knights' Outpost.
+293	12	Crate		The Skullhorde	Shrouded Ocean	2387	2477			Find a Sealed crate in the middle of the Skullhorde and sample the contents.
+305	22	Current		The Skullhorde	Shrouded Ocean	2488	2530	2367	2521	Test the currents west of the Isle of Bones.
+310	38	Diving		The Skullhorde	Shrouded Ocean	2460	2449			With help from a mermaid guide, document the water depth south west of the Isle of Bones.; Answer to the riddle: Fedora
+54	57	Weather		The Skullhorde	Bonus charts	2542	2541	2732	2641	Help the meteorologist document the local weather on the Isle of Bones.
+139	1	Generic		Sea of Souls	Shrouded Ocean	2289	2712			Find the wreck of the Soul Searcher south west of the Tear of the Soul.
+123	12	Crate		Sea of Souls	Shrouded Ocean	2221	2765			Find a Sealed crate off the southern coast of the Isle of Souls and sample the contents.
+311	38	Diving		Sea of Souls	Shrouded Ocean	2118	2716			With help from a mermaid guide, document the water depth east of the shipyard in the Sea of Souls.; Answer to the riddle: Common tench
+111	61	Spyglass	Fetid waters	Sea of Souls	Shrouded Ocean	2342	2768			Use your spyglass to get a good view of the surrounding sea from the Tear of the Soul.
+143	1	Generic		Soul Bay	Shrouded Ocean	2089	2797			Find some interesting sea life in the middle of Soul Bay.
+122	12	Crate		Soul Bay	Shrouded Ocean	2086	2882			Find a Sealed crate off the western coast of the Isle of Souls and sample the contents.
+133	22	Current		Soul Bay	Shrouded Ocean	2080	2859	2102	2816	Test the currents off the western coast of the Isle of Souls.
+129	38	Diving		Soul Bay	Shrouded Ocean	2012	2874			With help from a mermaid guide, document the water depth west of the Isle of Souls.; Answer to the riddle: Dwellberries
+106	57	Weather		Soul Bay	Shrouded Ocean	2140	2806	2021	2681	Help the meteorologist document the local weather on the south western coast of the Isle of Souls.
+88	1	Generic		Barracuda Belt	Shrouded Ocean	2149	2615			Find a spool of Barracuda grade rope east of Wintumber Island.
+95	1<!--This one does not require level 63-->	Generic		Barracuda Belt	Shrouded Ocean	2066	2608			Find an odd statue on Wintumber Island.
+89	1	Generic		Barracuda Belt	Shrouded Ocean	2281	2447			Find the wreck of a Barracuda ship north east of Sunbleak Island.
+61	12	Crate		Barracuda Belt	Shrouded Ocean	2282	2506			Find a Sealed crate near the bank boat in the Barracuda Belt and sample the contents.
+48	38	Diving		Barracuda Belt	Shrouded Ocean	2276	2598			With help from a mermaid guide, document the water depth north of the bank boat in the Barracuda Belt.; Answer to the riddle:Vial, avantoe, snape grass, and caviar
+55	57	Weather		Barracuda Belt	Shrouded Ocean	2082	2590	2154	2440	Help the meteorologist document the local weather on a small island south east of Wintumber Island.
+300	1	Generic		The Everdeep	Shrouded Ocean	1976	2680			Find an odd shadow south of Deepfin Point.
+288	1	Spyglass		The Everdeep	Shrouded Ocean	1943	2737			Use your spyglass to get a good view of Deepfin Point from the south.
+294	12	Crate		The Everdeep	Shrouded Ocean	1854	2771			Find a Sealed crate west of Deepfin Point and sample the contents.
+312	38	Diving		The Everdeep	Shrouded Ocean	1942	2650			With help from a mermaid guide, document the water depth in the far south east of the Everdeep.; Answer to the riddle: Any Plank
+283	57	Weather		The Everdeep	Shrouded Ocean	1928	2791	1895	2665	Help the meteorologist document the local weather on the western coast of Deepfin Point.
+301	1	Generic		Sapphire Sea	Shrouded Ocean	1762	2580			Find some odd sea life in the middle of the Sapphire Sea.
+289	1	Spyglass		Sapphire Sea	Shrouded Ocean	1796	2664			Use your spyglass to get a good view of the Crown Jewel from the east.
+295	12	Crate		Sapphire Sea	Shrouded Ocean	1675	2478			Find a Sealed crate where three waters meet in the Sapphire Sea and sample the contents.
+306	22	Current		Sapphire Sea	Shrouded Ocean	1745	2662	1695	2662	Test the currents west of the Crown Jewel.
+155	38	Diving		Sapphire Sea	Shrouded Ocean	1762	2611			With help from a mermaid guide, document the water depth south of the Crown Jewel.; Answer to the riddle: Vial, coconut milk, toadflax, and yew roots
+157	1	Generic		Western Gate	Shrouded Ocean	1947	2985			Find evidence of the Sharhai east of Vatrachos Island.
+142	1	Generic		Western Gate	Shrouded Ocean	1996	2947			Find some some interesting sea life in the middle of the Western Gate.
+162	12	Crate		Western Gate	Shrouded Ocean	1993	2972			Find a Sealed crate in the middle of the Western Gate and sample the contents.
+147	22	Current		Western Gate	Shrouded Ocean	1978	3106	1951	3046	Test the currents east of Minotaurs' Rest.
+152	38	Diving		Western Gate	Shrouded Ocean	2041	3023			With help from a mermaid guide, document the water depth in the middle of the Western Gate.; Answer to the riddle: Black flowers
+100	72	Generic	Tangled kelp	Rainbow Reef	Shrouded Ocean	2336	2267			Find a lost friend on Rainbow's End.
+101	72	Generic	Tangled kelp	Rainbow Reef	Shrouded Ocean	2334	2118			Find a rowboat to the far south of Rainbow's End.
+66	72	Crate	Tangled kelp	Rainbow Reef	Shrouded Ocean	2205	2303			Find a Sealed crate near Sunbleak Island and sample the contents.
+74	72	Current	Tangled kelp	Rainbow Reef	Shrouded Ocean	2335	2286	2330	2285	Test the currents north of Rainbow's End.
+52	72	Diving	Tangled kelp	Rainbow Reef	Shrouded Ocean	2256	2312			With help from a mermaid guide, document the water depth in the middle of Rainbow Reef.; Answer to the riddle: Bucket of sap and raw slimy eel
+296	72	Crate	Tangled kelp	Southern Expanse	Shrouded Ocean	1821	2439			Find a Sealed crate near the Isle of Serpents and sample the contents.
+302	72	Generic	Tangled kelp	Southern Expanse	Shrouded Ocean	1828	2138			Find a useful sign to the far south of the Isle of Serpents.
+284	72	Weather	Tangled kelp	Southern Expanse	Shrouded Ocean	1881	2445	1809	2184	Help the meteorologist document the local weather on a small islands east of the Isle of Serpents.
+313	72	Diving	Tangled kelp	Southern Expanse	Shrouded Ocean	2057	2317			With help from a mermaid guide, document the water depth west of Sunbleak Island.; Answer to the riddle: Ghrazi rapier
+351	1	Generic		Sunset Bay	Sunset Ocean	1448	2896			Find a wrecked shiplike thing south of Villa Lucens.
+343	1	Spyglass		Sunset Bay	Sunset Ocean	1470	2980			Use your spyglass to get a good view of Sunset Coast from the west.
+354	12	Crate		Sunset Bay	Sunset Ocean	1426	2865			Find a Sealed crate near Mistrock and sample the contents.
+346	22	Current		Sunset Bay	Sunset Ocean	1422	3046	1387	3148	Test the currents at the mouth of the River Varla.; Note: A raft is recommended but not required to reach this location.
+348	38	Diving		Sunset Bay	Sunset Ocean	1575	2942			With help from a mermaid guide, document the water depth west of the Colossal Wyrm Remains.; Answer to the riddle: Ring mould
+352	1	Generic		Misty Sea	Sunset Ocean	1439	2716			Find some discarded fishing equipment in the middle of the Misty Sea.
+344	1	Spyglass		Misty Sea	Sunset Ocean	1387	2840			Use your spyglass to get a good view of Mistrock from the south.
+355	12	Crate		Misty Sea	Sunset Ocean	1561	2655			Find a Sealed crate near some shipwrecks in the Misty Sea and sample the contents.
+349	38	Diving		Misty Sea	Sunset Ocean	1322	2628			With help from a mermaid guide, document the water depth in the south west of the Misty Sea.; Answer to the riddle: Bob's blue shirt and Bob's purple shirt
+353	1	Generic		Dusk's Maw	Sunset Ocean	1232	3005			Find a collapsed cave on a small island south west of the Tlati Rainforest.
+356	12	Crate		Dusk's Maw	Sunset Ocean	1050	2886			Find a Sealed crate in the far west of Dusk's Maw and sample the contents.
+347	22	Current		Dusk's Maw	Sunset Ocean	1259	2876	1104	2900	Test the currents south west of the Darkmoon Ravine.
+350	38	Diving		Dusk's Maw	Sunset Ocean	1314	2931			With help from a mermaid guide, document the water depth north of the Darkmoon Ravine.; Answer to the riddle: Tarromin
+345	57	Weather		Dusk's Maw	Bonus charts	1188	2822	1180	2994	Help the meteorologist document the local weather on a small island north of Laguna Aurorae.
+316	1	Spyglass		Great Sound	Western Ocean	1413	3394			Use your spyglass to get a good view of Auburnvale from the north.
+337	1	Generic		Great Sound	Western Ocean	1656	3304			Find an advert on a small island north east of Salvager Overlook.
+336	1	Generic		Great Sound	Western Ocean	1529	3405			Find an interesting sign south east of Land's End.
+331	12	Crate		Great Sound	Bonus charts	1437	3430			Find a Sealed crate west of Land's End and sample the contents.
+327	22	Current		Great Sound	Bonus charts	1384	3465	1492	3448	Test the currents south of Lacerta Falls.
+338	1	Generic		Crabclaw Bay	Western Ocean	1789	3401			Find a sabotaged mooring point on Crabclaw Island.
+317	1	Spyglass		Crabclaw Bay	Western Ocean	1600	3310			Use your spyglass to get a good view of Salvager Overlook from the west.
+318	1	Spyglass		Crabclaw Bay	Western Ocean	1744	3405			Use your spyglass to get a good view of Crabclaw Island from the south west.
+321	38	Diving		Crabclaw Bay	Bonus charts	1681	3380			With help from a mermaid guide, document the water depth in the south of Crabclaw Bay.; Answer to the riddle: 3 air runes, and one each of silver ore, chisel, uncut jade, ring mould, and cosmic rune
+314	57	Weather		Crabclaw Bay	Bonus charts	1651	3461	1579	3365	Help the meteorologist document the local weather on a small island south of the Woodcutting Guild.
+189	1	Generic		Gulf of Kourend	Western Ocean	1847	3796			Find something in desperate need of repair north east of Port Piscarilius.
+179	1	Spyglass		Gulf of Kourend	Western Ocean	1846	3769			Use your spyglass to get a good view of Port Piscarilius from north of the Foodhall.
+183	12	Crate		Gulf of Kourend	Western Ocean	1934	3742			Find a Sealed crate in the middle of the Gulf of Kourend and sample the contents.
+175	22	Current		Gulf of Kourend	Western Ocean	1813	3664	1831	3697	Test the currents north west of the Dibber.
+172	38	Diving		Gulf of Kourend	Bonus charts	1851	3668			With help from a mermaid guide, document the water depth north of the Dibber.; Answer to the riddle: 2 malicious ashes
+188	1	Generic		Hosidian Sea	Western Ocean	1855	3586			Find some discarded farming equipment east of Hosidius.
+178	1	Spyglass		Hosidian Sea	Western Ocean	1861	3528			Use your spyglass to get a good view of the Tithe Farm from the north east.
+182	12	Crate		Hosidian Sea	Western Ocean	1887	3556			Find a Sealed crate off the eastern coast of Hosidius and sample the contents.
+322	38	Diving		Hosidian Sea	Bonus charts	1969	3597			With help from a mermaid guide, document the water depth in the east of the Hosidian Sea.; Answer to the riddle: Potato and potato cactus
+339	1	Generic		Pilgrims' Passage	Western Ocean	1887	3424			Find evidence of an experiment on Chinchompa Island.
+332	12	Crate		Pilgrims' Passage	Western Ocean	1926	3394			Find a Sealed crate in the middle of Pilgrims' Passage and sample the contents.
+174	22	Current		Pilgrims' Passage	Western Ocean	1871	3430	1791	3414	Test the currents west of Chinchompa Island.
+323	38	Diving		Pilgrims' Passage	Bonus charts	1880	3372			With help from a mermaid guide, document the water depth north of Port Roberts.; Answer to the riddle: Sandstone (2kg), sandstone (1kg), and sandstone (10kg)
+168	57	Weather		Pilgrims' Passage	Bonus charts	1867	3458	1852	3532	Help the meteorologist document the local weather on a small island south east of the Tithe Farm. ; Note: A raft or skiff is recommended but not required to reach this location..
+340	1	Generic		Litus Lucis	Western Ocean	1871	3177			Find a strange corpse north east of Civitas illa Fortis.
+333	12	Crate		Litus Lucis	Western Ocean	1783	3252			Find a Sealed crate in the middle of Litus Lucis and sample the contents.
+328	22	Current		Litus Lucis	Western Ocean	1721	3237	1785	3197	Test the currents east of the Twilight Temple.
+324	38	Diving		Litus Lucis	Western Ocean	1821	3166			With help from a mermaid guide, document the water depth north of the Fortis Colosseum.; Answer to the riddle: Dark bow tie
+315	57	Weather		Litus Lucis	Bonus charts	1714	3193	1895	3178	Help the meteorologist document the local weather on a small island north of Civitas illa Fortis.
+164	66	Crate	Crystal-flecked waters	Porth Neigwl	Western Ocean	2161	3203			Find a Sealed crate off the western coast of Isafdar and sample the contents.
+159	66	Generic	Crystal-flecked waters	Porth Neigwl	Western Ocean	2118	3158			Find some lost cargo south east of Lledrith Island.
+107	66	Weather	Crystal-flecked waters	Porth Neigwl	Western Ocean	2149	3068	2253	2987	Help the meteorologist document the local weather on a small island west of Zul-Andra.
+146	66	Weather	Crystal-flecked waters	Porth Neigwl	Western Ocean	2118	3159	2028	3220	Help the meteorologist document the local weather on a small island west of the Tyras Camp.
+148	66	Current	Crystal-flecked waters	Porth Neigwl	Western Ocean	2071	3186	2161	3150	Test the currents west of Lledrith Island.
+150	66	Spyglass	Crystal-flecked waters	Porth Neigwl	Western Ocean	2160	3155			Use your spyglass to get a good view of the Tyras Camp from the west.
+154	66	Diving	Crystal-flecked waters	Porth Neigwl	Western Ocean	2113	3123			With help from a mermaid guide, document the water depth west of Port Tyras.; Answer to the riddle: 2 calquat kegs, an ale yeast, one pair of oak roots, and 2 barley malt
+160	66	Generic	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2157	3274			Find a deadly trap west of the Iorwerth Camp.
+166	66	Crate	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2120	3418			Find a Sealed crate near Mynydd and sample the contents.
+145	66	Weather	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2130	3395	2041	3328	Help the meteorologist document the local weather south west of Mynydd.
+149	66	Current	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2165	3260	2163	3367	Test the currents at the mouth of the Afon Ganol west of the Iorwerth Camp.
+151	66	Spyglass	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2163	3318			Use your spyglass to get a good view of Prifddinas' western gates from the south west.
+156	66	Diving	Crystal-flecked waters	Tirannwn Bight	Western Ocean	2120	3345			With help from a mermaid guide, document the water depth in the middle of the Tirannwn Bight.; Answer to the riddle: Soiled page
+158	1	Generic		Crystal Sea	Western Ocean	1980	3232			Find an elven shipwreck in the middle of the Crystal Sea.
+341	1	Generic		Crystal Sea	Western Ocean	1890	3271			Find the visitors book for the Port Roberts jail.
+319	1	Spyglass		Crystal Sea	Western Ocean	1886	3266			Use your spyglass to get a good view of Port Roberts from the south.
+163	12	Crate		Crystal Sea	Western Ocean	2008	3261			Find a Sealed crate in the middle of the Crystal Sea and sample the contents.
+329	22	Current		Crystal Sea	Western Ocean	1920	3296	2059	3299	Test the currents east of Port Roberts.
+153	38	Diving		Crystal Sea	Western Ocean	1979	3211			With help from a mermaid guide, document the water depth in the middle of the Crystal Sea.; Answer to the riddle: Butterfly jar
+165	66	Crate	Crystal-flecked waters	Porth Gwenith	Western Ocean	2206	3484			Find a Sealed crate near Ynysdail and sample the contents.
+185	66	Generic	Crystal-flecked waters	Porth Gwenith	Western Ocean	2210	3445			Find an unusual boat north of Gwenith.
+167	66	Weather	Crystal-flecked waters	Porth Gwenith	Western Ocean	2283	3520	2118	3587	Help the meteorologist document the local weather on a small island north west of Eagles' Peak.
+173	66	Current	Crystal-flecked waters	Porth Gwenith	Western Ocean	2220	3429	2205	3462	Test the currents north of Gwenith.
+170	66	Diving	Crystal-flecked waters	Porth Gwenith	Western Ocean	2283	3459			With help from a mermaid guide, document the water depth north of Gorlah.; Answer to the riddle: Thatch spar dense; Note: A skiff is necessary to reach this location.
+187	1	Generic		Piscatoris Sea	Western Ocean	2300	3662			Find evidence of kraken activity south west of the Piscatoris Fishing Colony.
+177	1	Spyglass		Piscatoris Sea	Western Ocean	2303	3700			Use your spyglass to get a good view of the Piscatoris Fishing Colony from the north west.
+334	12	Crate		Piscatoris Sea	Western Ocean	2248	3744			Find a Sealed crate north west of the Piscatoris Fishing Colony and sample the contents.
+171	66	Diving	Crystal-flecked waters	Piscatoris Sea	Western Ocean	2236	3593			With help from a mermaid guide, document the water depth south west of Kraken Cove.; Answer to the riddle: Gold ore
+186	1<!--This one does not require level 66 or an adamant hull-->	Generic		Vagabonds Rest	Western Ocean	2133	3589			Find a crate of discarded goods north of Drumstick Isle.
+161	1	Generic		Vagabonds Rest	Western Ocean	2026	3669			Find a half-built ship west of Buccaneers' Haven.
+320	1	Spyglass		Vagabonds Rest	Western Ocean	2101	3702			Use your spyglass to get a good view of Buccaneers' Haven from the north.
+181	12	Crate		Vagabonds Rest	Western Ocean	2079	3655			Find a Sealed crate near Buccaneers' Haven and sample the contents.
+325	38	Diving		Vagabonds Rest	Western Ocean	2018	3705			With help from a mermaid guide, document the water depth west of Buccaneers' Haven.; Answer to the riddle: Double eye patch
+342	1	Generic		Moonshadow	Western Ocean	2170	3773			Find the wreck of the Lunar Longship south west of Pirates' Cove.
+335	12	Crate		Moonshadow	Western Ocean	2030	3829			Find a Sealed crate south west of Lunar Isle and sample the contents.
+330	22	Current		Moonshadow	Western Ocean	2122	3796	2167	3682	Test the currents west of Pirates' Cove.
+326	38	Diving		Moonshadow	Western Ocean	2044	3792			With help from a mermaid guide, document the water depth in the south west of Lunar Isle.; Answer to the riddle: Bucket helm (g)
+196	1	Generic		Fremensund	Northern Ocean	2587	3657			Find some suspicious eyes west of Rellekka.
+228	1	Spyglass		Fremensund	Northern Ocean	2636	3707			Use your spyglass to get a good view of the market in Rellekka from the north.
+253	12	Crate		Fremensund	Northern Ocean	2689	3732			Find a Sealed crate north of Rellekka and sample the contents.
+209	22	Current		Fremensund	Northern Ocean	2561	3626	2484	3628	Test the currents north of Rower's Arm.
+241	38	Diving		Fremensund	Northern Ocean	2518	3690			With help from a mermaid guide, document the water depth south of Waterbirth Island.; Answer to the riddle: Kharyrll teleport (tablet)
+220	57	Weather		Fremensund	Northern Ocean	2594	3644	2513	3738	Help the meteorologist document the local weather on a small island south west of Rellekka.
+197	1	Generic		Grandroot Bay	Northern Ocean	2479	3546			Find the roots of the Grand Tree in Grandroot Bay.
+229	1	Spyglass		Grandroot Bay	Northern Ocean	2504	3612			Use your spyglass to get a good view of the lighthouse on Rower's Arm from the south.
+254	12	Crate		Grandroot Bay	Northern Ocean	2453	3597			Find a Sealed crate in the middle of Grandroot Bay and sample the contents.
+210	22	Current		Grandroot Bay	Northern Ocean	2369	3507	2404	3591	Test the currents in the River Crannmor. ; Note: A raft is necessary to reach this location.
+242	38	Diving		Grandroot Bay	Northern Ocean	2513	3571			With help from a mermaid guide, document the water depth west of the Barbarian Outpost.; Answer to the riddle: Raw cod
+221	57	Weather		Grandroot Bay	Northern Ocean	2498	3546	2439	3625	Help the meteorologist document the local weather west of the Barbarian Outpost.
+198	1	Generic		V's Belt	Northern Ocean	2528	3818			Find an informative sign on a small island south of Miscellania.
+230	1	Spyglass		V's Belt	Northern Ocean	2477	3862			Use your spyglass to get a good view of the castle on Miscellania from the west.
+255	12	Crate		V's Belt	Northern Ocean	2474	3798			Find a Sealed crate in the middle of V's Belt and sample the contents.
+211	22	Current		V's Belt	Northern Ocean	2428	3831	2520	3771	Test the currents north east of Jatizso.
+243	78	Diving	Icy seas	V's Belt	Northern Ocean	2506	3893			With help from a mermaid guide, document the water depth north west of Miscellania.; Answer to the riddle: Bronze Limbs
+199	1	Generic		Fremennik Strait	Northern Ocean	2383	3769			Find a discarded book south of Jatizso.
+231	1	Spyglass		Fremennik Strait	Northern Ocean	2366	3890			Use your spyglass to get a good view of the towers on the Fremennik Isles from the south.
+256	12	Crate		Fremennik Strait	Northern Ocean	2273	3745			Find a Sealed crate north west of the Piscatoris Fishing Colony and sample the contents.
+212	22	Current		Fremennik Strait	Northern Ocean	2305	3795	2340	3875	Test the currents west of Neitiznot.
+222	57	Weather		Fremennik Strait	Northern Ocean	2341	3790	2426	3841	Help the meteorologist document the local weather on the southern coast of Neitiznot.
+232	1	Spyglass		Idestia Strait	Northern Ocean	2636	3874			Use your spyglass to get a good view of the castle on Etceteria from the east.
+257	12	Crate		Idestia Strait	Northern Ocean	2651	3811			Find a Sealed crate south east of Etceteria and sample the contents.
+213	22	Current		Idestia Strait	Northern Ocean	2695	3828	2716	3757	Test the currents west of the hunter area near Trollweiss Mountain.
+200	78	Generic	Icy seas	Idestia Strait	Northern Ocean	2726	3855			Find a hunter free haven on a small island west of Trollweiss Mountain.
+223	78	Weather	Icy seas	Idestia Strait	Northern Ocean	2600	3910	2625	3795	Help the meteorologist document the local weather on a small island north of Etceteria.
+244	78	Diving	Icy seas	Idestia Strait	Northern Ocean	2664	3954			With help from a mermaid guide, document the water depth south of the Iceberg.; Answer to the riddle: Onion
+201	1	Generic		Lunar Bay	Northern Ocean	2225	3892			Find evidence of some strong magical spells east of Lunar Isle.
+233	1	Spyglass		Lunar Bay	Northern Ocean	2160	3901			Use your spyglass to get a good view of the pirate galleon docked at Lunar Isle from the east.
+258	12	Crate		Lunar Bay	Northern Ocean	2142	3874			Find a Sealed crate near the Lunar Isle docks and sample the contents.; Note: A raft is recommended but not required to reach this location.
+214	22	Current		Lunar Bay	Northern Ocean	2159	3849	2202	3799	Test the currents south of the Astral Altar on Lunar Isle.
+245	38	Diving		Lunar Bay	Northern Ocean	2221	3833			With help from a mermaid guide, document the water depth north east of Pirates' Cove.; Answer to the riddle: Torstol
+234	1	Spyglass		Winter's Edge	Northern Ocean	2051	3913			Use your spyglass to get a good view of the town on Lunar Isle from the west.
+184	78	Crate	Icy seas	Winter's Edge	Northern Ocean	1898	4069			Find a Sealed crate near Brittle Isle and sample the contents.
+202	78	Generic	Icy seas	Winter's Edge	Northern Ocean	2083	3953			Find an odd dead plant on a small island north west of Lunar Isle.
+169	78	Weather	Icy seas	Winter's Edge	Northern Ocean	1817	3965	1866	3826	Help the meteorologist document the local weather on a small island north of the River of Souls.
+176	78	Current	Icy seas	Winter's Edge	Northern Ocean	1866	3911	2054	3889	Test the currents north east of the River of Souls.
+246	78	Diving	Icy seas	Winter's Edge	Northern Ocean	1970	3966			With help from a mermaid guide, document the water depth in the middle of Winter's Edge.; Answer to the riddle: Needle
+259	78	Crate	Icy seas	Lunar Sea	Northern Ocean	2113	4142			Find a Sealed crate in the far north of the Lunar Sea and sample the contents.
+203	78	Generic	Icy seas	Lunar Sea	Northern Ocean	2144	4067			Find some cleaning supplies north of Lunar Isle.
+235	78	Spyglass	Icy seas	Lunar Sea	Northern Ocean	2237	4064			Use your spyglass to get a good view of Ungael from the west.
+247	78	Diving	Icy seas	Lunar Sea	Northern Ocean	2061	4118			With help from a mermaid guide, document the water depth in the north west of the Lunar Sea.; Answer to the riddle: Clockwork
+260	78	Crate	Icy seas	Everwinter Sea	Northern Ocean	1757	4150			Find a Sealed crate in the far north of the Everwinter Sea and sample the contents.
+190	78	Generic	Icy seas	Everwinter Sea	Northern Ocean	1762	4005			Find some odd eggs north east of the Fishing Hamlet.
+224	78	Weather	Icy seas	Everwinter Sea	Northern Ocean	1958	4065	2045	4128	Help the meteorologist document the local weather on Brittle Isle.
+215	78	Current	Icy seas	Everwinter Sea	Northern Ocean	1792	4137	1783	4086	Test the currents near the shipwrecks in the Everwinter Sea.
+180	78	Spyglass	Icy seas	Everwinter Sea	Northern Ocean	1793	3978			Use your spyglass to get a good view of the area north of the River of Souls from the east.
+248	78	Diving	Icy seas	Everwinter Sea	Northern Ocean	1823	4018			With help from a mermaid guide, document the water depth north of the River of Souls.; Answer to the riddle: Shield left half
+261	12	Crate		Kannski Tides	Northern Ocean	2359	3878			Find a Sealed crate in the waters of the Fremennik Isles and sample the contents.; Note: A raft is necessary to reach this location.
+204	78	Generic	Icy seas	Kannski Tides	Northern Ocean	2426	3961			Find the wreck of the Fearless Fremennik south west of the Island of Stone.
+216	78	Current	Icy seas	Kannski Tides	Northern Ocean	2316	3903	2277	4028	Test the currents north of the western cave on the Fremennik Isles.
+236	78	Spyglass	Icy seas	Kannski Tides	Northern Ocean	2351	3904			Use your spyglass to get a good view of the ice trolls of the Fremennik Isles from the north.
+249	78	Diving	Icy seas	Kannski Tides	Northern Ocean	2357	3977			With help from a mermaid guide, document the water depth north of the Fremennik Isles.; Answer to the riddle: Vial of blood, cadantine, and wine of Zamorak
+262	78	Crate	Icy seas	Weissmere	Northern Ocean	2775	3935			Find a Sealed crate in the middle of Weissmere and sample the contents.
+205	78	Generic	Icy seas	Weissmere	Northern Ocean	2783	3882			Find some missing mountaineering equipment north of Trollweiss Mountain.
+217	78	Current	Icy seas	Weissmere	Northern Ocean	2833	3960	2801	3887	Test the currents north west of Weiss.
+237	78	Spyglass	Icy seas	Weissmere	Northern Ocean	2781	3987			Use your spyglass to get a good view of the large rock formations in Weissmere from their centre.
+250	78	Diving	Icy seas	Weissmere	Northern Ocean	2816	3975			With help from a mermaid guide, document the water depth north west of Weiss.; Answer to the riddle: Dragon Bitter
+263	78	Crate	Icy seas	Stoneheart Sea	Northern Ocean	2612	4146			Find a Sealed crate in the far north of the Stoneheart Sea and sample the contents.
+206	78	Generic	Icy seas	Stoneheart Sea	Northern Ocean	2587	3919			Find a shark corpse on a small island north west of Etceteria.
+225	78	Weather	Icy seas	Stoneheart Sea	Northern Ocean	2447	3995	2371	4058	Help the meteorologist document the local weather on a small island south west of the Island of Stone.
+218	78	Current	Icy seas	Stoneheart Sea	Northern Ocean	2433	4006	2459	3996	Test the currents west of the Island of Stone.
+238	78	Spyglass	Icy seas	Stoneheart Sea	Northern Ocean	2620	4059			Use your spyglass to get a good view of the KGP training area from the west.
+251	78	Diving	Icy seas	Stoneheart Sea	Northern Ocean	2475	4133			With help from a mermaid guide, document the water depth north of the Island of Stone.; Answer to the riddle: Rain bow
+264	78	Crate	Icy seas	Shiverwake Expanse	Northern Ocean	2785	4046			Find a Sealed crate near the large rock formations in Weissmere and sample the contents.
+207	78	Generic	Icy seas	Shiverwake Expanse	Northern Ocean	2709	4124			Find evidence of spying north east of the Iceberg.
+226	78	Weather	Icy seas	Shiverwake Expanse	Northern Ocean	2793	4020	2784	4108	Help the meteorologist document the local weather on the large rock formations in Weissmere.
+239	78	Spyglass	Icy seas	Shiverwake Expanse	Northern Ocean	2879	4078			Use your spyglass to get a good view of Grimstone from the west.
+252	78	Diving	Icy seas	Shiverwake Expanse	Northern Ocean	2824	4092			With help from a mermaid guide, document the water depth in the east of the Shiverwake Expanse.; Answer to the riddle: Royal crown
+208	78	Generic	Icy seas	Weiss Melt	Northern Ocean	2902	3965			Find a failing boat north east of Weiss.
+265	78	Crate	Icy seas	Weiss Melt	Northern Ocean	2912	4154			Find a Sealed crate north of Grimstone and sample the contents.
+227	78	Weather	Icy seas	Weiss Melt	Northern Ocean	2951	3962	2866	4020	Help the meteorologist document the local weather on a small island north of the Frozen Waste Plateau.
+219	78	Current	Icy seas	Weiss Melt	Northern Ocean	2880	3985	2919	4058	Test the currents north of Weiss.
+240	78	Spyglass	Icy seas	Weiss Melt	Northern Ocean	2990	3971			Use your spyglass to get a good view of the agility course in the Wilderness from the north.

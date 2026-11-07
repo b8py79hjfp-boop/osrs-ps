@@ -1,0 +1,1251 @@
+page	section	row	header	value
+Hull	Materials	0	Raft	Tier of logs x 10
+Hull	Materials	0		Same tier of hull parts x 10
+Hull	Materials	0	Skiff	Same tier of large hull parts x 16
+Hull	Materials	1	Raft	Rope x 6
+Hull	Materials	1		Equivalent tier of nails x 300
+Hull	Materials	1	Skiff	Equivalent tier of nails x 600
+Hull	Materials	2	Raft	Swamp tar x 10
+Hull	Materials	2		Swamp tar x 20
+Hull	Materials	2	Skiff	Swamp tar x 25
+Hull	Materials	3	Raft	Lead or cupronickel bar x 5
+Hull	Materials	3		Lead or cupronickel bar x 5
+Hull	Materials	3	Skiff	Lead or cupronickel bar x 5
+Hull	Raft bases	0	Sailing Level	1
+Hull	Raft bases	0	Construction Level	1
+Hull	Raft bases	0	Hull	Wooden raft
+Hull	Raft bases	0	Materials	Logs x10; Rope x6; Swamp tar x10
+Hull	Raft bases	0	Construction Experience	19
+Hull	Raft bases	0	Boat Speed	1.5
+Hull	Raft bases	0	Boat Hitpoints	+20
+Hull	Raft bases	0	Defence	1
+Hull	Raft bases	0	Cost	+ +
+Hull	Raft bases	0	Shipwright fee	-
+Hull	Raft bases	1	Sailing Level	20
+Hull	Raft bases	1	Construction Level	8
+Hull	Raft bases	1	Hull	Oak raft
+Hull	Raft bases	1	Materials	Oak logs x10; Rope x6; Swamp tar x10
+Hull	Raft bases	1	Construction Experience	27
+Hull	Raft bases	1	Boat Speed	1.5
+Hull	Raft bases	1	Boat Hitpoints	+30
+Hull	Raft bases	1	Defence	5
+Hull	Raft bases	1	Cost	+ +
+Hull	Raft bases	1	Shipwright fee	560
+Hull	Raft bases	2	Sailing Level	31
+Hull	Raft bases	2	Construction Level	23
+Hull	Raft bases	2	Hull	Teak raft
+Hull	Raft bases	2	Materials	Teak logs x10 Rope x6; Swamp tar x10; Lead bar x5
+Hull	Raft bases	2	Construction Experience	41
+Hull	Raft bases	2	Boat Speed	2.0
+Hull	Raft bases	2	Boat Hitpoints	+40
+Hull	Raft bases	2	Defence	10
+Hull	Raft bases	2	Cost	+ + +
+Hull	Raft bases	2	Shipwright fee	4200
+Hull	Raft bases	3	Sailing Level	48
+Hull	Raft bases	3	Construction Level	41
+Hull	Raft bases	3	Hull	Mahogany raft
+Hull	Raft bases	3	Materials	Mahogany logs x10 Rope x6; Swamp tar x10; Lead bar x5
+Hull	Raft bases	3	Construction Experience	46
+Hull	Raft bases	3	Boat Speed	2.0
+Hull	Raft bases	3	Boat Hitpoints	+50
+Hull	Raft bases	3	Defence	15
+Hull	Raft bases	3	Cost	+ + +
+Hull	Raft bases	3	Shipwright fee	27000
+Hull	Raft bases	4	Sailing Level	67
+Hull	Raft bases	4	Construction Level	59
+Hull	Raft bases	4	Hull	Camphor raft
+Hull	Raft bases	4	Materials	Camphor logs x10; Rope x6; Swamp tar x10; Lead bar x5
+Hull	Raft bases	4	Construction Experience	70
+Hull	Raft bases	4	Boat Speed	2.5
+Hull	Raft bases	4	Boat Hitpoints	+80
+Hull	Raft bases	4	Defence	20
+Hull	Raft bases	4	Cost	+ + +
+Hull	Raft bases	4	Shipwright fee	-
+Hull	Raft bases	5	Sailing Level	81
+Hull	Raft bases	5	Construction Level	75
+Hull	Raft bases	5	Hull	Ironwood raft
+Hull	Raft bases	5	Materials	Ironwood logs x10; Rope x6; Swamp tar x10; Cupronickel bar x5
+Hull	Raft bases	5	Construction Experience	84
+Hull	Raft bases	5	Boat Speed	2.5
+Hull	Raft bases	5	Boat Hitpoints	+100
+Hull	Raft bases	5	Defence	25
+Hull	Raft bases	5	Cost	+ + +
+Hull	Raft bases	5	Shipwright fee	-
+Hull	Raft bases	6	Sailing Level	93
+Hull	Raft bases	6	Construction Level	84
+Hull	Raft bases	6	Hull	Rosewood raft
+Hull	Raft bases	6	Materials	Rosewood logs x10; Rope x6; Swamp tar x10; Cupronickel bar x5
+Hull	Raft bases	6	Construction Experience	93
+Hull	Raft bases	6	Boat Speed	3.0
+Hull	Raft bases	6	Boat Hitpoints	+120
+Hull	Raft bases	6	Defence	30
+Hull	Raft bases	6	Cost	+ + +
+Hull	Raft bases	6	Shipwright fee	-
+Hull	Skiff hulls	0	Sailing Level	15
+Hull	Skiff hulls	0	Construction Level	1
+Hull	Skiff hulls	0	Hull and hull parts	Wooden skiff
+Hull	Skiff hulls	0	Materials	Wooden hull parts x10; Bronze nails x300; Swamp tar x20
+Hull	Skiff hulls	0	Construction Experience	128
+Hull	Skiff hulls	0	Boat Speed	1.5
+Hull	Skiff hulls	0	Boat Hitpoints	+30
+Hull	Skiff hulls	0	Defence	10
+Hull	Skiff hulls	0	Cost	+ +
+Hull	Skiff hulls	0	Shipwright fee	-
+Hull	Skiff hulls	1	Sailing Level	20
+Hull	Skiff hulls	1	Construction Level	8
+Hull	Skiff hulls	1	Hull and hull parts	Oak skiff
+Hull	Skiff hulls	1	Materials	Oak hull parts x10; Iron nails x300; Swamp tar x20
+Hull	Skiff hulls	1	Construction Experience	238
+Hull	Skiff hulls	1	Boat Speed	1.5
+Hull	Skiff hulls	1	Boat Hitpoints	+45
+Hull	Skiff hulls	1	Defence	20
+Hull	Skiff hulls	1	Cost	+ +
+Hull	Skiff hulls	1	Shipwright fee	560
+Hull	Skiff hulls	2	Sailing Level	31
+Hull	Skiff hulls	2	Construction Level	23
+Hull	Skiff hulls	2	Hull and hull parts	Teak skiff
+Hull	Skiff hulls	2	Materials	Teak hull parts x10; Steel nails x300; Swamp tar x20 Lead bar x5
+Hull	Skiff hulls	2	Construction Experience	345
+Hull	Skiff hulls	2	Boat Speed	2.0
+Hull	Skiff hulls	2	Boat Hitpoints	+60
+Hull	Skiff hulls	2	Defence	30
+Hull	Skiff hulls	2	Cost	+ +
+Hull	Skiff hulls	2	Shipwright fee	4200
+Hull	Skiff hulls	3	Sailing Level	48
+Hull	Skiff hulls	3	Construction Level	41
+Hull	Skiff hulls	3	Hull and hull parts	Mahogany skiff
+Hull	Skiff hulls	3	Materials	Mahogany hull parts x10; Mithril nails x300; Swamp tar x20; Lead bar x5
+Hull	Skiff hulls	3	Construction Experience	588
+Hull	Skiff hulls	3	Boat Speed	2.0
+Hull	Skiff hulls	3	Boat Hitpoints	+75
+Hull	Skiff hulls	3	Defence	40
+Hull	Skiff hulls	3	Cost	+ + +
+Hull	Skiff hulls	3	Shipwright fee	27000
+Hull	Skiff hulls	4	Sailing Level	67
+Hull	Skiff hulls	4	Construction Level	59
+Hull	Skiff hulls	4	Hull and hull parts	Camphor skiff
+Hull	Skiff hulls	4	Materials	Camphor hull parts x10; Adamantite nails x300; Swamp tar x20; Lead bar x5
+Hull	Skiff hulls	4	Construction Experience	881
+Hull	Skiff hulls	4	Boat Speed	2.5
+Hull	Skiff hulls	4	Boat Hitpoints	+120
+Hull	Skiff hulls	4	Defence	50
+Hull	Skiff hulls	4	Cost	+ + +
+Hull	Skiff hulls	4	Shipwright fee	-
+Hull	Skiff hulls	5	Sailing Level	81
+Hull	Skiff hulls	5	Construction Level	75
+Hull	Skiff hulls	5	Hull and hull parts	Ironwood skiff
+Hull	Skiff hulls	5	Materials	Ironwood hull parts x10; Rune nails x300; Swamp tar x20; Cupronickel bar x5
+Hull	Skiff hulls	5	Construction Experience	1,771
+Hull	Skiff hulls	5	Boat Speed	2.5
+Hull	Skiff hulls	5	Boat Hitpoints	+150
+Hull	Skiff hulls	5	Defence	60
+Hull	Skiff hulls	5	Cost	+ + +
+Hull	Skiff hulls	5	Shipwright fee	-
+Hull	Skiff hulls	6	Sailing Level	93
+Hull	Skiff hulls	6	Construction Level	84
+Hull	Skiff hulls	6	Hull and hull parts	Rosewood skiff
+Hull	Skiff hulls	6	Materials	Rosewood hull parts x10; Dragon nails x300; Swamp tar x20; Cupronickel bar x5
+Hull	Skiff hulls	6	Construction Experience	2,839
+Hull	Skiff hulls	6	Boat Speed	3.0
+Hull	Skiff hulls	6	Boat Hitpoints	+180
+Hull	Skiff hulls	6	Defence	70
+Hull	Skiff hulls	6	Cost	+ + +
+Hull	Skiff hulls	6	Shipwright fee	-
+Hull	Sloop hulls	0	Sailing Level	50
+Hull	Sloop hulls	0	Construction Level	1
+Hull	Sloop hulls	0	Hull and hull parts	Wooden sloop
+Hull	Sloop hulls	0	Materials	Large wooden hull parts x16; Bronze nails x600; Swamp tar x25
+Hull	Sloop hulls	0	Construction Experience	199
+Hull	Sloop hulls	0	Boat Speed	1.5
+Hull	Sloop hulls	0	Boat Hitpoints	+40
+Hull	Sloop hulls	0	Defence	15
+Hull	Sloop hulls	0	Cost	+ +
+Hull	Sloop hulls	0	Shipwright fee	-
+Hull	Sloop hulls	1	Sailing Level	50
+Hull	Sloop hulls	1	Construction Level	8
+Hull	Sloop hulls	1	Hull and hull parts	Oak sloop
+Hull	Sloop hulls	1	Materials	Large oak hull parts x16; Iron nails x600; Swamp tar x25
+Hull	Sloop hulls	1	Construction Experience	373
+Hull	Sloop hulls	1	Boat Speed	1.5
+Hull	Sloop hulls	1	Boat Hitpoints	+60
+Hull	Sloop hulls	1	Defence	25
+Hull	Sloop hulls	1	Cost	+ +
+Hull	Sloop hulls	1	Shipwright fee	560
+Hull	Sloop hulls	2	Sailing Level	50
+Hull	Sloop hulls	2	Construction Level	23
+Hull	Sloop hulls	2	Hull and hull parts	Teak sloop
+Hull	Sloop hulls	2	Materials	Large teak hull parts x16; Steel nails x600; Swamp tar x25; Lead bar x5
+Hull	Sloop hulls	2	Construction Experience	538
+Hull	Sloop hulls	2	Boat Speed	2.0
+Hull	Sloop hulls	2	Boat Hitpoints	+80
+Hull	Sloop hulls	2	Defence	35
+Hull	Sloop hulls	2	Cost	+ +
+Hull	Sloop hulls	2	Shipwright fee	4200
+Hull	Sloop hulls	3	Sailing Level	50
+Hull	Sloop hulls	3	Construction Level	41
+Hull	Sloop hulls	3	Hull and hull parts	Mahogany sloop
+Hull	Sloop hulls	3	Materials	Large mahogany hull parts x16; Mithril nails x600; Swamp tar x25; Lead bar x5
+Hull	Sloop hulls	3	Construction Experience	919
+Hull	Sloop hulls	3	Boat Speed	2.0
+Hull	Sloop hulls	3	Boat Hitpoints	+100
+Hull	Sloop hulls	3	Defence	45
+Hull	Sloop hulls	3	Cost	+ + +
+Hull	Sloop hulls	3	Shipwright fee	27000
+Hull	Sloop hulls	4	Sailing Level	67
+Hull	Sloop hulls	4	Construction Level	59
+Hull	Sloop hulls	4	Hull and hull parts	Camphor sloop
+Hull	Sloop hulls	4	Materials	Large camphor hull parts x16; Adamantite nails x600; Swamp tar x25; Lead bar x5
+Hull	Sloop hulls	4	Construction Experience	1,380
+Hull	Sloop hulls	4	Boat Speed	2.5
+Hull	Sloop hulls	4	Boat Hitpoints	+160
+Hull	Sloop hulls	4	Defence	55
+Hull	Sloop hulls	4	Cost	+ + +
+Hull	Sloop hulls	4	Shipwright fee	-
+Hull	Sloop hulls	5	Sailing Level	81
+Hull	Sloop hulls	5	Construction Level	75
+Hull	Sloop hulls	5	Hull and hull parts	Ironwood sloop
+Hull	Sloop hulls	5	Materials	Large ironwood hull parts x16; Rune nails x600; Swamp tar x25; Cupronickel bar x5
+Hull	Sloop hulls	5	Construction Experience	2,779
+Hull	Sloop hulls	5	Boat Speed	2.5
+Hull	Sloop hulls	5	Boat Hitpoints	+200
+Hull	Sloop hulls	5	Defence	65
+Hull	Sloop hulls	5	Cost	+ + +
+Hull	Sloop hulls	5	Shipwright fee	-
+Hull	Sloop hulls	6	Sailing Level	93
+Hull	Sloop hulls	6	Construction Level	84
+Hull	Sloop hulls	6	Hull and hull parts	Rosewood sloop
+Hull	Sloop hulls	6	Materials	Large rosewood hull parts x16; Dragon nails x600; Swamp tar x25; Cupronickel bar x5
+Hull	Sloop hulls	6	Construction Experience	4,474
+Hull	Sloop hulls	6	Boat Speed	3.0
+Hull	Sloop hulls	6	Boat Hitpoints	+240
+Hull	Sloop hulls	6	Defence	75
+Hull	Sloop hulls	6	Cost	+ + +
+Hull	Sloop hulls	6	Shipwright fee	-
+Mast and sails	Materials	0	Raft	Tier of logs x 5
+Mast and sails	Materials	0		Tier of logs x 10
+Mast and sails	Materials	0	Skiff	Tier of logs x 15
+Mast and sails	Materials	1	Raft	Equivalent tier of nails x 20
+Mast and sails	Materials	1		Equivalent tier of nails x 40
+Mast and sails	Materials	1	Skiff	Equivalent tier of nails x 60
+Mast and sails	Materials	2	Raft	Bolt of fabric x 5
+Mast and sails	Materials	2		Bolt of fabric x 5
+Mast and sails	Materials	2	Skiff	Bolt of fabric x 10
+Mast and sails	Rafts	0	Sailing Level	1
+Mast and sails	Rafts	0	Construction Level	1
+Mast and sails	Rafts	0	Mast and sails	Wooden mast and linen sails
+Mast and sails	Rafts	0	Materials	Logs x5; Bronze nails x20; Bolt of linen x5
+Mast and sails	Rafts	0	Sailing Trimming experience	10.5
+Mast and sails	Rafts	0	Storm resistance	None
+Mast and sails	Rafts	0	Speed boost duration	20
+Mast and sails	Rafts	0	Acceleration	0.5
+Mast and sails	Rafts	0	Construction Experience	20
+Mast and sails	Rafts	0	Cost	+ +
+Mast and sails	Rafts	0	Shipwright fee	-
+Mast and sails	Rafts	1	Sailing Level	24
+Mast and sails	Rafts	1	Construction Level	11
+Mast and sails	Rafts	1	Mast and sails	Oak mast and linen sails
+Mast and sails	Rafts	1	Materials	Oak logs x5; Iron nails x20; Bolt of linen x5
+Mast and sails	Rafts	1	Sailing Trimming experience	19.5
+Mast and sails	Rafts	1	Storm resistance	Partial
+Mast and sails	Rafts	1	Speed boost duration	22
+Mast and sails	Rafts	1	Acceleration	0.5
+Mast and sails	Rafts	1	Construction Experience	28
+Mast and sails	Rafts	1	Cost	+ +
+Mast and sails	Rafts	1	Shipwright fee	920
+Mast and sails	Rafts	2	Sailing Level	36
+Mast and sails	Rafts	2	Construction Level	26
+Mast and sails	Rafts	2	Mast and sails	Teak mast and canvas sails
+Mast and sails	Rafts	2	Materials	Teak logs x5; Steel nails x20; Bolt of canvas x5
+Mast and sails	Rafts	2	Sailing Trimming experience	30
+Mast and sails	Rafts	2	Storm resistance	Partial
+Mast and sails	Rafts	2	Speed boost duration	24
+Mast and sails	Rafts	2	Acceleration	0.5
+Mast and sails	Rafts	2	Construction Experience	41
+Mast and sails	Rafts	2	Cost	+ +
+Mast and sails	Rafts	2	Shipwright fee	5800
+Mast and sails	Rafts	3	Sailing Level	52
+Mast and sails	Rafts	3	Construction Level	45
+Mast and sails	Rafts	3	Mast and sails	Mahogany mast and canvas sails
+Mast and sails	Rafts	3	Materials	Mahogany logs x5; Mithril nails x20; Bolt of canvas x5
+Mast and sails	Rafts	3	Sailing Trimming experience	48
+Mast and sails	Rafts	3	Storm resistance	Partial
+Mast and sails	Rafts	3	Speed boost duration	26
+Mast and sails	Rafts	3	Acceleration	0.5
+Mast and sails	Rafts	3	Construction Experience	55
+Mast and sails	Rafts	3	Cost	+ +
+Mast and sails	Rafts	3	Shipwright fee	41000
+Mast and sails	Rafts	4	Sailing Level	68
+Mast and sails	Rafts	4	Construction Level	60
+Mast and sails	Rafts	4	Mast and sails	Camphor mast and canvas sails
+Mast and sails	Rafts	4	Materials	Camphor logs x5; Adamantite nails x20; Bolt of canvas x5
+Mast and sails	Rafts	4	Sailing Trimming experience	64
+Mast and sails	Rafts	4	Storm resistance	Full
+Mast and sails	Rafts	4	Speed boost duration	30
+Mast and sails	Rafts	4	Acceleration	1.0
+Mast and sails	Rafts	4	Construction Experience	85
+Mast and sails	Rafts	4	Cost	+ +
+Mast and sails	Rafts	4	Shipwright fee	-
+Mast and sails	Rafts	5	Sailing Level	83
+Mast and sails	Rafts	5	Construction Level	77
+Mast and sails	Rafts	5	Mast and sails	Ironwood mast and cotton sails
+Mast and sails	Rafts	5	Materials	Ironwood logs x5; Rune nails x20; Bolt of cotton x5
+Mast and sails	Rafts	5	Sailing Trimming experience	80
+Mast and sails	Rafts	5	Storm resistance	Full
+Mast and sails	Rafts	5	Speed boost duration	33
+Mast and sails	Rafts	5	Acceleration	1.0
+Mast and sails	Rafts	5	Construction Experience	152
+Mast and sails	Rafts	5	Cost	+ +
+Mast and sails	Rafts	5	Shipwright fee	-
+Mast and sails	Rafts	6	Sailing Level	94
+Mast and sails	Rafts	6	Construction Level	85
+Mast and sails	Rafts	6	Mast and sails	Rosewood mast and cotton sails
+Mast and sails	Rafts	6	Materials	Rosewood logs x5; Dragon nails x20; Bolt of cotton x5
+Mast and sails	Rafts	6	Sailing Trimming experience	125
+Mast and sails	Rafts	6	Storm resistance	Full
+Mast and sails	Rafts	6	Speed boost duration	36
+Mast and sails	Rafts	6	Acceleration	1.0
+Mast and sails	Rafts	6	Construction Experience	175
+Mast and sails	Rafts	6	Cost	+ +
+Mast and sails	Rafts	6	Shipwright fee	-
+Mast and sails	Skiffs	0	Sailing Level	1
+Mast and sails	Skiffs	0	Construction Level	1
+Mast and sails	Skiffs	0	Mast and sails	Wooden mast and linen sails
+Mast and sails	Skiffs	0	Materials	Logs x10; Bronze nails x40; Bolt of linen x5
+Mast and sails	Skiffs	0	Sailing Trimming experience	10.5
+Mast and sails	Skiffs	0	Storm resistance	None
+Mast and sails	Skiffs	0	Speed boost duration	20
+Mast and sails	Skiffs	0	Acceleration	0.5
+Mast and sails	Skiffs	0	Construction Experience	24
+Mast and sails	Skiffs	0	Cost	+ +
+Mast and sails	Skiffs	0	Shipwright fee	-
+Mast and sails	Skiffs	1	Sailing Level	24
+Mast and sails	Skiffs	1	Construction Level	11
+Mast and sails	Skiffs	1	Mast and sails	Oak mast and linen sails
+Mast and sails	Skiffs	1	Materials	Oak logs x10; Iron nails x40; Bolt of linen x5
+Mast and sails	Skiffs	1	Sailing Trimming experience	19.5
+Mast and sails	Skiffs	1	Storm resistance	Partial
+Mast and sails	Skiffs	1	Speed boost duration	22
+Mast and sails	Skiffs	1	Acceleration	0.5
+Mast and sails	Skiffs	1	Construction Experience	36
+Mast and sails	Skiffs	1	Cost	+ +
+Mast and sails	Skiffs	1	Shipwright fee	920
+Mast and sails	Skiffs	2	Sailing Level	36
+Mast and sails	Skiffs	2	Construction Level	26
+Mast and sails	Skiffs	2	Mast and sails	Teak mast and canvas sails
+Mast and sails	Skiffs	2	Materials	Teak logs x10; Steel nails x40; Bolt of canvas x5
+Mast and sails	Skiffs	2	Sailing Trimming experience	30
+Mast and sails	Skiffs	2	Storm resistance	Partial
+Mast and sails	Skiffs	2	Speed boost duration	24
+Mast and sails	Skiffs	2	Acceleration	0.5
+Mast and sails	Skiffs	2	Construction Experience	49
+Mast and sails	Skiffs	2	Cost	+ +
+Mast and sails	Skiffs	2	Shipwright fee	5800
+Mast and sails	Skiffs	3	Sailing Level	52
+Mast and sails	Skiffs	3	Construction Level	45
+Mast and sails	Skiffs	3	Mast and sails	Mahogany mast and canvas sails
+Mast and sails	Skiffs	3	Materials	Mahogany logs x10; Mithril nails x40; Bolt of canvas x5
+Mast and sails	Skiffs	3	Sailing Trimming experience	48
+Mast and sails	Skiffs	3	Storm resistance	Partial
+Mast and sails	Skiffs	3	Speed boost duration	27
+Mast and sails	Skiffs	3	Acceleration	0.5
+Mast and sails	Skiffs	3	Construction Experience	70
+Mast and sails	Skiffs	3	Cost	+ +
+Mast and sails	Skiffs	3	Shipwright fee	41000
+Mast and sails	Skiffs	4	Sailing Level	68
+Mast and sails	Skiffs	4	Construction Level	60
+Mast and sails	Skiffs	4	Mast and sails	Camphor mast and canvas sails
+Mast and sails	Skiffs	4	Materials	Camphor logs x10; Adamantite nails x40; Bolt of canvas x5
+Mast and sails	Skiffs	4	Sailing Trimming experience	64
+Mast and sails	Skiffs	4	Storm resistance	Full
+Mast and sails	Skiffs	4	Speed boost duration	30
+Mast and sails	Skiffs	4	Acceleration	1.0
+Mast and sails	Skiffs	4	Construction Experience	110
+Mast and sails	Skiffs	4	Cost	+ +
+Mast and sails	Skiffs	4	Shipwright fee	-
+Mast and sails	Skiffs	5	Sailing Level	83
+Mast and sails	Skiffs	5	Construction Level	77
+Mast and sails	Skiffs	5	Mast and sails	Ironwood mast and cotton sails
+Mast and sails	Skiffs	5	Materials	Ironwood logs x10; Rune nails x40; Bolt of cotton x5
+Mast and sails	Skiffs	5	Sailing Trimming experience	80
+Mast and sails	Skiffs	5	Storm resistance	Full
+Mast and sails	Skiffs	5	Speed boost duration	33
+Mast and sails	Skiffs	5	Acceleration	1.0
+Mast and sails	Skiffs	5	Construction Experience	197
+Mast and sails	Skiffs	5	Cost	+ +
+Mast and sails	Skiffs	5	Shipwright fee	-
+Mast and sails	Skiffs	6	Sailing Level	94
+Mast and sails	Skiffs	6	Construction Level	85
+Mast and sails	Skiffs	6	Mast and sails	Rosewood mast and cotton sails
+Mast and sails	Skiffs	6	Materials	Rosewood logs x10; Dragon nails x40; Bolt of cotton x5
+Mast and sails	Skiffs	6	Sailing Trimming experience	125
+Mast and sails	Skiffs	6	Storm resistance	Full
+Mast and sails	Skiffs	6	Speed boost duration	36
+Mast and sails	Skiffs	6	Acceleration	1.0
+Mast and sails	Skiffs	6	Construction Experience	231
+Mast and sails	Skiffs	6	Cost	+ +
+Mast and sails	Skiffs	6	Shipwright fee	-
+Mast and sails	Sloops	0	Sailing Level	50
+Mast and sails	Sloops	0	Construction Level	1
+Mast and sails	Sloops	0	Mast and sails	Wooden mast and linen sails
+Mast and sails	Sloops	0	Materials	Logs x15; Bronze nails x60; Bolt of linen x10
+Mast and sails	Sloops	0	Sailing Trimming experience	10.5
+Mast and sails	Sloops	0	Storm resistance	None
+Mast and sails	Sloops	0	Speed boost duration	20
+Mast and sails	Sloops	0	Acceleration	0.5
+Mast and sails	Sloops	0	Construction Experience	31
+Mast and sails	Sloops	0	Cost	+ +
+Mast and sails	Sloops	0	Shipwright fee	-
+Mast and sails	Sloops	1	Sailing Level	50
+Mast and sails	Sloops	1	Construction Level	11
+Mast and sails	Sloops	1	Mast and sails	Oak mast and linen sails
+Mast and sails	Sloops	1	Materials	Oak logs x15; Iron nails x60; Bolt of linen x10
+Mast and sails	Sloops	1	Sailing Trimming experience	19.5
+Mast and sails	Sloops	1	Storm resistance	Partial
+Mast and sails	Sloops	1	Speed boost duration	22
+Mast and sails	Sloops	1	Acceleration	0.5
+Mast and sails	Sloops	1	Construction Experience	46
+Mast and sails	Sloops	1	Cost	+ +
+Mast and sails	Sloops	1	Shipwright fee	920
+Mast and sails	Sloops	2	Sailing Level	50
+Mast and sails	Sloops	2	Construction Level	26
+Mast and sails	Sloops	2	Mast and sails	Teak mast and canvas sails
+Mast and sails	Sloops	2	Materials	Teak logs x15; Steel nails x60; Bolt of canvas x10
+Mast and sails	Sloops	2	Sailing Trimming experience	30
+Mast and sails	Sloops	2	Storm resistance	Partial
+Mast and sails	Sloops	2	Speed boost duration	24
+Mast and sails	Sloops	2	Acceleration	0.5
+Mast and sails	Sloops	2	Construction Experience	65
+Mast and sails	Sloops	2	Cost	+ +
+Mast and sails	Sloops	2	Shipwright fee	5800
+Mast and sails	Sloops	3	Sailing Level	52
+Mast and sails	Sloops	3	Construction Level	45
+Mast and sails	Sloops	3	Mast and sails	Mahogany mast and canvas sails
+Mast and sails	Sloops	3	Materials	Mahogany logs x15; Mithril nails x60; Bolt of canvas x10
+Mast and sails	Sloops	3	Sailing Trimming experience	48
+Mast and sails	Sloops	3	Storm resistance	Partial
+Mast and sails	Sloops	3	Speed boost duration	27
+Mast and sails	Sloops	3	Acceleration	0.5
+Mast and sails	Sloops	3	Construction Experience	90
+Mast and sails	Sloops	3	Cost	+ +
+Mast and sails	Sloops	3	Shipwright fee	41000
+Mast and sails	Sloops	4	Sailing Level	68
+Mast and sails	Sloops	4	Construction Level	60
+Mast and sails	Sloops	4	Mast and sails	Camphor mast and canvas sails
+Mast and sails	Sloops	4	Materials	Camphor logs x15; Adamantite nails x60; Bolt of canvas x10
+Mast and sails	Sloops	4	Sailing Trimming experience	64
+Mast and sails	Sloops	4	Storm resistance	Full
+Mast and sails	Sloops	4	Speed boost duration	30
+Mast and sails	Sloops	4	Acceleration	1.0
+Mast and sails	Sloops	4	Construction Experience	139
+Mast and sails	Sloops	4	Cost	+ +
+Mast and sails	Sloops	4	Shipwright fee	-
+Mast and sails	Sloops	5	Sailing Level	83
+Mast and sails	Sloops	5	Construction Level	77
+Mast and sails	Sloops	5	Mast and sails	Ironwood mast and cotton sails
+Mast and sails	Sloops	5	Materials	Ironwood logs x15; Rune nails x60; Bolt of cotton x10
+Mast and sails	Sloops	5	Sailing Trimming experience	80
+Mast and sails	Sloops	5	Storm resistance	Full
+Mast and sails	Sloops	5	Speed boost duration	33
+Mast and sails	Sloops	5	Acceleration	1.0
+Mast and sails	Sloops	5	Construction Experience	250
+Mast and sails	Sloops	5	Cost	+ +
+Mast and sails	Sloops	5	Shipwright fee	-
+Mast and sails	Sloops	6	Sailing Level	94
+Mast and sails	Sloops	6	Construction Level	85
+Mast and sails	Sloops	6	Mast and sails	Rosewood mast and cotton sails
+Mast and sails	Sloops	6	Materials	Rosewood logs x15; Dragon nails x60; Bolt of cotton x10
+Mast and sails	Sloops	6	Sailing Trimming experience	125
+Mast and sails	Sloops	6	Storm resistance	Full
+Mast and sails	Sloops	6	Speed boost duration	36
+Mast and sails	Sloops	6	Acceleration	1.0
+Mast and sails	Sloops	6	Construction Experience	291
+Mast and sails	Sloops	6	Cost	+ +
+Mast and sails	Sloops	6	Shipwright fee	-
+Helm	Materials	0	Raft	Tier of plank x 2
+Helm	Materials	0		Tier of plank x 3
+Helm	Materials	0	Skiff	Tier of plank x 4
+Helm	Materials	1	Raft	Equivalent tier of metal bar x 4
+Helm	Materials	1		Equivalent tier of metal bar x 6
+Helm	Materials	1	Skiff	Equivalent tier of metal bar x 8
+Helm	Raft helms	0	Sailing Level	1
+Helm	Raft helms	0	Construction Level	1
+Helm	Raft helms	0	Helms	Bronze raft helm
+Helm	Raft helms	0	Materials	Plank x2; Bronze bar x4
+Helm	Raft helms	0	Construction Experience	76
+Helm	Raft helms	0	Cost	+
+Helm	Raft helms	0	Rapids capability	None
+Helm	Raft helms	0	Shipwright fee	-
+Helm	Raft helms	1	Sailing Level	17
+Helm	Raft helms	1	Construction Level	14
+Helm	Raft helms	1	Helms	Iron raft helm
+Helm	Raft helms	1	Materials	Oak plank x2; Iron bar x4
+Helm	Raft helms	1	Construction Experience	160
+Helm	Raft helms	1	Cost	+
+Helm	Raft helms	1	Rapids capability	Gentle
+Helm	Raft helms	1	Shipwright fee	1400
+Helm	Raft helms	2	Sailing Level	38
+Helm	Raft helms	2	Construction Level	30
+Helm	Raft helms	2	Helms	Steel raft helm
+Helm	Raft helms	2	Materials	Teak plank x2; Steel bar x4
+Helm	Raft helms	2	Construction Experience	260
+Helm	Raft helms	2	Cost	+
+Helm	Raft helms	2	Rapids capability	Gentle
+Helm	Raft helms	2	Shipwright fee	8900
+Helm	Raft helms	3	Sailing Level	55
+Helm	Raft helms	3	Construction Level	47
+Helm	Raft helms	3	Helms	Mithril raft helm
+Helm	Raft helms	3	Materials	Mahogany plank x2; Mithril bar x4
+Helm	Raft helms	3	Construction Experience	400
+Helm	Raft helms	3	Cost	+
+Helm	Raft helms	3	Rapids capability	Strong
+Helm	Raft helms	3	Shipwright fee	50000
+Helm	Raft helms	4	Sailing Level	72
+Helm	Raft helms	4	Construction Level	59
+Helm	Raft helms	4	Helms	Adamant raft helm
+Helm	Raft helms	4	Materials	Camphor plank x2; Adamantite bar x4
+Helm	Raft helms	4	Construction Experience	480
+Helm	Raft helms	4	Cost	+
+Helm	Raft helms	4	Rapids capability	Strong
+Helm	Raft helms	4	Shipwright fee	-
+Helm	Raft helms	5	Sailing Level	87
+Helm	Raft helms	5	Construction Level	81
+Helm	Raft helms	5	Helms	Rune raft helm
+Helm	Raft helms	5	Materials	Ironwood plank x2; Runite bar x4
+Helm	Raft helms	5	Construction Experience	650
+Helm	Raft helms	5	Cost	+
+Helm	Raft helms	5	Rapids capability	Powerful
+Helm	Raft helms	5	Shipwright fee	-
+Helm	Raft helms	6	Sailing Level	96
+Helm	Raft helms	6	Construction Level	86
+Helm	Raft helms	6	Helms	Dragon raft helm
+Helm	Raft helms	6	Materials	Rosewood plank x2; Dragon metal sheet x4
+Helm	Raft helms	6	Construction Experience	780
+Helm	Raft helms	6	Cost	+
+Helm	Raft helms	6	Rapids capability	Deadly
+Helm	Raft helms	6	Shipwright fee	-
+Helm	Skiff helms	0	Sailing Level	1
+Helm	Skiff helms	0	Construction Level	1
+Helm	Skiff helms	0	Helms	Bronze skiff helm
+Helm	Skiff helms	0	Materials	Plank x3; Bronze bar x6
+Helm	Skiff helms	0	Construction Experience	114
+Helm	Skiff helms	0	Cost	+
+Helm	Skiff helms	0	Rapids capability	None
+Helm	Skiff helms	0	Shipwright fee	-
+Helm	Skiff helms	1	Sailing Level	17
+Helm	Skiff helms	1	Construction Level	14
+Helm	Skiff helms	1	Helms	Iron skiff helm
+Helm	Skiff helms	1	Materials	Oak plank x3; Iron bar x6
+Helm	Skiff helms	1	Construction Experience	240
+Helm	Skiff helms	1	Cost	+
+Helm	Skiff helms	1	Rapids capability	Gentle
+Helm	Skiff helms	1	Shipwright fee	1400
+Helm	Skiff helms	2	Sailing Level	38
+Helm	Skiff helms	2	Construction Level	30
+Helm	Skiff helms	2	Helms	Steel skiff helm
+Helm	Skiff helms	2	Materials	Teak plank x3; Steel bar x6
+Helm	Skiff helms	2	Construction Experience	390
+Helm	Skiff helms	2	Cost	+
+Helm	Skiff helms	2	Rapids capability	Gentle
+Helm	Skiff helms	2	Shipwright fee	8900
+Helm	Skiff helms	3	Sailing Level	55
+Helm	Skiff helms	3	Construction Level	47
+Helm	Skiff helms	3	Helms	Mithril skiff helm
+Helm	Skiff helms	3	Materials	Mahogany plank x3; Mithril bar x6
+Helm	Skiff helms	3	Construction Experience	600
+Helm	Skiff helms	3	Cost	+
+Helm	Skiff helms	3	Rapids capability	Strong
+Helm	Skiff helms	3	Shipwright fee	50000
+Helm	Skiff helms	4	Sailing Level	72
+Helm	Skiff helms	4	Construction Level	59
+Helm	Skiff helms	4	Helms	Adamant skiff helm
+Helm	Skiff helms	4	Materials	Camphor plank x3; Adamantite bar x6
+Helm	Skiff helms	4	Construction Experience	720
+Helm	Skiff helms	4	Cost	+
+Helm	Skiff helms	4	Rapids capability	Strong
+Helm	Skiff helms	4	Shipwright fee	-
+Helm	Skiff helms	5	Sailing Level	87
+Helm	Skiff helms	5	Construction Level	81
+Helm	Skiff helms	5	Helms	Rune skiff helm
+Helm	Skiff helms	5	Materials	Ironwood plank x3; Runite bar x6
+Helm	Skiff helms	5	Construction Experience	975
+Helm	Skiff helms	5	Cost	+
+Helm	Skiff helms	5	Rapids capability	Powerful
+Helm	Skiff helms	5	Shipwright fee	-
+Helm	Skiff helms	6	Sailing Level	96
+Helm	Skiff helms	6	Construction Level	86
+Helm	Skiff helms	6	Helms	Dragon skiff helm
+Helm	Skiff helms	6	Materials	Rosewood plank x3; Dragon metal sheet x6
+Helm	Skiff helms	6	Construction Experience	1,410
+Helm	Skiff helms	6	Cost	+
+Helm	Skiff helms	6	Rapids capability	Deadly
+Helm	Skiff helms	6	Shipwright fee	-
+Helm	Sloop helms	0	Sailing Level	1
+Helm	Sloop helms	0	Construction Level	1
+Helm	Sloop helms	0	Helms	Bronze sloop helm
+Helm	Sloop helms	0	Materials	Plank x4; Bronze bar x8
+Helm	Sloop helms	0	Construction Experience	152
+Helm	Sloop helms	0	Cost	+
+Helm	Sloop helms	0	Rapids capability	None
+Helm	Sloop helms	0	Shipwright fee	-
+Helm	Sloop helms	1	Sailing Level	17
+Helm	Sloop helms	1	Construction Level	14
+Helm	Sloop helms	1	Helms	Iron sloop helm
+Helm	Sloop helms	1	Materials	Oak plank x4; Iron bar x8
+Helm	Sloop helms	1	Construction Experience	320
+Helm	Sloop helms	1	Cost	+
+Helm	Sloop helms	1	Rapids capability	Gentle
+Helm	Sloop helms	1	Shipwright fee	1400
+Helm	Sloop helms	2	Sailing Level	38
+Helm	Sloop helms	2	Construction Level	30
+Helm	Sloop helms	2	Helms	Steel sloop helm
+Helm	Sloop helms	2	Materials	Teak plank x4; Steel bar x8
+Helm	Sloop helms	2	Construction Experience	520
+Helm	Sloop helms	2	Cost	+
+Helm	Sloop helms	2	Rapids capability	Gentle
+Helm	Sloop helms	2	Shipwright fee	8900
+Helm	Sloop helms	3	Sailing Level	55
+Helm	Sloop helms	3	Construction Level	47
+Helm	Sloop helms	3	Helms	Mithril sloop helm
+Helm	Sloop helms	3	Materials	Mahogany plank x4; Mithril bar x8
+Helm	Sloop helms	3	Construction Experience	800
+Helm	Sloop helms	3	Cost	+
+Helm	Sloop helms	3	Rapids capability	Strong
+Helm	Sloop helms	3	Shipwright fee	50000
+Helm	Sloop helms	4	Sailing Level	72
+Helm	Sloop helms	4	Construction Level	59
+Helm	Sloop helms	4	Helms	Adamant sloop helm
+Helm	Sloop helms	4	Materials	Camphor plank x4; Adamantite bar x8
+Helm	Sloop helms	4	Construction Experience	960
+Helm	Sloop helms	4	Cost	+
+Helm	Sloop helms	4	Rapids capability	Strong
+Helm	Sloop helms	4	Shipwright fee	-
+Helm	Sloop helms	5	Sailing Level	87
+Helm	Sloop helms	5	Construction Level	81
+Helm	Sloop helms	5	Helms	Rune sloop helm
+Helm	Sloop helms	5	Materials	Ironwood plank x4; Runite bar x8
+Helm	Sloop helms	5	Construction Experience	1,300
+Helm	Sloop helms	5	Cost	+
+Helm	Sloop helms	5	Rapids capability	Powerful
+Helm	Sloop helms	5	Shipwright fee	-
+Helm	Sloop helms	6	Sailing Level	96
+Helm	Sloop helms	6	Construction Level	86
+Helm	Sloop helms	6	Helms	Dragon sloop helm
+Helm	Sloop helms	6	Materials	Rosewood plank x4; Dragon metal sheet x8
+Helm	Sloop helms	6	Construction Experience	1,560
+Helm	Sloop helms	6	Cost	+
+Helm	Sloop helms	6	Rapids capability	Deadly
+Helm	Sloop helms	6	Shipwright fee	-
+Keel	Materials	0	Skiff	Tier of keel parts x 10
+Keel	Materials	0		Same tier of large keel parts x 16
+Keel	Materials	1	Skiff	Lead or cupronickel bar x 5
+Keel	Materials	1		Lead or cupronickel bar x 5
+Keel	Skiff keels	0	Sailing Level	15
+Keel	Skiff keels	0	Construction Level	1
+Keel	Skiff keels	0	Keels	Bronze skiff keel
+Keel	Skiff keels	0	Materials	Bronze keel parts x10
+Keel	Skiff keels	0	Max HP	50
+Keel	Skiff keels	0	Armour	100
+Keel	Skiff keels	0	Construction Experience	100
+Keel	Skiff keels	0	Cost	
+Keel	Skiff keels	0	Shipwright fee	-
+Keel	Skiff keels	1	Sailing Level	22
+Keel	Skiff keels	1	Construction Level	17
+Keel	Skiff keels	1	Keels	Iron skiff keel
+Keel	Skiff keels	1	Materials	Iron keel parts x10
+Keel	Skiff keels	1	Max HP	50
+Keel	Skiff keels	1	Armour	200
+Keel	Skiff keels	1	Construction Experience	200
+Keel	Skiff keels	1	Cost	
+Keel	Skiff keels	1	Shipwright fee	2100
+Keel	Skiff keels	2	Sailing Level	39
+Keel	Skiff keels	2	Construction Level	32
+Keel	Skiff keels	2	Keels	Steel skiff keel
+Keel	Skiff keels	2	Materials	Steel keel parts x10 Lead bar x5
+Keel	Skiff keels	2	Max HP	60
+Keel	Skiff keels	2	Armour	300
+Keel	Skiff keels	2	Construction Experience	311
+Keel	Skiff keels	2	Cost	
+Keel	Skiff keels	2	Shipwright fee	11000
+Keel	Skiff keels	3	Sailing Level	54
+Keel	Skiff keels	3	Construction Level	50
+Keel	Skiff keels	3	Keels	Mithril skiff keel
+Keel	Skiff keels	3	Materials	Mithril keel parts x10; Lead bar x5
+Keel	Skiff keels	3	Max HP	60
+Keel	Skiff keels	3	Armour	400
+Keel	Skiff keels	3	Construction Experience	511
+Keel	Skiff keels	3	Cost	+
+Keel	Skiff keels	3	Shipwright fee	68000
+Keel	Skiff keels	4	Sailing Level	66
+Keel	Skiff keels	4	Construction Level	62
+Keel	Skiff keels	4	Keels	Adamant skiff keel
+Keel	Skiff keels	4	Materials	Adamant keel parts x10; Lead bar x5
+Keel	Skiff keels	4	Max HP	70
+Keel	Skiff keels	4	Armour	600
+Keel	Skiff keels	4	Construction Experience	761
+Keel	Skiff keels	4	Cost	+
+Keel	Skiff keels	4	Shipwright fee	-
+Keel	Skiff keels	5	Sailing Level	85
+Keel	Skiff keels	5	Construction Level	78
+Keel	Skiff keels	5	Keels	Rune skiff keel
+Keel	Skiff keels	5	Materials	Rune keel parts x10; Cupronickel bar x5
+Keel	Skiff keels	5	Max HP	80
+Keel	Skiff keels	5	Armour	800
+Keel	Skiff keels	5	Construction Experience	1,511
+Keel	Skiff keels	5	Cost	+
+Keel	Skiff keels	5	Shipwright fee	-
+Keel	Skiff keels	6	Sailing Level	97
+Keel	Skiff keels	6	Construction Level	87
+Keel	Skiff keels	6	Keels	Dragon skiff keel
+Keel	Skiff keels	6	Materials	Dragon keel parts x10; Cupronickel bar x5
+Keel	Skiff keels	6	Max HP	80
+Keel	Skiff keels	6	Armour	1000
+Keel	Skiff keels	6	Construction Experience	2,511
+Keel	Skiff keels	6	Cost	+
+Keel	Skiff keels	6	Shipwright fee	-
+Keel	Sloop keels	0	Sailing Level	50
+Keel	Sloop keels	0	Construction Level	1
+Keel	Sloop keels	0	Keels	Bronze sloop keel
+Keel	Sloop keels	0	Materials	Large bronze keel parts x16
+Keel	Sloop keels	0	Max HP	70
+Keel	Sloop keels	0	Armour	100
+Keel	Sloop keels	0	Construction Experience	160
+Keel	Sloop keels	0	Cost	
+Keel	Sloop keels	0	Shipwright fee	-
+Keel	Sloop keels	1	Sailing Level	50
+Keel	Sloop keels	1	Construction Level	17
+Keel	Sloop keels	1	Keels	Iron sloop keel
+Keel	Sloop keels	1	Materials	Large iron keel parts x16
+Keel	Sloop keels	1	Max HP	70
+Keel	Sloop keels	1	Armour	200
+Keel	Sloop keels	1	Construction Experience	320
+Keel	Sloop keels	1	Cost	
+Keel	Sloop keels	1	Shipwright fee	2100
+Keel	Sloop keels	2	Sailing Level	50
+Keel	Sloop keels	2	Construction Level	32
+Keel	Sloop keels	2	Keels	Steel sloop keel
+Keel	Sloop keels	2	Materials	Large steel keel parts x16; Lead bar x5
+Keel	Sloop keels	2	Max HP	90
+Keel	Sloop keels	2	Armour	300
+Keel	Sloop keels	2	Construction Experience	491
+Keel	Sloop keels	2	Cost	+
+Keel	Sloop keels	2	Shipwright fee	11000
+Keel	Sloop keels	3	Sailing Level	54
+Keel	Sloop keels	3	Construction Level	50
+Keel	Sloop keels	3	Keels	Mithril sloop keel
+Keel	Sloop keels	3	Materials	Large mithril keel parts x16; Lead bar x5
+Keel	Sloop keels	3	Max HP	90
+Keel	Sloop keels	3	Armour	400
+Keel	Sloop keels	3	Construction Experience	811
+Keel	Sloop keels	3	Cost	+
+Keel	Sloop keels	3	Shipwright fee	68000
+Keel	Sloop keels	4	Sailing Level	66
+Keel	Sloop keels	4	Construction Level	62
+Keel	Sloop keels	4	Keels	Adamant sloop keel
+Keel	Sloop keels	4	Materials	Large adamant keel parts x16; Lead bar x5
+Keel	Sloop keels	4	Max HP	100
+Keel	Sloop keels	4	Armour	600
+Keel	Sloop keels	4	Construction Experience	1,211
+Keel	Sloop keels	4	Cost	+
+Keel	Sloop keels	4	Shipwright fee	-
+Keel	Sloop keels	5	Sailing Level	85
+Keel	Sloop keels	5	Construction Level	78
+Keel	Sloop keels	5	Keels	Rune sloop keel
+Keel	Sloop keels	5	Materials	Large rune keel parts x16; Cupronickel bar x5
+Keel	Sloop keels	5	Max HP	120
+Keel	Sloop keels	5	Armour	800
+Keel	Sloop keels	5	Construction Experience	2,411
+Keel	Sloop keels	5	Cost	+
+Keel	Sloop keels	5	Shipwright fee	-
+Keel	Sloop keels	6	Sailing Level	97
+Keel	Sloop keels	6	Construction Level	87
+Keel	Sloop keels	6	Keels	Dragon sloop keel
+Keel	Sloop keels	6	Materials	Large dragon keel parts x16; Cupronickel bar x5
+Keel	Sloop keels	6	Max HP	120
+Keel	Sloop keels	6	Armour	1000
+Keel	Sloop keels	6	Construction Experience	4,011
+Keel	Sloop keels	6	Cost	+
+Keel	Sloop keels	6	Shipwright fee	-
+Keel	Flat armour	1	Tier	Default
+Keel	Flat armour	1	Damage reduction	0
+Keel	Flat armour	2	Tier	link= Bronze
+Keel	Flat armour	2	Damage reduction	1
+Keel	Flat armour	3	Tier	link= Iron
+Keel	Flat armour	3	Damage reduction	2
+Keel	Flat armour	4	Tier	link= Steel
+Keel	Flat armour	4	Damage reduction	3
+Keel	Flat armour	5	Tier	link= Mithril
+Keel	Flat armour	5	Damage reduction	4
+Keel	Flat armour	6	Tier	link= Adamant
+Keel	Flat armour	6	Damage reduction	6
+Keel	Flat armour	7	Tier	link= Rune
+Keel	Flat armour	7	Damage reduction	8
+Keel	Flat armour	8	Tier	link= Dragon
+Keel	Flat armour	8	Damage reduction	10
+Keel	Mammals	1	Tier	link= Max Hit
+Keel	Mammals	1	Dolphin	
+Keel	Mammals	1	Mogre	
+Keel	Mammals	1	Narwhal	
+Keel	Mammals	1	Orca	
+Keel	Mammals	2	Tier	link= Bronze
+Keel	Mammals	2	Dolphin	
+Keel	Mammals	2	Mogre	
+Keel	Mammals	2	Narwhal	
+Keel	Mammals	2	Orca	
+Keel	Mammals	3	Tier	link= Iron
+Keel	Mammals	3	Dolphin	
+Keel	Mammals	3	Mogre	
+Keel	Mammals	3	Narwhal	
+Keel	Mammals	3	Orca	
+Keel	Mammals	4	Tier	link= Steel
+Keel	Mammals	4	Dolphin	
+Keel	Mammals	4	Mogre	
+Keel	Mammals	4	Narwhal	
+Keel	Mammals	4	Orca	
+Keel	Mammals	5	Tier	link= Mithril
+Keel	Mammals	5	Dolphin	
+Keel	Mammals	5	Mogre	
+Keel	Mammals	5	Narwhal	
+Keel	Mammals	5	Orca	
+Keel	Mammals	6	Tier	link= Adamant
+Keel	Mammals	6	Dolphin	
+Keel	Mammals	6	Mogre	
+Keel	Mammals	6	Narwhal	
+Keel	Mammals	6	Orca	
+Keel	Mammals	7	Tier	link= Rune
+Keel	Mammals	7	Dolphin	
+Keel	Mammals	7	Mogre	
+Keel	Mammals	7	Narwhal	
+Keel	Mammals	7	Orca	
+Keel	Mammals	8	Tier	link= Dragon
+Keel	Mammals	8	Dolphin	
+Keel	Mammals	8	Mogre	
+Keel	Mammals	8	Narwhal	
+Keel	Mammals	8	Orca	
+Keel	Sharks	1	Tier	link= Max Hit
+Keel	Sharks	1	Bull shark	
+Keel	Sharks	1	Hammerhead shark	
+Keel	Sharks	1	Tiger shark	
+Keel	Sharks	1	Great white shark	
+Keel	Sharks	2	Tier	link= Bronze
+Keel	Sharks	2	Bull shark	
+Keel	Sharks	2	Hammerhead shark	
+Keel	Sharks	2	Tiger shark	
+Keel	Sharks	2	Great white shark	
+Keel	Sharks	3	Tier	link= Iron
+Keel	Sharks	3	Bull shark	
+Keel	Sharks	3	Hammerhead shark	
+Keel	Sharks	3	Tiger shark	
+Keel	Sharks	3	Great white shark	
+Keel	Sharks	4	Tier	link= Steel
+Keel	Sharks	4	Bull shark	
+Keel	Sharks	4	Hammerhead shark	
+Keel	Sharks	4	Tiger shark	
+Keel	Sharks	4	Great white shark	
+Keel	Sharks	5	Tier	link= Mithril
+Keel	Sharks	5	Bull shark	
+Keel	Sharks	5	Hammerhead shark	
+Keel	Sharks	5	Tiger shark	
+Keel	Sharks	5	Great white shark	
+Keel	Sharks	6	Tier	link= Adamant
+Keel	Sharks	6	Bull shark	
+Keel	Sharks	6	Hammerhead shark	
+Keel	Sharks	6	Tiger shark	
+Keel	Sharks	6	Great white shark	
+Keel	Sharks	7	Tier	link= Rune
+Keel	Sharks	7	Bull shark	
+Keel	Sharks	7	Hammerhead shark	
+Keel	Sharks	7	Tiger shark	
+Keel	Sharks	7	Great white shark	
+Keel	Sharks	8	Tier	link= Dragon
+Keel	Sharks	8	Bull shark	
+Keel	Sharks	8	Hammerhead shark	
+Keel	Sharks	8	Tiger shark	
+Keel	Sharks	8	Great white shark	
+Keel	Kraken	1	Tier	link= Max Hit
+Keel	Kraken	1	Pygmy kraken	
+Keel	Kraken	1	Spined kraken	
+Keel	Kraken	1	Armoured kraken	
+Keel	Kraken	1	Veiled kraken	
+Keel	Kraken	1	Vampyre kraken	
+Keel	Kraken	2	Tier	link= Bronze
+Keel	Kraken	2	Pygmy kraken	
+Keel	Kraken	2	Spined kraken	
+Keel	Kraken	2	Armoured kraken	
+Keel	Kraken	2	Veiled kraken	
+Keel	Kraken	2	Vampyre kraken	
+Keel	Kraken	3	Tier	link= Iron
+Keel	Kraken	3	Pygmy kraken	
+Keel	Kraken	3	Spined kraken	
+Keel	Kraken	3	Armoured kraken	
+Keel	Kraken	3	Veiled kraken	
+Keel	Kraken	3	Vampyre kraken	
+Keel	Kraken	4	Tier	link= Steel
+Keel	Kraken	4	Pygmy kraken	
+Keel	Kraken	4	Spined kraken	
+Keel	Kraken	4	Armoured kraken	
+Keel	Kraken	4	Veiled kraken	
+Keel	Kraken	4	Vampyre kraken	
+Keel	Kraken	5	Tier	link= Mithril
+Keel	Kraken	5	Pygmy kraken	
+Keel	Kraken	5	Spined kraken	
+Keel	Kraken	5	Armoured kraken	
+Keel	Kraken	5	Veiled kraken	
+Keel	Kraken	5	Vampyre kraken	
+Keel	Kraken	6	Tier	link= Adamant
+Keel	Kraken	6	Pygmy kraken	
+Keel	Kraken	6	Spined kraken	
+Keel	Kraken	6	Armoured kraken	
+Keel	Kraken	6	Veiled kraken	
+Keel	Kraken	6	Vampyre kraken	
+Keel	Kraken	7	Tier	link= Rune
+Keel	Kraken	7	Pygmy kraken	
+Keel	Kraken	7	Spined kraken	
+Keel	Kraken	7	Armoured kraken	
+Keel	Kraken	7	Veiled kraken	
+Keel	Kraken	7	Vampyre kraken	
+Keel	Kraken	8	Tier	link= Dragon
+Keel	Kraken	8	Pygmy kraken	
+Keel	Kraken	8	Spined kraken	
+Keel	Kraken	8	Armoured kraken	
+Keel	Kraken	8	Veiled kraken	
+Keel	Kraken	8	Vampyre kraken	
+Keel	Rays	1	Tier	link= Max Hit
+Keel	Rays	1	Eagle ray	
+Keel	Rays	1	Butterfly ray	
+Keel	Rays	1	Stingray	
+Keel	Rays	1	Manta ray	
+Keel	Rays	2	Tier	link= Bronze
+Keel	Rays	2	Eagle ray	
+Keel	Rays	2	Butterfly ray	
+Keel	Rays	2	Stingray	
+Keel	Rays	2	Manta ray	
+Keel	Rays	3	Tier	link= Iron
+Keel	Rays	3	Eagle ray	
+Keel	Rays	3	Butterfly ray	
+Keel	Rays	3	Stingray	
+Keel	Rays	3	Manta ray	
+Keel	Rays	4	Tier	link= Steel
+Keel	Rays	4	Eagle ray	
+Keel	Rays	4	Butterfly ray	
+Keel	Rays	4	Stingray	
+Keel	Rays	4	Manta ray	
+Keel	Rays	5	Tier	link= Mithril
+Keel	Rays	5	Eagle ray	
+Keel	Rays	5	Butterfly ray	
+Keel	Rays	5	Stingray	
+Keel	Rays	5	Manta ray	
+Keel	Rays	6	Tier	link= Adamant
+Keel	Rays	6	Eagle ray	
+Keel	Rays	6	Butterfly ray	
+Keel	Rays	6	Stingray	
+Keel	Rays	6	Manta ray	
+Keel	Rays	7	Tier	link= Rune
+Keel	Rays	7	Eagle ray	
+Keel	Rays	7	Butterfly ray	
+Keel	Rays	7	Stingray	
+Keel	Rays	7	Manta ray	
+Keel	Rays	8	Tier	link= Dragon
+Keel	Rays	8	Eagle ray	
+Keel	Rays	8	Butterfly ray	
+Keel	Rays	8	Stingray	
+Keel	Rays	8	Manta ray	
+Keel	Birds	1	Tier	link= Max Hit
+Keel	Birds	1	Tern	
+Keel	Birds	1	Osprey	
+Keel	Birds	1	Frigatebird	
+Keel	Birds	1	Albatross	
+Keel	Birds	2	Tier	link= Bronze
+Keel	Birds	2	Tern	
+Keel	Birds	2	Osprey	
+Keel	Birds	2	Frigatebird	
+Keel	Birds	2	Albatross	
+Keel	Birds	3	Tier	link= Iron
+Keel	Birds	3	Tern	
+Keel	Birds	3	Osprey	
+Keel	Birds	3	Frigatebird	
+Keel	Birds	3	Albatross	
+Keel	Birds	4	Tier	link= Steel
+Keel	Birds	4	Tern	
+Keel	Birds	4	Osprey	
+Keel	Birds	4	Frigatebird	
+Keel	Birds	4	Albatross	
+Keel	Birds	5	Tier	link= Mithril
+Keel	Birds	5	Tern	
+Keel	Birds	5	Osprey	
+Keel	Birds	5	Frigatebird	
+Keel	Birds	5	Albatross	
+Keel	Birds	6	Tier	link= Adamant
+Keel	Birds	6	Tern	
+Keel	Birds	6	Osprey	
+Keel	Birds	6	Frigatebird	
+Keel	Birds	6	Albatross	
+Keel	Birds	7	Tier	link= Rune
+Keel	Birds	7	Tern	
+Keel	Birds	7	Osprey	
+Keel	Birds	7	Frigatebird	
+Keel	Birds	7	Albatross	
+Keel	Birds	8	Tier	link= Dragon
+Keel	Birds	8	Tern	
+Keel	Birds	8	Osprey	
+Keel	Birds	8	Frigatebird	
+Keel	Birds	8	Albatross	
+Facilities	Cannons	0	Type	Bronze cannon
+Facilities	Cannons	0	Sailing Level	28
+Facilities	Cannons	0	Construction Level	21
+Facilities	Cannons	0	Crew Requirement	1 Privateering
+Facilities	Cannons	0	Materials	4 planks, 16 bronze nails, 8 bronze bars
+Facilities	Cannons	0	Construction XP	157
+Facilities	Cannons	0	Ranged Accuracy	30
+Facilities	Cannons	0	Ranged Strength	8
+Facilities	Cannons	1	Type	Iron cannon
+Facilities	Cannons	1	Sailing Level	35
+Facilities	Cannons	1	Construction Level	28
+Facilities	Cannons	1	Crew Requirement	2 Privateering
+Facilities	Cannons	1	Materials	4 oak planks, 16 iron nails, 8 iron bars
+Facilities	Cannons	1	Construction XP	328
+Facilities	Cannons	1	Ranged Accuracy	42
+Facilities	Cannons	1	Ranged Strength	10
+Facilities	Cannons	2	Type	Steel cannon
+Facilities	Cannons	2	Sailing Level	47
+Facilities	Cannons	2	Construction Level	39
+Facilities	Cannons	2	Crew Requirement	2 Privateering
+Facilities	Cannons	2	Materials	4 teak planks, 16 steel nails, 8 steel bars
+Facilities	Cannons	2	Construction XP	526
+Facilities	Cannons	2	Ranged Accuracy	60
+Facilities	Cannons	2	Ranged Strength	12
+Facilities	Cannons	3	Type	Mithril cannon
+Facilities	Cannons	3	Sailing Level	57
+Facilities	Cannons	3	Construction Level	50
+Facilities	Cannons	3	Crew Requirement	3 Privateering
+Facilities	Cannons	3	Materials	4 mahogany planks, 16 mithril nails, 8 mithril bars
+Facilities	Cannons	3	Construction XP	816
+Facilities	Cannons	3	Ranged Accuracy	78
+Facilities	Cannons	3	Ranged Strength	15
+Facilities	Cannons	4	Type	Adamant cannon
+Facilities	Cannons	4	Sailing Level	69
+Facilities	Cannons	4	Construction Level	61
+Facilities	Cannons	4	Crew Requirement	3 Privateering
+Facilities	Cannons	4	Materials	4 camphor planks, 16 adamantite nails, 8 adamantite bars
+Facilities	Cannons	4	Construction XP	986
+Facilities	Cannons	4	Ranged Accuracy	98
+Facilities	Cannons	4	Ranged Strength	23
+Facilities	Cannons	5	Type	Rune cannon
+Facilities	Cannons	5	Sailing Level	80
+Facilities	Cannons	5	Construction Level	76
+Facilities	Cannons	5	Crew Requirement	4 Privateering
+Facilities	Cannons	5	Materials	4 ironwood planks, 16 rune nails, 8 runite bars
+Facilities	Cannons	5	Construction XP	1,359
+Facilities	Cannons	5	Ranged Accuracy	163
+Facilities	Cannons	5	Ranged Strength	26
+Facilities	Cannons	6	Type	Dragon cannon
+Facilities	Cannons	6	Sailing Level	92
+Facilities	Cannons	6	Construction Level	84
+Facilities	Cannons	6	Crew Requirement	4 Privateering
+Facilities	Cannons	6	Materials	4 rosewood planks, 16 dragon nails, 8 dragon sheets, 1 dragon cannon barrel
+Facilities	Cannons	6	Construction XP	1,586
+Facilities	Cannons	6	Ranged Accuracy	194
+Facilities	Cannons	6	Ranged Strength	32
+Facilities	Salvaging	0	Type	Bronze salvaging hook
+Facilities	Salvaging	0	Sailing Level	15
+Facilities	Salvaging	0	Construction Level	1
+Facilities	Salvaging	0	Crew Requirement	1 Deckhandiness
+Facilities	Salvaging	0	Materials	4 planks, 16 bronze nails, 6 bronze bars, 1 rope
+Facilities	Salvaging	0	Construction XP	151
+Facilities	Salvaging	1	Type	Iron salvaging hook
+Facilities	Salvaging	1	Sailing Level	21
+Facilities	Salvaging	1	Construction Level	9
+Facilities	Salvaging	1	Crew Requirement	1 Deckhandiness
+Facilities	Salvaging	1	Materials	4 oak planks, 16 iron nails, 6 iron bars, 1 rope
+Facilities	Salvaging	1	Construction XP	312
+Facilities	Salvaging	2	Type	Steel salvaging hook
+Facilities	Salvaging	2	Sailing Level	27
+Facilities	Salvaging	2	Construction Level	18
+Facilities	Salvaging	2	Crew Requirement	1 Deckhandiness
+Facilities	Salvaging	2	Materials	4 teak planks, 16 steel nails, 6 steel bars, 1 rope, 3 lead bars
+Facilities	Salvaging	2	Construction XP	499
+Facilities	Salvaging	3	Type	Mithril salvaging hook
+Facilities	Salvaging	3	Sailing Level	44
+Facilities	Salvaging	3	Construction Level	30
+Facilities	Salvaging	3	Crew Requirement	2 Deckhandiness
+Facilities	Salvaging	3	Materials	4 mahogany planks, 16 mithril nails, 6 mithril bars, 1 rope, 3 lead bars
+Facilities	Salvaging	3	Construction XP	769
+Facilities	Salvaging	4	Type	Adamant salvaging hook
+Facilities	Salvaging	4	Sailing Level	59
+Facilities	Salvaging	4	Construction Level	52
+Facilities	Salvaging	4	Crew Requirement	2 Deckhandiness
+Facilities	Salvaging	4	Materials	4 camphor planks, 16 adamantite nails, 6 adamantite bars, 1 rope, 3 lead bars
+Facilities	Salvaging	4	Construction XP	919
+Facilities	Salvaging	5	Type	Rune salvaging hook
+Facilities	Salvaging	5	Sailing Level	74
+Facilities	Salvaging	5	Construction Level	66
+Facilities	Salvaging	5	Crew Requirement	3 Deckhandiness
+Facilities	Salvaging	5	Materials	4 ironwood planks, 16 rune nails, 6 runite bars, 1 rope, 4 lead bars, 4 cupronickel bars
+Facilities	Salvaging	5	Construction XP	1,233
+Facilities	Salvaging	6	Type	Dragon salvaging hook
+Facilities	Salvaging	6	Sailing Level	86
+Facilities	Salvaging	6	Construction Level	78
+Facilities	Salvaging	6	Crew Requirement	4 Deckhandiness
+Facilities	Salvaging	6	Materials	4 rosewood planks, 16 dragon nails, 6 dragon sheets, 1 rope, 4 cupronickel bars, 1 broken dragon hook
+Facilities	Salvaging	6	Construction XP	1,537
+Facilities	Trawling nets	0	Type	Rope trawling net
+Facilities	Trawling nets	0	Sailing Level	56
+Facilities	Trawling nets	0	Construction Level	45
+Facilities	Trawling nets	0	Crew Requirement	1 Deckhandiness
+Facilities	Trawling nets	0	Materials	7 ropes, 4 teak planks, 4 steel bars, 2 lead bars
+Facilities	Trawling nets	0	Construction XP	458
+Facilities	Trawling nets	1	Type	Linen trawling net
+Facilities	Trawling nets	1	Sailing Level	65
+Facilities	Trawling nets	1	Construction Level	61
+Facilities	Trawling nets	1	Crew Requirement	2 Deckhandiness
+Facilities	Trawling nets	1	Materials	6 linen yarn, 1 rope, 4 mahogany planks, 4 mithril bars, 2 lead bars
+Facilities	Trawling nets	1	Construction XP	783
+Facilities	Trawling nets	2	Type	Hemp trawling net
+Facilities	Trawling nets	2	Sailing Level	76
+Facilities	Trawling nets	2	Construction Level	65
+Facilities	Trawling nets	2	Crew Requirement	3 Deckhandiness
+Facilities	Trawling nets	2	Materials	6 hemp yarn, 1 ropes, 4 camphor planks, 4 adamantite bars, 2 cupronickel bars, 4 ray barbs
+Facilities	Trawling nets	2	Construction XP	1,003
+Facilities	Trawling nets	3	Type	Cotton trawling net
+Facilities	Trawling nets	3	Sailing Level	84
+Facilities	Trawling nets	3	Construction Level	73
+Facilities	Trawling nets	3	Crew Requirement	4 Deckhandiness
+Facilities	Trawling nets	3	Materials	6 cotton yarn, 1 ropes, 4 ironwood planks, 4 runite bars, 2 cupronickel bars, 8 ray barbs
+Facilities	Trawling nets	3	Construction XP	1,289
+Facilities	Storage	0	Type	Basic cargo hold
+Facilities	Storage	0	Sailing Level	1
+Facilities	Storage	0	Construction Level	1
+Facilities	Storage	0	Storage Capacity	20 (raft); 30 (skiff); 40 (sloop)
+Facilities	Storage	0	Materials	8 planks, 32 bronze nails
+Facilities	Storage	0	Construction XP	232
+Facilities	Storage	1	Type	Oak cargo hold
+Facilities	Storage	1	Sailing Level	18
+Facilities	Storage	1	Construction Level	11
+Facilities	Storage	1	Storage Capacity	30 (raft); 45 (skiff); 60 (sloop)
+Facilities	Storage	1	Materials	8 oak planks, 32 iron nails
+Facilities	Storage	1	Construction XP	491
+Facilities	Storage	2	Type	Teak cargo hold
+Facilities	Storage	2	Sailing Level	29
+Facilities	Storage	2	Construction Level	21
+Facilities	Storage	2	Storage Capacity	45 (raft); 60 (skiff); 90 (sloop)
+Facilities	Storage	2	Materials	8 teak planks, 32 steel nails, 3 lead bars
+Facilities	Storage	2	Construction XP	738
+Facilities	Storage	3	Type	Mahogany cargo hold
+Facilities	Storage	3	Sailing Level	46
+Facilities	Storage	3	Construction Level	41
+Facilities	Storage	3	Storage Capacity	60 (raft); 90 (skiff); 120 (sloop)
+Facilities	Storage	3	Materials	8 mahogany planks, 32 mithril nails, 3 lead bars
+Facilities	Storage	3	Construction XP	1,153
+Facilities	Storage	4	Type	Camphor cargo hold
+Facilities	Storage	4	Sailing Level	60
+Facilities	Storage	4	Construction Level	53
+Facilities	Storage	4	Storage Capacity	80 (raft); 120 (skiff); 160 (sloop)
+Facilities	Storage	4	Materials	8 camphor planks, 32 adamantite nails, 3 lead bars
+Facilities	Storage	4	Construction XP	1,326
+Facilities	Storage	5	Type	Ironwood cargo hold
+Facilities	Storage	5	Sailing Level	80
+Facilities	Storage	5	Construction Level	77
+Facilities	Storage	5	Storage Capacity	105 (raft); 150 (skiff); 210 (sloop)
+Facilities	Storage	5	Materials	8 ironwood planks, 32 rune nails, 3 cupronickel bars
+Facilities	Storage	5	Construction XP	1,492
+Facilities	Storage	6	Type	Rosewood cargo hold
+Facilities	Storage	6	Sailing Level	89
+Facilities	Storage	6	Construction Level	84
+Facilities	Storage	6	Storage Capacity	120 (raft); 180 (skiff); 240 (sloop)
+Facilities	Storage	6	Materials	8 rosewood planks, 32 dragon nails, 3 cupronickel bars
+Facilities	Storage	6	Construction XP	1,634
+Facilities	Stations	0	Type	Range
+Facilities	Stations	0	Sailing Level	16
+Facilities	Stations	0	Construction Level	6
+Facilities	Stations	0	Crew Requirement	-
+Facilities	Stations	0	Materials	4 steel bars, 2 charcoal, 1 tinderbox
+Facilities	Stations	0	Construction XP	90
+Facilities	Stations	1	Type	Keg
+Facilities	Stations	1	Sailing Level	33
+Facilities	Stations	1	Construction Level	25
+Facilities	Stations	1	Crew Requirement	-
+Facilities	Stations	1	Materials	5 oak planks, 20 iron nails, 1 barrel stand
+Facilities	Stations	1	Construction XP	313
+Facilities	Stations	2	Type	Innoculation station
+Facilities	Stations	2	Sailing Level	40
+Facilities	Stations	2	Construction Level	37
+Facilities	Stations	2	Crew Requirement	-
+Facilities	Stations	2	Materials	8 teak planks, 32 steel nails, 6 relicym's balm(4)
+Facilities	Stations	2	Construction XP	765
+Facilities	Stations	3	Type	Salvaging station
+Facilities	Stations	3	Sailing Level	42
+Facilities	Stations	3	Construction Level	34
+Facilities	Stations	3	Crew Requirement	-
+Facilities	Stations	3	Materials	4 teak planks, 16 steel nails
+Facilities	Stations	3	Construction XP	366
+Facilities	Stations	4	Type	Chum station
+Facilities	Stations	4	Sailing Level	56
+Facilities	Stations	4	Construction Level	45
+Facilities	Stations	4	Crew Requirement	1 Deckhandiness
+Facilities	Stations	4	Materials	10 mahogany planks, 40 mithril nails, 2 steel bars, 1,000 fishing bait, 1 knife
+Facilities	Stations	4	Construction XP	1,522
+Facilities	Stations	5	Type	Bosun's workbench
+Facilities	Stations	5	Sailing Level	63
+Facilities	Stations	5	Construction Level	54
+Facilities	Stations	5	Crew Requirement	-
+Facilities	Stations	5	Materials	6 camphor planks, 24 adamantite nails, 5 lead bars
+Facilities	Stations	5	Construction XP	1,003
+Facilities	Stations	6	Type	Advanced chum station
+Facilities	Stations	6	Sailing Level	68
+Facilities	Stations	6	Construction Level	61
+Facilities	Stations	6	Crew Requirement	2 Deckhandiness
+Facilities	Stations	6	Materials	10 camphor planks, 40 adamantite nails, 2 steel bars, 1,000 fishing bait, 1 knife
+Facilities	Stations	6	Construction XP	1,738
+Facilities	Stations	7	Type	Chum spreader
+Facilities	Stations	7	Sailing Level	82
+Facilities	Stations	7	Construction Level	74
+Facilities	Stations	7	Crew Requirement	2 Deckhandiness
+Facilities	Stations	7	Materials	10 ironwood planks, 40 rune nails, 5 cupronickel bars, 10,000 fishing bait, 1 narwhal horn knife
+Facilities	Stations	7	Construction XP	2,028
+Facilities	Wind	0	Type	Wind catcher
+Facilities	Wind	0	Sailing Level	53
+Facilities	Wind	0	Construction Level	47
+Facilities	Wind	0	Crew Requirement	2 Deckhandiness
+Facilities	Wind	0	Materials	4 teak planks, 16 steel nails, 8 steel bars, 4 lead bars, 10,000 air runes, 1 captured wind mote
+Facilities	Wind	0	Construction XP	741
+Facilities	Wind	1	Type	Crystal extractor
+Facilities	Wind	1	Sailing Level	73
+Facilities	Wind	1	Construction Level	67
+Facilities	Wind	1	Crew Requirement	-
+Facilities	Wind	1	Materials	6 ironwood planks, 5 cupronickel bars, 2 magic stones, 1 heart of Ithell
+Facilities	Wind	1	Construction XP	3,066
+Facilities	Wind	2	Type	Gale catcher
+Facilities	Wind	2	Sailing Level	79
+Facilities	Wind	2	Construction Level	70
+Facilities	Wind	2	Crew Requirement	3 Deckhandiness
+Facilities	Wind	2	Materials	4 camphor planks, 16 adamantite nails, 8 adamantite bar, 4 cupronickel bars, 25,000 air runes, 1 captured wind mote, 5 swift albatross feather
+Facilities	Wind	2	Construction XP	1,517
+Facilities	Misc.	0	Type	Anchor
+Facilities	Misc.	0	Sailing Level	37
+Facilities	Misc.	0	Construction Level	29
+Facilities	Misc.	0	Materials	8 steel bars, 6 lead bars, 1 rope
+Facilities	Misc.	0	Construction XP	176
+Facilities	Misc.	1	Type	Ballistic attractor
+Facilities	Misc.	1	Sailing Level	50
+Facilities	Misc.	1	Construction Level	44
+Facilities	Misc.	1	Materials	10 mahogany planks, 5,000 water runes, 1,000 law runes, 5 lead bars, 5 steel bars
+Facilities	Misc.	1	Construction XP	2,141
+Facilities	Misc.	2	Type	Teleport focus
+Facilities	Misc.	2	Sailing Level	55
+Facilities	Misc.	2	Construction Level	49
+Facilities	Misc.	2	Materials	8 mahogany planks, 32 mithril nails, 4 lead bars, 1 magic stone
+Facilities	Misc.	2	Construction XP	2,154
+Facilities	Misc.	3	Type	Fathom stone
+Facilities	Misc.	3	Sailing Level	70
+Facilities	Misc.	3	Construction Level	62
+Facilities	Misc.	3	Materials	10 camphor planks, 40 adamantite nails, 4 molten glass, 2 cupronickel bars
+Facilities	Misc.	3	Construction XP	1,652
+Facilities	Misc.	4	Type	Greater teleport focus
+Facilities	Misc.	4	Sailing Level	75
+Facilities	Misc.	4	Construction Level	69
+Facilities	Misc.	4	Materials	8 ironwood planks, 32 rune nails, 4 cupronickel bars, 2 magic stones, 1 bottled storm
+Facilities	Misc.	4	Construction XP	3,582
+Facilities	Misc.	5	Type	Fathom pearl
+Facilities	Misc.	5	Sailing Level	91
+Facilities	Misc.	5	Construction Level	83
+Facilities	Misc.	5	Materials	10 rosewood planks, 40 dragon nails, 2 dragon sheets, 1 echo pearl
+Facilities	Misc.	5	Construction XP	2,307

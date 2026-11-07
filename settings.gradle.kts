@@ -41,6 +41,7 @@ include(
     ":content:pvp",
     ":content:world",
     ":content:shops",
+    ":content:sailing",
     ":content:magic",
     ":content:drops",
     ":content:skills",

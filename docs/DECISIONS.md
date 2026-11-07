@@ -662,3 +662,20 @@ plugin-api change. Rules and OPEN items: docs/mechanics/construction.md H1-H9, O
   could not be driven from the disassembled client scripts.
 - **Worlds hold the houses** in a world attribute keyed by owner; the last player out destroys the instance. A soft timer per
   visitor (2 ticks) notices teleports out.
+
+## D-048: Sailing data layer reads the cache at world start; Wiki-only data is checked-in TSV (S0)
+
+`content/sailing` (depends on plugin-api + symbols only) holds `SailingData`: typed, immutable readers for the Sailing db tables
+(docs/plans/sailing.md 6.2), built from `WorldRef.dbRows` when the world starts, and cross-checked (`check()`: every part option,
+hotspot, stats link and port task dock must resolve) by the `Sailing` plugin, so a wrong cache stops the boot. No plugin-api change.
+- **Cache first, no copies.** Tables are read, not generated into source, so the readers stay correct when the cache changes. Column
+  ids are the generated `DbTables` symbols; a tuple column is addressed as (repetition, slot) as in `MusicTab`. Unset stats cells read
+  0, except acceleration (OPEN-S3) which stays null. Part references are kept as db row ids; lookups are maps built once.
+- **Server-only data is imported once.** The cache strips task XP, dock coordinates, charting locations and more (plan 0, 6.5). `tools/wiki-import/sailing.py`
+  writes TSVs under `content/sailing/src/main/resources` (courier and bounty tasks with XP, charting tasks with tiles, level-up table, docks,
+  part-stat cross-check rows, buoy coordinates from the plan). Only the task XP is loaded so far (`PortTaskXp`); the others are
+  data for S3, S5 and S4 to wire when they need them. The importer is re-runnable and reads only Wiki templates (no scraped HTML).
+- **Wiki gaps recorded, not guessed.** The Wiki lists 441 of the cache's 443 courier tasks (the two missing are the placeholder rows
+  601 and 602) and 60 of its 61 docks (Last Light is missing); mechanics docs `docs/mechanics/sailing-*.md` carry the OPEN items.
+- **Placeholder rules.** Barracuda rank tuples were decoded as (target ticks, laps, supplies, bonus XP x10, trial XP x10) and checked against the three Wiki
+  tables; the crew id-to-name mapping and the `(stat, level)` crew requirement tuples are derived by matching values, flagged [D] in the docs.

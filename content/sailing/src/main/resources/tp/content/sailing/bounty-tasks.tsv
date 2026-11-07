@@ -1,0 +1,164 @@
+task	level	xp	board	monster	item	qty	rarity
+465	50	14575	Catherby	Albatross	Albatross beak	5	1/10
+486	50	14575	Port Khazard	Albatross	Albatross beak	5	1/10
+556	50	14575	Port Roberts	Albatross	Albatross beak	5	1/10
+499	50	14575	Ruins of Unkah	Albatross	Albatross beak	5	1/10
+512	50	14575	The Summer Shore	Albatross	Albatross beak	5	1/10
+596	76	14575	Lunar Isle	Albatross	Albatross beak	5	1/10
+469	50	14575	Brimhaven	Albatross	Albatross feather	20	1/2
+578	62	14575	Rellekka	Albatross	Albatross feather	25	1/2
+585	65	14575	Etceteria	Albatross	Albatross feather	30	1/2
+591	75	40370	Etceteria	Armoured kraken	Armoured kraken ink sac	5	1/10
+535	75	40370	Port Piscarilius	Armoured kraken	Armoured kraken ink sac	5	1/10
+592	76	40370	Lunar Isle	Armoured kraken	Armoured kraken tentacle	20	1/2
+552	75	40370	Port Roberts	Armoured kraken	Armoured kraken tentacle	20	1/2
+539	75	40370	Civitas illa Fortis	Armoured kraken	Armoured kraken tentacle	25	1/2
+581	75	40370	Rellekka	Armoured kraken	Armoured kraken tentacle	25	1/2
+567	75	40370	Port Tyras	Armoured kraken	Armoured kraken tentacle	30	1/2
+573	75	40370	Prifddinas	Armoured kraken	Armoured kraken tentacle	30	1/2
+457	30	3465	Musa Point	Bull shark	Bull shark liver	5	1/10
+443	30	3465	Port Sarim	Bull shark	Bull shark liver	5	1/10
+475	30	3465	Ardougne	Bull shark	Bull shark jaw	15	1/3
+468	30	3465	Brimhaven	Bull shark	Bull shark jaw	15	1/3
+461	30	3465	Catherby	Bull shark	Bull shark jaw	15	1/3
+522	30	3465	Land's End	Bull shark	Bull shark jaw	15	1/3
+452	30	3465	Musa Point	Bull shark	Bull shark jaw	15	1/3
+481	30	3465	Port Khazard	Bull shark	Bull shark jaw	15	1/3
+530	30	3465	Port Piscarilius	Bull shark	Bull shark jaw	15	1/3
+440	30	3465	Port Sarim	Bull shark	Bull shark jaw	15	1/3
+445	30	3465	The Pandemonium	Bull shark	Bull shark jaw	15	1/3
+494	48	3465	Ruins of Unkah	Bull shark	Bull shark jaw	15	1/3
+538	38	3465	Civitas illa Fortis	Bull shark	Bull shark jaw	20	1/2
+566	66	3465	Port Tyras	Bull shark	Bull shark jaw	25	1/2
+528	40	8800	Land's End	Butterfly ray	Butterfly ray skin	5	1/10
+534	40	8800	Port Piscarilius	Butterfly ray	Butterfly ray skin	5	1/10
+455	40	8800	Musa Point	Butterfly ray	Butterfly ray fin	15	1/3
+448	40	8800	The Pandemonium	Butterfly ray	Butterfly ray fin	15	1/3
+497	48	8800	Ruins of Unkah	Butterfly ray	Butterfly ray fin	20	1/2
+508	45	8800	The Summer Shore	Butterfly ray	Butterfly ray fin	25	1/2
+545	46	8800	Aldarin	Butterfly ray	Butterfly ray fin	25	1/2
+564	66	8800	Port Tyras	Butterfly ray	Butterfly ray fin	30	1/2
+456	30	3465	Musa Point	Eagle ray	Eagle ray skin	5	1/10
+485	30	3465	Port Khazard	Eagle ray	Eagle ray skin	5	1/10
+542	38	3465	Civitas illa Fortis	Eagle ray	Eagle ray skin	5	1/10
+498	48	3465	Ruins of Unkah	Eagle ray	Eagle ray skin	5	1/10
+505	50	3465	Void Knights' Outpost	Eagle ray	Eagle ray skin	5	1/10
+509	45	3465	The Summer Shore	Eagle ray	Eagle ray fin	25	1/2
+517	52	3465	Red Rock	Eagle ray	Eagle ray fin	25	1/2
+558	67	3465	Deepfin Point	Eagle ray	Eagle ray fin	25	1/2
+549	46	11825	Aldarin	Frigatebird	Frigatebird beak	5	1/10
+464	45	11825	Catherby	Frigatebird	Frigatebird beak	5	1/10
+541	45	11825	Civitas illa Fortis	Frigatebird	Frigatebird beak	5	1/10
+451	45	11825	The Pandemonium	Frigatebird	Frigatebird beak	5	1/10
+510	45	11825	The Summer Shore	Frigatebird	Frigatebird feather	15	1/3
+503	50	11825	Void Knights' Outpost	Frigatebird	Frigatebird feather	15	1/3
+516	52	11825	Red Rock	Frigatebird	Frigatebird feather	15	1/3
+557	67	11825	Deepfin Point	Frigatebird	Frigatebird feather	20	1/2
+493	75	40370	Corsair Cove	Great white shark	Great white shark liver	5	1/10
+527	75	40370	Land's End	Great white shark	Great white shark liver	5	1/10
+569	75	40370	Port Tyras	Great white shark	Great white shark liver	5	1/10
+575	75	40370	Prifddinas	Great white shark	Great white shark liver	5	1/10
+500	75	40370	Ruins of Unkah	Great white shark	Great white shark liver	5	1/10
+506	75	40370	Void Knights' Outpost	Great white shark	Great white shark liver	5	1/10
+483	75	40370	Port Khazard	Great white shark	Great white shark jaw	25	1/2
+553	75	40370	Port Roberts	Great white shark	Great white shark jaw	25	1/2
+511	75	40370	The Summer Shore	Great white shark	Great white shark jaw	25	1/2
+546	75	40370	Aldarin	Great white shark	Great white shark jaw	30	1/2
+518	75	40370	Red Rock	Great white shark	Great white shark jaw	30	1/2
+477	40	8800	Ardougne	Hammerhead shark	Hammerhead shark liver	5	1/10
+470	40	8800	Brimhaven	Hammerhead shark	Hammerhead shark liver	5	1/10
+526	40	8800	Land's End	Hammerhead shark	Hammerhead shark liver	5	1/10
+458	40	8800	Musa Point	Hammerhead shark	Hammerhead shark liver	5	1/10
+450	40	8800	The Pandemonium	Hammerhead shark	Hammerhead shark liver	5	1/10
+547	46	8800	Aldarin	Hammerhead shark	Hammerhead shark liver	5	1/10
+563	67	8800	Deepfin Point	Hammerhead shark	Hammerhead shark liver	5	1/10
+577	70	8800	Prifddinas	Hammerhead shark	Hammerhead shark liver	5	1/10
+487	40	8800	Corsair Cove	Hammerhead shark	Hammerhead shark jaw	15	1/3
+482	40	8800	Port Khazard	Hammerhead shark	Hammerhead shark jaw	15	1/3
+550	50	8800	Port Roberts	Hammerhead shark	Hammerhead shark jaw	15	1/3
+537	40	8800	Civitas illa Fortis	Hammerhead shark	Hammerhead shark jaw	20	1/2
+579	62	8800	Rellekka	Hammerhead shark	Hammerhead shark jaw	20	1/2
+495	48	8800	Ruins of Unkah	Hammerhead shark	Hammerhead shark jaw	25	1/2
+565	66	8800	Port Tyras	Hammerhead shark	Hammerhead shark jaw	30	1/2
+571	70	8800	Prifddinas	Hammerhead shark	Hammerhead shark jaw	30	1/2
+507	60	25135	Void Knights' Outpost	Manta ray (monster)	Manta ray skin	5	1/10
+570	66	25135	Port Tyras	Manta ray (monster)	Manta ray skin	5	1/10
+576	70	25135	Prifddinas	Manta ray (monster)	Manta ray skin	5	1/10
+472	30	3465	Brimhaven	Mogre (sea)	Mogre head	5	1/10
+463	30	3465	Catherby	Mogre (sea)	Mogre head	5	1/10
+484	30	3465	Port Khazard	Mogre (sea)	Mogre head	5	1/10
+473	30	3465	Ardougne	Mogre (sea)	Mogre mace	15	1/3
+453	30	3465	Musa Point	Mogre (sea)	Mogre mace	15	1/3
+480	30	3465	Port Khazard	Mogre (sea)	Mogre mace	15	1/3
+439	30	3465	Port Sarim	Mogre (sea)	Mogre mace	15	1/3
+446	30	3465	The Pandemonium	Mogre (sea)	Mogre mace	15	1/3
+489	40	3465	Corsair Cove	Mogre (sea)	Mogre mace	15	1/3
+598	76	19910	Lunar Isle	Narwhal	Narwhal tusk	5	1/10
+594	76	19910	Lunar Isle	Narwhal	Narwhal blubber	25	1/2
+580	62	19910	Rellekka	Narwhal	Narwhal blubber	30	1/2
+588	65	19910	Etceteria	Narwhal	Narwhal blubber	30	1/2
+590	80	47080	Etceteria	Orca	Orca teeth	5	1/10
+555	80	47080	Port Roberts	Orca	Orca teeth	5	1/10
+582	80	47080	Rellekka	Orca	Orca teeth	5	1/10
+586	80	47080	Etceteria	Orca	Orca blubber	30	1/2
+595	80	47080	Lunar Isle	Orca	Orca blubber	30	1/2
+442	30	3465	Port Sarim	Osprey	Osprey beak	5	1/10
+491	40	3465	Corsair Cove	Osprey	Osprey beak	5	1/10
+474	30	3465	Ardougne	Osprey	Osprey feather	15	1/3
+466	30	3465	Brimhaven	Osprey	Osprey feather	15	1/3
+460	30	3465	Catherby	Osprey	Osprey feather	15	1/3
+523	30	3465	Land's End	Osprey	Osprey feather	15	1/3
+529	30	3465	Port Piscarilius	Osprey	Osprey feather	15	1/3
+447	30	3465	The Pandemonium	Osprey	Osprey feather	15	1/3
+536	38	3465	Civitas illa Fortis	Osprey	Osprey feather	15	1/3
+551	50	3465	Port Roberts	Osprey	Osprey feather	15	1/3
+544	46	3465	Aldarin	Osprey	Osprey feather	20	1/2
+560	67	3465	Deepfin Point	Osprey	Osprey feather	20	1/2
+502	50	3465	Void Knights' Outpost	Osprey	Osprey feather	25	1/2
+574	70	3465	Prifddinas	Osprey	Osprey feather	30	1/2
+444	50	14575	Port Sarim	Pygmy kraken	Pygmy kraken ink sac	5	1/10
+568	66	14575	Port Tyras	Pygmy kraken	Pygmy kraken ink sac	5	1/10
+488	50	14575	Corsair Cove	Pygmy kraken	Pygmy kraken tentacle	15	1/3
+525	50	14575	Land's End	Pygmy kraken	Pygmy kraken tentacle	15	1/3
+476	50	14575	Ardougne	Pygmy kraken	Pygmy kraken tentacle	30	1/2
+462	50	14575	Catherby	Pygmy kraken	Pygmy kraken tentacle	30	1/2
+504	50	14575	Void Knights' Outpost	Pygmy kraken	Pygmy kraken tentacle	30	1/2
+572	70	14575	Prifddinas	Pygmy kraken	Pygmy kraken tentacle	30	1/2
+548	65	30965	Aldarin	Spined kraken	Spined kraken ink sac	5	1/10
+479	65	30965	Ardougne	Spined kraken	Spined kraken ink sac	5	1/10
+589	65	30965	Etceteria	Spined kraken	Spined kraken ink sac	5	1/10
+584	65	30965	Rellekka	Spined kraken	Spined kraken ink sac	5	1/10
+521	65	30965	Red Rock	Spined kraken	Spined kraken ink sac	5	1/10
+532	65	30965	Port Piscarilius	Spined kraken	Spined kraken tentacle	20	1/2
+559	67	30965	Deepfin Point	Spined kraken	Spined kraken tentacle	25	1/2
+478	45	11825	Ardougne	Stingray	Stingray skin	5	1/10
+514	45	11825	The Summer Shore	Stingray	Stingray skin	5	1/10
+561	67	11825	Deepfin Point	Stingray	Stingray skin	5	1/10
+543	46	11825	Aldarin	Stingray	Stingray fin	20	1/2
+501	50	11825	Void Knights' Outpost	Stingray	Stingray fin	20	1/2
+490	45	11825	Corsair Cove	Stingray	Stingray fin	25	1/2
+519	52	11825	Red Rock	Stingray	Stingray skin	5	1/10
+449	30	3465	The Pandemonium	Tern	Tern beak	5	1/10
+540	38	3465	Civitas illa Fortis	Tern	Tern beak	5	1/10
+554	50	3465	Port Roberts	Tern	Tern beak	5	1/10
+467	30	3465	Brimhaven	Tern	Tern feather	15	1/3
+459	30	3465	Catherby	Tern	Tern feather	15	1/3
+524	30	3465	Land's End	Tern	Tern feather	15	1/3
+454	30	3465	Musa Point	Tern	Tern feather	15	1/3
+531	30	3465	Port Piscarilius	Tern	Tern feather	15	1/3
+438	30	3465	Port Sarim	Tern	Tern feather	15	1/3
+471	55	19910	Brimhaven	Tiger shark	Tiger shark liver	5	1/10
+492	55	19910	Corsair Cove	Tiger shark	Tiger shark liver	5	1/10
+533	55	19910	Port Piscarilius	Tiger shark	Tiger shark liver	5	1/10
+513	55	19910	The Summer Shore	Tiger shark	Tiger shark liver	5	1/10
+520	55	19910	Red Rock	Tiger shark	Tiger shark liver	5	1/10
+562	67	19910	Deepfin Point	Tiger shark	Tiger shark liver	5	1/10
+496	55	19910	Ruins of Unkah	Tiger shark	Tiger shark jaw	20	1/2
+515	55	19910	Red Rock	Tiger shark	Tiger shark jaw	20	1/2
+441	55	19910	Port Sarim	Tiger shark	Tiger shark jaw	25	1/2
+597	80	47080	Lunar Isle	Vampyre kraken	Vampyre kraken ink sac	5	1/10
+583	80	47080	Rellekka	Vampyre kraken	Vampyre kraken ink sac	5	1/10
+587	80	47080	Etceteria	Vampyre kraken	Vampyre kraken tentacle	20	1/2
+593	80	47080	Lunar Isle	Vampyre kraken	Vampyre kraken tentacle	30	1/2
+605	80	47080	Port Tyras	Veiled kraken	Veiled kraken ink sac	5	1/10
+606	80	47080	Deepfin Point	Veiled kraken	Veiled kraken tentacle	15	1/3
