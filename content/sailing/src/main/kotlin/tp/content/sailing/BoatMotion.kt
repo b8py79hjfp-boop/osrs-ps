@@ -41,12 +41,18 @@ public class BoatMotion : ContentPlugin {
         var navigator: PlayerRef? = null
     }
 
+    /** Request published by S1 ([Boats]) on the world's event bus: the answering [BoatMotion] of this world fills [motion]. */
+    internal class Lookup : tp.plugin.Event {
+        var motion: BoatMotion? = null
+    }
+
     private val motions = HashMap<Int, Motion>()
 
     override fun ContentScope.register() {
         onWorldEntityTick { tickBoats(this) }
         onHeading { heading -> heading(this, heading) }
         onLogout { stopNavigating(this) }
+        events.on<Lookup> { it.motion = this@BoatMotion }
     }
 
     /** Puts [boat] under motion with [stats] (S1 calls this when it spawns a boat). */
@@ -106,7 +112,9 @@ public class BoatMotion : ContentPlugin {
         val radians = motion.angle * RADIANS_PER_UNIT
         val nx = boat.fineX - (sin(radians) * motion.speed).roundToInt()
         val nz = boat.fineZ - (cos(radians) * motion.speed).roundToInt()
-        if (!footprintSailable(world, nx, nz, motion)) {
+        // SM5 / OPEN-M6: only points that are newly blocked stop the boat, so a boat docked against the pier legs can leave.
+        val blockedNow = blockedPoints(world, boat.fineX, boat.fineZ, motion)
+        if (blockedPoints(world, nx, nz, motion) and blockedNow.inv() != 0) {
             motion.speed = 0
             if (!motion.blocked) motion.navigator?.message("Your boat can't go any further that way.")
             motion.blocked = true
@@ -125,22 +133,25 @@ public class BoatMotion : ContentPlugin {
             Sails.REVERSE -> -motion.stats.baseSpeed / REVERSE_DIVISOR
         }
 
-    /** SM5: the corners and the centre of the boat's footprint around ([fineX], [fineZ]) must all be sailable. */
-    private fun footprintSailable(world: WorldRef, fineX: Int, fineZ: Int, motion: Motion): Boolean {
+    /** SM5: bit mask of the corner, edge and centre points of the footprint around ([fineX], [fineZ]) that are not sailable. */
+    private fun blockedPoints(world: WorldRef, fineX: Int, fineZ: Int, motion: Motion): Int {
         val radians = motion.angle * RADIANS_PER_UNIT
         val fx = -sin(radians)
         val fz = -cos(radians)
         val halfLength = motion.stats.lengthFine / 2.0
         val halfWidth = motion.stats.widthFine / 2.0
+        var mask = 0
+        var bit = 1
         for (along in intArrayOf(-1, 0, 1)) {
             for (across in intArrayOf(-1, 0, 1)) {
                 val px = fineX + fx * halfLength * along - fz * halfWidth * across
                 val pz = fineZ + fz * halfLength * along + fx * halfWidth * across
                 val tile = CoordGrid(px.toInt() shr FINE_SHIFT, pz.toInt() shr FINE_SHIFT, 0)
-                if (!world.isSailable(tile)) return false
+                if (!world.isSailable(tile)) mask = mask or bit
+                bit = bit shl 1
             }
         }
-        return true
+        return mask
     }
 
     private companion object {

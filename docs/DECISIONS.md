@@ -689,3 +689,20 @@ Rules and OPEN items: docs/mechanics/magic-utility.md. All spells are `content/m
 - **`ContentScope.onApObjT`** is the one plugin-api addition: Telekinetic Grab must run from range 10 over obstacles, and the engine already supports ap scripts on ground-item targets (`ContentHandlers.apObjT`) but the plugin facade returned null.
 - **Effects owned by other modules stay OPEN** instead of being edited from here: the Charge boost to god spells (combat), Shadow Veil in pickpocketing and Resurrect Crops (skills), Vengeance Other, combat spells ending a Spellbook Swap. The timers and attrs they need are kept here under named keys.
 - **Reanimation** is limited to the Dark Altar's range because no drop-location record exists for ensouled heads (OPEN-MU12), which is stricter than the game rather than a guess at its rule.
+
+## D-050: Sailing S1 - boats are world entities owned per player, saved in `saved`, found by loc id (S1)
+
+`content/sailing` gains `Boats` (spawn/despawn a boat: world entity, deck copied from the hull tier's template, part locs at db coordinates),
+`ActiveBoats` (world-attribute registry; the interface for the motion code), `Docking` (gangplank, mooring point, buoy, helm ops, logout),
+`BoatSave` (ownership) and the Pandemonium quest. Encodings and rules: docs/mechanics/sailing-boats.md B10-B12, sailing-ports.md P9-P13,
+sailing-pandemonium.md.
+- **Ownership in `saved`, one Long per slot** (61 bits, documented in `BoatSave`); no persistence change. The cache boat varbits (`SAILING_BOAT_n_*`)
+  that interface 934 reads are not mirrored (OPEN-SEL1).
+- **Docks are found by loc id arithmetic** (gangplank 59835 + id, mooring 59867 + id - 32, buoy 59769 + id), because the cache locs are nameless
+  multi locs and the client sends the base id; land / sea tiles come from the checked-in TSVs joined to db 194 by normalised name.
+- **Server state in the plugin instance** (`SailingState`, set at world start): plugins are per world, tables exist only after world start.
+- **BoatMotion is reached over the world's event bus** (`BoatMotion.Lookup`), since plugins are separate instances and `WorldRef` has no attributes.
+- **plugin-api addition:** `chatNpcAs(npcType, name, text)` (a chat head that is not the clicked NPC; `chatNpc` now calls it), for conversations between
+  two characters.
+- **Will and Anne's boat uses config 10** (not 3 as first assumed): 3 is the sloop (OPEN-W1).
+- **Only the deck level (1) of a template is copied** (level 0 draws a dark rectangle).

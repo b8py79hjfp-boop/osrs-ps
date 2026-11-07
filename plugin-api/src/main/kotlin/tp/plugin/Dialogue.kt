@@ -33,14 +33,21 @@ public enum class Expression(internal val oneLine: Int) {
 
 /** An NPC speaks: its chat head and name on the left (`chat_left`). */
 public suspend fun PlayerScript.chatNpc(npc: NpcRef, text: String, expression: Expression = Expression.NEUTRAL) {
-    val name = npc.displayName
     npc.face(player)
     player.face(npc)
+    chatNpcAs(npc.type, npc.displayName, text, expression)
+}
+
+/**
+ * Speech of a speaker that is not the NPC clicked (a second character in a cutscene conversation): the chat head of NPC type
+ * [npcType] under [name]. No NPC turns to face the player.
+ */
+public suspend fun PlayerScript.chatNpcAs(npcType: Int, name: String, text: String, expression: Expression = Expression.NEUTRAL) {
     for (page in Dialogues.pages(player, text, CHAT_WIDTH)) {
         val p = player.p
         p.session.send(ServerMessage.GameMessage("$name|${page.text}", DIALOGUE_CHAT_TYPE))
         Dialogues.openChat(player, Interfaces.CHAT_LEFT)
-        p.session.send(ServerMessage.IfNpcHead(Components.Chat_Left.HEAD, npc.type))
+        p.session.send(ServerMessage.IfNpcHead(Components.Chat_Left.HEAD, npcType))
         p.session.send(ServerMessage.IfAnim(Components.Chat_Left.HEAD, expression.forLines(page.lines)))
         player.ifText(Components.Chat_Left.NAME, name)
         Dialogues.text(player, Components.Chat_Left.TEXT, page, Dialogues::chatLineHeight)

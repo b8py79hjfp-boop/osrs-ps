@@ -40,6 +40,10 @@ Reference: RSProt README "World Entities" and the `WorldEntityAvatar` / `WorldEn
 - **WE10: the world-entity phase.** World entities move in their own tick phase after input and before NPCs, so a
   heading or sail change made this tick acts this tick (plugin-api `onWorldEntityTick`).
 - **WE7: NPCs on decks** stand on deck tiles like any NPC. RSProt's per-world NPC info shows them on the entity.
+- **WE11: interactions across worlds.** A player on a deck who clicks a loc, ground item, NPC or player outside that
+  deck (the pier's gangplank, a shipwreck) is not routed: the target counts as reached, for op and ap alike, while the
+  deck's pivot is within 31 tiles of it. Content checks the real distance (disembark: "Your boat is too far away from
+  here.") (OPEN-WE4).
 
 - **WE9: the sea mask.** Boats sail only on level-0 tiles with a sea overlay, `MapSquare.isSea`, plugin-api
   `EntityRef.isSea`. The sea overlays are config ids 441..623: one family of triplets (water overlay, untextured blend,
@@ -60,3 +64,5 @@ showed on the raft.
 
 - **OPEN-WE3:** the pivot's position relative to the deck (config bounds ops 4–9) and the config fields beyond id,
   category and bounds are not interpreted.
+- **OPEN-WE4:** the reach rule for clicks from a deck into the root world. Assumed: no route, the 31-tile view range from
+  the pivot, and each content script checks its own distance.

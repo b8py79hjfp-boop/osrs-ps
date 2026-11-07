@@ -34,7 +34,8 @@ Sources: cache 2757 db 164 (`BASESPEED`, `SPEEDCAP`, `ACCELERATION`, `SPEEDBOOST
   - moves its pivot along its facing (angle 0 south, 512 west, 1024 north, 1536 east).
 - **SM5, collision:** the centre, bow, stern and sides of the footprint must be sea with no blocking loc
   (world-entities.md WE9). Otherwise the boat stops and the navigator gets "Your boat can't go any further that way."
-  (OPEN text).
+  (OPEN text). Only a point that is blocked at the new position but was not at the old one stops the boat, so a boat
+  docked with its footprint over the pier legs can sail off (OPEN-M6).
 - **Turn rates and acceleration** are passed in by the boat's spawner from its stats (OPEN-M1, OPEN-M3).
 - **Verified in the client:** a click east turned the boat and it sailed away from the Port Sarim docks with the
   camera following.
@@ -46,4 +47,6 @@ Sources: cache 2757 db 164 (`BASESPEED`, `SPEEDCAP`, `ACCELERATION`, `SPEEDBOOST
 - **OPEN-M2:** how the sailable-sea mask and rock collision are encoded (overlay type, a tile flag, or a server table).
 - **OPEN-M3:** acceleration units (cache 64 vs Wiki 0.5 / 1.0) and the default for tiers without the stat.
 - **OPEN-M4:** units of the side panel speed setting ("quarter tiles per tick") vs the cache fine units.
+- **OPEN-M6:** how the game lets a docked boat, whose footprint overlaps the pier, leave. Assumed: newly blocked footprint
+  points stop the boat, points already blocked do not.
 - **OPEN-H1:** hazard area polygons, damage per tick and frequency for each hazard (db 200 columns are stripped).

@@ -362,6 +362,7 @@ class InteractionProcessor internal constructor(
      * (cardinal adjacency). Objs: 1x1 rectangle (OPEN-I2).
      */
     fun inOpRange(entity: Entity, i: Interaction): Boolean {
+        crossWorldReach(entity, i.target)?.let { return it }
         val c = entity.coord
         val t = i.target
         if (levelOf(t) != c.level) return false
@@ -388,6 +389,10 @@ class InteractionProcessor internal constructor(
     /** I2: within [Interaction.apRange] (Chebyshev to the target rectangle) with line of sight; -1 means op only. */
     fun inApRange(entity: Entity, i: Interaction): Boolean {
         if (i.apRange < 0) return inOpRange(entity, i)
+        return crossWorldReach(entity, i.target) ?: sameWorldApRange(entity, i)
+    }
+
+    private fun sameWorldApRange(entity: Entity, i: Interaction): Boolean {
         val c = entity.coord
         if (levelOf(i.target) != c.level) return false
         val r = rect(i.target)
@@ -399,7 +404,32 @@ class InteractionProcessor internal constructor(
         return lines.hasLineOfSight(c.level, c.x, c.z, r.x, r.z, entity.size, entity.size, r.width, r.length)
     }
 
+    /**
+     * WE11 (docs/mechanics/world-entities.md): an entity on a deck targeting something outside that deck can't walk
+     * there, so it reaches it from where it stands if the deck's pivot is within [CROSS_WORLD_RANGE]; content checks
+     * the real distance (OPEN-WE4). Null when both sides are in the same world.
+     */
+    private fun crossWorldReach(entity: Entity, t: InteractionTarget): Boolean? {
+        val entities = entity.world.worldEntities
+        if (entities.all().isEmpty()) return null
+        val deck = entities.at(entity.coord) ?: return null
+        val target = targetCoord(t)
+        if (target in deck) return null
+        val root = deck.rootCoord
+        return maxOf(kotlin.math.abs(root.x - target.x), kotlin.math.abs(root.z - target.z)) <= CROSS_WORLD_RANGE
+    }
+
+    private fun targetCoord(t: InteractionTarget): CoordGrid =
+        when (t) {
+            is InteractionTarget.Loc -> t.coord
+            is InteractionTarget.Obj -> t.coord
+            is InteractionTarget.OfNpc -> t.npc.coord
+            is InteractionTarget.OfPlayer -> t.player.coord
+        }
+
     companion object {
+        /** WE6 / WE8: RSProt `DEFAULT_RENDER_DISTANCE`, the range a deck sees the root world in. */
+        private const val CROSS_WORLD_RANGE = 31
         const val NOTHING_INTERESTING = "Nothing interesting happens."
         const val CANT_REACH = "I can't reach that!"
 
