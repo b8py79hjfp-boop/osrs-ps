@@ -285,10 +285,10 @@ public class Raids internal constructor() {
          * each present member's claim inventory (a persisted inventory: the claim is the move out of it, so it cannot
          * happen twice). Members who left get nothing (their roll is discarded). KC, time and PB messages follow.
          */
-        public fun complete(any: EntityRef, run: RaidRun) {
+        public fun complete(any: EntityRef, run: RaidRun, endedAt: Long = any.tick) {
             if (run.state == RunState.Completed) return
             run.state = RunState.Completed
-            run.endedTick = any.tick
+            run.endedTick = endedAt
             val snapshot =
                 RunSnapshot(
                     run.raid.id,
@@ -297,7 +297,7 @@ public class Raids internal constructor() {
                     run.scaling.scaledSize,
                     run.members.mapValues { (_, m) -> Triple(m.points, m.deaths, m.inside) },
                     run.teamDeaths,
-                    run.scaling.settings,
+                    run.scaling.settings + run.extraSettings,
                 )
             val results = run.raid.rewards(snapshot, run.rng)
             for ((name, m) in run.members) {
@@ -341,15 +341,17 @@ public class Raids internal constructor() {
                 r.practiceMessage?.let { player.message(it(n.toInt())) }
                 return
             }
-            val kc = player.varp(r.kcVarp) + 1
-            player.setVarp(r.kcVarp, kc)
+            val mode = run.scaling.mode
+            val varp = r.kcVarpByMode[mode] ?: r.kcVarp
+            val kc = player.varp(varp) + 1
+            player.setVarp(varp, kc)
             val ticks = run.endedTick - run.startedTick
-            val key = "${r.pbKey}.${run.scaling.partySize}"
+            val key = if (r.kcVarpByMode.isEmpty()) "${r.pbKey}.${run.scaling.partySize}" else "${r.pbKey}.$mode.${run.scaling.partySize}"
             val best = player.saved(key)
             val newBest = best == null || ticks < best
             if (newBest) player.setSaved(key, ticks)
             player.message(r.timeMessage(formatTicks(ticks), best?.let { formatTicks(it) }, newBest))
-            player.message(r.kcMessage(kc))
+            player.message(r.kcMessageByMode?.invoke(mode, kc) ?: r.kcMessage(kc))
         }
 
         /** Ticks as `m:ss.cc` (0.6 s per tick), the raids' time format (`2:25.80`). */

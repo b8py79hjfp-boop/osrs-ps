@@ -119,6 +119,9 @@ public object SharedAttrs {
      */
     public val RAID_SCALE: AttrKey<Int> = AttrKey("raid_scale")
 
+    /** NPC attr: the raid run an NPC belongs to (raids-core's run id); boss minions may inherit it from their owner. */
+    public val RAID_RUN: AttrKey<Long> = AttrKey("raid_run")
+
     /** NPC attr: the raid party's member names in orb order (leader first), for tank rules. Set with [RAID_SCALE]. */
     public val RAID_ORDER: AttrKey<List<String>> = AttrKey("raid_order")
 

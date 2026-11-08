@@ -114,6 +114,10 @@ public class RecordsDef(
     /** Saved-value key of the practice-mode completion count; null = practice runs count as normal ones. */
     public val practiceKcKey: String? = null,
     public val practiceMessage: ((Int) -> String)? = null,
+    /** Per-mode KC varps (ToB: Entry / Normal / Hard each keep their own count and personal bests); empty = [kcVarp]. */
+    public val kcVarpByMode: Map<String, Int> = emptyMap(),
+    /** The KC message for a mode; null = [kcMessage]. */
+    public val kcMessageByMode: ((mode: String, kc: Int) -> String)? = null,
 )
 
 /** Maps run state to a raid's HUD and party varbits (brief 3.15); called at the end of a tick when the run changed. */

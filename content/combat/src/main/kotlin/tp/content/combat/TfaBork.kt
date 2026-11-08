@@ -422,6 +422,7 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
 
     /** Capture: the Smorks' 7-slot cycle: S shot, N napalm, - nothing, B big bomb. */
     private const val CYCLE = "SSN-SSB"
+
     /** Capture: the shot's end cycle at rates 7 / 6 / 5 / 4: 150 / 120 / 90 / 90. */
     private val END_BY_RATE = intArrayOf(150, 120, 90, 90)
 

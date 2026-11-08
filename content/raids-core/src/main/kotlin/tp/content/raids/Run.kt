@@ -47,7 +47,8 @@ public class RaidMember internal constructor(public val name: String) {
         internal set
 
     /** Damage dealt in the current room (normalised contribution). */
-    internal var roomDamage: Long = 0
+    public var roomDamage: Long = 0
+        internal set
     public var reward: RewardResult? = null
         internal set
 
@@ -120,6 +121,9 @@ public class RaidRun internal constructor(
     /** The raid's own per-run state (one value per run, owned by the raid's content module). */
     public var content: Any? = null
 
+    /** Values content adds to the reward snapshot's settings at completion (ToB: finished inside the target time). */
+    public val extraSettings: MutableMap<String, Int> = HashMap()
+
     public fun member(name: String): RaidMember? = members.entries.firstOrNull { it.key.equals(name, ignoreCase = true) }?.value
 
     /** The instance tile of template tile [template]. */
@@ -136,7 +140,7 @@ public class RaidRun internal constructor(
 
     public companion object {
         /** NPCs spawned for a run carry its id, so only their damage counts (brief 3.16). */
-        internal val NPC_RUN = AttrKey<Long>("raid_run")
+        internal val NPC_RUN = tp.plugin.SharedAttrs.RAID_RUN
         internal val PLAYER_RUN = AttrKey<Long>("raid_run_player")
 
         /** The id of the run [npc] was spawned for, or null. */

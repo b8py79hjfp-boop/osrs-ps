@@ -90,6 +90,12 @@ internal object Bosses {
             TfaOcellus,
             TfaOcellusRift,
             TfaOcellusVine,
+            TobMaiden,
+            TobMaidenMinions,
+            TobBloat,
+            TobNylocasRoom,
+            TobNylo,
+            TobVasilias,
         )
         ) {
             for (id in boss.ids) byType[id] = boss
@@ -107,8 +113,14 @@ internal object Bosses {
     private val DAMAGE = AttrKey<HashMap<PlayerRef, Int>>("boss_damage")
 
     /** Spawns minion [type] for [owner] at [at]; it hunts the owner's arena and dies with the owner. */
-    fun summon(owner: NpcRef, type: Int, at: CoordGrid, huntRange: Int = MINION_HUNT_RANGE): NpcRef {
+    fun summon(owner: NpcRef, type: Int, at: CoordGrid, huntRange: Int = MINION_HUNT_RANGE, inheritRun: Boolean = false): NpcRef {
         val minion = owner.spawnNpc(type, at, wanderRange = 0)
+        if (inheritRun) {
+            // A raid minion that counts as the run's NPC (ToB: Vasilias, Matomenos damage counts for the MVP).
+            owner[SharedAttrs.RAID_RUN]?.let { minion[SharedAttrs.RAID_RUN] = it }
+            owner[SharedAttrs.RAID_SCALE]?.let { minion[SharedAttrs.RAID_SCALE] = it }
+            owner[SharedAttrs.RAID_ORDER]?.let { minion[SharedAttrs.RAID_ORDER] = it }
+        }
         minion[MINION] = true
         minion[OWNER] = owner
         minion.huntRange = huntRange

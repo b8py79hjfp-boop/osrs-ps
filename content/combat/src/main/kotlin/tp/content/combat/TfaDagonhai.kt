@@ -409,6 +409,7 @@ internal object TfaDagonhai : Boss(
     private const val SARA_HEALS = 6
     private const val SARA_SPREAD = 6
     private const val SARA_MAX = 13
+
     /** OPEN-DH8: what a Saradomin healing tile restores to a trio member (the captures record only the catcher 13). */
     private const val SARA_HEAL = 20
     private const val BLUE_DELAY = 4
