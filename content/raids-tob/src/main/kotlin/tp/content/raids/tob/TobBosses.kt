@@ -39,8 +39,10 @@ internal object TobBosses {
     /** South-west tiles (template). */
     val MAIDEN = CoordGrid(3162, 4444)
     val BLOAT = CoordGrid(3288, 4440)
-    val PILLARS = listOf(CoordGrid(3289, 4242), CoordGrid(3298, 4242), CoordGrid(3289, 4251), CoordGrid(3298, 4251))
-    val VASILIAS = CoordGrid(3294, 4246)
+
+    /** The Nylocas room plays on level 1 (its barrier and walkable floor are level 1 in the cache, client-contract 5). */
+    val PILLARS = listOf(CoordGrid(3289, 4242, 1), CoordGrid(3298, 4242, 1), CoordGrid(3289, 4251, 1), CoordGrid(3298, 4251, 1))
+    val VASILIAS = CoordGrid(3294, 4246, 1)
     val SOTETSEG = CoordGrid(3277, 4325)
     val XARPUS = CoordGrid(3169, 4386, 1)
     val VERZIK = CoordGrid(3166, 4312)

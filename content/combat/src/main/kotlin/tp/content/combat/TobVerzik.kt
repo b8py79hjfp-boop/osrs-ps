@@ -59,7 +59,17 @@ internal object TobVerzik : Boss(*VERZIK_IDS) {
     private fun state(npc: NpcRef): State = npc[STATE] ?: State(TobModes.of(npc.type), npc.spawn).also { npc[STATE] = it }
 
     /** Every mode's sitting form (Talk-to / Quick-start). */
-    val INITIALS = intArrayOf(Npcs.VERZIK_INITIAL, Npcs.VERZIK_INITIAL_STORY, Npcs.VERZIK_INITIAL_HARD)
+    val INITIALS =
+        intArrayOf(
+            Npcs.VERZIK_INITIAL,
+            Npcs.VERZIK_INITIAL_STORY,
+            Npcs.VERZIK_INITIAL_HARD,
+            // Client contract 4: the multi children the client shows (and may send) for Normal and Hard.
+            Npcs.VERZIK_INITIAL_BASE,
+            Npcs.VERZIK_INITIAL_QUICKSTART,
+            Npcs.VERZIK_INITIAL_HARD_BASE,
+            Npcs.VERZIK_INITIAL_HARD_QUICKSTART,
+        )
 
     override fun spawned(npc: NpcRef) {
         npc.huntRange = 0

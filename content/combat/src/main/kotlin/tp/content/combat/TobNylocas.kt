@@ -217,7 +217,9 @@ internal object TobNylocasRoom : Boss(Npcs.TOB_NYLOCAS_SUPPORT, TobNylo.ENTRY_PI
     private const val PILLARS = 4
     private const val PILLAR_SCAN = 15
     private const val ROOM_RADIUS = 20
-    private const val PLATFORM = 5
+
+    /** The platform (template 3290..3301 x 4243..4254) as a half-width around its centre tile. */
+    private const val PLATFORM = 6
     private const val CLOCK = 4
     private const val EARLY_CAP = 12
     private const val HARD_EARLY_CAP = 15

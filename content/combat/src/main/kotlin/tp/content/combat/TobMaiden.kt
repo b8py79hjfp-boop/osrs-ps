@@ -232,13 +232,14 @@ internal object TobMaiden : Boss(
     /** MA4: the 70 / 50 / 30% form changes and Matomenos waves. */
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc)
-        if (s.waves >= THRESHOLDS.size) return
-        if (npc.hitpoints * PERCENT > npc.maxHitpoints * THRESHOLDS[s.waves]) return
-        s.waves++
-        val hp = npc.hitpoints
-        npc.transform(npc.type + 1, restoreStats = false)
-        npc.hitpoints = hp
-        wave(npc, s)
+        // One hit can cross more than one threshold: each crossing is a form and a wave.
+        while (s.waves < THRESHOLDS.size && npc.hitpoints * PERCENT <= npc.maxHitpoints * THRESHOLDS[s.waves]) {
+            s.waves++
+            val hp = npc.hitpoints
+            npc.transform(npc.type + 1, restoreStats = false)
+            npc.hitpoints = hp
+            wave(npc, s)
+        }
     }
 
     private fun wave(npc: NpcRef, s: State) {

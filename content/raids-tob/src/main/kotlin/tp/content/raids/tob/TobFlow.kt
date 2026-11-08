@@ -280,7 +280,7 @@ public class TobFlow : ContentPlugin {
             mapOf(
                 "maiden" to Box(3213, 3225, 4456, 4460),
                 "bloat" to Box(3320, 3322, 4433, 4462),
-                "nylocas" to Box(3292, 3306, 4281, 4286),
+                "nylocas" to Box(3292, 3306, 4281, 4286, level = 1),
                 "sotetseg" to Box(3273, 3286, 4332, 4334),
                 "xarpus" to Box(3164, 3176, 4374, 4377, level = 1),
             )

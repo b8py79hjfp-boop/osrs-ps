@@ -13,6 +13,7 @@ import tp.plugin.NpcRef
 import tp.plugin.NpcScript
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
+import tp.plugin.SharedAttrs
 import tp.symbols.Components
 import tp.symbols.Invs
 import tp.symbols.Seqs
@@ -299,8 +300,8 @@ internal object CombatSystem {
                 target.queueHit(NPC_DEATH_DELAY) {
                     // Drops go to the player who dealt the most damage (Wiki "Drops").
                     target.events.publish(DeathEvent(target, killer, Bosses.topDamager(target) ?: killer as? PlayerRef))
-                    // Summoned minions and one-off spawns (maledictus) don't come back (bosses.md B5).
-                    if (target[Bosses.MINION] == true) {
+                    // Summoned minions, one-off spawns (maledictus) and raid NPCs don't come back (bosses.md B5).
+                    if (target[Bosses.MINION] == true || target[SharedAttrs.RAID_RUN] != null) {
                         target.despawn()
                     } else {
                         target.respawnAfter(NpcCombatTable.of(target.type)?.respawn?.takeIf { it > 0 } ?: NPC_RESPAWN_DELAY)

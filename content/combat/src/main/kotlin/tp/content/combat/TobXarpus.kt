@@ -288,7 +288,8 @@ internal object TobXarpus : Boss(
     /** XA3: an attack from the stared quadrant is answered with 50-75 (raised by 40% of the absorbs' increase). */
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
-        if (s.phase == 0) return 0
+        // XA1: asleep and while he feeds he takes no damage.
+        if (s.phase < 2) return 0
         val p = source as? PlayerRef ?: return damage
         if (s.phase != 3) return damage
         val q = quadrantOf(npc, p)

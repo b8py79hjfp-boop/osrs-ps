@@ -20,8 +20,11 @@ import tp.util.CoordGrid
  * shows interface 23 over the claim inventory ([TobChestUi]). The Teleport crystal leaves the raid.
  */
 internal object TobVault {
-    /** Verzik's throne (client-contract 2.8: multi 32736 at (3166, 4324, L1), 5x4). */
-    private val THRONE = CoordGrid(3166, 4324, 1)
+    /**
+     * Verzik's throne (client-contract 2.8: multi 32736 at (3166, 4324, L1), 5x4). Its door (OPEN-TB7) is placed on the
+     * arena level (0), at the arena's north edge z 4323.
+     */
+    private val THRONE = CoordGrid(3166, 4323)
     private const val THRONE_WIDTH = 5
     private const val THRONE_LENGTH = 4
 
