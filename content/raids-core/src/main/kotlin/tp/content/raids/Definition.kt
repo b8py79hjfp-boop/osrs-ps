@@ -111,6 +111,9 @@ public class RecordsDef(
     public val kcMessage: (Int) -> String,
     public val timeMessage: (time: String, personalBest: String?, newBest: Boolean) -> String,
     public val pbKey: String,
+    /** Saved-value key of the practice-mode completion count; null = practice runs count as normal ones. */
+    public val practiceKcKey: String? = null,
+    public val practiceMessage: ((Int) -> String)? = null,
 )
 
 /** Maps run state to a raid's HUD and party varbits (brief 3.15); called at the end of a tick when the run changed. */

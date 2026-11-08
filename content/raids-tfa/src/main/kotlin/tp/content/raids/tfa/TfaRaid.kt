@@ -127,6 +127,9 @@ internal object TfaRaid {
                         }
                     },
                     pbKey = "raids.tfa.pb",
+                    practiceKcKey = "raids.tfa.practiceKc",
+                    // OPEN-TFA19: the practice completion message is not captured.
+                    practiceMessage = { "Your completed Fractured Archive practice count is: <col=ff0000>$it</col>." },
                 )
             autoAdvance = false
             val c = TfaRewards.ROOM_CONTRIBUTION

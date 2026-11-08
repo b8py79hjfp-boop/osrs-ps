@@ -324,11 +324,23 @@ public class Raids internal constructor() {
                             add(run.raid.claimInv, obj, n)
                         }
                     }
-            if (ok) m.paid = true
+            if (ok) {
+                m.paid = true
+                // The collection log (and any other loot listener) sees raid rewards like NPC drops.
+                for ((obj, n) in reward.items) player.events.publish(tp.plugin.LootEvent(player, obj, n))
+            }
         }
 
         private fun records(player: PlayerRef, run: RaidRun) {
             val r = run.raid.records
+            val practiceKey = r.practiceKcKey
+            if (practiceKey != null && run.scaling.mode == PRACTICE) {
+                // Practice runs keep their own count and no personal best (TFA27 "completions (practice)").
+                val n = (player.saved(practiceKey) ?: 0L) + 1
+                player.setSaved(practiceKey, n)
+                r.practiceMessage?.let { player.message(it(n.toInt())) }
+                return
+            }
             val kc = player.varp(r.kcVarp) + 1
             player.setVarp(r.kcVarp, kc)
             val ticks = run.endedTick - run.startedTick
@@ -377,6 +389,9 @@ public class Raids internal constructor() {
         }
 
         private const val COMBAT_STATS = 6
+
+        /** The mode name of practice runs (their completions are counted apart). */
+        internal const val PRACTICE = "practice"
 
         /** The map's four levels (0-3). */
         private const val ALL_LEVELS = 4
