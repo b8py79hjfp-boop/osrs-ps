@@ -96,3 +96,6 @@ OPEN items:
 - **OPEN-TFA27** — which Record Keeper branch plays when is not in the transcript importer's output; first-time / later is assumed (saved key `tfa.recordKeeper.met`).
 - **OPEN-TFA29** — the lobby's ambient Alliance druids, builders, Temple Knights and Guardians of Armadyl (NPCs 16694 / 16695 / 16706-16723) have no ops in the cache (client-contract 4) and no Wiki page with placements, so none is spawned. The Sprite 16691 ("Look-at") is not implemented.
 - The varbits `TFA_WIZARD_APPRENTICE_MET` (16427) and `TFA_JUNA_DIALOGUE` (16428) are not referenced by any client script (client-contract 1.2), so they are left alone.
+- **NX-F8** (QM3Nov "navigators to take you out of rooms"): once a side room is done an Alliance Navigator 16700 stands
+  next to its entry; "Follow" / "Quick-follow" return the player to the nexus like the passageway and transporter.
+  OPEN-NX9: arrival delay (it appears at once) and whether it walks the player (it teleports).

@@ -54,6 +54,8 @@ public class TfaFlow : ContentPlugin {
         }
         // ---- side rooms back to the nexus
         onOpLoc(Locs.TFA_EXIT, OP1) { backToNexus(player) }
+        onOpNpc(Npcs.TFA_ROOM_NAVIGATOR, OP1) { backToNexus(player) }
+        onOpNpc(Npcs.TFA_ROOM_NAVIGATOR, OP3) { backToNexus(player) }
         for (t in intArrayOf(Locs.TFA_BOSS_TELEPORTER, Locs.TFA_TELEPORTER_MOIA, Locs.TFA_TELEPORTER_JELLY)) {
             onOpLoc(t, OP1) { backToNexus(player) }
             onOpLoc(t, OP2) { backToNexus(player) }
@@ -163,6 +165,12 @@ public class TfaFlow : ContentPlugin {
                 p.jingle(Jingles.TFA_BOSS_DEFEATED)
             }
             val state = state(run)
+            // QM3Nov: a navigator arrives to take the party out of a side room (faster at Ezekiel, Xarth, Dagon'hai).
+            val room = run.roomsTaken.lastOrNull()
+            val entry = room?.let { run.raid.rooms[it] }?.entry
+            if (room != null && entry != null && room in SIDE_ROOMS) {
+                Raids.spawn(any, run, Npcs.TFA_ROOM_NAVIGATOR, CoordGrid(entry.x + 1, entry.z, entry.level))
+            }
             when (slot) {
                 AFTER_GUARDIAN -> nexusLevel(run, state, NEXUS_GUARDIAN_DEAD)
                 AFTER_ROOM_3 -> Raids.spawn(any, run, Npcs.TFA_MIDRAID_SUPPLIES_NPC, TfaRaid.QUARTERMASTER)
@@ -201,6 +209,9 @@ public class TfaFlow : ContentPlugin {
                 Locs.TFA_NEXUS_SECTION2_DOOR_WEST to Locs.TFA_NEXUS_SECTION2_DOOR_EAST,
                 Locs.TFA_NEXUS_SECTION3_DOOR_WEST to Locs.TFA_NEXUS_SECTION3_DOOR_EAST,
             )
+
+        /** The six side rooms (a navigator leads out of each). */
+        private val SIDE_ROOMS = setOf("ezekiel", "bork", "moia", "dreadnoth", "dagonhai", "xarth")
 
         private const val SQUARE = 64
         private const val ZONE = 8

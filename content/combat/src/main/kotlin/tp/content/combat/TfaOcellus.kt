@@ -255,7 +255,10 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         s.quadrant++
         npc.say("Crumble...")
         val at = npc.coord
-        npc.queueHit(DESTRUCTION_DELAY) {
+        // QM3Nov: "a small delay after Ocellus' Void Spin (Prayer punish) before he can destroy a quadrant".
+        val spin = npc[VOID_SPIN] ?: -1L
+        val wait = DESTRUCTION_DELAY + if (spin >= 0 && npc.tick - spin <= PRAYER_WINDOW + 1) SPIN_GAP else 0
+        npc.queueHit(wait) {
             if (!npc.isInWorld) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (maxOf(kotlin.math.abs(p.coord.x - at.x), kotlin.math.abs(p.coord.z - at.z)) <= DESTRUCTION_RADIUS) {
@@ -295,6 +298,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
      */
     private fun prayerSpecial(npc: NpcRef) {
         npc.say("Pray...")
+        npc[VOID_SPIN] = npc.tick
         npc.queueHit(PRAYER_WINDOW) {
             if (!npc.isInWorld) return@queueHit
             for (p in TfaKit.arena(npc)) {
@@ -452,6 +456,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     private enum class Special { PRAYER, UNTETHER, INSOLENCE }
 
     private val SPAWNED = AttrKey<Int>("tfa_ocellus_spawns")
+    private val VOID_SPIN = AttrKey<Long>("tfa_ocellus_void_spin")
     private val VOID_SPAWNS =
         intArrayOf(Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BASIC)
 
@@ -528,6 +533,9 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     private const val AUGMENT_NUM = 6
     private const val AUGMENT_DEN = 5
     private const val DESTRUCTION_DELAY = 4
+
+    /** OPEN-OC18: the Void Spin gap before a destruction (3 ticks). */
+    private const val SPIN_GAP = 3
     private const val DESTRUCTION_RADIUS = 3
     private const val DESTRUCTION_DAMAGE = 50
     private const val SLOW_3 = 3
