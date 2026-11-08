@@ -119,12 +119,20 @@ internal object ToaLobbyNpcs {
             p.message(RECLAIM_EMPTY)
             return
         }
-        val fee = fee(p, store)
+        // Commands brief §6 `::raid waivefee`: one fee-free reclaim, used up when it succeeds.
+        val waived =
+            tp.content.raids.Raids
+                .feeWaived(p)
+        val fee = if (waived) 0 else fee(p, store)
         val ok =
             p.transaction("toa reclaim") {
                 (fee <= 0 || remove(Invs.INV, Objs.COINS, fee)) &&
                     slots.all { move(Invs.TOA_RECLAIM, it, store.obj(it), store.count(it), Invs.INV) }
             }
+        if (ok && waived) {
+            tp.content.raids.Raids
+                .useFeeWaiver(p)
+        }
         p.message(if (ok) RECLAIMED else RECLAIM_FAILED)
     }
 

@@ -12,6 +12,9 @@ import tp.plugin.commands.Category
 import tp.plugin.commands.CommandBuilder
 import tp.plugin.commands.CommandResult
 import tp.plugin.commands.PlayerTarget
+import tp.plugin.setXp
+import tp.plugin.xp
+import tp.plugin.xpForLevel
 import tp.symbols.Invs
 import tp.symbols.Varps
 import tp.util.Rank

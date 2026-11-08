@@ -79,12 +79,20 @@ public class TobDeaths : ContentPlugin {
             player.message(EMPTY)
             return
         }
-        val fee = TobConfig.reclaimFee
+        // Commands brief §6 `::raid waivefee`: one fee-free reclaim, used up when it succeeds.
+        val waived =
+            tp.content.raids.Raids
+                .feeWaived(player)
+        val fee = if (waived) 0 else TobConfig.reclaimFee
         val ok =
             player.transaction("tob reclaim") {
                 (fee <= 0 || remove(Invs.INV, Objs.COINS, fee)) &&
                     items.all { slot -> move(Invs.TOB_RECLAIM, slot, store.obj(slot), store.count(slot), Invs.INV) }
             }
+        if (ok && waived) {
+            tp.content.raids.Raids
+                .useFeeWaiver(player)
+        }
         player.message(if (ok) RECLAIMED else NO_ROOM_OR_COINS)
     }
 

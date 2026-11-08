@@ -61,7 +61,7 @@ public class RaidMember internal constructor(public val name: String) {
 }
 
 /** A run's seeded RNG (brief 3.16): every roll is logged for the tick inspector and replay. */
-public class RaidRng internal constructor(seed: Long) {
+public class RaidRng internal constructor(public val seed: Long) {
     private val random = SplittableRandom(seed)
     private val log = ArrayList<String>()
     public val rolls: List<String> get() = log

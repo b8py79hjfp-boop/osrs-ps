@@ -56,7 +56,7 @@ public class CommandDispatcher internal constructor(
         targetProblem(player, def, parsed.values)?.let { return refuse(player, it) }
         cooldownProblem(player, def, world.tick)?.let { return refuse(player, it) }
         val invocation = Invocation(def, parsed.signature, parsed.values, line, source)
-        if (def.confirm) return askConfirm(player, invocation, world.tick, config)
+        if (def.confirm || parsed.signature.confirm) return askConfirm(player, invocation, world.tick, config)
         return run(player, invocation)
     }
 

@@ -591,23 +591,6 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun level(stat: Int): Int = p.stats.level(stat)
 
-    /** The xp at which [level] starts (OSRS xp table, levels 1..99). */
-    public fun xpForLevel(level: Int): Double =
-        tp.engine.stat.Xp
-            .forLevel(level)
-            .toDouble()
-
-    /** XP of [stat] (whole xp). */
-    public fun xp(stat: Int): Double = p.stats.xpTenths(stat) / XP_TENTHS.toDouble()
-
-    /**
-     * Sets [stat]'s xp outright; base and current level follow it (developer ECONOMY tools only: commands brief §6).
-     * Publishes no xp-drop or level-up event.
-     */
-    public fun setXp(stat: Int, xp: Double) {
-        p.stats.setXp(stat, (xp * XP_TENTHS).toInt())
-    }
-
     public fun baseLevel(stat: Int): Int = p.stats.baseLevel(stat)
 
     /**

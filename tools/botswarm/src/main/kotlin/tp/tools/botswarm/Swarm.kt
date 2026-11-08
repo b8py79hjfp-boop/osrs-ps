@@ -204,7 +204,7 @@ private const val NANOS_PER_MS = 1_000_000L
  */
 private fun raids(bot: BotClient, raid: String) {
     bot.cheat("max")
-    bot.cheat("raid $raid")
+    bot.cheat("raid start $raid")
     val rng = ThreadLocalRandom.current()
     var nextRoom = System.nanoTime() + RAID_ROOM_NANOS + rng.nextLong(RAID_ROOM_NANOS)
     var nextHeal = System.nanoTime() + RAID_HEAL_NANOS
@@ -216,8 +216,8 @@ private fun raids(bot: BotClient, raid: String) {
             nextHeal = now + RAID_HEAL_NANOS
         }
         if (now >= nextRoom) {
-            bot.cheat("raid $raid")
-            bot.cheat("raid next")
+            bot.cheat("raid start $raid")
+            bot.cheat("raid room next")
             nextRoom = now + RAID_ROOM_NANOS
         }
     }

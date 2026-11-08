@@ -17,3 +17,11 @@ The rest are ours, and each one says so.
 | CMD10 | **OPEN.** `::lockworld on` refuses non-staff logins with the "world full" response; OSRS has no "staff only" login code we could confirm. | brief §6; RSProt `LoginResponse` |
 | CMD11 | `::rename` changes the display name and keeps the login username. The change is a RENAME record ("old -> new") in the history, and the player is kicked so their client shows the new name. Staff commands find accounts by username or display name. A renamed display name blocks both new registrations and other renames. | brief §6 |
 | CMD12 | `::update <s>` starts the timer on every world through the hub. `::shutdown [s]` (with confirmation) starts it on this node's world only. When every world on the node has logged everyone out, the process exits; the shutdown hook waits for the final saves, and the supervisor restarts the node. `::command enable` lifts a `disabled` override or an impact class the world turned off, until restart, but never ECONOMY. `::config` changes only rate limits, the confirmation timeout and yell cooldowns. | brief §3, §6 |
+| CMD13 | Raid tables (brief §6):
+- **Owner subcommands** (OPERATIONS, live-safe) inspect a run, end it, remove a player from it, or pay out what it already earned. `::raid end`, `kick`, `reissue`, `waivefee` and `pb remove` wait for `::confirm`.
+- **`kick` and `end`** use the framework's leave rules: no item loss, raid-only items removed, nothing paid. `end` then destroys the instance.
+- **`reissue`** pays a stored, unpaid reward once and never re-rolls; a second call is refused.
+- **`waivefee`** makes the player's next ToB or ToA reclaim free. **OPEN:** TFA has no reclaim fee in our code.
+- **`watch`** makes you a hidden observer (instances.md IN11).
+- **Developer subcommands** (`start`, `skip`, `room`, `seed`, `points … set`, `setkc`) need the world's ECONOMY.
+- **Follow-ups:** `::raid level` (it needs ToA's invocation picker) and forcing a CoX layout with `::raid layout <code>` are not supported yet, and say so. `::raids all` (other worlds) is not built either. | brief §6; raids common.md |

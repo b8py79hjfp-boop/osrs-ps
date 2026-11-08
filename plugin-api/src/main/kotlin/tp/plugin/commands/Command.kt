@@ -58,6 +58,8 @@ public class CommandContext internal constructor(
 public class Signature internal constructor(
     public val args: List<Arg<*>>,
     internal val handler: (CommandContext) -> CommandResult,
+    /** This form is destructive on its own (`::raid end`), even when the command's others are not (§4). */
+    public val confirm: Boolean = false,
 ) {
     public val usage: String get() = args.joinToString(" ") { it.usage }
 }
@@ -137,6 +139,11 @@ public class CommandBuilder internal constructor(
 
     public fun signature(vararg args: Arg<*>, handler: (CommandContext) -> CommandResult) {
         signatures += Signature(args.toList(), handler)
+    }
+
+    /** A destructive form: it waits for `::confirm` like a [confirm] command (commands brief §4). */
+    public fun confirmedSignature(vararg args: Arg<*>, handler: (CommandContext) -> CommandResult) {
+        signatures += Signature(args.toList(), handler, confirm = true)
     }
 
     // Argument factories (each call is a distinct handle: use it to read the value in the handler).

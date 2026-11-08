@@ -16,6 +16,24 @@ public class Raids internal constructor() {
     private val definitions = LinkedHashMap<String, RaidDefinition>()
     private val parties = LinkedHashMap<Int, Party>()
     internal val runs = LinkedHashMap<Long, RaidRun>()
+
+    /** `::raid disable` (commands brief §6): raids that start no new runs on this world until restart. */
+    public val disabled: MutableSet<String> = HashSet()
+
+    /** `::raid seed` (commands brief §6): the next run's RNG seed, used once. */
+    public var nextSeed: Long? = null
+
+    /** `::raid stats`: outcomes since boot. */
+    public var completedRuns: Int = 0
+        internal set
+    public var uniqueRewards: Int = 0
+        internal set
+    public var rewardsRolled: Int = 0
+        internal set
+
+    /** Every run on this world that has not closed. */
+    public fun activeRuns(): List<RaidRun> = runs.values.toList()
+
     private var nextParty = 1
     private var nextRun = 1L
 
@@ -85,6 +103,7 @@ public class Raids internal constructor() {
             val raids = of(leader)
             val def = party.raid
             if (!party.forming()) return "That party has already started."
+            if (def.id in raids.disabled) return "That raid is closed on this world for now."
             if (party.members.size !in def.partySize) return "Your party is not the right size."
             val players = party.members.map { leader.onlinePlayer(it) ?: return "$it is not online." }
             for (p in players) def.requirements(p)?.let { return "${p.username}: $it" }
@@ -99,8 +118,8 @@ public class Raids internal constructor() {
                     players.maxOf { it.combatLevel },
                     IntArray(SKILLS) { skill -> players.sumOf { it.baseLevel(skill) } },
                 )
-            val run =
-                RaidRun(raids.newRunId(), def, party, scaling, RaidRng(leader.random(Int.MAX_VALUE).toLong() shl 1 or 1L), leader.tick)
+            val seed = raids.nextSeed?.also { raids.nextSeed = null } ?: (leader.random(Int.MAX_VALUE).toLong() shl 1 or 1L)
+            val run = RaidRun(raids.newRunId(), def, party, scaling, RaidRng(seed), leader.tick)
             party.state = PartyState.Locked(run)
             raids.addRun(run)
             val entering = if (enterNow) players else listOf(leader)
@@ -349,6 +368,10 @@ public class Raids internal constructor() {
                     run.scaling.settings + run.extraSettings,
                 )
             val results = run.raid.rewards(snapshot, run.rng)
+            val raids = of(any)
+            raids.completedRuns++
+            raids.rewardsRolled += results.size
+            raids.uniqueRewards += results.values.count { it.unique }
             for ((name, m) in run.members) {
                 m.reward = if (m.inside) results[name] else null
                 if (!m.inside) m.paid = true
@@ -359,6 +382,28 @@ public class Raids internal constructor() {
             }
             any.events.publish(RaidEvent.Completed(run))
             run.dirty = true
+        }
+
+        /** Saved flag: 1 while `::raid waivefee` lets [player]'s next reclaim skip the fee (ToB, ToA). */
+        public const val FEE_WAIVED_KEY: String = "raids.fee_waived"
+
+        public fun feeWaived(player: PlayerRef): Boolean = (player.saved(FEE_WAIVED_KEY) ?: 0L) != 0L
+
+        public fun waiveFee(player: PlayerRef) {
+            player.setSaved(FEE_WAIVED_KEY, 1L)
+        }
+
+        public fun useFeeWaiver(player: PlayerRef) {
+            player.setSaved(FEE_WAIVED_KEY, null)
+        }
+
+        /** `::raid reissue`: pays [player]'s stored, unpaid reward once; never re-rolls. The problem, or null. */
+        public fun reissue(player: PlayerRef, run: RaidRun): String? {
+            val m = run.member(player.username) ?: return "${player.username} is not in that run."
+            if (m.reward == null) return "${player.username} has no stored reward in that run."
+            if (m.paid) return "That reward was already paid."
+            pay(player, run)
+            return if (m.paid) null else "The reward could not be delivered (no room)."
         }
 
         /** Puts [player]'s reward in the claim inventory once (also on a later login while the run lives). */
