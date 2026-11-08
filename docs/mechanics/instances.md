@@ -34,11 +34,33 @@ Instanced map areas (player-owned houses, boss lairs, minigames): `engine/.../ma
   squares for reuse. A player found in instance space with no live instance is moved to the world spawn. That covers
   logging in inside a torn-down house.
 
-## OPEN
+- **IN6: off-thread build.** `World.buildInstance` allocates the instance on the world thread and prepares its zones on
+  a builder pool: each (template zone, rotation) is turned once into collision bits and zone-local locs and cached for
+  every later instance. The plan attaches in the pre-tick of the **next** tick, in request order; if it is not ready
+  the world thread waits for it, so the attach tick is always request tick + 1 (determinism, replay). The last attach
+  time is in `TickMetrics.instanceAttachNanos` (budget 1 ms, raids brief §7). Small builds (houses) may still copy
+  zone by zone on the world thread.
+- **IN7: whole squares and template coordinates.** A template map square can be copied whole, turned 0-3 times: zone
+  positions rotate inside the square with the same formula as tiles (IN3, over 8 × 8 zones) and each zone turns too.
+  Content writes coordinates in template space; `fromTemplate` maps a template tile (and footprint) to the instance
+  and `toTemplate` maps back, rotation-aware (side 64: (x, z) → r1 (z, 63 − x − (w − 1)), r2 (63 − x − (w − 1),
+  63 − z − (l − 1)), r3 (63 − z − (l − 1), x)).
+- **IN8: lost instance.** A player found in instance space with no live instance (a restart, a torn-down raid, a login
+  inside one) goes to the exit content saved for them (`PlayerRef.setInstanceExit`, saved key `instance.exit`, cleared
+  on use) or else the world spawn, and content gets `InstanceLost(player, hadExit)` to apply its leave rules (raid
+  items, wipe rules).
+- **IN9: guaranteed teardown.** `World.destroyInstance` removes every NPC standing or spawned inside (live, dead or
+  waiting to respawn), every ground obj in its zones, then its zones, collision and locs, and frees the space. Players
+  still inside follow IN8 on the next info pass.
+- **IN10: per-instance NPC stats.** An NPC can carry its own base levels and max hit (raid scaling) without changing
+  the shared NPC config: hitpoints max, stat restore and drains measure against them; they survive respawns and are
+  cleared by a stat-restoring transform (content re-applies them per phase). The NPC attack uses the own max hit
+  before the combat data's.
+- Size: up to 8 × 8 map squares per instance (TFA spans 3 × 5).
 
-- **OPEN-IN1:** ground items and NPCs left in a destroyed instance are not removed by the engine; content must
-  despawn its own NPCs. Ground items expire normally.
+## OPEN
 - **OPEN-IN2:** template zones whose locs cross a zone edge (a 2×2 loc on the last row) put collision into the
   neighbouring instance zone only if that zone has been copied.
+- **OPEN-IN1 (closed by IN9).**
 - **OPEN-IN3:** instances are per world and not persisted; content rebuilds them (a house is rebuilt from saved room
-  data each visit).
+  data each visit); a player saved inside one follows IN8 after a restart.

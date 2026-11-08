@@ -10,6 +10,10 @@ class TickMetrics {
     val logic = Histogram()
     val info = Histogram()
 
+    /** Duration of the last instance attach on the world thread (IN6; budget 1 ms, raids brief section 7). */
+    @Volatile var instanceAttachNanos: Long = 0
+        internal set
+
     /** Ticks that ended after their 600 ms deadline. */
     @Volatile var missedDeadlines: Long = 0
         internal set

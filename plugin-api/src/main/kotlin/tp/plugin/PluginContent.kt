@@ -313,6 +313,10 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         for (handler in list) ref.handler()
     }
 
+    override fun onInstanceLost(player: tp.engine.entity.Player, hadExit: Boolean) {
+        events.publish(InstanceLost(ref(player), hadExit))
+    }
+
     override fun onNpcSpawn(npc: tp.engine.entity.Npc) {
         if (h.npcSpawn.isEmpty()) return
         val ref = NpcRef(npc)

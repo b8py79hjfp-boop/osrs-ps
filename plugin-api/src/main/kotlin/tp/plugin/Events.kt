@@ -163,3 +163,9 @@ public class ObjPickedUp(public val player: PlayerRef, public val obj: Int, publ
  * [at] for [killer] and clears itself. Published by content/combat before the items are split.
  */
 public class PvpDeathStorage(public val player: PlayerRef, public val killer: String, public val at: tp.util.CoordGrid) : Event
+
+/**
+ * [player] was found in instance space with no live instance (restart, torn-down raid) and was moved to the exit saved
+ * with [PlayerRef.setInstanceExit] ([hadExit]) or the world spawn (instances.md IN8): content applies its leave rules.
+ */
+public class InstanceLost(public val player: PlayerRef, public val hadExit: Boolean) : Event

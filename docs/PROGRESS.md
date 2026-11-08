@@ -167,7 +167,8 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 
 ## Raids (docs/plans/raids.md, brief docs/plans/raids-brief.md)
 
-- R0 research and plan: done for TFA (verifier-checked, 2026-11-08). TFA first (D-079); CoX/ToB/ToA fact sheets come with their phases. Fact sheets: docs/mechanics/raids/{common,client-contract,tfa}.md,
+- R0 research and plan: done for TFA (verifier-checked, 2026-11-08).
+- R1 instancing: done (instances.md IN6-IN10): off-thread build attached at request tick + 1, whole-square copies with template-coordinate mapping, guaranteed teardown of NPCs and ground objs, lost-instance exit, per-NPC base stats and max hit, instances up to 8 × 8 squares. Checked in game with `::instance 64 86 3 5` (the whole TFA area). TFA first (D-079); CoX/ToB/ToA fact sheets come with their phases. Fact sheets: docs/mechanics/raids/{common,client-contract,tfa}.md,
   docs/mechanics/raids/tfa/*.md.
 - Not now (brief §13): new custom raids; the 2023 CoX custom-layout / paid-scaling proposal (only the shipped scaled
   party size, Reload and full-layout toggle); TFA Practice Mode and the 9-11 November 2026 TFA balancing; Leagues and

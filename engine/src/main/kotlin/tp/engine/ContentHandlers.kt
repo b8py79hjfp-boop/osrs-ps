@@ -93,6 +93,12 @@ interface ContentHandlers {
     /** [from] invited [player] to [clanName] (clans.md CL3); the clans plugin asks them. */
     fun onClanInvite(player: Player, from: String, clanName: String) {}
 
+    /**
+     * [player] was found in instance space with no live instance (a restart, a torn-down raid) and was moved to their
+     * saved exit or the world spawn (instances.md IN8); [hadExit] says which. Content applies its leave rules.
+     */
+    fun onInstanceLost(player: Player, hadExit: Boolean) {}
+
     /** An NPC was added to the world or respawned (content may set its hunt range, boss state). */
     fun onNpcSpawn(npc: tp.engine.entity.Npc) {}
 

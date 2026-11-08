@@ -463,7 +463,8 @@ internal object NpcCombat {
             return if (protected && unprotected.prayerBlocks) 0 else unprotected.damage
         }
         val max =
-            SlayerGear.unprotectedMax(npc, victim) ?: def?.maxFor(style)
+            // instances.md IN10: a per-instance max hit (raid scaling) wins over the combat data.
+            SlayerGear.unprotectedMax(npc, victim) ?: npc.maxHitOverride.takeIf { it >= 0 } ?: def?.maxFor(style)
                 ?: Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
         val hit = !protected && Formulas.hits(attackRoll, defenceRoll, npc::random)
         return if (hit) Formulas.damage(max, npc::random) else 0

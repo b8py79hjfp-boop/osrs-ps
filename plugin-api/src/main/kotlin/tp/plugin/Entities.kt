@@ -7,6 +7,7 @@ import tp.engine.interact.InteractionTarget
 import tp.engine.interact.NpcInteraction
 import tp.engine.interact.currentInteraction
 import tp.engine.interact.interactWith
+import tp.engine.map.Instances
 import tp.engine.script.QueueType
 import tp.engine.script.Script
 import tp.protocol.api.Visual
@@ -194,7 +195,40 @@ public sealed class EntityRef {
 
     /** Allocates an empty instanced area of [widthSquares] × [lengthSquares] map squares (64 tiles each) in this world. */
     public fun createInstance(widthSquares: Int = 1, lengthSquares: Int = 1): InstanceRef =
-        InstanceRef(e.world.instances.create(widthSquares, lengthSquares), e.world.instances)
+        InstanceRef(e.world.instances.create(widthSquares, lengthSquares), e.world)
+
+    /**
+     * IN6: an instance of [widthSquares] x [lengthSquares] map squares whose whole template [squares] (and single
+     * [zones]) are copied off the world thread; it is usable once [onReady] runs, in the next tick's pre-tick.
+     */
+    public fun buildInstance(
+        widthSquares: Int,
+        lengthSquares: Int,
+        squares: List<InstanceSquare>,
+        zones: List<InstanceZone> = emptyList(),
+        onReady: (InstanceRef) -> Unit,
+    ): InstanceRef {
+        val w = e.world
+        val built =
+            w.buildInstance(
+                widthSquares,
+                lengthSquares,
+                zones.map { Instances.ZoneCopy(it.from, it.to, it.rotation) },
+                squares.map {
+                    Instances.SquareCopy(
+                        it.templateSquareX,
+                        it.templateSquareZ,
+                        it.dx,
+                        it.dz,
+                        it.rotation,
+                        it.templateLevel,
+                        it.level,
+                        it.levels,
+                    )
+                },
+            ) { onReady(InstanceRef(it, w)) }
+        return InstanceRef(built, w)
+    }
 
     /**
      * Creates a world entity (boat) of config [configId] with a [sizeX] × [sizeZ]-zone deck whose activity is on
@@ -226,7 +260,7 @@ public sealed class EntityRef {
     public fun instanceAt(coord: CoordGrid): InstanceRef? =
         e.world.instances
             .at(coord)
-            ?.let { InstanceRef(it, e.world.instances) }
+            ?.let { InstanceRef(it, e.world) }
 
     /** Puts loc [id] on the tile (replacing its layer); reverts after [duration] ticks if positive. */
     public fun addLoc(id: Int, at: CoordGrid, shape: Int, angle: Int, duration: Int = -1) {
@@ -322,11 +356,23 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
         n.levels[stat] = value.coerceAtLeast(0)
     }
 
-    /** The NPC config's level for [stat] (same order as [level]): what drains are measured against. */
+    /** The NPC's base level for [stat] (same order as [level]): its own override (IN10) or its config's; drains are measured against it. */
     public fun baseLevel(stat: Int): Int =
-        n.world.data.configs.npcs[n.type]
+        n.baseStats?.getOrNull(stat) ?: n.world.data.configs.npcs[n.type]
             ?.stats
             ?.getOrNull(stat) ?: 0
+
+    /**
+     * IN10: gives this NPC its own base levels ([levels] order: attack, defence, strength, hitpoints, ranged, magic)
+     * and, when [maxHit] >= 0, its own max hit; shared NPC configs are untouched (raid scaling).
+     */
+    public fun overrideStats(levels: IntArray, maxHit: Int = -1) {
+        n.overrideStats(levels)
+        n.maxHitOverride = maxHit
+    }
+
+    /** IN10: this NPC's own max hit, or -1 when its combat data's applies. */
+    public val maxHitOverride: Int get() = n.maxHitOverride
 
     /** The NPC's name as players see it (cache name). */
     public val displayName: String get() =

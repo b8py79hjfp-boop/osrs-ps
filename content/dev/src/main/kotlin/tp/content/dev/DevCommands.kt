@@ -40,6 +40,9 @@ public class DevCommands : ContentPlugin {
         }
         onCommand("wild") { teleport(CoordGrid(WILD_X, WILD_Z)) }
         onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
+        // ::instance <squareX> <squareZ> [w] [l]: copies w x l map squares into a fresh instance (built off-thread,
+        // instances.md IN6) and moves you to the same spot inside; ::instance leave tears it down (IN9) and returns you.
+        onCommand("instance") { args -> devInstance(this, args) }
         onCommand("item") { args -> item(args) }
         // ::if <interface id>: opens it as the main modal (interface layout checks against the real client).
         onCommand("if") { args ->
@@ -134,5 +137,40 @@ public class DevCommands : ContentPlugin {
                 9075 to 100,
                 557 to 500,
             )
+    }
+}
+
+private val DEV_INSTANCE = tp.plugin.AttrKey<tp.plugin.InstanceRef>("dev_instance")
+private val DEV_INSTANCE_FROM = tp.plugin.AttrKey<CoordGrid>("dev_instance_from")
+
+private fun devInstance(p: tp.plugin.PlayerRef, args: List<String>) {
+    // ::instance drop: tears it down with you inside (tests the lost-instance exit, IN8).
+    if (args.firstOrNull() == "drop") {
+        p[DEV_INSTANCE]?.destroy()
+        p[DEV_INSTANCE] = null
+        return
+    }
+    if (args.firstOrNull() == "leave") {
+        val back = p[DEV_INSTANCE_FROM]
+        p[DEV_INSTANCE]?.let {
+            if (back != null) p.teleport(back) else p.setInstanceExit(null)
+            it.destroy()
+        }
+        p[DEV_INSTANCE] = null
+        return
+    }
+    val sx = args.getOrNull(0)?.toIntOrNull() ?: return p.message("::instance <squareX> <squareZ> [w] [l] | leave")
+    val sz = args.getOrNull(1)?.toIntOrNull() ?: return
+    val w = args.getOrNull(2)?.toIntOrNull() ?: 1
+    val l = args.getOrNull(3)?.toIntOrNull() ?: 1
+    val squares = (0 until w).flatMap { dx -> (0 until l).map { dz -> tp.plugin.InstanceSquare(sx + dx, sz + dz, dx, dz) } }
+    val target = CoordGrid((sx shl 6) + 32, (sz shl 6) + 32, p.coord.level)
+    p[DEV_INSTANCE_FROM] = p.coord
+    p.setInstanceExit(p.coord)
+    p.buildInstance(w, l, squares) { inst ->
+        p[DEV_INSTANCE] = inst
+        val inside = inst.fromTemplate(target) ?: return@buildInstance
+        p.teleport(inside)
+        p.message("Instance ready at $inside (template $target).")
     }
 }

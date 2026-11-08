@@ -11,8 +11,10 @@ import tp.util.CoordGrid
  */
 public class InstanceRef internal constructor(
     internal val i: Instances.Instance,
-    private val instances: Instances,
+    private val world: tp.engine.World,
 ) {
+    private val instances: Instances get() = world.instances
+
     /** South-west tile of the instance (level 0). */
     public val base: CoordGrid get() = CoordGrid(i.baseX, i.baseZ, 0)
 
@@ -48,10 +50,19 @@ public class InstanceRef internal constructor(
             zone.level,
         )
 
-    /** Tears the instance down: zones, collision and locs go, the space is reused. */
+    /**
+     * Tears the instance down (IN9): its NPCs and ground objs, then zones, collision and locs go and the space is reused.
+     * Players still inside are moved to their saved exit or the world spawn (IN8).
+     */
     public fun destroy() {
-        instances.destroy(i)
+        world.destroyInstance(i)
     }
+
+    /** IN7: the instance tile showing template tile [template] (a [sizeX] x [sizeZ] footprint), or null. */
+    public fun fromTemplate(template: CoordGrid, sizeX: Int = 1, sizeZ: Int = 1): CoordGrid? = i.fromTemplate(template, sizeX, sizeZ)
+
+    /** IN7: the template tile instance tile [coord] shows, or null. */
+    public fun toTemplate(coord: CoordGrid): CoordGrid? = i.toTemplate(coord)
 
     override fun equals(other: Any?): Boolean = other is InstanceRef && other.i === i
 
@@ -62,3 +73,22 @@ public class InstanceRef internal constructor(
         const val ZONE_ALIGN = 7.inv()
     }
 }
+
+/**
+ * A whole template map square to copy into an instance (IN7): square ([templateSquareX], [templateSquareZ]) to the
+ * instance's square ([dx], [dz]) counted from its south-west square, turned [rotation] quarter turns; [levels] levels
+ * from [templateLevel] to [level].
+ */
+public class InstanceSquare(
+    public val templateSquareX: Int,
+    public val templateSquareZ: Int,
+    public val dx: Int,
+    public val dz: Int,
+    public val rotation: Int = 0,
+    public val templateLevel: Int = 0,
+    public val level: Int = 0,
+    public val levels: Int = Instances.LEVELS,
+)
+
+/** One template zone (holding tile [from]) to copy to the instance zone holding [to], turned [rotation] times. */
+public class InstanceZone(public val from: CoordGrid, public val to: CoordGrid, public val rotation: Int = 0)

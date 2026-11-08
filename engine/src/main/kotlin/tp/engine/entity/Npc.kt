@@ -45,9 +45,26 @@ class Npc internal constructor(
 
     override val maxHitpoints: Int
         get() =
-            world.data.configs.npcs
+            baseStats?.get(HITPOINTS) ?: world.data.configs.npcs
                 .getValue(type)
                 .stats[HITPOINTS]
+
+    /**
+     * IN10: this NPC's own base levels (raid scaling), in [levels] order; null = its config's. Shared NPC configs are
+     * never changed. Kept across respawns; cleared by [transform] with restoreStats (content re-applies per phase).
+     */
+    var baseStats: IntArray? = null
+        private set
+
+    /** IN10: this NPC's own max hit for content that reads it (raid scaling); -1 = the combat data's. */
+    var maxHitOverride: Int = -1
+
+    /** IN10: sets [baseStats] to [base] and the current levels to it. */
+    fun overrideStats(base: IntArray) {
+        require(base.size == levels.size) { "stats need ${levels.size} values" }
+        baseStats = base.copyOf()
+        base.copyInto(levels)
+    }
 
     /** Replaces the route with a naive walk toward ([x], [z]) (content-driven repositioning). */
     fun walkTo(x: Int, z: Int) {
@@ -62,6 +79,7 @@ class Npc internal constructor(
     fun transform(newType: Int, restoreStats: Boolean) {
         type = newType
         if (restoreStats) {
+            baseStats = null
             world.data.configs.npcs
                 .getValue(newType)
                 .stats
@@ -82,7 +100,7 @@ class Npc internal constructor(
         val type =
             world.data.configs.npcs
                 .getValue(baseType)
-        type.stats.copyInto(levels)
+        (baseStats ?: type.stats).copyInto(levels)
         coord = spawn
         npcInteraction = null
         attrs.clear()

@@ -271,6 +271,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Persisted content value [key] (saved with the account), or null. */
     public fun saved(key: String): Long? = p.saved[key]
 
+    /**
+     * IN8: where this player goes if they are later found inside an instance that no longer exists (a restart or a
+     * torn-down raid); null clears it. Saved with the player.
+     */
+    public fun setInstanceExit(exit: CoordGrid?) {
+        if (exit ==
+            null
+        ) {
+            p.saved.remove(tp.engine.map.Instances.EXIT_KEY)
+        } else {
+            p.saved[tp.engine.map.Instances.EXIT_KEY] = exit.packed.toLong()
+        }
+    }
+
     /** Sets (or with null, clears) persisted content value [key]. */
     public fun setSaved(key: String, value: Long?) {
         if (value == null) p.saved.remove(key) else p.saved[key] = value

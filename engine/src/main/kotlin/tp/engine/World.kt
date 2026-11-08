@@ -90,6 +90,70 @@ class World(
     /** Instanced areas built from template zones (docs/mechanics/instances.md). */
     val instances = tp.engine.map.Instances(data.locs, data.configs.locs, locs, collision)
 
+    /** IN6: instance builds requested this tick, attached in the next tick's pre-tick (deterministic). */
+    private val pendingBuilds = ArrayList<PendingBuild>()
+
+    private class PendingBuild(
+        val requestedTick: Long,
+        val future: java.util.concurrent.Future<tp.engine.map.Instances.BuildPlan>,
+        val onAttached: (tp.engine.map.Instances.Instance) -> Unit,
+    )
+
+    /**
+     * IN6: allocates an instance of [widthSquares] x [lengthSquares] map squares now and prepares its zones off the
+     * world thread; the zones attach in the pre-tick of the next tick (waiting for the build if it is not done, so the
+     * attach tick never depends on thread timing), then [onAttached] runs on the world thread.
+     */
+    fun buildInstance(
+        widthSquares: Int,
+        lengthSquares: Int,
+        copies: List<tp.engine.map.Instances.ZoneCopy>,
+        squares: List<tp.engine.map.Instances.SquareCopy>,
+        onAttached: (tp.engine.map.Instances.Instance) -> Unit,
+    ): tp.engine.map.Instances.Instance {
+        val instance = instances.create(widthSquares, lengthSquares)
+        val future = INSTANCE_BUILDER.submit<tp.engine.map.Instances.BuildPlan> { instances.prepare(instance, copies, squares) }
+        pendingBuilds += PendingBuild(tick, future, onAttached)
+        return instance
+    }
+
+    /** Pre-tick: attaches every build requested on an earlier tick, in request order. */
+    private fun attachBuilds() {
+        if (pendingBuilds.isEmpty()) return
+        val due = pendingBuilds.filter { it.requestedTick < tick }
+        pendingBuilds.removeAll(due.toSet())
+        for (b in due) {
+            val plan = b.future.get()
+            val start = System.nanoTime()
+            instances.attach(plan)
+            metrics.instanceAttachNanos = System.nanoTime() - start
+            if (!plan.instance.destroyed) b.onAttached(plan.instance)
+        }
+    }
+
+    /**
+     * IN9: tears an instance down with nothing left behind: its NPCs (live, dead or waiting to respawn) and ground objs
+     * go, then its zones, collision and locs; players still inside are moved out on the next info pass (IN8).
+     */
+    fun destroyInstance(instance: tp.engine.map.Instances.Instance) {
+        if (instance.destroyed) return
+        for (i in npcs.indices) {
+            val npc = npcs[i] ?: continue
+            if (npc.coord in instance || npc.spawn in instance) removeNpc(npc)
+        }
+        for (sx in 0 until instance.widthSquares * ZONES_PER_SQUARE) {
+            for (sz in 0 until instance.lengthSquares * ZONES_PER_SQUARE) {
+                for (level in 0 until tp.engine.map.Instances.LEVELS) {
+                    val zone =
+                        tp.engine.zone.ZoneKey
+                            .of(level, (instance.baseX shr ZONE_BITS) + sx, (instance.baseZ shr ZONE_BITS) + sz)
+                    for (obj in ground.inZone(zone).toList()) ground.remove(obj)
+                }
+            }
+        }
+        instances.destroy(instance)
+    }
+
     /** Boats and other moving worlds (docs/mechanics/world-entities.md). */
     val worldEntities = tp.engine.map.WorldEntities(instances) { network }
 
@@ -257,6 +321,7 @@ class World(
         tick++
         tracer?.onTickStart(tick)
         val start = System.nanoTime()
+        attachBuilds()
         while (true) (tasks.poll() ?: break).invoke()
         inputPhase()
         worldEntityPhase()
@@ -661,7 +726,7 @@ class World(
     private fun rebuildIfNeeded(player: Player) {
         val inSpace = instances.isInstanceSpace(player.coord)
         val instance = if (inSpace) instances.at(player.coord) else null
-        if (inSpace && instance == null) teleport(player, config.spawn)
+        if (inSpace && instance == null) leaveLostInstance(player)
         // WE4: on a world entity the build area is the root world around the entity, rebuilt like any root area.
         val boat = instance?.let(worldEntities::of)
         if (boat != null) {
@@ -689,6 +754,13 @@ class World(
         player.session.send(message)
         player.zoneSync.reset()
         player.deckSync.reset()
+    }
+
+    /** IN8: a player in instance space with no instance goes to their saved exit (raids) or the world spawn. */
+    private fun leaveLostInstance(player: Player) {
+        val exit = player.saved.remove(tp.engine.map.Instances.EXIT_KEY)
+        teleport(player, exit?.let { CoordGrid(it.toInt()) } ?: config.spawn)
+        content.onInstanceLost(player, exit != null)
     }
 
     /** Phase 6: world state is frozen; sync avatars, build infos (parallel in RSProt), flush each session once. */
@@ -1237,6 +1309,12 @@ class World(
 
         /** Tile to zone coordinate shift. */
         private const val ZONE_BITS = 3
+        private const val ZONES_PER_SQUARE = 8
+
+        /** IN6: shared pool that prepares instance builds off the world threads (daemon; plans are pure data). */
+        private val INSTANCE_BUILDER =
+            java.util.concurrent.Executors
+                .newFixedThreadPool(2) { r -> Thread(r, "instance-builder").apply { isDaemon = true } }
 
         /** Player indices 1..2047 (brief §5.2, §7). */
         const val MAX_PLAYERS = 2048
