@@ -1095,3 +1095,15 @@ Mod): its `settings_configs` table (setting id -> varbit / varp, default, range,
 resolved from our gamevals; `AllSettings.kt` keeps the licence header. Every setting is a player variable, so persistence
 is the existing varp save; nothing setting-specific is stored. New-account defaults are applied once and only to
 variables still at 0, so accounts that existed before this change keep their values.
+
+## D-079 Raids: TFA first; post-3 November state; wiki numbers where the cache is stripped
+
+The raids brief (docs/plans/raids-brief.md) orders ToB, CoX, ToA, TFA; the user asked to start with The Fractured
+Archive, so the order is R0-R2 framework, then TFA, then ToB, CoX, ToA. TFA covers the same framework pieces (fixed then
+chosen room graph, per-player chests, dangerous deaths with wipe eject and reclaim, spectating, a supply shop).
+Cache 2757 includes the 3 November 2026 TFA update: the Archive Guardian (16659/16660) and Ocellus P3 (16677) carry
+extra clickbox models 51447/51448, changed in the 2026-11-02 build, which the debug copy 16682 lacks. TFA is built to
+the post-3 November rules. The brief ranks cache dbtables above the wiki, but TFA's drop tables, doors, room configs,
+boss patterns and shop are server-only tables whose columns are stripped from the client cache (only row names and the
+stats tables 264/265 survive), so the wiki is the authority for those numbers and everything else is OPEN with a named
+config flag (BRIEF §0.4).

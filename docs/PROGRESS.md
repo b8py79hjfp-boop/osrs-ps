@@ -165,6 +165,14 @@
 `rev 242: 25 archives, 120,374 groups (23 populated archives, 174 ms)` and passed the archive 0/24 CRC and version
 spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.sha256`.
 
+## Raids (docs/plans/raids.md, brief docs/plans/raids-brief.md)
+
+- R0 research and plan: in progress. TFA first (D-079). Fact sheets: docs/mechanics/raids/{common,client-contract,tfa}.md,
+  docs/mechanics/raids/tfa/*.md.
+- Not now (brief §13): new custom raids; the 2023 CoX custom-layout / paid-scaling proposal (only the shipped scaled
+  party size, Reload and full-layout toggle); TFA Practice Mode and the 9-11 November 2026 TFA balancing; Leagues and
+  Deadman variants; raid Combat Achievements (events only); cross-world parties.
+
 ## Next
 
 1. Phase 6 (in progress, see docs/plans/phase-6.md).
