@@ -70,15 +70,21 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
             }
 
             is SocialEvent.ChannelJoined -> {
+                player.channel =
+                    tp.engine.entity.ChannelView(e.owner, e.channelName, e.kickRank).also { v ->
+                        for (m in e.members) v.members[m.name] = m.rank
+                    }
                 player.session.send(ServerMessage.ChannelJoined(e.owner, e.channelName, e.kickRank, e.members.map { it.row() }))
             }
 
             is SocialEvent.ChannelLeft -> {
+                player.channel = null
                 player.session.send(ServerMessage.ChannelLeft)
                 if (e.kicked) player.session.send(ServerMessage.GameMessage("You have been kicked from the channel."))
             }
 
             is SocialEvent.ChannelMemberUpdate -> {
+                player.channel?.members?.let { if (e.removed) it.remove(e.member.name) else it[e.member.name] = e.member.rank }
                 player.session.send(ServerMessage.ChannelMember(e.member.row(), e.removed))
             }
 

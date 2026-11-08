@@ -222,6 +222,79 @@ internal object CoxLayout {
         error("no cox layout fits the grid")
     }
 
+    /**
+     * CX13 / OPEN-CX7 working assumption for the Large pool (11 Nov 2020: "five combat and three puzzle rooms"): two
+     * floors of six rooms that fill the 4 x 2 grids (start, six rooms, end), each with one farming and one scavenger
+     * room, the 5 C / 3 P split across the floors at random. The room order follows the rules all 26 captured patterns
+     * share: floor 1 opens with S or F, floor 2 opens with C or P and its last room is F, and no P follows a P
+     * ([LARGE_ORDER_OK]). Paths are random Hamiltonian paths; floor 2 starts where floor 1 ended. Behind
+     * [CoxConfig.largePoolGenerated].
+     */
+    fun generateLarge(rng: RaidRng): CoxLayoutPlan {
+        val cycle = CYCLES[rng.next(CYCLES.size, "cox cycle")]
+        val offset = rng.next(CYCLE, "cox cycle offset")
+        val puzzles = PUZZLES.shuffled(rng)
+        val resources = List(MAX_FLOORS) { if (rng.next(2, "cox resource") == 0) CoxKind.FARMING_FISH else CoxKind.FARMING_BATS }
+        repeat(LARGE_TRIES) {
+            val combat1 = LARGE_MIN_COMBAT1 + rng.next(LARGE_COMBAT1_CHOICES, "cox large split")
+            val floor1 = largeFloor(rng, combat1, LARGE_C_P_PER_FLOOR - combat1, first = true) ?: return@repeat
+            val floor2 =
+                largeFloor(rng, LARGE_COMBAT - combat1, LARGE_PUZZLES - (LARGE_C_P_PER_FLOOR - combat1), first = false)
+                    ?: return@repeat
+            val starts = HAMILTONIAN.keys.toList()
+            val start = starts[rng.next(starts.size, "cox large start")]
+            val paths1 = HAMILTONIAN.getValue(start)
+            val path1 = paths1[rng.next(paths1.size, "cox large path")]
+            val end1 = path(start, path1)?.last() ?: return@repeat
+            val paths2 = HAMILTONIAN.getValue(end1)
+            val path2 = paths2[rng.next(paths2.size, "cox large path")]
+            val code = "$floor1.$floor2 - #$path1#$path2"
+            val cells =
+                tryPlace(listOf(floor1, floor2), listOf(path1, path2), start.first, start.second, cycle, offset, puzzles, resources)
+                    ?: return@repeat
+            val kinds = cells.filter { it.kind.combat }.map { it.kind }
+            if (kinds.distinct().size == kinds.size) return CoxLayoutPlan(code, cells, 2)
+        }
+        error("no cox large layout fits the grid")
+    }
+
+    /** One Large floor's room string with [combat] C and [puzzles] P, or null when the draw breaks the order rules. */
+    private fun largeFloor(rng: RaidRng, combat: Int, puzzles: Int, first: Boolean): String? {
+        val rooms = (List(combat) { 'C' } + List(puzzles) { 'P' } + listOf('S', 'F')).shuffled(rng).joinToString("")
+        return rooms.takeIf { LARGE_ORDER_OK(it, first) }
+    }
+
+    /** The room-order rules every floor of RL's 26 patterns keeps (cox.md CX13). */
+    private val LARGE_ORDER_OK: (String, Boolean) -> Boolean = { r, first ->
+        "PP" !in r && if (first) r[0] == 'S' || r[0] == 'F' else (r[0] == 'C' || r[0] == 'P') && r.last() == 'F'
+    }
+
+    /** Every 7-move path that visits all eight cells of a 4 x 2 floor, by start cell. */
+    private val HAMILTONIAN: Map<Pair<Int, Int>, List<String>> by lazy {
+        val out = LinkedHashMap<Pair<Int, Int>, List<String>>()
+        for (row in 0 until ROWS) {
+            for (col in 0 until COLS) {
+                val found = ArrayList<String>()
+
+                fun walk(at: Pair<Int, Int>, seen: Set<Pair<Int, Int>>, moves: String) {
+                    if (seen.size == SLOTS_PER_FLOOR) {
+                        found += moves
+                        return
+                    }
+                    for (m in "NESW") {
+                        val (dx, dz) = step(m) ?: continue
+                        val next = at.first + dx to at.second + dz
+                        if (next.first !in 0 until COLS || next.second !in 0 until ROWS || next in seen) continue
+                        walk(next, seen + next, moves + m)
+                    }
+                }
+                walk(col to row, setOf(col to row), "")
+                out[col to row] = found
+            }
+        }
+        out
+    }
+
     /** Lays [code] out with the drawn rotation; null when its path does not fit the 4 x 2 grids. */
     fun place(code: String, cycle: List<CoxKind>, offset: Int, puzzles: List<CoxKind>, resources: List<CoxKind>): CoxLayoutPlan? {
         val (rooms, paths) = code.split(" - ")
@@ -468,6 +541,18 @@ internal object CoxLayout {
 
     private const val ZONE = 8
     private const val FIVE_ROOMS = 5
+
+    /** CX13: the Large pool's five combat and three puzzle rooms; with F and S on each six-room floor, four C/P per floor. */
+    private const val LARGE_COMBAT = 5
+    private const val LARGE_PUZZLES = 3
+    private const val LARGE_C_P_PER_FLOOR = 4
+
+    /** Floor 1 holds 2, 3 or 4 of the combat rooms (floor 2 the rest; each floor's puzzles fill its four C/P rooms). */
+    private const val LARGE_MIN_COMBAT1 = 2
+    private const val LARGE_COMBAT1_CHOICES = 3
+
+    /** Rejection-sampling bound for a Large draw (the order rules and the no-repeat combat rule). */
+    private const val LARGE_TRIES = 500
     private const val SMALL_COMBAT = 3
     private const val MAX_FLOORS = 3
     private const val ZONES_PER_CELL = 4

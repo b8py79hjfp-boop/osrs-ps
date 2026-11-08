@@ -61,6 +61,9 @@ class Player internal constructor(
     /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
     var mutedUntil: Long = 0
 
+    /** The friends chat channel the player is in, as the hub last told this world (set live by the world node). */
+    var channel: ChannelView? = null
+
     /** The player's clan and their rank in it, and the clan they are a guest in (set live by the world node). */
     var clanName: String? = null
     var clanRank: Int = 0
@@ -207,4 +210,10 @@ internal object BuildArea {
         val dz = coord.z - origin.z
         return dx < REBUILD_BOUNDARY || dz < REBUILD_BOUNDARY || dx >= SIZE - REBUILD_BOUNDARY || dz >= SIZE - REBUILD_BOUNDARY
     }
+}
+
+/** A friends chat channel as one member sees it: the owner, the name, the kick rank and every member's rank. */
+class ChannelView(val owner: String, val name: String, val kickRank: Int) {
+    /** Member name -> rank (-1 guest, 0 friend, 1 recruit ... 7 owner); kept in join order. */
+    val members: LinkedHashMap<String, Int> = LinkedHashMap()
 }

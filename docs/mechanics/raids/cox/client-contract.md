@@ -524,3 +524,10 @@ The walkable lobby is the mountain top; the instance **entrance** is the steps (
 5. **Per-player varbit distribution**: 6385 / 6386 live in the *persistent* varp 1429 (it also carries unrelated unlock bits), 5423-5428 in the temp varp 1430, 5431-5432 in 1431, 5433 / 5456 / 5457 / 5408 / 10055 in 1432, 9539 / 9540 / 12285 / 13069 in 3062. Writing a varp overwrites its neighbours: use read-modify-write [R].
 6. **Reward flow**: inv 581 (5 slots) must be filled before 539 opens; `RAIDS_CLIENT_REWARDINDICATOR` (5456) and `NEEDSREWARDBOOK` (5457) must be set before the loot beam / the book icon are needed. The loot beam loc is static at (3233, 5751, L1) of the Olm arena [R].
 7. **Send-order contracts** are listed under §3. The mobile helper rows (4653) are free text: there is no format in the cache beyond the alternating left / right strings [R].
+
+## Server-run script signatures checked against cache 2757 (2026-11-08)
+
+`cache-pack script <disk> <id>` (script trailer: int / string / long argument counts) against every `clientScript` call in
+raids-cox: 1524 `iiis` (role 2/1/0, listed, adverts, title), 1517 `is`, 1566 `is`, 1547 `i`, 1548 `is`, 2292 `iiiiiiis`
+(int0 → 21:13 GLOBAL_TIME, int1 → 21:15 TARGET_TIME, ints 2-6 → 21:16 WORLD_TIMES, the string split five ways →
+21:17 WORLD_NAMES; times are ticks, 2401 → 2410 / 2411 scale by 60/100), 2524 `ii`. All match.

@@ -75,7 +75,7 @@ internal object CoxScoreboard {
         val index = bracketOf(size)
         val list = CoxScoreWorld.of(p).brackets[index]
         val args = ArrayList<Any>(SCRIPT_ARGS)
-        // OPEN-CXUI9: global best = this world's best (no hub service); the unit is ticks (script 2401 is not read to the end).
+        // OPEN-CXUI9: global best = this world's best (no hub service). The unit is ticks: 2401 -> 2410 / 2411 scale by 60/100.
         args += (list.firstOrNull()?.ticks ?: 0L).toInt()
         args += CoxOlmRoom.targetTicks(BRACKETS[index]).toInt()
         for (line in 0 until LINES) args += (list.getOrNull(line)?.ticks ?: 0L).toInt()

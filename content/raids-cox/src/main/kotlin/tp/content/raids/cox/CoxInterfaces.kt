@@ -74,6 +74,7 @@ public class CoxInterfaces : ContentPlugin {
 
         onWorldTick {
             CoxPartyTab.tick(this)
+            CoxChannel.tick(this)
             CoxChest.tick(this)
             if (tick % PRUNE_TICKS == 0L) CoxStorage.prune(this)
         }
@@ -86,7 +87,10 @@ public class CoxInterfaces : ContentPlugin {
             }
         }
         events.on<RaidEvent.Left> { e ->
-            if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let { left(it, e) }
+            if (e.run.raid.id == CoxRaid.ID) {
+                world?.onlinePlayer(e.member)?.let { left(it, e) }
+                world?.let { CoxChannel.leaderLeft(it, e.run, e.member) }
+            }
         }
     }
 

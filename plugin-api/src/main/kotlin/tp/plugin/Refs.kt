@@ -88,6 +88,20 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         }
     }
 
+    /** The friends chat channel the player is in (hub; null outside one or without a hub). */
+    public val friendsChat: FriendsChatView?
+        get() = p.channel?.let { FriendsChatView(it.owner, it.name, it.kickRank, LinkedHashMap(it.members)) }
+
+    /** Joins [owner]'s friends chat channel (hub), as the client's own join does. */
+    public fun joinFriendsChat(owner: String) {
+        p.world.accounts?.social(p, tp.protocol.api.SocialAction.CHANNEL_JOIN, owner, "")
+    }
+
+    /** Leaves the friends chat channel the player is in (hub), as the client's "Leave" does. */
+    public fun leaveFriendsChat() {
+        p.world.accounts?.social(p, tp.protocol.api.SocialAction.CHANNEL_LEAVE, "", "")
+    }
+
     /**
      * The player's own friends chat settings (hub). With [update], they are stored first. [reply] runs later on the
      * world thread, or with null if the hub is unavailable.
@@ -1073,10 +1087,19 @@ private const val MIN_CHOICES = 2
 /** RS Mod offers menus of up to 5 (`choice5`); the Skills necklace has 6 destinations (Wiki), so 6 are allowed (OPEN: layout). */
 private const val MAX_CHOICES = 6
 
+/** A friends chat channel as one member sees it: [members] maps names to ranks (-1 guest, 0 friend, 1 recruit .. 7 owner). */
+public class FriendsChatView(
+    public val owner: String,
+    public val name: String,
+    public val kickRank: Int,
+    public val members: Map<String, Int>,
+)
+
 /**
  * Friends chat settings. A null [name] means the channel is disabled. Ranks are minimums: -1 anyone, 0 any friends,
  * 1..6 recruit+..general+, 7 only the owner.
  */
+
 public class FriendsChatSettings(public val name: String?, public val enterRank: Int, public val talkRank: Int, public val kickRank: Int)
 
 /** Wiki "Energy": run can be switched on from 1% = 100 units. */

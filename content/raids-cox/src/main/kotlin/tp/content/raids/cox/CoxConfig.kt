@@ -5,6 +5,9 @@ internal object CoxConfig {
     /** OPEN-CX7: the regular pool draws small or medium layouts with equal weight (small = 5 rooms, 3 combat). */
     val poolSmallPatterns: Boolean = System.getProperty("tp.cox.poolSmallPatterns") != "false"
 
+    /** OPEN-CX7: the Large pool is generated (five combat, three puzzle rooms; CX13); false draws from the regular pool. */
+    val largePoolGenerated: Boolean = System.getProperty("tp.cox.largePoolGenerated") != "false"
+
     /** OPEN-CX17: Main's "start of the previous floor" instead of Strat's end of the previous floor. */
     val respawnAtPreviousFloorStart: Boolean = System.getProperty("tp.cox.respawnAtPreviousFloorStart") == "true"
 

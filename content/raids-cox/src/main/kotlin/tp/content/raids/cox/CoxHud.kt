@@ -49,7 +49,7 @@ internal object CoxHud {
         setIfChanged(p, Varbits.RAIDS_CLIENT_ISLEADER, if (run.party.leader.equals(p.username, ignoreCase = true)) 1 else 0)
         setIfChanged(p, Varbits.RAIDS_CLIENT_PARTYSIZE, run.scaling.partySize.coerceAtMost(MAX_SIZE))
         setIfChanged(p, Varbits.RAIDS_CHALLENGE_MODE, if (run.scaling.mode == CoxRaid.CHALLENGE) 1 else 0)
-        setIfChanged(p, Varbits.RAIDS_MAP_POOL_SELECTED, if (run.scaling.mode == CoxRaid.CHALLENGE) POOL_FULL else POOL_REGULAR)
+        setIfChanged(p, Varbits.RAIDS_MAP_POOL_SELECTED, pool(run))
         setIfChanged(p, Varbits.RAIDS_CLIENT_PARTYSCORE, team)
         val own = personal.toLong().coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
         if (p.varp(Varps.RAIDS_PLAYERSCORE) != own) p.setVarp(Varps.RAIDS_PLAYERSCORE, own)
@@ -109,12 +109,16 @@ internal object CoxHud {
     }
 
     private val IN_HUD = AttrKey<Long>("cox_hud")
+
+    /** The run's pool for varbit 5408: Full in Challenge Mode, else the party's board choice. */
+    private fun pool(run: tp.content.raids.RaidRun): Int =
+        if (run.scaling.mode == CoxRaid.CHALLENGE) POOL_FULL else run.scaling.settings[CoxBoard.SETTING_POOL] ?: CoxBoard.POOL_SMALL
+
     private val TIMER_SENT = AttrKey<Int>("cox_hud_timer")
     private const val PROGRESS_KEY = 2
     private const val PROGRESS_LOWER = 3
     private const val PROGRESS_OLM = 4
     private const val PROGRESS_OVER = 5
-    private const val POOL_REGULAR = 0
     private const val POOL_FULL = 2
 
     /** Varbit widths (client-contract 1.2): 5424 is 7 bits, 6386 is 16 bits. */

@@ -227,7 +227,7 @@ internal object CoxBoard {
         p.clientScript(SCRIPT_DETAILS, role, listed, advertsLeft(p), "${party.leader}'s party")
     }
 
-    /** The viewed party's values in the viewer's own varbits; 5428 stays 0 so the friends-chat "Kick" op is not offered. */
+    /** The viewed party's values in the viewer's own varbits; 5428 is 1 in the leader's channel (the client then offers "Kick" by rank). */
     private fun showSettings(p: PlayerRef, party: Party) {
         setIfChanged(p, Varbits.RAIDS_LOBBY_PARTYSIZE, party.settings[SETTING_SIZE] ?: 0)
         setIfChanged(p, Varbits.RAIDS_LOBBY_MINCOMBAT, party.settings[SETTING_COMBAT] ?: 0)
@@ -235,7 +235,7 @@ internal object CoxBoard {
         setIfChanged(p, Varbits.RAIDS_SCALING, party.settings[SETTING_SCALING] ?: 0)
         setIfChanged(p, Varbits.RAIDS_CHALLENGE_MODE, party.settings[CoxFlow.CM_SETTING] ?: 0)
         setIfChanged(p, Varbits.RAIDS_MAP_POOL_SELECTED, party.settings[SETTING_POOL] ?: POOL_SMALL)
-        setIfChanged(p, Varbits.RAIDS_CLIENT_CHANNELMEMBER, 0)
+        setIfChanged(p, Varbits.RAIDS_CLIENT_CHANNELMEMBER, if (CoxChannel.inPartyChannel(p, party)) 1 else 0)
     }
 
     /** `RESUME_PAUSEBUTTON` on 507:3, sub-ids of enum 1539 (client-contract 2.5). Every id and the viewer's role are checked here. */
@@ -282,12 +282,31 @@ internal object CoxBoard {
                 p.message(ALREADY_IN_PARTY)
             }
 
+            channelJoin(p, party) -> {
+                Unit
+            }
+
             party.join(p.username) -> {
                 p.message("You have joined ${party.leader}'s party.")
                 syncMembers(p, party, emptyList())
             }
         }
         openDetails(p, party)
+    }
+
+    /**
+     * CX2: when the leader owns a friends chat channel, joining the party is joining that channel; [CoxChannel] then adds
+     * the player once their rank is recruit or higher. False (direct join) without channel data (no hub, OPEN-CX1).
+     */
+    private fun channelJoin(p: PlayerRef, party: Party): Boolean {
+        val leader = p.onlinePlayer(party.leader) ?: return false
+        if (CoxChannel.partyChannel(leader) == null) return false
+        if (CoxChannel.inPartyChannel(p, party)) {
+            p.message(RANK_TOO_LOW)
+        } else {
+            p.joinFriendsChat(party.leader)
+        }
+        return true
     }
 
     /** Advertise / De-list (leader). Each new advert spends one of the day's adverts (varbit 5414; OPEN-CX1). */
@@ -313,6 +332,11 @@ internal object CoxBoard {
             return
         }
         val leaving = if (isLeader(p, party)) party.members.toList() else listOf(p.username)
+        for (name in leaving) {
+            // CX2: the party is the leader's channel, so a member leaving it leaves the channel too (or the sync re-adds them).
+            val member = p.onlinePlayer(name)
+            if (member != null && name != party.leader && CoxChannel.inPartyChannel(member, party)) member.leaveFriendsChat()
+        }
         for (name in leaving) party.leave(name)
         val lobby = CoxLobbyWorld.of(p)
         if (party.state == PartyState.Disbanded || party.members.isEmpty()) {
@@ -438,7 +462,7 @@ internal object CoxBoard {
         for (name in removed) any.onlinePlayer(name)?.let { if (!party.has(name)) setHolder(it, null) }
     }
 
-    private fun setHolder(p: PlayerRef, party: Party?) {
+    fun setHolder(p: PlayerRef, party: Party?) {
         val id = party?.id?.value ?: NO_PARTY
         if (p.varp(Varps.RAIDS_PARTY_GROUPHOLDER) != id) p.setVarp(Varps.RAIDS_PARTY_GROUPHOLDER, id)
     }
@@ -513,6 +537,7 @@ internal object CoxBoard {
     private const val PARTY_GONE = "That party no longer exists."
     private const val PARTY_STARTED = "That party has already entered the Chambers."
     private const val PARTY_FULL = "That party is full."
+    private const val RANK_TOO_LOW = "You need at least the rank of recruit in the leader's chat-channel to join."
     private const val ALREADY_IN_PARTY = "You are already in a party."
     private const val NO_ADVERTS = "You have no adverts left today."
     private const val CM_NEEDS_FULL = "Challenge Mode needs the Full map layout."

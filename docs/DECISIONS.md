@@ -1186,4 +1186,16 @@ means is not known.
   (`SharedAttrs.RAID_NO_POINTS`); the head takes no damage (so earns nothing) before the head phase.
 - **Challenge Mode** uses a fixed three-floor snake layout in the CM page's room order (OPEN-CX9); its middle floor ends in
   FL_END1 and the bottom floor starts in FL_START2.
+- **Party = friends chat (CX2, CX6):** a forming party whose leader owns the friends chat channel they are in follows
+  that channel every tick (`CoxChannel`): members with rank recruit or higher are in, anyone who leaves, is kicked or
+  ranks below recruit is out. The board's Join joins the leader's channel; leaving the party leaves it. Varbit 5428 is
+  1 for a viewer in the leader's channel, so the client offers Kick by rank and sends the friends-chat kick itself. The
+  world sees the channel through `Player.channel`, set from the hub's channel events; without a hub (no channel data)
+  the board joins directly. When the leader leaves the raid, the highest-ranked channel member still inside (recruit
+  at least) leads, else everyone is thrown out; after the start only with `tp.cox.leaderHandoverAfterStart` (OPEN-CX5).
+  A logout is not leaving (CX36).
+- **Large pool (OPEN-CX7):** generated, since RL's 26 patterns are the pre-2020 pool: two full floors of six rooms
+  (start, six rooms, end over all eight cells), 5 C / 3 P in total plus one S and one F per floor, with the order
+  rules all 26 patterns share (floor 1 opens with S or F; floor 2 opens with C or P and ends with F; no P after P).
+  `tp.cox.largePoolGenerated=false` draws from the regular pool instead.
 

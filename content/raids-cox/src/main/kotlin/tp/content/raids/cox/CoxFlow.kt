@@ -322,7 +322,13 @@ public class CoxFlow : ContentPlugin {
             // CX15 / CX48: Challenge Mode always uses the fixed three-floor layout.
             // CX3 / CX9: the "Full" pool also uses it (normal difficulty); OPEN-CX7: the Large pool draws from the regular one.
             val full = run.scaling.settings[CoxBoard.SETTING_POOL] == POOL_FULL
-            val plan = if (run.scaling.mode == CoxRaid.CHALLENGE || full) CoxLayout.challenge() else CoxLayout.generate(run.rng)
+            val large = run.scaling.settings[CoxBoard.SETTING_POOL] == CoxBoard.POOL_LARGE && CoxConfig.largePoolGenerated
+            val plan =
+                when {
+                    run.scaling.mode == CoxRaid.CHALLENGE || full -> CoxLayout.challenge()
+                    large -> CoxLayout.generateLarge(run.rng)
+                    else -> CoxLayout.generate(run.rng)
+                }
             run.content = CoxState(plan)
             return CoxLayout.instance(plan)
         }

@@ -35,9 +35,10 @@ class CoxSmokeScenario {
     fun `a solo raider clears generated layouts and Challenge Mode`() {
         for (seed in SEEDS) walk(seed, cm = false)
         walk(CM_SEED, cm = true)
+        walk(LARGE_SEED, cm = false, large = true)
     }
 
-    private fun walk(seed: Long, cm: Boolean) {
+    private fun walk(seed: Long, cm: Boolean, large: Boolean = false) {
         s = Scenario(seed = seed)
         a = s.player("a", CoxRaid.OUTSIDE)
         s.tick()
@@ -50,10 +51,11 @@ class CoxSmokeScenario {
         // GU1: the Guardians take only pickaxe hits.
         assertTrue(ra.transaction("smoke") { setAt(Invs.WORN, WEAPON_SLOT, Objs.DRAGON_PICKAXE) }, "pickaxe worn")
         assertEquals(Objs.DRAGON_PICKAXE, ra.inv(Invs.WORN).obj(WEAPON_SLOT))
-        if (cm) {
+        if (cm || large) {
             val raids = Raids.of(ra)
             val party = requireNotNull(raids.createParty(requireNotNull(raids.definition(CoxRaid.ID)), "a"))
-            party.settings[CoxFlow.CM_SETTING] = 1
+            if (cm) party.settings[CoxFlow.CM_SETTING] = 1
+            if (large) party.settings[CoxBoard.SETTING_POOL] = CoxBoard.POOL_LARGE
         }
         a.input(ClientCommand.OpLoc(1, Locs.RAIDS_ENTRANCE_STEPS, CoxRaid.ENTRANCE.x, CoxRaid.ENTRANCE.z, false))
         s.tick(WALK)
@@ -62,6 +64,12 @@ class CoxSmokeScenario {
         assertEquals(CoxRaid.LOBBY, (run.state as? RunState.InRoom)?.room?.id, "seed $seed: in the lobby")
         checkTemplates(run, st.plan)
         val plan = st.plan
+        if (large) {
+            // CX13 / OPEN-CX7: the Large pool has five combat and three puzzle rooms over two full floors.
+            assertEquals(LARGE_COMBAT, plan.cells.count { it.kind.combat }, "large ${plan.code}: combat rooms")
+            assertEquals(LARGE_PUZZLES, plan.cells.count { it.kind.puzzle }, "large ${plan.code}: puzzle rooms")
+            assertEquals(2, plan.floors, "large ${plan.code}: floors")
+        }
         assertEquals(plan.cells.first(), CoxMap.cellAt(plan, run, a.coord), "seed $seed ${plan.code}: arrived in the lobby cell")
         for (cell in plan.cells) {
             val at = CoxMap.cellAt(plan, run, a.coord)
@@ -396,6 +404,9 @@ class CoxSmokeScenario {
         const val KEEP_ALIVE = 255
         const val TRACE = 10
         const val CM_SEED = 7L
+        const val LARGE_SEED = 11L
+        const val LARGE_COMBAT = 5
+        const val LARGE_PUZZLES = 3
         const val OLM_LIMIT = 1500
         const val BARRIER_X = 3231
         const val BARRIER_Z = 5729
