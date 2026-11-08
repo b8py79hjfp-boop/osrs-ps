@@ -1,5 +1,6 @@
 package tp.content.combat
 
+import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
 import tp.symbols.Locs
@@ -17,7 +18,10 @@ import tp.util.CoordGrid
 internal object TfaOcellusP2 {
     fun start(npc: NpcRef, s: OcellusState) {
         TfaOcellus.become(npc, s, TfaOcellus.P2, Npcs.TFA_OCELLUS_P2, freshPool = true)
-        npc.teleport(CoordGrid(s.centre.x - 1, s.centre.z - 1, s.centre.level))
+        val at = CoordGrid(s.centre.x - 1, s.centre.z - 1, s.centre.level)
+        npc.teleport(at)
+        // The P2 NPC has no Attack op: raiders hit the Blade hitbox (16676), whose damage comes off his pool.
+        Bosses.summon(npc, Npcs.TFA_OCELLUS_P2_SWORD_HITBOX, at, huntRange = 0)
         val t0 = npc.tick
         val sequence = npc.random(SEQUENCES.size)
         TfaOcellus.loop(npc, s) {
@@ -90,4 +94,21 @@ internal object TfaOcellusP2 {
     private const val LANE_MAX = 25
     private const val ENOUGH_AT = 123
     private const val P3_AT = 131
+}
+
+/** The Blade's hitbox in P2 (16676 "The Blade", Attack): every hit on it is a hit on Ocellus's shared pool. */
+internal object TfaOcellusBlade : Boss(Npcs.TFA_OCELLUS_P2_SWORD_HITBOX) {
+    override fun spawned(npc: NpcRef) {
+        npc.huntRange = 0
+    }
+
+    override fun retaliates(npc: NpcRef): Boolean = false
+
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) = Unit
+
+    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
+        val owner = npc[Bosses.OWNER] ?: return 0
+        if (damage > 0 && owner.isInWorld) CombatSystem.applyHit(owner, source, damage, style)
+        return 0
+    }
 }

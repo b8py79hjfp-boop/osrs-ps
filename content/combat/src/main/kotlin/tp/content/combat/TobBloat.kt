@@ -25,6 +25,9 @@ import tp.util.CoordGrid
  *   stun to a raider on the tile. Normal: while walking below 90%; Hard: always; Entry: after its first stomp.
  */
 internal object TobBloat : Boss(Npcs.TOB_BLOAT, Npcs.TOB_BLOAT_STORY, Npcs.TOB_BLOAT_HARD) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     private class State(val mode: Int) {
         var started = false
         var awakeUntil = 0L

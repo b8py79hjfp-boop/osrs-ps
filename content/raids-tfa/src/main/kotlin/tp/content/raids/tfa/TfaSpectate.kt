@@ -55,6 +55,8 @@ public class TfaSpectate : ContentPlugin {
             req.denied = NO_TELEPORT
         }
         onLogout { if (this[WATCHING] != null) stop(this, toLobby = true) }
+        // A run that closes (completed, wiped, abandoned) releases its spectators; the engine has moved them out.
+        events.on<tp.plugin.InstanceLost> { e -> if (e.player[WATCHING] != null) stop(e.player, toLobby = true) }
         onWorldTick { tick(this) }
     }
 
@@ -133,11 +135,11 @@ public class TfaSpectate : ContentPlugin {
         for (run in Raids.of(world).activeRuns) {
             if (run.raid.id != TfaRaid.ID) continue
             val inst = run.instance ?: continue
-            val watchers =
-                run.spectators.toList() +
-                    run.members.values
-                        .filter { !it.alive && it.inside }
-                        .map { it.name }
+            // TFA14: a dead member waits by watching the fight (as a teammate spectator) until the room ends, rather
+            // than standing up in the arena again.
+            if (run.state is RunState.InRoom) watchWhileDead(world, run)
+            // Every member is checked (not only the dead): one back alive stops watching on the next tick.
+            val watchers = run.spectators.toList() + run.members.keys
             for (name in watchers) follow(world, run, inst, name)
             for (name in run.party.members) {
                 world.onlinePlayer(name)?.setVarbit(Varbits.TFA_CLIENT_NUM_EXTERNAL_SPECTATORS, minOf(run.spectators.size, MAX_COUNTER))
@@ -145,11 +147,29 @@ public class TfaSpectate : ContentPlugin {
         }
     }
 
+    private fun watchWhileDead(world: WorldRef, run: RaidRun) {
+        for (m in run.members.values) {
+            if (m.alive || !m.inside || !m.online) continue
+            val p = world.onlinePlayer(m.name) ?: continue
+            if (p[WATCHING] != null || p.hitpoints <= 0) continue
+            p[WATCHING] = run.id.value
+            p[FOLLOW] =
+                run.party.members
+                    .indexOfFirst { n -> run.member(n)?.let { it.alive && it.inside } == true }
+                    .coerceAtLeast(0)
+            p.observer = true
+            p.setVarbit(Varbits.TFA_CLIENT_SPECTATE_MODE, MODE_TEAMMATE)
+            TfaFlow.state(run).hudDirty = true
+        }
+    }
+
     private fun follow(world: WorldRef, run: RaidRun, inst: tp.plugin.InstanceRef, name: String) {
         val p = world.onlinePlayer(name) ?: return
         if (p[WATCHING] != run.id.value) return
         val m = run.member(name)
-        if (run.state == RunState.Closed || (m != null && m.alive)) {
+        val ended = run.state == RunState.Closed || run.state == RunState.Abandoned || run.state is RunState.Failed
+        val memberBack = m != null && (m.alive || !m.inside)
+        if (ended || memberBack) {
             stop(p, toLobby = m == null)
             return
         }

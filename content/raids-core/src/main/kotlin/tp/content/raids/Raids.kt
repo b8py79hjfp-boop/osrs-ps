@@ -102,8 +102,15 @@ public class Raids internal constructor() {
                 }
             leader.buildInstance(def.instanceWidth, def.instanceLength, squares) { inst ->
                 run.instance = inst
-                for (p in entering) admit(p, run)
-                enterRoom(leader, run, def.slots.first().first())
+                // Whoever logged out during the build is not admitted (they would hold the run open, unseen).
+                val still = entering.mapNotNull { leader.onlinePlayer(it.username) }
+                for (p in still) admit(p, run)
+                val any = still.firstOrNull()
+                if (any == null) {
+                    run.state = RunState.Abandoned
+                } else {
+                    enterRoom(any, run, def.slots.first().first())
+                }
             }
             return null
         }
@@ -215,8 +222,17 @@ public class Raids internal constructor() {
                 }
 
                 is DeathPolicy.WaitUntilRoomEnds -> {
+                    val inRoom = run.state as? RunState.InRoom
+                    if (inRoom == null) {
+                        // Between rooms (a death resolving after its room was won, poison) or after completion: no
+                        // wipe; the player stands up at the last room's entry with their items.
+                        policy.keepItems = true
+                        val last = run.roomsTaken.lastOrNull()?.let { run.raid.rooms[it] }
+                        policy.respawnAt = last?.let { run.at(it.entry) }
+                        return
+                    }
                     m.alive = false
-                    val room = (run.state as? RunState.InRoom)?.room
+                    val room = inRoom.room
                     val othersAlive = run.members.values.any { it !== m && it.inside && it.online && it.alive }
                     if (othersAlive && room != null) {
                         policy.keepItems = true
@@ -255,6 +271,8 @@ public class Raids internal constructor() {
                 }
             }
             run.member(dying.username)?.let { it.inside = false }
+            // Members offline inside are out too: the failed run must close (they come back outside it).
+            for (m in run.members.values) if (m.inside && !m.online) m.inside = false
             cleanup(dying, run)
         }
 
@@ -327,13 +345,21 @@ public class Raids internal constructor() {
             val m = run.member(player.username) ?: return
             if (m.paid) return
             val reward = m.reward ?: return
-            val ok =
+            var ok =
                 reward.items.isEmpty() ||
                     player.transaction("raid reward ${run.raid.id} ${run.id.value}") {
                         reward.items.all { (obj, n) ->
                             add(run.raid.claimInv, obj, n)
                         }
                     }
+            if (!ok) {
+                // The claim chest is full (unclaimed loot from an earlier run): the reward goes to the bank instead.
+                ok =
+                    player.transaction("raid reward to bank ${run.raid.id} ${run.id.value}") {
+                        reward.items.all { (obj, n) -> add(tp.symbols.Invs.BANK, obj, n) }
+                    }
+                player.message(if (ok) REWARD_BANKED else REWARD_NO_ROOM)
+            }
             if (ok) {
                 m.paid = true
                 // The collection log (and any other loot listener) sees raid rewards like NPC drops.
@@ -401,6 +427,10 @@ public class Raids internal constructor() {
         }
 
         private const val COMBAT_STATS = 6
+
+        /** OPEN: no captured line for a reward that did not fit the raid's reward chest. */
+        private const val REWARD_BANKED = "Your reward chest is full, so your reward has been sent to your bank."
+        private const val REWARD_NO_ROOM = "You have no room for your reward: clear your reward chest and bank, then log in again."
 
         /** The mode name of practice runs (their completions are counted apart). */
         internal const val PRACTICE = "practice"

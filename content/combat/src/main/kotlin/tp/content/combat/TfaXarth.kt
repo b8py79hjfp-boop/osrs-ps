@@ -22,6 +22,9 @@ import tp.util.CoordGrid
  * four arrows (melee when beside him).
  */
 internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     private class State {
         var started = false
         var falls = 0
@@ -74,7 +77,7 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
 
     private fun script(npc: NpcRef, s: State) {
         npc.queueHit(1, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             val at = (npc.tick - s.cycleAt).toInt()
             if (s.phase2) {
                 phase2(npc, s, at)
@@ -249,7 +252,7 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
         CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
         val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
         npc.queueHit(delay, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             val dmg = if (victim is PlayerRef && victim.protects(CombatStyle.RANGED)) 0 else BossCombat.roll(npc, ARROW_MIN, ARROW_MAX)
             CombatSystem.applyHit(victim, npc, dmg, HitStyle.RANGED)
         }
@@ -266,14 +269,14 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
         val mid = CoordGrid(npc.coord.x + npc.size / 2, npc.coord.z + npc.size / 2, npc.coord.level)
         for (k in 0 until corpses) {
             npc.queueHit(k * FIREBALL_GAP, strong = false) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 val (dx, dz) = RING8[npc.random(RING8.size)]
                 val at = CoordGrid(mid.x + dx, mid.z + dz, mid.level)
                 npc.spotAnimAt(at, SpotAnims.LUC2_UNDEAD_DEMON_FIREBALL_PROJ_BIG)
-                npc.queueHit(CORPSE_RISE, strong = false) { if (npc.isInWorld) spawnCorpseAt(npc, at) }
+                npc.queueHit(CORPSE_RISE, strong = false) { if (npc.isInWorld && !npc.isDying) spawnCorpseAt(npc, at) }
             }
         }
-        npc.queueHit(MORE_FIRES_AT, strong = false) { if (npc.isInWorld) addFires(npc, s, FIRES_PER_VOLLEY) }
+        npc.queueHit(MORE_FIRES_AT, strong = false) { if (npc.isInWorld && !npc.isDying) addFires(npc, s, FIRES_PER_VOLLEY) }
     }
 
     private fun addFires(npc: NpcRef, s: State, count: Int) {
@@ -420,6 +423,9 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
  * Mark of Darkness), fire spells make more. It never attacks.
  */
 internal object TfaXarthCorpse : Boss(Npcs.TFA_XARTH_CORPSE) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         // Corpses are moved by Xarth's own loop.
     }

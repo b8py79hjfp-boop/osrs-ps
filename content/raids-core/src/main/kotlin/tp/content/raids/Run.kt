@@ -40,6 +40,9 @@ public class RaidMember internal constructor(public val name: String) {
 
     /** Alive in the current room (false while waiting after a death). */
     public var alive: Boolean = true
+
+    /** How many rooms the run had taken when this member last logged out (a reconnect follows the party on). */
+    public var roomsAtLogout: Int = -1
         internal set
     public var deaths: Int = 0
         internal set

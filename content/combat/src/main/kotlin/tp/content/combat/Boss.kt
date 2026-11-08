@@ -46,6 +46,9 @@ internal abstract class Boss(vararg ids: Int) {
     /** The fraction of a freeze the NPC holds (freeze resistance; 1.0 = none). */
     open val freezeHold: Double = 1.0
 
+    /** Whether a hit makes it target (and chase) its attacker; false for bosses whose own script moves and targets them. */
+    open fun retaliates(npc: NpcRef): Boolean = true
+
     /** Whether a player's melee on the NPC always hits right now (a dazed Bork). */
     open fun meleeAlwaysHits(npc: NpcRef): Boolean = false
 
@@ -90,6 +93,7 @@ internal object Bosses {
             TfaOcellus,
             TfaOcellusRift,
             TfaOcellusVine,
+            TfaOcellusBlade,
             TobMaiden,
             TobMaidenMinions,
             TobBloat,

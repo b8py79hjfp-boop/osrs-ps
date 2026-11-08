@@ -36,6 +36,12 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         var damage = 0
         var lowestDefence = BASE_DEFENCE
         var overloads = 0
+
+        /** The 3 ticks between the shield breaking and the crash: it takes no damage (the grounded pool is not up yet). */
+        var crashing = false
+
+        /** A lift is queued: the grounded slots stop and a second lift cannot be queued. */
+        var lifting = false
         val mushrooms = ArrayList<Mushroom>()
     }
 
@@ -65,6 +71,11 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         levels[NPC_HITPOINTS] = hp
         npc.overrideStats(levels)
         npc.hitpoints = hp
+        // A new pool keeps the Defence it was drained to and the Magic it gained (drift).
+        npc[STATE]?.let { s ->
+            npc.setLevel(NpcStat.DEFENCE, s.lowestDefence)
+            npc.setLevel(NpcStat.MAGIC, (BASE_MAGIC + MAGIC_SWING * minOf(1.0, s.damage.toDouble() / s.groundMax)).toInt())
+        }
     }
 
     /**
@@ -76,7 +87,8 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         Bosses.dismissMinions(npc)
         val s = npc[STATE]
         for ((k, offset) in BATTERY_OFFSETS.withIndex()) {
-            val at = CoordGrid(npc.coord.x + offset.first, npc.coord.z + offset.second, npc.coord.level)
+            // The bases are fixed tiles: from its spawn, wherever it stands now.
+            val at = CoordGrid(npc.spawn.x + offset.first, npc.spawn.z + offset.second, npc.spawn.level)
             val type = if (k == INERT_BATTERY) Npcs.TFA_GUARDIAN_BATTERY_INACTIVE else Npcs.TFA_GUARDIAN_BATTERY_ACTIVE
             val battery = Bosses.summon(npc, type, at, huntRange = 0)
             if (type == Npcs.TFA_GUARDIAN_BATTERY_ACTIVE &&
@@ -137,7 +149,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private fun slam(npc: NpcRef) {
         npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_MELEE_ATTACK01)
         npc.queueHit(1) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(
                 npc,
             )) {
@@ -156,7 +168,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private fun mushrooms(npc: NpcRef, s: State) {
         npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
         npc.queueHit(MUSHROOM_APPEAR) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 for (reach in intArrayOf(1, MUSHROOM_FAR)) {
                     if (s.mushrooms.size >= MAX_MUSHROOMS) return@queueHit
@@ -165,7 +177,13 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
                     if (!npc.isWalkable(at) || s.mushrooms.any { it.at == at }) continue
                     s.mushrooms += Mushroom(at, npc.tick + MUSHROOM_ARM)
                     npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_SPAWN, at, LOC_SHAPE, 0, MUSHROOM_ARM)
-                    npc.queueHit(MUSHROOM_ARM) { if (npc.isInWorld) npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_ACTIVE, at, LOC_SHAPE, 0) }
+                    npc.queueHit(MUSHROOM_ARM) {
+                        if (npc.isInWorld &&
+                            !npc.isDying
+                        ) {
+                            npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_ACTIVE, at, LOC_SHAPE, 0)
+                        }
+                    }
                 }
             }
         }
@@ -178,7 +196,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
      */
     private fun mushroomLoop(npc: NpcRef, s: State) {
         npc.queueHit(1, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             val players = TfaKit.arena(npc)
             for (m in s.mushrooms.toList()) {
                 if (npc.tick < m.activeAt + 1) continue
@@ -207,8 +225,10 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private fun ground(npc: NpcRef, s: State) {
         s.phase = Phase.GROUNDED
         s.downs++
+        s.crashing = true
         npc.queueHit(CRASH_DELAY) {
-            if (!npc.isInWorld) return@queueHit
+            s.crashing = false
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             s.groundedAt = npc.tick
             npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_IDLE_TO_GROUND01)
             npc.spotAnim(SpotAnims.VFX_GUARDIAN_IDLETOGROUND_SPOTANIM01)
@@ -228,17 +248,26 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         npc.setAttackClock(npc.tick + CRASH_DELAY + VINE_FIRST)
     }
 
+    /** A lift 3 ticks from now, unless it has left the ground another way by then (its grounded pool emptied). */
+    private fun lift(npc: NpcRef, s: State, next: Phase) {
+        s.lifting = true
+        npc.queueHit(LIFT_DELAY) {
+            s.lifting = false
+            if (npc.isInWorld && !npc.isDying && s.phase == Phase.GROUNDED) fly(npc, s, next)
+        }
+        npc.setAttackClock(npc.tick + LIFT_DELAY + 1)
+    }
+
     private fun grounded(npc: NpcRef, s: State) {
         val duration = if (s.downs == 1) FIRST_GROUNDED_TICKS else LATER_GROUNDED_TICKS
         // Capture: under 34% HP a slot has no wave and it lifts 3 ticks later, enraged.
+        if (s.lifting) return
         if (npc.hitpoints * PERCENT < s.groundMax * EARLY_LIFT_PERCENT) {
-            npc.queueHit(LIFT_DELAY) { if (npc.isInWorld) fly(npc, s, Phase.FINAL) }
-            npc.setAttackClock(npc.tick + LIFT_DELAY + 1)
+            lift(npc, s, Phase.FINAL)
             return
         }
         if (npc.tick - s.groundedAt >= duration) {
-            npc.queueHit(LIFT_DELAY) { if (npc.isInWorld) fly(npc, s, Phase.SHIELDED) }
-            npc.setAttackClock(npc.tick + LIFT_DELAY + 1)
+            lift(npc, s, Phase.SHIELDED)
             return
         }
         for (p in arenaPlayers(npc)) vine(npc, p)
@@ -345,6 +374,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
 
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
+        if (s.crashing) return 0
         s.damage += damage
         drift(npc, s)
         return damage
@@ -361,8 +391,8 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
             }
 
             Phase.GROUNDED -> {
-                s.groundHp = 1
-                fly(npc, s, Phase.FINAL)
+                npc.hitpoints = 1
+                if (!s.crashing) fly(npc, s, Phase.FINAL)
                 true
             }
 

@@ -18,7 +18,7 @@ import tp.util.CoordGrid
  * channels (18 ticks; a spell of the chant's element interrupts it and stuns 11 ticks; a completed channel is ritual
  * +25); t13 the other Monk searches ("What have we here?"), t16 calls the god, t20 the book flies to the cauldron along
  * the floor, t21 it strikes: a raider on its lane catches it and takes the god's effect, else it hits the cauldron
- * (ritual +25); t23 the cauldron moves; t25 the other Monk channels. Gods in turn Zamorak, Bandos, Saradomin. At ritual
+ * (ritual +25); t23 the cauldron moves; t25 the first Monk channels again (dagonhai.md). Gods in turn Zamorak, Bandos, Saradomin. At ritual
  * 100 the trio wipe the room with bolts. The Elder attacks every 5 ticks. A shield break: all three healed, the cauldron
  * (1,000) loses 200, two rifts let out six imps; the fifth break leaves all three stunned at 7 HP (3 Nov).
  */
@@ -99,7 +99,7 @@ internal object TfaDagonhai : Boss(
         at(leader, SEARCH_AT) { second.say("What have we here?") }
         at(leader, CALL_AT) { book(second, t) }
         at(leader, CAULDRON_MOVE_AT) { moveCauldron(leader, t) }
-        at(leader, SECOND_CHANNEL_AT) { channel(first.takeIf { it != second } ?: second, t) }
+        at(leader, SECOND_CHANNEL_AT) { channel(first, t) }
         at(leader, CYCLE) { cycle(leader, t) }
     }
 
@@ -107,15 +107,18 @@ internal object TfaDagonhai : Boss(
         leader.queueHit(ticks, strong = false) { if (leader.isInWorld && leader.type !in UNSHIELDED) action() }
     }
 
+    /** A Monk who still takes part in the ritual (alive, shielded: after the fifth break nothing resolves). */
+    private fun active(monk: NpcRef): Boolean = monk.isInWorld && !monk.isDying && monk.type !in UNSHIELDED
+
     /** Capture / RuneLite: a channel completes 18 ticks after the yell (ritual +25) unless that element interrupts it. */
     private fun channel(monk: NpcRef, t: Trio) {
-        if (!monk.isInWorld || monk.tick < (monk[STUNNED_UNTIL] ?: 0L)) return
+        if (!active(monk) || monk.tick < (monk[STUNNED_UNTIL] ?: 0L)) return
         t.channelElement = monk.random(CHANTS.size)
         monk.say(CHANTS[t.channelElement])
         monk.spotAnim(SpotAnims.TFA_DAGONHAI_DEMONIC_STRENGTH_TELEGRAPH)
         t.channeller = monk
         monk.queueHit(CHANNEL_TICKS, strong = false) {
-            if (t.channeller != monk || !monk.isInWorld) return@queueHit
+            if (t.channeller != monk || !active(monk)) return@queueHit
             t.channeller = null
             ritual(monk, t, RITUAL_STEP)
         }
@@ -127,13 +130,13 @@ internal object TfaDagonhai : Boss(
      * and takes the god's effect; uncaught, it hits the cauldron (ritual +25, "Curse you!" when caught).
      */
     private fun book(monk: NpcRef, t: Trio) {
-        if (!monk.isInWorld) return
+        if (!active(monk)) return
         val god = t.god++ % TOMES
         monk.say(GOD_YELLS[god])
         val cauldron = t.focus?.coord ?: t.centre
         val lane = TfaKit.line(monk.coord, cauldron)
         monk.queueHit(BOOK_STRIKE - CALL_AT, strong = false) {
-            if (!monk.isInWorld) return@queueHit
+            if (!active(monk)) return@queueHit
             val catcher = TfaKit.arena(monk).firstOrNull { TfaKit.on(it, lane) }
             if (catcher == null) {
                 ritual(monk, t, RITUAL_STEP)
@@ -242,7 +245,7 @@ internal object TfaDagonhai : Boss(
 
     private fun enrageBolts(npc: NpcRef, t: Trio, delay: Int) {
         npc.queueHit(delay, strong = false) {
-            if (!npc.isInWorld || npc.type in UNSHIELDED) return@queueHit
+            if (!npc.isInWorld || npc.isDying || npc.type in UNSHIELDED) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 repeat(2) { CombatSystem.applyHit(p, npc, BossCombat.roll(npc, BOLT_MIN, BOLT_MAX), HitStyle.MAGIC) }
             }
@@ -340,7 +343,13 @@ internal object TfaDagonhai : Boss(
         for (r in rifts) TfaKit.setPool(r, RIFT_HP)
         for (wave in IMP_WAVES) {
             npc.queueHit(wave, strong = false) {
-                for (r in rifts) if (r.isInWorld) Bosses.summon(npc, Npcs.TFA_DAGONHAI_DEMON, BossCombat.randomTile(npc, r.coord, 1))
+                for (r in rifts) {
+                    if (r.isInWorld &&
+                        !r.isDying
+                    ) {
+                        Bosses.summon(npc, Npcs.TFA_DAGONHAI_DEMON, BossCombat.randomTile(npc, r.coord, 1))
+                    }
+                }
             }
         }
         npc.queueHit(RIFTS_GONE, strong = false) { for (r in rifts) if (r.isInWorld) r.despawn() }

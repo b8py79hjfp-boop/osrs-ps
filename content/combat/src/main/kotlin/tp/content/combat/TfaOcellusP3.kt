@@ -31,6 +31,7 @@ internal object TfaOcellusP3 {
     private val SPINNING = AttrKey<Long>("tfa_ocellus_spin_until")
 
     fun start(npc: NpcRef, s: OcellusState) {
+        for (b in Bosses.minions(npc, Npcs.TFA_OCELLUS_P2_SWORD_HITBOX)) b.despawn()
         TfaOcellus.become(npc, s, TfaOcellus.P3, Npcs.TFA_OCELLUS_P3, freshPool = false)
         npc.teleport(TfaOcellus.quadrantSpot(s, s.quadrant))
         beginSegment(npc, s, FIRST_BOMBS)
@@ -167,7 +168,7 @@ internal object TfaOcellusP3 {
         npc.anim(Seqs.NPC_OCELLUS_PHASE3_PRAYER_IN)
         npc[SPINNING] = npc.tick + SPIN_LENGTH
         npc.queueHit(PRAYER_CHECK, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) if (praying(p)) p.deactivateAllPrayers()
         }
         for ((k, at) in SPIN_HITS.withIndex()) {
@@ -238,7 +239,7 @@ internal object TfaOcellusP3 {
         }
         val hitOut = HashSet<PlayerRef>()
         npc.queueHit(ERUPT_OUT, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (TfaKit.gap(npc, p) > 0) {
                     hitOut += p
@@ -247,7 +248,7 @@ internal object TfaOcellusP3 {
             }
         }
         npc.queueHit(ERUPT_IN, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (TfaKit.gap(npc, p) > 0) continue
                 val dmg = if (p in hitOut) BossCombat.roll(npc, IN_AGAIN_MIN, IN_AGAIN_MAX) else BossCombat.roll(npc, IN_MIN, IN_MAX)
@@ -319,7 +320,7 @@ internal object TfaOcellusP3 {
         val vine = Bosses.summon(npc, Npcs.TFA_OCELLUS_P3_VOID_VINE, p.coord, huntRange = 0)
         p.frozenUntil = maxOf(p.frozenUntil, npc.tick + VINE_TICKS)
         npc.queueHit(VINE_TICKS, strong = false) {
-            if (!vine.isInWorld || s.phase < TfaOcellus.P3) return@queueHit
+            if (!vine.isInWorld || vine.isDying || s.phase < TfaOcellus.P3) return@queueHit
             vine.despawn()
             if (!p.isDying) CombatSystem.applyHit(p, npc, VINE_DAMAGE, HitStyle.TYPELESS)
         }
@@ -365,7 +366,7 @@ internal object TfaOcellusP3 {
         val at = npc.coord
         s.busyUntil = npc.tick + RUN_COUNTDOWN + 1
         npc.queueHit(RUN_COUNTDOWN, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (maxOf(kotlin.math.abs(p.coord.x - at.x), kotlin.math.abs(p.coord.z - at.z)) <= DESTRUCTION_RADIUS) {
                     CombatSystem.applyHit(p, npc, DESTRUCTION_DAMAGE, HitStyle.TYPELESS)
@@ -465,28 +466,28 @@ internal object TfaOcellusRift : Boss(
     Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL,
     Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF,
 ) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     override fun spawned(npc: NpcRef) {
         npc.huntRange = 0
-        val born = npc.tick
 
         fun beat() {
             npc.queueHit(BEAT, strong = false) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 val owner = npc[Bosses.OWNER] ?: return@queueHit
-                if (npc.tick - born >= DETONATE) {
-                    for (p in TfaKit.arena(
-                        owner,
-                    )) {
-                        CombatSystem.applyHit(p, owner, BossCombat.roll(npc, DET_MIN, DET_MAX), HitStyle.TYPELESS)
-                    }
-                    npc.despawn()
-                    return@queueHit
-                }
                 pulse(npc, owner)
                 beat()
             }
         }
         beat()
+        // Capture: a rift not killed detonates 30 ticks after it appeared.
+        npc.queueHit(DETONATE, strong = false) {
+            if (!npc.isInWorld || npc.isDying) return@queueHit
+            val owner = npc[Bosses.OWNER] ?: return@queueHit
+            for (p in TfaKit.arena(owner)) CombatSystem.applyHit(p, owner, BossCombat.roll(npc, DET_MIN, DET_MAX), HitStyle.TYPELESS)
+            npc.despawn()
+        }
     }
 
     private fun pulse(npc: NpcRef, owner: NpcRef) {
@@ -540,6 +541,9 @@ internal object TfaOcellusRift : Boss(
 
 /** The Void Vine (16681): it holds its raider; killing it frees them (OC3). */
 internal object TfaOcellusVine : Boss(Npcs.TFA_OCELLUS_P3_VOID_VINE) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     override fun spawned(npc: NpcRef) {
         npc.huntRange = 0
     }

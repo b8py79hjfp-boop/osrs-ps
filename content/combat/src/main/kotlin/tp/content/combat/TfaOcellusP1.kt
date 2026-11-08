@@ -24,7 +24,7 @@ internal object TfaOcellusP1 {
         npc.stopInteraction()
         val start = npc.tick
         var mode = Mode.WALK
-        var since = 0L
+        var since = start
         var walkTo = corner(s, s.corner)
         beginWalk(npc, s, walkTo)
         TfaOcellus.loop(npc, s) {

@@ -122,7 +122,7 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
         for (t in tiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_STAR_EXPLOSION_MARKER01)
         for ((k, beat) in STAR_BEATS.withIndex()) {
             npc.queueHit(beat) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 for (t in tiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_STAR_EXPLOSION01)
                 for (p in TfaKit.arena(npc)) {
                     val hit = TfaKit.on(p, tiles) || (k == 1 && TfaKit.under(npc, p.coord))
@@ -215,7 +215,9 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
 
     private fun laneTiles(npc: NpcRef, horizontal: Boolean, pos: Int): List<CoordGrid> {
         val out = ArrayList<CoordGrid>()
-        for (a in ARENA_MIN_X - SWORD_SIZE..ARENA_MAX_X + SWORD_SIZE) {
+        // A row runs the arena's x range, a column its z range (3 tiles of run-up past each edge).
+        val (from, to) = if (horizontal) ARENA_MIN_X to ARENA_MAX_X else ARENA_MIN_Z to ARENA_MAX_Z
+        for (a in from - SWORD_SIZE..to + SWORD_SIZE) {
             for (w in 0 until SWORD_SIZE) out += if (horizontal) at(npc, a, pos + w) else at(npc, pos + w, a)
         }
         return out
@@ -236,7 +238,8 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private fun heal(npc: NpcRef) {
         npc.queueHit(HEAL_DELAY - 2) { if (npc.isInWorld) npc.anim(Seqs.NPC_EZEKIEL_HEAL01) }
         npc.queueHit(HEAL_DELAY) {
-            if (!npc.isInWorld) return@queueHit
+            // No heal once the finale has begun (it would lift him back above its threshold).
+            if (!npc.isInWorld || npc.isDying || state(npc).enraged) return@queueHit
             npc.spotAnim(SpotAnims.EZEKIEL_HEAL_SPOTANIM_VFX01)
             npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + npc.maxHitpoints / HEAL_TENTH)
         }
@@ -250,6 +253,8 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
      */
     private fun enrage(npc: NpcRef, s: State) {
         s.enraged = true
+        // The finale replaces the sword phase: swords in flight go.
+        Bosses.dismissMinions(npc)
         npc.anim(Seqs.NPC_EZEKIEL_FINALE01)
         val tank = TfaKit.arena(npc).firstOrNull()
         val dx = Integer.signum((tank?.coord?.x ?: npc.coord.x) - (npc.coord.x + 1))
@@ -294,7 +299,7 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
         for ((k, kind) in order.withIndex()) {
             val safe = safeTiles(cage, fx, fz, kind)
             npc.queueHit(VOLLEY_FIRST + k) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 npc.spotAnimAt(cage, IMPACTS[k])
                 for (p in TfaKit.arena(npc)) {
                     if (safe.any { it.x == p.coord.x && it.z == p.coord.z }) continue
@@ -347,7 +352,9 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private val STAR_BEATS = intArrayOf(3, 5)
     private val COLUMNS = intArrayOf(4059, 4062, 4065)
     private val ROWS = intArrayOf(5531, 5534, 5537)
-    private val TWO_ROWS = intArrayOf(5532, 5536)
+
+    /** Capture: the two rows centred on z 5532 and 5536 (south edges 5531 / 5535): his row 5534 stays clear. */
+    private val TWO_ROWS = intArrayOf(5531, 5535)
     private val IMPACTS =
         intArrayOf(
             SpotAnims.VFX_EZEKIEL_FINALE_IMPACT_LARGE01,
@@ -365,6 +372,7 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private const val MIDDLE_Z = 5534
     private const val ARENA_MIN_X = 4059
     private const val ARENA_MAX_X = 4067
+    private const val ARENA_MIN_Z = 5531
     private const val ARENA_MAX_Z = 5539
 
     private const val HUNT = 20

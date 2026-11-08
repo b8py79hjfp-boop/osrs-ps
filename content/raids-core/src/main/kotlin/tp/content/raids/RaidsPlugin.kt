@@ -76,6 +76,7 @@ public class RaidsPlugin : ContentPlugin {
         val run = runInside(player) ?: return
         val m = run.member(player.username) ?: return
         m.online = false
+        m.roomsAtLogout = run.roomsTaken.size
         val encounter = (run.state as? RunState.InRoom)?.room?.kind == RoomKind.ENCOUNTER
         if (run.raid.disconnect == DisconnectPolicy.DEATH_IN_ENCOUNTER && encounter && !run.raid.safeLogout(player)) {
             m.deaths++
@@ -94,9 +95,11 @@ public class RaidsPlugin : ContentPlugin {
         if (!m.inside || inst == null || player.coord !in inst) return
         m.online = true
         player[RaidRun.PLAYER_RUN] = run.id.value
-        // A member who reconnects after the room moved on joins the party where it is now.
+        // A member who reconnects after the party moved on (or who died) joins the party where it is now.
         val room = (run.state as? RunState.InRoom)?.room
-        if (room != null && !m.alive) player.teleport(run.at(room.waitAt ?: room.entry))
+        val movedOn = m.roomsAtLogout >= 0 && m.roomsAtLogout != run.roomsTaken.size
+        if (room != null && (!m.alive || movedOn)) player.teleport(run.at(if (!m.alive) room.waitAt ?: room.entry else room.entry))
+        m.roomsAtLogout = -1
         if (run.state == RunState.Completed) Raids.pay(player, run)
         run.markDirty()
         player.events.publish(RaidEvent.Reconnected(run, m.name))

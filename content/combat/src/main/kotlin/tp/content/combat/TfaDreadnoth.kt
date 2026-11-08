@@ -26,6 +26,9 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         var phasesDone = 0
         var enraged = false
         var busyUntil = -1L
+
+        /** The crawl's own hold (alternate ticks): not a root, so it never stops the enrage leap. */
+        var crawlHoldUntil = -1L
         val blood = HashSet<CoordGrid>()
         val bloodHit = HashMap<String, Long>()
     }
@@ -69,8 +72,11 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
     /** Capture: he crawls one tile every 2 ticks (held still on alternate ticks). */
     private fun crawlLoop(npc: NpcRef, s: State) {
         npc.queueHit(1, strong = false) {
-            if (!npc.isInWorld) return@queueHit
-            if (npc.tick % CRAWL_EVERY == 0L) npc.frozenUntil = maxOf(npc.frozenUntil, npc.tick + 1)
+            if (!npc.isInWorld || npc.isDying) return@queueHit
+            if (npc.tick % CRAWL_EVERY == 0L) {
+                s.crawlHoldUntil = npc.tick + 1
+                npc.frozenUntil = maxOf(npc.frozenUntil, s.crawlHoldUntil)
+            }
             bloodTick(npc, s)
             crawlLoop(npc, s)
         }
@@ -108,15 +114,15 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         npc.setAttackClock(s.busyUntil)
         for (i in 0 until k) {
             npc.queueHit(i * SLAM_GAP) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 npc.anim(Seqs.DREADNOTH_JUMP01)
-                npc.queueHit(JUMP_LAND_SLOW) { if (npc.isInWorld) slamLands(npc, s) }
+                npc.queueHit(JUMP_LAND_SLOW) { if (npc.isInWorld && !npc.isDying) slamLands(npc, s) }
             }
         }
         val players = TfaKit.arena(npc)
         val jellies = minOf(MAX_JELLIES, JELLIES_PER * players.size * k)
         npc.queueHit(span + HATCH_AFTER) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             val targets = TfaKit.arena(npc)
             for (j in 0 until jellies) {
                 val near = targets.getOrNull(j % maxOf(1, targets.size))?.coord ?: npc.coord
@@ -155,7 +161,8 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
      */
     private fun leap(npc: NpcRef, s: State, victim: EntityRef) {
         npc.setAttackClock(npc.tick + LEAP_EVERY)
-        if (npc.isFrozen) return
+        // DR1: only a real root stops the leap, not the crawl's alternate-tick hold.
+        if (npc.isFrozen && npc.frozenUntil > s.crawlHoldUntil) return
         val cx = npc.coord.x + npc.size / 2
         val cz = npc.coord.z + npc.size / 2
         val dx = victim.coord.x - cx
@@ -168,7 +175,7 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
             }
         npc.anim(Seqs.DREADNOTH_JUMP02)
         npc.queueHit(JUMP_LAND) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             npc.teleport(to)
             npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
             var healed = 0
@@ -193,6 +200,12 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         }
     }
 
+    /** Scaled before the first hit lands (else the first hit comes off the cache HP and the pool refill wipes it). */
+    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
+        state(npc)
+        return damage
+    }
+
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc)
         val pct = npc.hitpoints * PERCENT / maxOf(1, npc.maxHitpoints)
@@ -202,6 +215,8 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         }
         if (!s.enraged && pct <= ENRAGE_AT) {
             s.enraged = true
+            // No slam phase after the enrage, even when one burst crossed their thresholds.
+            s.phasesDone = SLAM_AT.size
             npc.say("*glub glub*")
             npc.setAttackClock(npc.tick + FIRST_LEAP)
         }
@@ -216,11 +231,12 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
                 }.filter { it != MIDDLE to MIDDLE }
                 .toMutableList()
         val origin = npc.coord
+        // His slam-phase jellies go with him; the seven of the burst are minions too, so they never respawn.
+        Bosses.dismissMinions(npc)
         npc.queueHit(DEATH_JELLY_DELAY) {
             repeat(DEATH_JELLIES) {
                 val (x, z) = tiles.removeAt(npc.random(tiles.size))
-                val j = npc.spawnNpc(Npcs.TFA_JELLY_MINION, CoordGrid(origin.x + x, origin.z + z, origin.level), wanderRange = 0)
-                j.huntRange = HUNT
+                Bosses.summon(npc, Npcs.TFA_JELLY_MINION, CoordGrid(origin.x + x, origin.z + z, origin.level), huntRange = HUNT)
             }
         }
     }

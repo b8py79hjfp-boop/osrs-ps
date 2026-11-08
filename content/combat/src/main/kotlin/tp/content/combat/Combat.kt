@@ -246,7 +246,7 @@ internal object CombatSystem {
             }
 
             is NpcRef -> {
-                if (target.target != null) return
+                if (target.target != null || Bosses.of(target.type)?.retaliates(target) == false) return
                 // Retreat (Wiki "Retreat"): "initiated by attacking an NPC from outside the aggression range".
                 if (NpcCombat.outsideAggressionRange(target, source)) return target.retreat(source)
                 target.retreat(null)

@@ -34,6 +34,9 @@ import tp.util.CoordGrid
  */
 @Suppress("LargeClass") // one boss over three phases and their specials
 internal object TobVerzik : Boss(*VERZIK_IDS) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     private class State(val mode: Int, val home: CoordGrid) {
         var phase = 0
         var phaseStart = 0L

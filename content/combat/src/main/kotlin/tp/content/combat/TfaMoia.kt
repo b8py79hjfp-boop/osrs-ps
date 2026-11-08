@@ -61,7 +61,6 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
         npc.setAttackClock(npc.tick + SLOT)
         s.slots++
         if (s.enraged) {
-            if (s.chantBlastAt >= 0 && npc.tick >= s.chantBlastAt) chantBlast(npc, s)
             daggers(npc)
             return
         }
@@ -126,7 +125,7 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
     private fun gone(e: EntityRef): Boolean = (e is PlayerRef && e.isDying) || (e is NpcRef && !e.isInWorld)
 
     private fun cough(npc: NpcRef, e: EntityRef) {
-        if (!npc.isInWorld || gone(e)) {
+        if (!npc.isInWorld || npc.isDying || gone(e)) {
             e[COUGHS] = 0
             return
         }
@@ -163,7 +162,7 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
      */
     private fun binderLoop(npc: NpcRef, s: State) {
         npc.queueHit(1, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             if (npc.tick >= s.legAt) {
                 s.legAt = npc.tick + LEG_EVERY
                 s.ring++
@@ -172,6 +171,8 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
                     b[LEG_STARTED] = npc.tick
                 }
             }
+            // Binders swing on their own clock (they are summoned with no hunt range, so they never get a target).
+            for (b in Bosses.minions(npc, Npcs.TFA_MOIA_MINION)) TfaMoiaBinder.swingTick(b)
             if (!s.enraged && npc.tick >= s.refillAt) {
                 s.refillAt = npc.tick + REFILL_EVERY
                 binders(npc, s, REFILL_TO)
@@ -198,7 +199,7 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
         }
         npc.setAttackClock(npc.tick + RETURN_AT + FIRST_CHANT + 1)
         npc.queueHit(RETURN_AT) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             npc.teleport(CoordGrid(s.start.x + MIDDLE.first, s.start.z + MIDDLE.second, s.start.level))
             npc.spotAnim(SpotAnims.MOIA_TELEPORT_IN_SPOTANIM)
             val standing = Bosses.minions(npc, Npcs.TFA_MOIA_MINION).size
@@ -214,7 +215,9 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
         val gap = maxOf(MIN_CHANT, FIRST_CHANT_GAP - CHANT_STEP * s.chants)
         s.chants++
         s.chantBlastAt = npc.tick + gap - BLAST_EARLY
-        npc.queueHit(gap) { if (npc.isInWorld) chant(npc, s) }
+        // The blast keeps its own time (5 ticks before the next chant), with or without a target in reach.
+        npc.queueHit(gap - BLAST_EARLY) { if (npc.isInWorld && !npc.isDying) chantBlast(npc, s) }
+        npc.queueHit(gap) { if (npc.isInWorld && !npc.isDying) chant(npc, s) }
     }
 
     /** Capture: 25 to every raider per empowered binder still standing. */
@@ -228,6 +231,8 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
     override fun died(npc: NpcRef, killer: EntityRef?) {
         npc.say("Hmph")
         Bosses.dismissMinions(npc)
+        // An infection still running ends with her (else the raider stays "infected" and immune next fight).
+        for (p in TfaKit.arena(npc)) p[COUGHS] = 0
     }
 
     /** When a binder last started a leg (its first swing is 7 ticks into a leg). */
@@ -286,13 +291,21 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
  * 4..22; a raider on its own tile is pushed a tile ("Grah!"). Protect from Melee blocks it (MO1).
  */
 internal object TfaMoiaBinder : Boss(Npcs.TFA_MOIA_MINION) {
+    private val NEXT_SWING = AttrKey<Long>("tfa_moia_binder_swing")
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
+        // Swings come from Moia's loop (swingTick).
+        npc.setAttackClock(npc.tick + SWING_EVERY)
+    }
+
+    /** One tick of a binder: its swing 7 ticks into a leg, then every 5, at a raider within 2. */
+    fun swingTick(npc: NpcRef) {
+        if (npc.isDying) return
         val leg = npc[TfaMoia.LEG_STARTED] ?: -1L
-        if (leg >= 0 && npc.tick - leg < FIRST_SWING) {
-            npc.setAttackClock(leg + FIRST_SWING)
-            return
-        }
+        if (leg >= 0 && npc.tick - leg < FIRST_SWING) return
+        if (npc.tick < (npc[NEXT_SWING] ?: 0L)) return
         val p = TfaKit.arena(npc, REACH).firstOrNull() ?: return
+        npc[NEXT_SWING] = npc.tick + SWING_EVERY
         npc.anim(Seqs.MOIA_MINION_ATTACK)
         if (p.coord == npc.coord) {
             npc.say("Grah!")
@@ -300,7 +313,6 @@ internal object TfaMoiaBinder : Boss(Npcs.TFA_MOIA_MINION) {
         }
         val dmg = if (p.protects(CombatStyle.MELEE)) 0 else BossCombat.roll(npc, MIN_HIT, MAX_HIT)
         CombatSystem.queueHit(p, npc, dmg, HitStyle.MELEE, 0)
-        npc.setAttackClock(npc.tick + SWING_EVERY)
     }
 
     override fun spawned(npc: NpcRef) {

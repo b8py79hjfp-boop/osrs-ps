@@ -51,6 +51,9 @@ internal class OcellusState(val centre: CoordGrid, val size: Int) {
  * his"). Every phase runs on its own tick script once he is engaged.
  */
 internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs.TFA_OCELLUS_P3) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     private val STATE = AttrKey<OcellusState>("tfa_ocellus")
 
     /** Censer buffs on a player: (style, until tick). */

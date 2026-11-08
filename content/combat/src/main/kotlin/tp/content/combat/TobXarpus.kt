@@ -38,6 +38,9 @@ internal object TobXarpus : Boss(
     XARPUS_HARD_FEEDING,
     Npcs.TOB_XARPUS_COMBAT_HARD,
 ) {
+    /** Its own script moves and targets it: a hit does not make it chase. */
+    override fun retaliates(npc: NpcRef): Boolean = false
+
     private class Exhumed(val tile: CoordGrid, val until: Long, val firstOrb: Long)
 
     private class State(val mode: Int, val home: CoordGrid) {

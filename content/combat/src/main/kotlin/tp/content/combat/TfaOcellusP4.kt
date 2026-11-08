@@ -110,7 +110,7 @@ internal object TfaOcellusP4 {
     private fun explosions(npc: NpcRef) {
         for (k in 0 until EXPLOSIONS) {
             npc.queueHit(CHAIN_LEAD + k * CHAIN_GAP, strong = false) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 for (p in TfaKit.arena(npc)) {
                     val t = p.coord
                     npc.spotAnimAt(t, SpotAnims.VFX_VOID_CHAIN_EXPLOSION)

@@ -65,7 +65,7 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         val reach = maxOf(1, TfaKit.gap(npc, victim))
         for ((beat, ring) in listOf(0 to (1..reach), 2 to (reach + 1..reach + 1))) {
             npc.queueHit(beat) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 val (min, max) = if (beat == 0) BEAT1 else BEAT2
                 for (p in TfaKit.arena(npc)) {
                     if (TfaKit.gap(npc, p) !in ring || shadowed(npc, p.coord)) continue
@@ -86,13 +86,13 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         s.stomping = true
         npc.frozenUntil = maxOf(npc.frozenUntil, npc.tick + windUp + STOMP_SPAN)
         npc.queueHit(windUp) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             npc.anim(Seqs.NPC_BORK_ENRAGED_STOMP_ATTACK_IN01)
             npc.say("Bork very angry!!")
         }
         for (k in 1..STOMPS) {
             npc.queueHit(windUp + k * STOMP_GAP) {
-                if (!npc.isInWorld) return@queueHit
+                if (!npc.isInWorld || npc.isDying) return@queueHit
                 npc.anim(if (k == STOMPS) Seqs.NPC_BORK_ENRAGED_STOMP_ATTACK_OUT01 else Seqs.NPC_BORK_ENRAGED_STOMP_ATTACK01)
                 npc.spotAnim(SpotAnims.VFX_BORK_ENRAGED_STOMP_SPOTANIM01)
                 for (p in TfaKit.arena(npc)) {
@@ -113,7 +113,7 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         }
         val retarget = windUp + STOMPS * STOMP_GAP + RETARGET_AFTER
         npc.queueHit(retarget) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             s.stomping = false
             retarget(npc)
             npc.setAttackClock(npc.tick + DRUM_AFTER)
@@ -138,7 +138,8 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         s.stunnedUntil = bork.tick + STUN_TICKS
         bork.anim(Seqs.NPC_BORK_14_CYCLE_STUN01)
         bork.spotAnim(SpotAnims.VFX_BORK_14_CYCLE_STUN_SPOTANIM01)
-        if (smorks(bork) != null) stompSet(bork, STUN_TICKS)
+        // A stun during a running set does not stack a second set on it.
+        if (smorks(bork) != null && !s.stomping) stompSet(bork, STUN_TICKS)
     }
 
     /** Capture: a missed bomb: the stomp set starts 5 ticks after it landed (slams at +6, 9, 12, 15). */
@@ -148,6 +149,11 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
     }
 
     override fun meleeAlwaysHits(npc: NpcRef): Boolean = npc.tick < state(npc).stunnedUntil
+
+    /** The Smorks' enrage clock starts at his death. */
+    override fun died(npc: NpcRef, killer: EntityRef?) {
+        smorks(npc)?.let { TfaSmorks.borkDied(it) }
+    }
 
     /** Capture (fitted, 98:1): 10 off every melee hit while not dazed, none while dazed. */
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
@@ -271,6 +277,17 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
         npc.huntRange = HUNT
     }
 
+    /** Scaled before the first hit lands (TfaKit.scale: "from the first attack or hit"). */
+    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
+        TfaKit.scale(npc, HP)
+        return damage
+    }
+
+    /** Capture: the Smorks' enrage counts from Bork's death itself. */
+    fun borkDied(smorks: NpcRef) {
+        if (smorks[BORK_DEAD_AT] == null) smorks[BORK_DEAD_AT] = smorks.tick
+    }
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         TfaKit.scale(npc, HP)
         val bork = TfaBork.bork(npc)
@@ -336,7 +353,7 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
         npc.anim(Seqs.NPC_SMORK_BIG_CANNON_ATTACK01)
         BossCombat.projectile(npc, target, SpotAnims.VFX_SMORK_NAPALM_FIRE_PROJANIM01, NAPALM_FLIGHT)
         npc.queueHit(NAPALM_FLIGHT) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             npc.spotAnimAt(at, SpotAnims.VFX_SMORK_NAPALM_SPLAT_SPOTANIM01)
             for (p in BossCombat.playersOn(
                 npc,
@@ -370,7 +387,7 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
     private fun burnLoop(npc: NpcRef, tiles: List<CoordGrid>, left: Int) {
         if (left <= 0) return
         npc.queueHit(1, strong = false) {
-            if (!npc.isInWorld) return@queueHit
+            if (!npc.isInWorld || npc.isDying) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (!TfaKit.on(p, tiles)) continue
                 CombatSystem.applyHit(p, npc, RAGGED_DAMAGE, HitStyle.TYPELESS)
