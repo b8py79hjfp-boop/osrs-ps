@@ -34,8 +34,8 @@ public class RaidMember internal constructor(public val name: String) {
     public var online: Boolean = true
         internal set
 
-    /** Inside the instance (not left, not ejected). */
-    public var inside: Boolean = true
+    /** Inside the instance (entered, not left, not ejected). */
+    public var inside: Boolean = false
         internal set
 
     /** Alive in the current room (false while waiting after a death). */

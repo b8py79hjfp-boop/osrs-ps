@@ -80,6 +80,7 @@ public class Raids internal constructor() {
             party: Party,
             mode: String = party.raid.modes.first(),
             scaledSize: Int = party.members.size,
+            enterNow: Boolean = true,
         ): String? {
             val raids = of(leader)
             val def = party.raid
@@ -93,17 +94,38 @@ public class Raids internal constructor() {
                 RaidRun(raids.newRunId(), def, party, scaling, RaidRng(leader.random(Int.MAX_VALUE).toLong() shl 1 or 1L), leader.tick)
             party.state = PartyState.Locked(run)
             raids.addRun(run)
-            for (p in players) {
-                p[RaidRun.PLAYER_RUN] = run.id.value
-                p.setInstanceExit(def.exit)
-            }
+            val entering = if (enterNow) players else listOf(leader)
             val squares = def.squares.map { (x, z) -> InstanceSquare(x, z, x - def.originSquareX, z - def.originSquareZ) }
             leader.buildInstance(def.instanceWidth, def.instanceLength, squares) { inst ->
                 run.instance = inst
+                for (p in entering) admit(p, run)
                 enterRoom(leader, run, def.slots.first().first())
-                for (p in players) run.raidEvent(p, RaidEvent.Entered(run, p.username))
             }
             return null
+        }
+
+        /**
+         * A member who has not entered yet joins the run (TFA: the others follow the leader through the door) while it is
+         * still in its first room. Returns the problem, or null.
+         */
+        public fun enter(player: PlayerRef, run: RaidRun): String? {
+            val m = run.member(player.username) ?: return "You are not in this party."
+            if (m.inside) return null
+            val state = run.state
+            if (run.instance == null || state !is RunState.InRoom || run.roomsTaken.size != 1) return "Your party has already moved on."
+            admit(player, run)
+            player.teleport(run.at(state.room.entry))
+            return null
+        }
+
+        private fun admit(player: PlayerRef, run: RaidRun) {
+            val m = run.member(player.username) ?: return
+            m.inside = true
+            m.online = true
+            player[RaidRun.PLAYER_RUN] = run.id.value
+            player.setInstanceExit(run.raid.exit)
+            player.events.publish(RaidEvent.Entered(run, m.name))
+            run.dirty = true
         }
 
         /** Starts room [roomId]: members inside move to its entry, everyone is alive again, the room script runs. */
@@ -138,7 +160,7 @@ public class Raids internal constructor() {
             for (m in run.members.values) m.alive = true
             run.dirty = true
             val next = run.raid.slots.getOrNull(run.slotIndex)
-            if (next != null && next.size == 1) enterRoom(any, run, next.first())
+            if (run.raid.autoAdvance && next != null && next.size == 1) enterRoom(any, run, next.first())
         }
 
         /** The party picks [roomId] for the current choice slot (TFA's doors). False when it is not on offer. */

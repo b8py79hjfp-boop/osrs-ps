@@ -33,6 +33,8 @@ public class RaidDefinition internal constructor(
     public val rewards: (RunSnapshot, RaidRng) -> Map<String, RewardResult>,
     public val records: RecordsDef,
     public val driver: RaidDriver,
+    /** After a room clears, a single-room next slot starts at once (else content calls [Raids.advance], e.g. a passage). */
+    public val autoAdvance: Boolean,
 ) {
     internal val instanceWidth: Int = squares.maxOf { it.first } - squares.minOf { it.first } + 1
     internal val instanceLength: Int = squares.maxOf { it.second } - squares.minOf { it.second } + 1
@@ -137,6 +139,7 @@ public class RaidBuilder internal constructor(private val id: String) {
     public var rewards: (RunSnapshot, RaidRng) -> Map<String, RewardResult> = { _, _ -> emptyMap() }
     public var records: RecordsDef? = null
     public var driver: RaidDriver = RaidDriver { }
+    public var autoAdvance: Boolean = true
     private val rooms = LinkedHashMap<String, RoomDef>()
     private val slots = ArrayList<List<String>>()
 
@@ -174,6 +177,7 @@ public class RaidBuilder internal constructor(private val id: String) {
             rewards,
             requireNotNull(records) { "raid $id: records" },
             driver,
+            autoAdvance,
         )
     }
 }
