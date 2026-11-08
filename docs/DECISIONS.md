@@ -1217,3 +1217,24 @@ means is not known.
 - **Invocations:** read from the cache (enum 4664 structs) and kept as script 6729's three words in the party settings.
 - **Pinned config ids:** `cache-pack` inventories accept `num = <id>`; ToB's reclaim inventory stays 1036 and ToA's is
   1037, because player saves key inventories by id and name-ordered allocation would shift them when packs are added.
+
+## D-085 Tombs of Amascut hooks into combat and items (2026-11-08)
+
+- **Fights live in content/combat** (`Toa*.kt`, the shared `ToaKit`). raids-toa only places NPCs and reacts to deaths
+  and to `RaidSignal(npc, player, key, amount)` events (`toa.*` keys). This keeps combat, boss and RNG code in one
+  module (brief §0.8) and needs no dependency between the two.
+- **Invocations that change items or specials** use cancellable or adjustable plugin-api events published by the
+  generic code:
+  - `ConsumeCheck`: On a Diet, Dehydration.
+  - `SpecialCostQuery`: Overly Draining.
+  - `AttackDelayRequest`: Nectar.
+  - `CurePoisonRequest(curesVenom)`.
+  - `SpecialUsed`: summary tallies.
+  These are used instead of raid checks inside Consumables or Specials. With no raid running, nothing listens and the
+  generic path is unchanged.
+- **Records by final raid level:** `RecordsDef.modeOf` lets a raid choose the KC / PB bucket. ToA uses the final level
+  (`toa.modeUsesFinalLevel`).
+- **One time formatter:** `Raids.formatTime` (m:ss, h:mm:ss, precise centiseconds) is shared by CoX and ToA.
+- **Deposit box:** Deposit inventory and Deposit worn go through the bank's own deposit-all (`DepositAllRequest`). One
+  item-transaction path, one summary line. A single-item box deposit is accepted only from the backpack or worn slots.
+

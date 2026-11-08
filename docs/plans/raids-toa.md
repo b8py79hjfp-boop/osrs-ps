@@ -65,3 +65,24 @@ alternative behind a named flag (`toa.*`).
   Nexus doors and the room graph, flame barriers, the Wardens door, the burial chamber, invocations and raid level,
   starting path levels and Walk the Path, attempts (`WipePolicy.ByRun`), HP / roll scaling, HUD 481; `ToaSmokeScenario`
   walks all four paths to the burial chamber.
+- Milestone 2: done. All five puzzles (Scabaras's four tile/obelisk/addition/light puzzles, Het's mirrors, orbs and
+  the Seal, Apmeken's sight and the four problems, Crondis's watering), with their foes (shaman, volatile and cursed
+  baboons, thralls, crocodiles, Het orbs) in content/combat `ToaPuzzleFoes`. Puzzle signals reach raids-toa through
+  `RaidSignal`.
+- Milestone 3: done. Ba-Ba, Zebak, Akkha and Kephri as boss scripts (`ToaBaba`, `ToaZebak`, `ToaAkkha`, `ToaKephri`,
+  with their adds) covering every attack, special and boss invocation in the room docs.
+- Milestone 4: done. `ToaWardens`: the obelisk phase, Elidinis' and Tumeken's Wardens with the core, and phase 3 with
+  slams, siphons, phantoms and enrage.
+- Milestone 5: done. Points (`ToaPoints`), path levels and Walk the Path, the supplies (Helpful Spirit 777 / 778, every
+  supply item, the supply bag, honey locust and smelling salts, Ambrosia, Nectar's attack delay and the restores). The
+  deposit pot is served by the deposit box. Also attempts and wipes, reclaim 1037, the escape crystal and the
+  time-limit invocations. Consumable and special-cost invocations go through `ConsumeCheck` and `SpecialCostQuery`.
+- Milestone 6: done. Sarcophagus chests 771 with the wiki loot model (`ToaLoot`, test rows in `RaidRewardMathTest`),
+  the Rewards Niche and records (KC by final level, messages, PB through `RecordsDef.modeOf`). Also the summary 482 with
+  titles, scoreboard 775, Osmumten and the lobby NPCs.
+- OPEN, behind named flags in the room docs:
+  - Party UI: script 6745's use.
+  - Tomb: the pickaxe cavity, the pet follower, the CA clue perk, the mid-raid time-limit penalty and the Niche
+    warning prompt.
+  - Puzzles: trap visuals, Scabaras shortcuts and venom from pools.
+  - Deposit box: DB1-DB6.

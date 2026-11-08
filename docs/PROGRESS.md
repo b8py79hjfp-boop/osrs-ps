@@ -172,6 +172,13 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 - R2 framework: done (common.md RC7-RC13): content/raids-core (party, lifecycle, slots, ledger, death/disconnect/teleport policies, rewards paid once into a claim inventory, records, per-run RNG, closing); content/raids-tfa reward math; tests RaidLifecycleScenario (fixture raid on Lumbridge's square) and RaidRewardMathTest (TFA rows).
 - R3 The Fractured Archive: playable end to end (lobby door, Guardian, three nexus sections, Ocellus, vault, loot) with all eight bosses as boss scripts (content/combat Tfa*.kt), party interfaces 975/976/977, HUD 974, loot interface 973 and lobby chest, the Quartermaster's omnishop, stats 979. Test TfaSmokeScenario walks every door type. Also done: spectating (engine observers, IN11), the records room and Living record capes, the archive key, the miniquest, lobby NPCs, room navigators, Ascension rocks, practice completions, raid loot into the collection log, and every boss mechanic the sources describe. Not buildable: Ocellus's censers (no cache assets, OPEN-OC14). Every unsourced number is an OPEN in docs/mechanics/raids/tfa/*.md.
   docs/mechanics/raids/tfa/*.md.
+- R4 Theatre of Blood: done (docs/plans/raids.md R4 sources; docs/mechanics/raids/tob/*.md).
+- R5 Chambers of Xeric: done (docs/plans/raids-cox.md status; D-083), including the FC party sync, leader hand-over and
+  the Large pool.
+- R6 Tombs of Amascut: done (docs/plans/raids-toa.md status; D-084, D-085). All 12 rooms are playable, with every boss
+  and puzzle mechanic in docs/mechanics/raids/toa/*.md, scaling, invocations, supplies, tomb loot and records.
+  `ToaSmokeScenario` walks every path, the Wardens and the tomb.
+- R7 load and soak, RuneLite end-to-end: next.
 - Not now (brief §13): new custom raids; the 2023 CoX custom-layout / paid-scaling proposal (only the shipped scaled
   party size, Reload and full-layout toggle); TFA Practice Mode and the 9-11 November 2026 TFA balancing; Leagues and
   Deadman variants; raid Combat Achievements (events only); cross-world parties.
