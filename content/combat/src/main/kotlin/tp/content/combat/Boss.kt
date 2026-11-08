@@ -96,6 +96,10 @@ internal object Bosses {
             TobNylocasRoom,
             TobNylo,
             TobVasilias,
+            TobSotetseg,
+            TobXarpus,
+            TobVerzik,
+            TobVerzikAthanatos,
         )
         ) {
             for (id in boss.ids) byType[id] = boss
@@ -189,6 +193,11 @@ public class BossScripts : ContentPlugin {
         onLogin { Dragonfire.onLogin(this) }
         // TFA Ocellus censers (OC3): "Interact" on an active censer.
         for (id in TfaOcellus.CENSERS) onOpLoc(id, 1) { loc -> TfaOcellus.useCenser(player, id, loc.coord) }
+        // ToB VZ1 / TB24: Verzik's "Talk-to" (op1) starts her fight; "Quick-start" (op2) needs a completion.
+        for (id in TobVerzik.INITIALS) {
+            onOpNpc(id, 1) { npc -> TobVerzik.start(npc, player, quick = false) }
+            onOpNpc(id, 2) { npc -> TobVerzik.start(npc, player, quick = true) }
+        }
     }
 }
 
