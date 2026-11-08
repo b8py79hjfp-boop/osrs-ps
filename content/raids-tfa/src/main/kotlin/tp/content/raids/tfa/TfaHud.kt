@@ -121,4 +121,7 @@ internal class TfaState {
 
     /** Members whose raid attempt is already in their stats (a member enters a run once). */
     val statsAttempted: MutableSet<String> = HashSet()
+
+    /** The Archive Guardian's death already dropped the archive keys (TfaRecordsRoom.guardianDied runs once per run). */
+    var keyHandled: Boolean = false
 }

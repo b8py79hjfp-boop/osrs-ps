@@ -13,6 +13,7 @@ import tp.protocol.api.ClientCommand
 import tp.symbols.Interfaces
 import tp.symbols.Locs
 import tp.symbols.Npcs
+import tp.symbols.Varbits
 import tp.symbols.Varps
 import tp.tools.scenario.Scenario
 import tp.tools.scenario.ScenarioPlayer
@@ -71,6 +72,15 @@ class TfaSmokeScenario {
 
         // Section 1 west (Ezekiel), back through the passageway.
         clear()
+        // TFA26: the unlocked records room is in the instance (level 1) and its exit returns to the door.
+        a.player.vars.setBit(Varbits.TFA_RECORDS_ROOM_UNLOCKED, 1)
+        loc(Locs.TFA_RECORDS_ROOM_DOOR, CoordGrid(4123, 5572))
+        assertTrue(a.coord.level == 1 && a.coord in requireNotNull(run.instance), "in the records room: ${a.coord}")
+        val exit = run.at(CoordGrid(4109, 5573))
+        a.input(ClientCommand.OpLoc(1, Locs.TFA_RECORDS_ROOM_EXIT, exit.x, exit.z, false))
+        tick(WALK)
+        assertEquals(0, a.coord.level, "back in the nexus")
+
         door(Locs.TFA_NEXUS_SECTION1_DOOR_WEST, CoordGrid(4113, 5584), op = 1)
         assertRoom("ezekiel", TfaRaid.EZEKIEL_ENTRY)
         loc(Locs.TFA_EXIT, CoordGrid(4085, 5533))

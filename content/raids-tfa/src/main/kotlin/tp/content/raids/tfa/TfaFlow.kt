@@ -32,7 +32,8 @@ public class TfaFlow : ContentPlugin {
         onOpLoc(Locs.TFA_LOBBY_RAID_ENTRY, OP1) { enterArchive(player) }
         onOpLoc(Locs.TFA_LOBBY_RAID_EXIT, OP1) { player.teleport(TfaRaid.OUTSIDE) }
         for (entrance in intArrayOf(Locs.LUC2_RAID_ENTRY_MULTI, OPENING_OUTSIDE)) {
-            onOpLoc(entrance, OP1) { player.teleport(TfaRaid.LOBBY_FROM_OUTSIDE) }
+            // TFA1 / OPEN-TFA1: the first pass through the opening starts the miniquest (TfaMiniquest.kt).
+            onOpLoc(entrance, OP1) { enterLobby() }
         }
         // TFA2: the outside opening shows once WGS is done; without the quest on this server it is open (TfaConfig).
         onLogin {
@@ -85,6 +86,8 @@ public class TfaFlow : ContentPlugin {
 
     /** TFA4: the leader opens the raid; the rest of the party follows through the door while it is in its first room. */
     private fun enterArchive(player: PlayerRef) {
+        // A player who reached the lobby another way (no entry scene) still starts the miniquest by going in.
+        TfaMiniquest.begin(player)
         val raids = Raids.of(player)
         val party = raids.partyOf(player.username)
         if (party == null || party.raid.id != TfaRaid.ID) {
@@ -187,10 +190,10 @@ public class TfaFlow : ContentPlugin {
         }
 
         /** Guardian start: the Inert Guardian waits in the nexus to be touched. */
-        internal fun guardianRoom(
-            run: RaidRun,
-            any: EntityRef,
-        ): NpcRef = Raids.spawn(any, run, Npcs.TFA_GUARDIAN_START, TfaRaid.INERT_GUARDIAN)
+        internal fun guardianRoom(run: RaidRun, any: EntityRef): NpcRef {
+            TfaRecordsRoom.copyInto(run)
+            return Raids.spawn(any, run, Npcs.TFA_GUARDIAN_START, TfaRaid.INERT_GUARDIAN)
+        }
 
         internal val DOORS =
             listOf(
