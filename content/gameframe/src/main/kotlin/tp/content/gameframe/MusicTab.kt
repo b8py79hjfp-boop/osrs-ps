@@ -71,11 +71,11 @@ public class MusicTab : ContentPlugin {
         onButton(Components.Music.SHUFFLE) { setVarp(Varps.MUSICPLAY, MODE_SHUFFLE) }
         onButton(Components.Music.SINGLE) { setVarp(Varps.MUSICPLAY, MODE_SINGLE) }
         onButton(Components.Music.SKIP) { skip() }
-        onCommand("unlockmusic", tp.util.Rank.DEVELOPER) {
+        onCommand("unlockmusic", DEV_RANK, DEV_CONVENIENCE) {
             for (track in tracks) unlockBit(track)
             message("All music tracks unlocked.")
         }
-        onCommand("musicarea", tp.util.Rank.DEVELOPER) { args -> args.getOrNull(0)?.toIntOrNull()?.let { enterArea(it) } }
+        onCommand("musicarea", DEV_RANK, DEV_CONVENIENCE) { args -> args.getOrNull(0)?.toIntOrNull()?.let { enterArea(it) } }
     }
 
     private fun load(world: tp.plugin.WorldRef) {
@@ -303,3 +303,7 @@ public class MusicTab : ContentPlugin {
             )
     }
 }
+
+/** Developer tools here change gameplay, not items (commands brief §3 CONVENIENCE). */
+private val DEV_RANK = tp.util.Rank.DEVELOPER
+private val DEV_CONVENIENCE = tp.util.commands.Impact.CONVENIENCE

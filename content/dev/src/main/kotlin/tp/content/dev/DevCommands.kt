@@ -20,36 +20,36 @@ public class DevCommands : ContentPlugin {
                 message("Dev: ::run ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n")
             }
         }
-        onCommand("run", DEV) {
+        onCommand("run", DEV, CONVENIENCE) {
             runMode = !runMode
             message("Run: $runMode")
         }
-        onCommand("hp", DEV) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
-        onCommand("setlevel", DEV) { args ->
+        onCommand("hp", DEV, ECONOMY) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
+        onCommand("setlevel", DEV, ECONOMY) { args ->
             val stat = args.getOrNull(0)?.toIntOrNull()
             val level = args.getOrNull(1)?.toIntOrNull()
             if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
         }
-        onCommand("spellbook", DEV) { args ->
+        onCommand("spellbook", DEV, CONVENIENCE) { args ->
             // 0 standard, 1 ancient, 2 lunar, 3 arceuus (varbit `spellbook`).
             val book = args.getOrNull(0)?.toIntOrNull()
             if (book != null && book in 0..LAST_SPELLBOOK) setVarbit(tp.symbols.Varbits.SPELLBOOK, book)
         }
-        onCommand("max", DEV) {
+        onCommand("max", DEV, ECONOMY) {
             for (stat in 0..LAST_COMBAT_STAT) addXp(stat, MAX_XP)
             message("Combat stats set to 99.")
         }
-        onCommand("kit", DEV) {
+        onCommand("kit", DEV, ECONOMY) {
             transaction("dev ::kit") { KIT.all { (obj, count) -> add(Invs.INV, obj, count) } }
             message("Kit added: weapons, food, potions and runes.")
         }
-        onCommand("wild", DEV) { teleport(CoordGrid(WILD_X, WILD_Z)) }
+        onCommand("wild", DEV, CONVENIENCE) { teleport(CoordGrid(WILD_X, WILD_Z)) }
         // ::instance <squareX> <squareZ> [w] [l]: copies w x l map squares into a fresh instance (built off-thread,
         // instances.md IN6) and moves you to the same spot inside; ::instance leave tears it down (IN9) and returns you.
-        onCommand("instance", DEV) { args -> devInstance(this, args) }
-        onCommand("item", DEV) { args -> item(args) }
+        onCommand("instance", DEV, tp.util.commands.Impact.DEBUG_VISUAL) { args -> devInstance(this, args) }
+        onCommand("item", DEV, ECONOMY) { args -> item(args) }
         // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
-        onCommand("fight", DEV) { args ->
+        onCommand("fight", DEV, CONVENIENCE) { args ->
             val arg = args.getOrNull(0) ?: return@onCommand
             // ::fight <player name>: attack a nearby player (headless test clients cannot click players in the scene).
             val type =
@@ -61,7 +61,7 @@ public class DevCommands : ContentPlugin {
             val npc = npcsWithin(coord, FIGHT_RADIUS).filter { it.type == type }.minByOrNull { it.coord.chebyshev(coord) }
             if (npc == null) message("No such NPC nearby.") else interact(npc, ATTACK_OP)
         }
-        onCommand("xp", DEV) { args ->
+        onCommand("xp", DEV, ECONOMY) { args ->
             val stat = args.getOrNull(0)?.toIntOrNull()
             val xp = args.getOrNull(1)?.toDoubleOrNull()
             if (stat == null || xp == null || stat !in 0 until STAT_COUNT) {
@@ -84,6 +84,8 @@ public class DevCommands : ContentPlugin {
 
     private companion object {
         val DEV = tp.util.Rank.DEVELOPER
+        val ECONOMY = tp.util.commands.Impact.ECONOMY
+        val CONVENIENCE = tp.util.commands.Impact.CONVENIENCE
         const val FIGHT_RADIUS = 15
         const val ATTACK_OP = 2
 

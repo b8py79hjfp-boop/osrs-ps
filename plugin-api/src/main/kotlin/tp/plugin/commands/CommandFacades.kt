@@ -190,3 +190,10 @@ public fun PlayerRef.worldPlayers(): List<PlayerRef> {
     p.world.forEachPlayer { out += tp.plugin.refOf(it) }
     return out
 }
+
+/**
+ * Whether [this] may use a developer tool that creates value (spawn menu, quest stages, diary tasks): a developer, on
+ * a world whose policy allows ECONOMY (commands brief §3, §6). Checked on every click, not only when it opens (§8).
+ */
+public val PlayerRef.economyToolsAllowed: Boolean
+    get() = rank.atLeast(Rank.DEVELOPER) && commandsConfig.allows(tp.util.commands.Impact.ECONOMY)

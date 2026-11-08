@@ -7,6 +7,7 @@ import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
 import tp.plugin.TimerId
+import tp.plugin.commands.economyToolsAllowed
 import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Npcs
@@ -44,7 +45,7 @@ internal class Pandemonium(
         for (npc in Npcs.SAILING_INTRO_RIBS..Npcs.SAILING_INTRO_RIBS_VIS) onOpNpc(npc, OP_TALK) { with(talk) { ribsTalk() } }
         for (npc in Npcs.JUNIOR_JIM..Npcs.JUNIOR_JIM_4OPS) onOpNpc(npc, OP_TALK) { with(jim) { jimTalk() } }
         for (loc in Locs.SAILING_INTRO_SALVAGING_HOOK..Locs.SAILING_INTRO_SALVAGING_HOOK_OPS) onOpLoc(loc, OP_HOOK) { deployHook() }
-        onCommand("pandemonium", tp.util.Rank.DEVELOPER) { args -> stageCommand(this, args) }
+        onCommand("pandemonium", tp.util.Rank.DEVELOPER, tp.util.commands.Impact.ECONOMY) { args -> stageCommand(this, args) }
         onLogout { clearNpcs(this) }
     }
 
@@ -181,7 +182,7 @@ internal class Pandemonium(
 
     /** `::pandemonium <stage>` (administrators): sets the quest stage, for testing the later steps. */
     private fun stageCommand(p: PlayerRef, args: List<String>) {
-        if (!p.rank.atLeast(ADMIN)) return
+        if (!p.economyToolsAllowed) return
         val value = args.firstOrNull()?.toIntOrNull() ?: return p.message("Pandemonium stage: ${stage(p)}")
         setStage(p, value)
         p.message("Pandemonium stage set to $value.")
@@ -214,7 +215,6 @@ internal class Pandemonium(
         /** Talk-to is op 1 of these NPCs. */
         private const val OP_TALK = 1
         private const val OP_HOOK = 1
-        private val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** Dock ids (db 194): Port Sarim and The Pandemonium. */
         private const val PORT_SARIM_DOCK = 0

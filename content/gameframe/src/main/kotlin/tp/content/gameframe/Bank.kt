@@ -50,7 +50,7 @@ public class Bank : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcOption("Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
-        onCommand("openbank", tp.util.Rank.DEVELOPER) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        onCommand("openbank", DEV_RANK, DEV_CONVENIENCE) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
         // Commands brief §2 (official): `::bank` makes the player say this; developers get the bank instead.
         commandFallback { name -> bankCommand(name) }
         events.on<BankTransfer> { t -> t.player.transfer(t) }
@@ -972,3 +972,7 @@ public class Bank : ContentPlugin {
             )
     }
 }
+
+/** Developer tools here change gameplay, not items (commands brief §3 CONVENIENCE). */
+private val DEV_RANK = tp.util.Rank.DEVELOPER
+private val DEV_CONVENIENCE = tp.util.commands.Impact.CONVENIENCE

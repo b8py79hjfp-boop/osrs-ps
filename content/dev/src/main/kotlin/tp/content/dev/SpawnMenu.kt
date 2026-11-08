@@ -11,6 +11,7 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.IfEvents
 import tp.plugin.PlayerRef
+import tp.plugin.commands.economyToolsAllowed
 import tp.symbols.Clientscripts
 import tp.symbols.Components
 import tp.symbols.Interfaces
@@ -18,13 +19,15 @@ import tp.symbols.Invs
 import tp.symbols.Varbits
 
 /**
- * `::spawn` (administrators): a searchable grid of every item. Typing filters live (IF_SCRIPTTRIGGER from the search
- * box); a card click spawns the selected quantity, noted or into the bank as toggled. The results are only drawn on the
- * client: a click is resolved against the server's own result list by card index, never by the obj the client names.
+ * `::spawn` (developers, ECONOMY worlds only: commands brief §6): a searchable grid of every item. Typing filters live
+ * (IF_SCRIPTTRIGGER from the search box); a card click spawns the selected quantity, noted or into the bank as toggled.
+ * The results are only drawn on the client: a click is resolved against the server's own result list by card index,
+ * never by the obj the client names.
  */
 public class SpawnMenu : ContentPlugin {
     override fun ContentScope.register() {
-        onCommand("spawn") { if (rank.atLeast(ADMIN)) open() else message("Only administrators can use ::spawn.") }
+        // Commands brief §6: a developer ECONOMY tool (it creates items), so it is off on live worlds.
+        onCommand("spawn", tp.util.Rank.DEVELOPER, tp.util.commands.Impact.ECONOMY) { open() }
         onModalClosed(Interfaces.SPAWN_MENU) {
             this[STATE] = null
             showInv(Invs.SPAWN_RESULTS, IntArray(0), IntArray(0))
@@ -54,7 +57,7 @@ public class SpawnMenu : ContentPlugin {
 
     /** OpenRune `isAdmin`: a non-admin with the menu open (rights removed meanwhile) has it closed. */
     private fun PlayerRef.admin(): Boolean {
-        if (rank.atLeast(ADMIN) && this[STATE] != null) return true
+        if (economyToolsAllowed && this[STATE] != null) return true
         closeModal()
         return false
     }
@@ -189,9 +192,6 @@ public class SpawnMenu : ContentPlugin {
     private companion object {
         val STATE = AttrKey<State>("spawn_menu")
         val INDEX = AttrKey<Index>("spawn_menu_index")
-
-        /** Administrators and above may use the menu. */
-        val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** OpenRune constants: the result inv size and the components each card creates (frame, fill, icon, name, label). */
         const val MAX_RESULTS = 60

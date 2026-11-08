@@ -1345,3 +1345,17 @@ means is not known.
 - **Renames** keep the login username (CMD11).
 - **Update and shutdown** exit the node once its worlds are empty (CMD12).
 - **Removed:** StaffCommands is gone; every staff action now goes through the registry.
+
+## D-092 Legacy commands and content tools obey the world's impact policy (2026-11-08)
+
+- `onCommand(name, rank, impact)` also takes an impact class. The world's policy gates it like a registry command,
+  so the dev cheats that create value (`::item`, `::xp`, `::max`, `::kit`, `::setlevel`, `::hp`, `::raid`,
+  `::pandemonium`) are off wherever ECONOMY is.
+- Tools that create value outside the command pipeline move from administrator to developer. They are re-checked on
+  every click with `economyToolsAllowed` (developer and ECONOMY allowed; §8: buttons carry no rights of their own):
+  - the spawn menu;
+  - quest-stage and diary-task setters;
+  - the potion-storage unlock;
+  - the sailing stage setter.
+- Why: §6 lists none of these for administrators, and §0.7 says to stop before giving a rank a power §6 doesn't
+  list. Previously, administrators could spawn items on a live world.

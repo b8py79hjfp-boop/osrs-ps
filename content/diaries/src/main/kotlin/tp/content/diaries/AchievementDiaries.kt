@@ -14,6 +14,7 @@ import tp.plugin.TimerId
 import tp.plugin.XpGained
 import tp.plugin.chatNpc
 import tp.plugin.choice
+import tp.plugin.commands.economyToolsAllowed
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Npcs
@@ -259,7 +260,7 @@ public class AchievementDiaries : ContentPlugin {
     private fun PlayerRef.command(args: List<String>) {
         val diaries = loaded ?: return
         if (args.size < COMMAND_TASK_ARGS) return open(this)
-        if (!rank.atLeast(ADMIN)) return
+        if (!economyToolsAllowed) return
         val area = args[0].toIntOrNull()
         val tier = args[1].toIntOrNull()
         val index = args[2].toIntOrNull()
@@ -272,7 +273,6 @@ public class AchievementDiaries : ContentPlugin {
         /** Op 1 of the rows ("Open <area> Journal", client script 709). */
         const val JOURNAL_OP = 1
         const val TALK_OP = 1
-        val ADMIN = tp.util.Rank.ADMINISTRATOR
         const val COMMAND_TASK_ARGS = 3
 
         /** `side_journal_tab` value of the Tasks sub-tab (RS Mod `SideJournalTab`; same as `JournalTab.TAB_TASKS`). */

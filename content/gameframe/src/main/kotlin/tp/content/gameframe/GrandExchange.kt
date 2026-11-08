@@ -32,16 +32,16 @@ public class GrandExchange : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Collect") { player.openCollectionBox() }
         onOpNpcOption("History") { player.history() }
         onOpNpcOption("Collect") { player.openCollectionBox() }
-        onCommand("geui", tp.util.Rank.DEVELOPER) { open() }
-        onCommand("ge", tp.util.Rank.DEVELOPER) { exchange(GeRequest.Offers) { offers -> list(offers) } }
-        onCommand("gebuy", tp.util.Rank.DEVELOPER) { args -> placeFromCommand(args, buy = true) }
-        onCommand("gesell", tp.util.Rank.DEVELOPER) { args -> placeFromCommand(args, buy = false) }
-        onCommand("gecollect", tp.util.Rank.DEVELOPER) { args ->
+        onCommand("geui", DEV_RANK, DEV_CONVENIENCE) { open() }
+        onCommand("ge", DEV_RANK, DEV_CONVENIENCE) { exchange(GeRequest.Offers) { offers -> list(offers) } }
+        onCommand("gebuy", DEV_RANK, DEV_CONVENIENCE) { args -> placeFromCommand(args, buy = true) }
+        onCommand("gesell", DEV_RANK, DEV_CONVENIENCE) { args -> placeFromCommand(args, buy = false) }
+        onCommand("gecollect", DEV_RANK, DEV_CONVENIENCE) { args ->
             slotArg(args)?.let { slot ->
                 collect(slot, ItemForm.DEFAULT, coins = true)
             }
         }
-        onCommand("geabort", tp.util.Rank.DEVELOPER) { args -> slotArg(args)?.let { slot -> abort(slot) } }
+        onCommand("geabort", DEV_RANK, DEV_CONVENIENCE) { args -> slotArg(args)?.let { slot -> abort(slot) } }
 
         for ((n, component) in SLOT_COMPONENTS.withIndex()) onButton(component) { click -> slotButton(n, click) }
         onButton(Components.Ge_Offers.BACK) { showIndex() }
@@ -721,3 +721,7 @@ public class GrandExchange : ContentPlugin {
         const val EXAMINE_OP = 10
     }
 }
+
+/** Developer tools here change gameplay, not items (commands brief §3 CONVENIENCE). */
+private val DEV_RANK = tp.util.Rank.DEVELOPER
+private val DEV_CONVENIENCE = tp.util.commands.Impact.CONVENIENCE

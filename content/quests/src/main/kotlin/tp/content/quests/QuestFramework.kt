@@ -5,6 +5,7 @@ import tp.plugin.ContentScope
 import tp.plugin.Event
 import tp.plugin.PlayerRef
 import tp.plugin.WorldRef
+import tp.plugin.commands.economyToolsAllowed
 import tp.symbols.Components
 import tp.symbols.DbTables
 import tp.symbols.Interfaces
@@ -76,7 +77,7 @@ public class QuestFramework : ContentPlugin {
 
     /** `::quest` lists the stage of the quests of this module; `::quest <row> <stage>` sets it (administrators, for testing). */
     private fun command(p: PlayerRef, args: List<String>) {
-        if (!p.rank.atLeast(ADMIN)) return
+        if (!p.economyToolsAllowed) return
         val row = args.getOrNull(0)?.toIntOrNull()
         if (row == null) {
             for (q in IMPLEMENTED.map { it() } + QuestsB.ALL) p.message("${q.row} ${q.name}: stage ${q.stage(p)} (${q.state(p)})")
@@ -92,7 +93,6 @@ public class QuestFramework : ContentPlugin {
     private companion object {
         /** Op 2 "Read journal:" of the quest list rows (client script 2633). */
         const val JOURNAL_OP = 2
-        val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** `questjournal` has the line components `qj1..qj199`. */
         const val MAX_LINES = 199

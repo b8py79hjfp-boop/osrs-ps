@@ -4,6 +4,7 @@ import tp.plugin.ButtonClick
 import tp.plugin.ContentScope
 import tp.plugin.IfEvents
 import tp.plugin.PlayerRef
+import tp.plugin.commands.economyToolsAllowed
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
@@ -29,7 +30,7 @@ internal class PotionStore {
         onButton(Components.Bankmain.POPUP_TAB_FORGETPOS) { toggle(Varbits.BANK_SETTING_FORGET_POPUP) }
         // Stands in for buying the unlock from the Mixology Rewards shop (OPEN-B5d): administrators only.
         onCommand("potionstore") {
-            if (!rank.atLeast(ADMIN)) {
+            if (!economyToolsAllowed) {
                 message("You do not have permission to use that command.")
             } else {
                 setVarbit(Varbits.MM_POTION_STORAGE_UNLOCKED, 1 - varbit(Varbits.MM_POTION_STORAGE_UNLOCKED))
@@ -281,9 +282,6 @@ internal class PotionStore {
     private fun PlayerRef.lastQuantity(): Int = maxOf(1, varbit(Varbits.BANK_REQUESTEDQUANTITY))
 
     private companion object {
-        /** Administrator staff level (StaffCommands). */
-        val ADMIN = tp.util.Rank.ADMINISTRATOR
-
         /** `bank_currenttab` value of the potion store tab (client script 504: valid targets are 0..9 and 15). */
         const val TAB_STORE = 15
 

@@ -158,10 +158,13 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
     public fun onCommand(
         name: String,
         rank: tp.util.Rank = tp.util.Rank.PLAYER,
+        impact: tp.util.commands.Impact? = null,
         handler: PlayerRef.(args: List<String>) -> Unit,
     ) {
         handlers.put(handlers.commands, name.lowercase(), handler, "command ::$name")
         handlers.commandRanks[name.lowercase()] = rank
+        // Commands brief §3: the world's impact policy gates legacy commands too (ECONOMY off on live worlds).
+        impact?.let { handlers.commandImpacts[name.lowercase()] = it }
     }
 
     /** Operable loc interaction ([op] 1..5): runs when the player reaches the loc (interactions.md I1). */
@@ -320,6 +323,15 @@ internal class Handlers {
 
     /** Minimum rank of each legacy [commands] entry (below it the player gets the unknown reply, commands brief §2). */
     val commandRanks = HashMap<String, tp.util.Rank>()
+
+    /** Impact class of legacy [commands] entries that declare one (commands brief §3). */
+    val commandImpacts = HashMap<String, tp.util.commands.Impact>()
+
+    /** Whether [player] may run legacy command [name]: its rank and, if declared, its impact class on this world. */
+    fun legacyAllowed(player: tp.engine.entity.Player, name: String): Boolean =
+        player.rank.atLeast(commandRanks[name] ?: tp.util.Rank.PLAYER) &&
+            commandImpacts[name]?.let { player.world.commands.allows(it) } != false
+
     val registry = tp.plugin.commands.CommandRegistry()
     val commandFallbacks = ArrayList<PlayerRef.(String) -> Boolean>()
 
