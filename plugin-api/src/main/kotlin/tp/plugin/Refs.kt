@@ -376,6 +376,14 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         clientScript(CS_CONFIRM_OVERLAY, "$title|$text|$cancel|$confirm", target)
     }
 
+    /**
+     * Waits for a number the client sends without a server-opened dialog (e.g. the colour picker's choice, which the
+     * client submits as RESUME_P_COUNTDIALOG); the value arrives as sent (no sign change).
+     */
+    public fun awaitCount(answer: PlayerRef.(Int) -> Unit) {
+        dialogs()[p] = { (it as? Int)?.let { n -> answer(n) } }
+    }
+
     /** Asks for a number (client script 108 `meslayer_mode7`); [answer] runs with the (non-negative) count. */
     public fun countDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
         dialogs()[p] = { (it as? Int)?.let { n -> answer(kotlin.math.abs(n)) } }

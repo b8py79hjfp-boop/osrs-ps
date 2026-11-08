@@ -12,6 +12,7 @@ import tp.plugin.ContentScope
 import tp.plugin.IfEvents
 import tp.plugin.PlayerRef
 import tp.symbols.Components
+import tp.symbols.Interfaces
 import tp.symbols.Varbits
 
 /**
@@ -49,6 +50,46 @@ public class AllSettings : ContentPlugin {
         private const val DROPDOWN = 2
         private const val KEYBIND = 3
         private const val INPUT = 4
+        private const val BUTTON = 6
+        private const val COLOUR_PICKER = 9
+
+        private const val PARAM_DEFAULT_COLOUR = 1230
+
+        /** CS 4185 `colour_pallet_open` (popup component, starting colour) and CS 4020 (its events); CS 101 redraws chat. */
+        private const val CS_PALLET_OPEN = 4185
+        private const val CS_PALLET_INIT = 4020
+        private const val CS_CHAT_REDRAW = 101
+        private val PALLET_COLOURS = 0..152
+        private val PALLET_CUSTOM = 0..4
+
+        /** The colour picker's "cancel" value (OpenRune: Int.MAX_VALUE is ignored). */
+        private const val NO_COLOUR = Int.MAX_VALUE
+        private const val MAX_RGB = 0x00ffffff
+
+        /** Reset buttons (OpenRune `confirmationSettings`): setting id -> question. */
+        private const val RESET_OPAQUE = 107
+        private const val RESET_SPLIT = 109
+        private const val RESET_QUEST_LIST = 228
+        private const val RESET_VOLUME = 468
+        private const val RESET_KEYBINDS = 58
+        private val WIPE_PLAYLISTS = mapOf(490 to 1, 491 to 2, 492 to 3)
+
+        private val OPAQUE_COLOURS = listOf(87, 89, 92, 94, 97, 99, 101, 103, 105, 196, 434)
+        private val SPLIT_COLOURS = listOf(96)
+        private val QUEST_LIST_COLOURS = listOf(224, 225, 226, 227)
+
+        /** `music_playlist_n_track_1..100`: 100 consecutive varbits per playlist from 19738 (gamevals). */
+        private const val PLAYLIST_FIRST = Varbits.MUSIC_PLAYLIST_1_TRACK_1
+        private const val PLAYLIST_TRACKS = 100
+
+        /** OpenRune `AllSettingsScript` volume defaults and the unmute level of the saved-volume varbits. */
+        private val VOLUME_DEFAULTS =
+            listOf(
+                SettingsTab.MASTER_SETTING to 100,
+                SettingsTab.MUSIC_SETTING to 20,
+                SettingsTab.SOUND_SETTING to 45,
+                SettingsTab.AREA_SETTING to 30,
+            )
 
         /** Cache enum 422 `settings_search_categories`: category order -> category struct. */
         private const val CATEGORIES_ENUM = 422
@@ -189,6 +230,14 @@ public class AllSettings : ContentPlugin {
                     }
                 }
 
+                COLOUR_PICKER -> {
+                    if (row != null) pickColour(p, struct, row)
+                }
+
+                BUTTON -> {
+                    confirm(p, id)
+                }
+
                 INPUT -> {
                     if (row != null) {
                         p.setVarbit(Varbits.FLOATER_CHATBOX_OPENED, 1)
@@ -196,6 +245,83 @@ public class AllSettings : ContentPlugin {
                     }
                 }
             }
+        }
+
+        /** ST9: the colour picker over the window, starting from the current colour (stored as RGB + 1, 0 = default). */
+        private fun pickColour(p: PlayerRef, struct: Int, row: Row) {
+            p.setVarbit(Varbits.SETTINGS_COLOUR_MODAL_OPENED, 1)
+            p.openOverlay(Components.Settings.POPUP, Interfaces.COLOUR_PALLET)
+            p.ifEvents(Components.Colour_Pallet.PALLET_COLOURS, PALLET_COLOURS, IfEvents.op(1))
+            p.ifEvents(Components.Colour_Pallet.PALLET_CUSTOM_CLICKZONE, PALLET_CUSTOM, IfEvents.op(1))
+            val current = get(p, row)
+            val start = if (current == 0) p.structInt(struct, PARAM_DEFAULT_COLOUR) ?: 0 else current - 1
+            p.clientScript(CS_PALLET_OPEN, Components.Settings.POPUP, start)
+            p.clientScript(CS_PALLET_INIT)
+            p.awaitCount { colour ->
+                setVarbit(Varbits.SETTINGS_COLOUR_MODAL_OPENED, 0)
+                if (colour != NO_COLOUR) setColour(this, row, colour)
+            }
+        }
+
+        private fun setColour(p: PlayerRef, row: Row, colour: Int) {
+            set(p, row, colour.coerceIn(0, MAX_RGB) + 1)
+            p.clientScript(CS_CHAT_REDRAW, 0)
+        }
+
+        /** ST10: the reset / wipe buttons ask first (OpenRune's questions and messages). */
+        private fun confirm(p: PlayerRef, id: Int) {
+            val question =
+                when (id) {
+                    RESET_OPAQUE -> "Are you sure you want to reset your opaque chatbox colours?"
+                    RESET_SPLIT -> "Are you sure you want to reset your split chat colours?"
+                    RESET_QUEST_LIST -> "Are you sure you want to reset your quest list text colours?"
+                    RESET_VOLUME -> "Are you sure you want to reset your volume sliders?"
+                    RESET_KEYBINDS -> "Are you sure you want to reset your keybinds?"
+                    in WIPE_PLAYLISTS -> "Are you sure you want to wipe playlist ${WIPE_PLAYLISTS[id]}?"
+                    else -> return
+                }
+            p.choiceDialog(question, listOf("Yes.", "No.")) { pick -> if (pick == 1) reset(this, id) }
+        }
+
+        private fun reset(p: PlayerRef, id: Int) {
+            when (id) {
+                RESET_OPAQUE -> {
+                    resetColours(p, OPAQUE_COLOURS, "Default opaque colours restored.")
+                }
+
+                RESET_SPLIT -> {
+                    resetColours(p, SPLIT_COLOURS, "Default split chat colours restored.")
+                }
+
+                RESET_QUEST_LIST -> {
+                    resetColours(p, QUEST_LIST_COLOURS, "Default quest list text colours restored.")
+                }
+
+                RESET_VOLUME -> {
+                    for ((setting, volume) in VOLUME_DEFAULTS) SettingsTab.setVolumeBySetting(p, setting, volume)
+                    p.message("Your volume sliders have been reset to their default values.")
+                }
+
+                RESET_KEYBINDS -> {
+                    for (struct in categories(p).flatMap { categorySettings(p, it) }) {
+                        if (p.structInt(struct, PARAM_SETTING_TYPE) != KEYBIND) continue
+                        val row = p.structInt(struct, PARAM_SETTING_ID)?.let { ROWS[it] } ?: continue
+                        set(p, row, row.default ?: 0)
+                    }
+                }
+
+                in WIPE_PLAYLISTS -> {
+                    val first = PLAYLIST_FIRST + ((WIPE_PLAYLISTS[id] ?: return) - 1) * PLAYLIST_TRACKS
+                    for (track in first until first + PLAYLIST_TRACKS) p.setVarbit(track, 0)
+                }
+            }
+        }
+
+        /** Colour settings back to "default" (0: the client draws the setting's default colour). */
+        private fun resetColours(p: PlayerRef, ids: List<Int>, message: String) {
+            for (id in ids) ROWS[id]?.let { set(p, it, 0) }
+            p.clientScript(CS_CHAT_REDRAW, 0)
+            p.message(message)
         }
 
         private fun setNumber(p: PlayerRef, row: Row, value: Int) {

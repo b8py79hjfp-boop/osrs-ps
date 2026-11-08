@@ -17,8 +17,5 @@ itself (its local preferences), not by the server.
 | ST6 | Volume sliders (window and settings tab) set the volume varp client-side and report the final value on release as a script trigger: the window sends (setting id, volume), CS 9266 / 9272 / 9278 (master 319, music 30, sounds 31, area 32); the tab's slider bobbles send (volume). The server stores it; clicking a bobble slot still sets 5% steps. | CS 9266; OpenRune `AudioSettingsScript`; tested in game |
 | ST7 | New-account defaults (each settings row's default, then OpenRune's account defaults: volumes 100 / 20 / 45 / 25, XP drops, Esc closes interfaces, …) are written once per account, only into variables still at 0, so existing choices are never overwritten. | OpenRune `setDefaultOptions` |
 | ST8 | Login sends CS 626: the camera zoom limits (varcs 1338-1341, 128..896) that the scroll-wheel zoom clamps to; without them zoom does nothing. | CS 626 / 42; OpenRune `LoginScript` |
-
-## Not implemented
-
-- Colour-picker settings (interface `colour_pallet`) and the confirmation buttons (reset chat colours, reset volume
-  sliders, reset keybinds, wipe playlists): **OPEN-ST1**.
+| ST9 | A colour setting opens interface 288 (`colour_pallet`) in `settings:popup` (CS 4185 with the current colour, CS 4020); Save submits the colour as a count reply (CS 614 `resume_countdialog`), stored as RGB + 1 (0 = the setting's default colour); CS 101 redraws chat. | CS 4185 / 614; OpenRune; tested in game |
+| ST10 | Reset buttons ask "Yes." / "No." first: opaque chat colours (11 settings), split chat colour, quest list colours (back to default), volume sliders (100 / 20 / 45 / 30), keybinds (each keybind's default), and wipe playlist 1-3 (`music_playlist_n_track_1..100` cleared). The question in the chatbox closes the settings window. | OpenRune `confirmationSettings` |
