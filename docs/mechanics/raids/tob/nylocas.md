@@ -19,7 +19,7 @@ All three have identical numbers (infobox); only the attack style differs: Ischy
 Attack speed **3** for all; not aggressive in the infobox sense (the "aggro" ones are picked by id, below). Fire spell
 weakness 15% (25 Jun 2025); can be burned (24 Jul 2024).
 
-| Variant | Combat | Size | Max hit | HP (5 players) | att / str / def / magic / ranged |
+| Variant | Combat | Size | Max hit | HP (Normal/Hard: 5 players; Entry: solo cache base) | att / str / def / magic / ranged |
 |---|---|---|---|---|---|
 | Small, Normal and Hard | 162 | 1 | 17 | 11 | 200 / 160 / 1 / 1 / 200 |
 | Large, Normal and Hard | 260 | 2 | 24 | 22 | 250 / 230 / 20 / 20 / 250 |
@@ -31,7 +31,8 @@ weakness 15% (25 Jun 2025); can be burned (24 Jul 2024).
 Other infobox bonuses: Normal small magic attack +1073 and magic strength +928, ranged strength -15; large +500, +500, 0;
 Entry small +505, +280, -30; large +400, +360, -6 (the values are as printed; **OPEN-NY1** whether they matter, as the
 Nylocas never make a magic accuracy roll against players with them). All defensive bonuses 0. Poison and venom
-resistance 100 except the Verzik versions.
+resistance 100 in every version, Verzik's included (Ischyros, Toxobolos and Hagios pages hold one value for all six
+versions; Athanatos and Vasilias also 100).
 
 - **HP by party size, Normal / Hard (5 -> 4 -> 3 or fewer):** small 11 / 9 / 8, large 22 / 19 / 16 (Strat); those equal the
   floor of 87.5% and 75% (TB10). Entry: "solo Entry mode smalls have two Hitpoints and larges have three" (Entry), which is the
@@ -147,8 +148,9 @@ from the last colour (53 flickering entries in the chart, 2 differ); the label i
 - **NY11 Wrong style:** a hit in the wrong style is **reflected to the attacker and heals the Vasilias for the same amount
   (100%)** (21 Jun 2018, previously 50%).
 - **NY12 Damage:** up to 70 off-prayer and 17 when the right prayer is on, melee being fully blocked by Protect from Melee
-  (Strat). Hard: the ranged attack also hits everyone within **2 tiles** of its target (Hard page: "everyone standing within
-  2 squares"; the strategy text says to spread 3 tiles; **OPEN-NY9**); the magic attack **bounces** through the rest of the
+  (Strat). Hard: the ranged attack also hits everyone near its target: the Vasilias page says "everyone standing within 2
+  squares of its target. It is advised to spread out with a 3-tile gap", while the Hard page says "everyone within 3
+  tiles of its primary target" and "spread at least three tiles away" (**OPEN-NY9**, conflict 4; radius 2 is the working value); the magic attack **bounces** through the rest of the
   party unless all are on one tile ("death-dot"), ignoring prayers and defence, at half damage if within 2 tiles of the
   target and more otherwise (numbers **OPEN-NY10**); max hit 105.
 - **NY13 Kill:** drop "Arachnids of Vampyrium" (always unless read; obj `TOB_BOOK_NYLOCAS` 22508). Boss kill => restores
@@ -205,7 +207,7 @@ party size in Entry; OPEN-NY15 Vasilias hit delays and animation ticks. **15 ope
 1. 30 waves (Entry page) vs 31 (Strat, chart).
 2. Pillar collapse damage: 30+ (Entry page) vs up to 50 (Strat).
 3. Explosion: about 8 in Entry (Entry page) vs small 18 / large 21 for Normal (Strat); consistent if the first is Entry only.
-4. Hard ranged splash: 2 tiles (Hard page) vs spread 3 tiles (Hard strategy text).
+4. Hard ranged splash radius: "within 2 squares" with a "3-tile gap" advised (Vasilias page) vs "within 3 tiles" (Hard page).
 5. Solo Entry Nylocas HP "20% of original" (Vasilias page) vs cache base 2 / 3 and the 1 Mar 2023 scale.
 6. Wave 21 west label vs colour oddity (NY7).
 7. Prinkipas stats: wiki infobox (att 200 / str 175 / ranged 175) vs cache (400 / 230 / 250); the 9 Jun 2021 buff explains it.

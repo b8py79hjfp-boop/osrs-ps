@@ -42,10 +42,10 @@ below list only what a source states; everything else is `OPEN-SO<n>`. Seconds a
   were tweaked so they stop disappearing.
 - **SO4 Big ball:** after **10 projectile attacks** (Page, "launching 10 projectiles"; melee attacks do not count, Entry
   page) it fires a slow **large red ball** at one player; the message "`<name>` has discovered a large ball of energy
-  coming their way..." (highlighted, 21 Jun 2018) names the target. It hits for up to **188 at full party size**, "scaling
-  with party size" (Page); with two or more players alive in the arena it is a guaranteed kill on the target alone (121+,
+  coming their way..." (highlighted, 21 Jun 2018) names the target. It hits for "up to 188 damage (scaling with party size)" (Page); with two or more players alive in the arena it is a guaranteed kill on the target alone (121+,
   Strat). Players in the **3 x 3 around the target share the damage** (split equally; division not stated). The ball is
-  tick-eatable and has the same timing at any distance (21 Jun 2018). Entry: **15** solo, "around 80" in groups (Entry).
+  tick-eatable and has the same timing at any distance (21 Jun 2018). Entry: **15** solo; in groups the Entry page says "this can hit 70+" while the Sotetseg page says "around 80 or so
+  damage" (**OPEN-SO10**, conflict 3).
 - **SO5 Shadow realm** at **66.6% and 33.3%** of its HP: it picks **one** player (white light and the message "Sotetseg
   chooses you...") and moves them to the Shadow Realm, a separate tiled maze; the others are teleported to the far end of
   the arena, and nothing Sotetseg fires while the maze is on (including the big ball) deals damage. The fade-to-white
@@ -64,13 +64,13 @@ below list only what a source states; everything else is `OPEN-SO<n>`. Seconds a
 
 ## Per-mode differences
 
-- **Entry:** max hits 20 / 22 / 22; HP 2,240 at five; the big ball 15 solo / about 80 in a group; wrong-tile damage +11.
+- **Entry:** max hits 20 / 22 / 22; HP 2,240 at five; the big ball 15 solo / 70+ (Entry page) or about 80 (Sotetseg page) in a group; wrong-tile damage +11.
 - **Normal:** as above.
 - **Hard:** att 350; at 66.6% / 33.3% **all but one** player are sent to the Shadow Realm and the maze is **divided
   among those sent, by orb order**; the tornado can spawn in the realm as well as in the overworld, and appears **earlier**:
   once the sent player lowest in orb order passes the third row it spawns inside the realm; if the player left in the
   overworld passes the third row it spawns in **both**; it launches **two** big balls at a time; the shared bomb damage in
-  lower scales was reduced (4 Jun and 9 Jun 2021) and a second set of balls is "often tick-eaten". Hard tile scenery:
+  lower scales was reduced (9 Jun 2021 only) and a second set of balls is "often tick-eaten". Hard tile scenery:
   `TOB_SOTETSEG_HARD_DARKTILE` 41748, `_LIGHTTILE` 41749 and parents 41750-41753, visibility varbit
   `TOB_SOTETSEG_HARD_TILES_VISIBLE` 12269. Numbers **OPEN-SO3**.
 
@@ -82,8 +82,8 @@ below list only what a source states; everything else is `OPEN-SO<n>`. Seconds a
 
 ## Changes up to 2026-11-03 that matter
 
-3 Jun 2021 modes added; 4 Jun 2021 hotfix (no big bomb right after the maze; green ball and yellow ball changes belong to
-Verzik); 9 Jun 2021 hotfix (Hard invisible big bombs, shared bomb damage in lower scales); 1 Dec 2021 fade; 24 Jan 2019
+3 Jun 2021 modes added; 4 Jun 2021 hotfix ("Sotetsegs big bomb should no longer happen immediately after the maze mechanic ends"; the green ball and yellow ball changes belong to
+Verzik; "Increased the damage of the ball attacks in Hard Mode" is not attributed to a boss); 9 Jun 2021 hotfix (another attempted fix for invisible Hard big bombs; "Reduced the amount of damage the shared bomb at Sotetseg deals when split correctly in lower scales"); 1 Dec 2021 fade; 24 Jan 2019
 orb tweak; 2 Aug 2018 consistent projectiles, shorter prayer lock; 21 Jun 2018 ball timing, message highlight, no stacked
 magic and ranged. No Sotetseg change after 1 Dec 2021 on the Page.
 
@@ -101,3 +101,4 @@ Entry numbers beyond those quoted. **10 open items.**
 
 1. Wrong-tile damage: "the player" (Page, Entry) vs "nearby players" (Strat).
 2. Big ball: "up to 188 damage (scaling with party size)" (Page) vs "121+" guaranteed kill with two or more players (Strat); not contradictory if 121 is a lower scale.
+3. Entry big ball in groups: "70+" (Entry page) vs "around 80 or so" (Sotetseg page); the 15 for solo agrees.

@@ -101,5 +101,6 @@ chosen and how the next is picked (random assumed); OPEN-XA9 Entry damage number
 1. Exhumed counts: 12 / 9 / 6 (Strat paragraph 1) vs 15 (12 in trio) (Strat paragraph 2).
 2. Phase 3 threshold: 25% (Page, Strat) vs below 22.5% (Entry page).
 3. Retaliation damage: 50-75 (Page) vs 50-80 (Strat).
-4. Entry HP: 3,400 (Page) vs cache base 520 (x4 = 2,080); the other Entry bosses agree with the cache, so 3,400 looks pre-2023.
+4. Entry HP: 3,400 (Page infobox) vs cache base 520 (x4.0 at five players = 2,080; x5 = 2,600). 3,400 matches neither, and no
+   source explains it; unresolved (**OPEN-XA2**).
 5. Poison tile damage: 4-8 base (Page) vs "up to 8" (Strat).

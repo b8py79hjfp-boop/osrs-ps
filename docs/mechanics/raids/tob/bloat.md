@@ -31,16 +31,24 @@ only what a source states; everything else is `OPEN-BL<n>`. Seconds are converte
   sight on the hit player, even if the Bloat cannot see them. Line of sight is a custom check: every tile on the side of
   the 5x5 Bloat nearest to the player is tried and the attack goes through if any has a clear view (8 Nov 2023, Mod Ash).
   Damage to the Bloat while it is active (walking) is **halved, rounded down**.
-- **BL3 Walk length:** the first walk lasts **39-47 ticks** (Page; 23.5-28.2 s) or **38-46** (Strat); later walks last
+- **BL3 Walk length:** the first walk lasts **39-47 ticks** (Page, which prints "23.5 to 28.2 seconds"; 39 ticks is 23.4 s at 0.6 s per tick, so
+  the page's 23.5 is rounded up; 47 ticks is 28.2 s) or **38-46** (Strat); later walks last
   **34-42 ticks** (20.4-25.2 s); if no player attacked it during the previous down the walk is **4 ticks longer**. For
   **5 ticks after a turn or a speed change** it cannot go down, which can stretch a walk past its maximum.
 - **BL4 Down:** it stops for **32 ticks (19.2 s)**; the stomp is on the **30th tick of inactivity** (Strat) / "after 19.2
   seconds" (Page); it deals **40-80** (Entry max 40) in the surrounding area (radius not stated), can be tick-eaten, and
   restores any drained Defence. The team has about 18 s (5 hits close, 4 from range with a 4-tick weapon). After the
   stomp it walks again for 34-42 ticks.
-- **BL5 Speed by HP:** above 60.0% it **walks**; from 60% down to 40% it **runs** (two tiles at a time); at 39.9% and
-  lower it alternates between walking and running **for every attack made on it, hit or miss**. Strat: "from 60-100% it
-  will walk, 40-59.9% run, 39.9% and lower alternate" (boundary tick **OPEN-BL4**).
+- **BL5 Speed by HP:** at 60% or more it **walks**; between 40% and 60% it **runs** (two tiles at a time); at 39.9% and
+  lower it alternates between walking and running **for every attack made on it, hit or miss**. Sources: Page "up to
+  60.0%, it will always walk; between 40% and 60%, it will always run" and "At 39.9% and lower, the Bloat will
+  alternate between walking or running for every attack made on it regardless if it hits or not"; the Entry page
+  "from 60-100% of his health, he will walk, at 40-59.9% he will run, and from 39.9% and lower he will alternate
+  between running and walking depending on how many hits he takes"; Strat "between 40% to 60% of its health, it will
+  always run, moving two tiles at a time. Below 40%, it can either run or walk, alternating between walking and running
+  for every hit made on it upon falling below 40% health". Boundary difference: at exactly 60.0% the Entry page and the
+  Page's "up to 60.0%" walk while Strat's "40% to 60%" runs; the 40.0% boundary and 39.9% agree up to wording (exact
+  boundary **OPEN-BL4**, the Entry/Page reading is used).
 - **BL6 Direction changes:** it may change direction while walking, with a **32-tick cooldown** (Normal, Entry; starts at
   32 on room entry; counts down only while walking; the timer persists between walks). Whether a turn happens when
   eligible is random (probability not stated, **OPEN-BL1**).
@@ -67,9 +75,10 @@ only what a source states; everything else is `OPEN-BL<n>`. Seconds are converte
 
 ## Changes up to 2026-11-03 that matter
 
-3 Jun 2021 modes added; 21 Jun 2018 and 8 Jun 2018 falling flesh slower; 8 Nov 2023 line-of-sight explanation (not a
-change); 2 May 2019 the Bloat "should now fall down in the correct position" (the down animation). No Bloat entry after
-that on the Page.
+Bloat page changelog: 3 Jun 2021 modes added; 21 Jun 2018 and 8 Jun 2018 falling flesh slower. 8 Nov 2023 line-of-sight
+explanation (Mod Ash; not a change). The main ToB page changelog (not the Bloat page) has 2 May 2019: "The Pestilent bloat
+within the Theatre of Blood should now fall down in the correct position" (what "correct position" means is not stated).
+No Bloat page entry after 3 Jun 2021.
 
 ## Open list
 
@@ -83,5 +92,8 @@ equal Normal; OPEN-BL8 first-walk range (conflict below); OPEN-BL9 4- / 3-player
 
 1. First walk: 39-47 ticks (Page) vs 38-46 (Strat).
 2. Stomp time: "after 19.2 seconds" (Page) vs "on the 30th tick of inactivity" of 32 (Strat); both kept, stomp at tick 30.
-3. Entry limbs: after the first stomp (Entry page) vs from 90% HP (Page, Normal rule).
-4. Solo Entry HP 20% (Page) vs cache 25% base (TB11).
+3. Solo Entry HP 20% (Page) vs cache 25% base (TB11).
+4. Speed boundary at 60.0%: walk (Entry page, Page "up to 60.0%") vs run (Strat "between 40% to 60%"): BL5.
+
+Not a conflict: Entry limbs "after Bloat's first stomp" (Entry page) against the 90% HP trigger is the Entry rule against the
+Normal rule (see Per-mode differences, OPEN-BL3).

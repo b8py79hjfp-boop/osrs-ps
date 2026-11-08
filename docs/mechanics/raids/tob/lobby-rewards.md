@@ -20,9 +20,9 @@ Rooms: [maiden.md](maiden.md), [bloat.md](bloat.md), [nylocas.md](nylocas.md), [
 | LR1 | Raid entrance, notice board, bank, bank barrier, gravestone chest (reclaim chest), blood well (Vyre well), castle doors | scenery `TOB_SURFACE_RAID_ENTRANCE` 32653, `TOB_SURFACE_NOTICE_BOARD` 32655, `TOB_SURFACE_BANKBOOTH` 32666, `TOB_SURFACE_GRAVESTONE_CHEST` 32656, `TOB_SURFACE_BLOOD_WELL` 32654; varbit `TOB_LOBBY_WELL_CONTENTS` 6455 (the scythe's Vyre well charges, 6 Dec 2018) | cache; Scythe page |
 | LR2 | Rewards chest "just opposite the bank booths" for forgotten loot | `TOB_REWARDS_CHEST_LOBBY_OPEN` 41435, `_CLOSED` 41436, `_MULTI` 41437, and no-op variants 41743-41745 | cache; Main (7 Apr 2021) |
 | LR3 | Scoreboard in the eastern hall (3676, 3223), "Read" | scenery 32987, interface `TOB_SCOREBOARD` 363, tab varbit `TOB_SCOREBOARD_TAB` 12270 | Score; cache |
-| LR4 | Mysterious Stranger at the entrance (3673, 3222) | NPC ids (Sarei) 8208, 10875, 10876, 10877, 11162; since The Blood Moon Rises (30 Jun 2026) the replacement 16269, 16270 serves the same shop; options "Talk-to", "Trade" (and "Change" for capes); the cache also has an NPC `TOB_STRANGER` 8325 | MS; cache |
+| LR4 | Mysterious Stranger at the entrance (3673, 3222) | NPC ids of the "Mysterious Stranger" version 8208, 10875, 10876, 10877, 11162 (the wiki's separate "Sarei" version is 16005-16009 and 16242, not used here); since The Blood Moon Rises (30 Jun 2026) the replacement 16269, 16270 serves the same shop; options "Talk-to", "Trade" (and "Change" for capes); the cache also has an NPC `TOB_STRANGER` 8325 | MS; cache |
 | LR5 | Abigaila, spectator NPC: Lumbridge General Store upstairs (3210, 3249, 1) and by the Grand Exchange spirit tree (3185, 3516) | NPC 8368 (`TOB_SPECTATOR_MISTHALIN`), options "Talk-to", "Scry" | Abig; cache |
-| LR6 | Vault (treasure room): monumental chests at (3226-3240, 4323-4327), strategy table (3228, 4318), war table (3232, 4325); room region 12867 | scenery: chest closed teammate's 32990, teammate's unique 32991, player's 32992, player's unique 32993, opened regular 32994, opened unique 41746; strategy table 33014; war table 33011; `TOB_LOOTTRACKER_DUMMY_LOC` 47338 | Chest; tables; cache |
+| LR6 | Vault (treasure room): monumental chests: map pins (3233, 4330), (3226, 4327), (3226, 4323), (3240, 4327), (3240, 4323) on the Chest page (the earlier range 3226-3240 x 4323-4327 left out y 4330), strategy table (3228, 4318), war table (3232, 4325); room region 12867 | scenery: chest closed teammate's 32990, teammate's unique 32991, player's 32992, player's unique 32993, opened regular 32994, opened unique 41746; strategy table 33014; war table 33011; `TOB_LOOTTRACKER_DUMMY_LOC` 47338 | Chest; tables; cache |
 | LR7 | Region ids (derived from the wiki map pins as `(x >> 6) << 8 \| (y >> 6)`): lobby 14642, vault 12867, supply chest room 13125, Nylocas room 13122, Verzik room 12611, Xarpus room 12612. Maiden and Sotetseg pins are not on the pages read (**OPEN-LR1**). The brief's RuneLite ids (ToB 12867, lobby 14642) agree. | derived | brief 2; pages |
 
 ## Notice board and parties
@@ -60,7 +60,7 @@ Rooms: [maiden.md](maiden.md), [bloat.md](bloat.md), [nylocas.md](nylocas.md), [
   stats, delays the next attack like food and can be combo-eaten with potions and karambwans. Boosts: Attack / Strength /
   Defence `floor(level x 15 / 100) + 4` (one lower than a super potion); Ranged `floor(level / 10) + 4`; Magic **static +4**
   (Bandages page) - the Entry page says the Magic boost has the ranging potion's scaling, but the 9 Jun 2021 hotfix reduced the
-  Magic boost, so the static value is used (**OPEN-LR7**). Item sprite and name changes 16 Feb 2022 (cosmetic).
+  Magic boost, so the static value is used (**OPEN-LR7**). The only recorded change (Bandages page, 16 Feb 2022) is the red cross symbol becoming a red asterisk (cosmetic); no name change is recorded.
 
 ## Treasure vault and the monumental chest
 
@@ -166,7 +166,7 @@ Plus the raid-wide items in [../tob.md](../tob.md). **14 open items.**
 ## Conflicts between sources
 
 1. Vial of blood minimum: 45 (Chest) vs 50 (Calc module).
-2. Midway points: 6-13 per chest (Supply) vs tiers 10-13 / 8-11 / 6-9 (Strat) vs "15 average, 18 highest" (Hard).
+2. Not a conflict between Supply and Strat: 6-13 per chest (Supply) and the tiers 10-13 / 8-11 / 6-9 (Strat) are consistent. Only the Hard page's "average of 15 points, though the highest is 18" differs (LR10).
 3. Onion rule: Maiden + Bloat (Strat) vs Maiden + Bloat or Nylocas + Sotetseg (Supply).
 4. Bandages Magic boost: ranging scaling (Entry) vs static +4 (Bandages).
 5. Hard-exclusive tertiaries: need the target time (Hard, Zik) vs a plain Hard drop (Main, Chest).

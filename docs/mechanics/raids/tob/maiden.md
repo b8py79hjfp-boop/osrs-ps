@@ -32,14 +32,18 @@ timelines below list only what a source states; everything else is `OPEN-MA<n>`.
 
 - **MA1 Blackstorm (normal attack):** magic, every **10 ticks**, at one player. Target priority (Strat): closest player,
   then players on her north / east side, then orb order (the Page says closest, ties in party order). The attack always
-  lands as a successful hit and deals **36.5 + 3.5 x c** where c is the number of Matomenos that reached her; Protect
-  from Magic halves it; it over-hits beyond the player's current HP so it cannot be tick-eaten. 50% chance to drain the
+  lands as a successful hit and deals **36.5 + 3.5 x c** (Strat) where c is the number of Matomenos that reached her; Protect
+  from Magic halves it (**OPEN-MA11:** the formula gives 36.5 with c = 0 while the infobox max hit is 36: whether the
+  result is rounded down, truncated or the cap is 36 plus the Matomenos term is not stated; likewise how the halved
+  value rounds); it over-hits beyond the player's current HP so it cannot be tick-eaten. 50% chance to drain the
   target's combat stats by **(damage + 1) / 5**, on the style where the player's attack bonus is highest at that moment.
   Players she is not targeting need no prayer.
 - **MA2 Blood splats:** thrown at the tile each player stands on (she uses a different animation than the Blackstorm: seq
   `MAIDEN_ATTACK_BLOOD` 8091 vs `MAIDEN_ATTACK_SPECIAL` 8092); she cannot use it again for the next **two** attacks
-  (Strat). One player also gets additional splats at random inside a 5x5 around them: Strat says two additional for one
-  player, the Page says "three at the player standing furthest away" (**OPEN-MA2**: who and how many). A splat deals
+  (Strat). One player also gets additional splats at random inside a 5x5 around them: Strat says "One player will have two
+  additional blood splats thrown randomly in a 5x5 area centred around them"; the Page says "blood spots at each player,
+  and three blood spots at the player standing furthest away". These are compatible: the own-tile splat plus two
+  additional makes three on the furthest player. **OPEN-MA2:** only which player is chosen when several are equally far. A splat deals
   **10 + 2 x c**, heals her by the same amount and drains prayer.
 - **MA3 Blood spawns:** each splat has a **10%** chance of becoming a blood spawn, **20%** if one was stepped on (Strat);
   halved when all players dodge, and at most **one** spawn appears if they do (12 Aug 2021); at most **8** spawns at a
@@ -64,10 +68,12 @@ timelines below list only what a source states; everything else is `OPEN-MA<n>`.
 
 ## Per-mode differences
 
-- **Entry:** reduced stats and damage (max hit 18); fewer Matomenos (count **OPEN-MA6**); blood spawn trails 2-5; the
+- **Entry:** reduced stats and damage (max hit 18); fewer Matomenos (count **OPEN-MA6**; the Entry page says "At 70%,
+  50%, and 30% health, she will spawn a red Nylocas Matomenos on either side of the arena", which can be read as one per
+  side, but it gives no party-size rule or total); blood spawn trails 2-5; the
   Blood Nylocas HP was raised in the Story-mode hotfix of 9 Jun 2021 (value **OPEN-MA6**). Retry after a wipe: TB16.
 - **Normal:** as above.
-- **Hard:** always **10** Matomenos regardless of party size; the **first five** that reach her also increase her attack
+- **Hard:** always **10** Matomenos regardless of party size (Page; the Hard page says "all eight", see conflict 6); the **first five** that reach her also increase her attack
   speed (amount **OPEN-MA7**); blood spawns are **invulnerable** (still attackable) and their trails **never despawn**;
   her damage cap is raised so she can "hit faster and harder" when Matomenos reach her or players stand on splats;
   attacking the same player more than twice in a row raises her maximum hit (amounts **OPEN-MA8**). Hard solo (9 Jun 2021
@@ -88,17 +94,21 @@ weakness (Matomenos) and earth weakness (blood spawn). No ToB Maiden change date
 
 ## Open list
 
-OPEN-MA1 4-man HP rounding; OPEN-MA2 splat target / count; OPEN-MA3 trail lifetime in ticks and spawn / move rules of the
+OPEN-MA1 4-man HP rounding; OPEN-MA2 splat target among equally far players; OPEN-MA3 trail lifetime in ticks and spawn / move rules of the
 blood spawn; OPEN-MA4 Matomenos HP (200/175/150 vs 100); OPEN-MA5 exact freeze roll; OPEN-MA6 Entry Matomenos count / HP and
 Entry Blood Nylocas HP; OPEN-MA7 Hard attack speed per Matomenos; OPEN-MA8 Hard cap and max-hit ramp numbers; OPEN-MA9
 Matomenos walk speed / arrival time, spawn tile coordinates and the delay between the HP threshold and the spawn;
 OPEN-MA10 the stat-drain target stat when two bonuses tie, the Blackstorm cap in Hard, the Entry Blackstorm formula (only
-the max hit 18 is stated), and the Entry splat damage. **10 open items.**
+the max hit 18 is stated), and the Entry splat damage; OPEN-MA11 Blackstorm rounding and 36.5 vs max hit 36. **11 open
+items.**
 
 ## Conflicts between sources
 
 1. Matomenos HP at the Maiden: Strat 200 / 175 / 150 vs infobox 100 and cache 100 (Verzik variant 200).
 2. Solo Entry HP "20% of original" (Page) vs cache base 500 of 2,000 (25%) and U-Entry23.
-3. Blood splats: "three at the furthest player" (Page) vs "two additional for one player" (Strat).
+3. Not a conflict: Page ("three at the furthest player") and Strat (own tile plus "two additional" on one player) agree; see MA2 / OPEN-MA2.
 4. Blood spawn Entry HP 7 (wiki) vs 10 (cache), and combat level 55 for all modes (wiki) vs 35 / 55 / 183 (cache).
 5. Wipe in Entry: retry the room (Page) vs restart the raid (Entry page): TB16.
+6. Hard Matomenos count: **10** (Page: "will always spawn the maximum number of Nylocas Matomenos (10)"; also the 2-per-player,
+   at-most-10 rule of MA4) vs "all eight" (Hard page). 10 is better supported (it matches the Maiden page and the MA4 cap)
+   and is used.

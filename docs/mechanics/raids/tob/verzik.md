@@ -23,7 +23,7 @@ converted at 0.6 s per tick.
   (Normal / Entry / Hard); collapsing pillar 8377, 8378 / 10838, 10839 / 10855, 10856; creeper `TOB_VERZIK_CREEPER` 8386
   (presumed the P3 acid / web effect NPC, **OPEN-VZ1**); armoured Nylocas (Athanatos) 8384 (Entry 10844), blood Nylocas
   (Matomenos) 8385 (Entry 10845, Hard 10862), combat Nylocas 8381-8383 (Entry 10841-10843, Hard 10858-10860; see
-  [nylocas.md](nylocas.md)). Quest NPC 8250 is the human Verzik, not the fight.
+  [nylocas.md](nylocas.md)). Quest NPCs, not the fight: 8250 is the "A Taste of Hope" version (race Vampyre / Nylocas, not human) and 11178 the "A Night at the Theatre" version (race Vampyre).
 - Combat level: Entry **425 / 488 / 512**, Normal and Hard **1040 / 1265 / 1520**. Size **5 / 3 / 7**. Attack speed
   **14 / 4 / 7** (phase 3 becomes 5 on the enrage). Attack styles P1 magic; P2 crush, magic, ranged; P3 typeless crush,
   magic, ranged. Aggressive from P2. XP bonus Entry 0 / 7.5 / 30, Normal and Hard 5 / 30 / 57.5.
@@ -64,11 +64,14 @@ converted at 0.6 s per tick.
   4 ticks (ranged; up to 44, halved by Protect from Missiles; damage on impact so a one-tile step avoids it); a player
   **next to her** is very likely body-slammed instead (crush, up to 45, knocks back 3 tiles and stuns 3 s = 5 ticks,
   exposing them to a bomb), a player **under** her may be stomped for up to 82 ("There's nothing for you there!",
-  always hits); Protect from Melee does nothing against either. Every **fifth attack** she fires a **lightning ball**
+  always hits); Protect from Melee does nothing against either. Every **fifth attack** (Entry page: "after every four bomb attacks", conflict 11) she fires a **lightning ball**
   that bounces between players up to **4 times** in random order; if it passes through her she takes **15-20**
   (no accuracy roll); a player hit alone or on the fourth bounce takes up to **48** (25 with insulated boots, 23 Jun 2021
-  fix for Hard). Normal bug: with only one player alive in a larger party the damage is **not capped** (23 May 2024:
-  the Matomenos change was released, the lightning cap "couldn't be figured out for team raids").
+  fix for Hard). Cap with only one player alive in a larger party (Normal): **OPEN-VZ16**, sources disagree: Strat
+  has a bug note "The damage dealt by the lightning ball will not be capped in Normal Mode if there is only one player left
+  alive in a team of multiple people", the Main changelog (23 May 2024) says "The lightning ball was supposed to be capped,
+  but they couldn't figure it out for team raids", while the update post (U-May24) says "the Lightning Ball damage is
+  capped, as in Hard Mode". Working assumption: not capped, behind the flag `tob.verzikSoloLightningCap` (default off).
   - **Nylocas:** at the start of P2 she summons combat Nylocas (25 HP each) that home on a random target and explode for
     up to **46** (up to 8 if 3 tiles away; Page says 63), or expire after about 15 s of movement (Strat); players "pop"
     them by letting them come within 3 tiles then moving away. After **every third lightning ball** there is a **25%**
@@ -80,8 +83,10 @@ converted at 0.6 s per tick.
   - **Phase 2.5 at 35% or lower:** she stops attacking and summons **two Nylocas Matomenos** (red) to her left and right
     (**one** if a single player remains alive, Normal, 23 May 2024); damage dealt to her while she is summoning (about 3 s =
     5 ticks) **heals** her. She prioritises a blood spell (75% chance of the healing spell, Mod Ash 20 Jul 2020): an AoE
-    on a 3 x 3 around one player for up to **45**, healing her for **50% of the total damage**; Protect from Magic blocks the
-    damage but she still heals half of what she would have dealt, and it is calculated during the animation. She kills the
+    on a 3 x 3 around one player for up to **45**, healing her for **50% of the total damage**; Protect from Magic: sources
+    disagree (conflict 8): Strat "will block the attack, but will still heal her for half the damage she would have dealt"
+    (Mod Ash, 20 Jul 2020, quoted there: "halved by prayer ... ~22, healing her for 11"), the Verzik page "negates all
+    damage from the blood spells"; it is calculated during the animation. She kills the
     Matomenos if they persist too long and heals the HP they have left. No more explosive Nylocas or Athanatos after 35%;
     urn bombs and lightning continue. Hard: surviving Matomenos **explode** damaging nearby players based on their HP when she
     summons the next set.
@@ -103,14 +108,17 @@ converted at 0.6 s per tick.
      players protect none. There are **7 ticks** between the end of the special and her next normal attack. Hard: the blast
      strikes **three times per player** and three safe tiles per player appear.
   4. **Green ball:** the message "Verzik Vitur fires a powerful projectile in your direction..." (colour `0a721f`) names the
-     target; the ball deals **75% of the player's Hitpoints level** (74 at 99) unless **bounced** to a different adjacent
+     target; the ball deals **75% of the player's Hitpoints level** (Strat: "75% ... (74 at level 99)"; the Verzik page says "up to
+     74%", conflict 10) (74 at 99) unless **bounced** to a different adjacent
      player, which must repeat until it dissipates (three bounces in the Entry text); a ball that finds nobody in range or
      lands on the same player twice explodes for the full damage. Hard: it **kills outright** if the ball has not been
      bounced and two or more players are present (the Page says "more than two"), damage figures 89 / 74 / 49 for 1 / 2 / 3
      bounces, and Redemption triggered at the last moment cancels it; with one player left it works as Normal (**OPEN-VZ6**).
-     A chat message is shown when the Hard ball bounces to you (9 Jun 2021).
+     A chat message is shown when the Hard ball bounces to you (9 Jun 2021). **Assumption:** the 9 Jun 2021 hotfix text calls it
+     "the Acid Bomb at Verzik" (and "the acid bomb" in Story mode); this doc reads "Acid Bomb" as the green ball, which no source
+     states (the lightning ball also bounces; **OPEN-VZ17**).
 - **VZ5 Enrage at 20% or lower:** she shouts (Strat: "I'm not finished with you just yet!"; Entry page: "I'm not done with you
-  yet!"; **conflict**, **OPEN-VZ7**), the projectile max hit rises to **34**, her attack speed goes from 7 to **5**, and a
+  yet!"; **conflict**, **OPEN-VZ7**), the projectile max hit rises to **34** (Strat; conflict 9), her attack speed goes from 7 to **5**, and a
   **purple tornado** is summoned **for every player**, each homing on its own player (never another's). A tornado that
   touches its player deals **50% of that player's current HP** (never less than **5**, 9 Jun 2021) and she **heals triple the
   damage**; it also heals her if the player dies to something else. A new tornado spawns **16 ticks** after the old one hit.
@@ -144,12 +152,12 @@ converted at 0.6 s per tick.
 
 ## Changes up to 2026-11-03 that matter
 
-1 Oct 2025 quick-start (U-Uplift); 25 Jun 2025 P3 fire weakness; 23 May 2024 one Matomenos with one player left and a lightning
-cap on that single survivor; 9 Aug 2023 magic defence from Defence (clarification); 23 Jun 2021 Nylocas explosion damage
+1 Oct 2025 quick-start (U-Uplift); 25 Jun 2025 P3 fire weakness; 23 May 2024 one Matomenos with one player left (the lightning cap on that single survivor is
+disputed: OPEN-VZ16); 9 Aug 2023 magic defence from Defence (clarification); 23 Jun 2021 Nylocas explosion damage
 no longer scales up in low scales, insulated boots reduce the Hard lightning, non-melee Hard Nylocas only hit by their
 style, wave-20 fix, raid timer starts at the Maiden; 9 Jun 2021 hotfix (tornado minimum 5, Story-mode P3 +200 HP and P2 -200
 HP and tweaks, Hard lightning damage and range, Nylocas detonation fix, bounce chat message); 4 Jun 2021 hotfix (green ball
-damage up, no tick-eating the yellow in Hard); 3 Jun 2021 modes added; 12 Mar 2020 / 16 May 2019 / 2 May 2019 / 2 Aug 2018
+damage up, no tick-eating the yellow in Hard); 3 Jun 2021 modes added; 16 May 2019 / 2 May 2019 / 2 Aug 2018
 fixes (web damage one cycle earlier, correct movement, damage computed on hit in P3, re-target non-caged players).
 
 ## Open list
@@ -163,7 +171,7 @@ timings, her starting tiles and the P3 target selection of the first target; OPE
 damage; OPEN-VZ11 yellow pool count / placement and the power-blast damage in Hard and Entry; OPEN-VZ12 Nylocas homing
 speed, exact lifetime (15 s of movement) and explosion damage (46 vs 63); OPEN-VZ13 tornado speed and the exact
 unspecified "heal for triple" rounding; OPEN-VZ14 which normal attack she picks (weights of melee / ranged / magic) and when
-the melee is chosen; OPEN-VZ15 whether the P1 shield damage caps apply in Entry and Hard. **15 open items.**
+the melee is chosen; OPEN-VZ15 whether the P1 shield damage caps apply in Entry and Hard. OPEN-VZ16 lightning cap with one survivor; OPEN-VZ17 whether "Acid Bomb" is the green ball. **17 open items.**
 
 ## Conflicts between sources
 
@@ -171,6 +179,14 @@ the melee is chosen; OPEN-VZ15 whether the P1 shield damage caps apply in Entry 
 2. Urn bomb max 44 (Strat, Hard infobox) vs 47 (Normal infobox); lightning 48 (Strat) vs 50 bounce (infobox).
 3. Combat Nylocas explosion: up to 46 (Strat) vs up to 63 (Page).
 4. Hard green ball: "instantly kill if two or more players" (Hard page) vs "more than two" (Page); damage 89 / 74 / 49 stated next to the kill rule.
-5. Lightning cap with one survivor: capped per update post vs uncapped per Strat's bug note and the wiki changelog.
+5. Lightning cap with one survivor: capped (update post U-May24) vs uncapped (Strat bug note) vs "supposed to be capped, but they couldn't figure it out for team raids" (Main changelog): OPEN-VZ16.
 6. Matomenos summon: "two" (Page) vs "one when a single player remains" (23 May 2024); not contradictory.
 7. Solo Entry HP 20% (Maiden / Bloat / Vasilias pages) vs cache base 25% (TB11); the Dawnbringer "2-4 specials" in Entry matches the cache base 300 (300 / 112.5 = 2.7).
+8. Blood spell under Protect from Magic: Strat quotes Mod Ash "hits everyone near its target up to 45 (halved by prayer) ...
+   if she just hit 1 person for up to 45, and they prayed, that'd be ~22, healing her for 11" and its own text says the prayer
+   "will block the attack, but will still heal her for half the damage she would have dealt"; the Verzik page says Protect from
+   Magic "negates all damage from the blood spells". The heal and damage under prayer are unresolved.
+9. P3 projectile (ranged / magic) max hit: "up to 34 damage" (Verzik page text) vs 33 (Verzik infobox, Strat; Strat gives 34 only after the enrage).
+10. Green ball damage: "up to 74% of their Hitpoints level" (Verzik page) vs 75% (Strat, which adds "74 at level 99").
+11. Entry lightning ball frequency: "After every four bomb attacks" (Entry page) vs "Every five attacks" (Strat, and the every-fifth
+    rule of VZ3). Every fifth is used for Normal and Hard; the Entry timing is unresolved.
