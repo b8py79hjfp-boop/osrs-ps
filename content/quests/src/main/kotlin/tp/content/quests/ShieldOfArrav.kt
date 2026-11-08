@@ -1824,8 +1824,14 @@ public class ShieldOfArrav : ContentPlugin {
     /** Wiki "Using a tradeable quest item on another player": the item is dropped for the partner (account-restricted players). */
     private suspend fun PlayerScript.giveToPartner(target: PlayerRef) {
         val p = player
-        val obj = used?.obj ?: return
-        if (obj !in PARTNER_ITEMS || target == p) return
+        val item = used ?: return
+        val obj = item.obj
+        if (obj !in PARTNER_ITEMS) {
+            // Not a quest item: other modules handle their own items used on a player.
+            p.events.publish(tp.plugin.ItemOnPlayerEvent(p, target, obj, item.slot))
+            return
+        }
+        if (target == p) return
         val label =
             if (obj == Objs.PHOENIXKEY2) {
                 "key"

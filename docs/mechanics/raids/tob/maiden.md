@@ -92,6 +92,62 @@ a maximum of one spawn when the blood is dodged; 9 Jan 2020 freeze chance by mag
 dodge, cap 8; 8 Aug 2019 pools; 18 Jun 2020 death animation shorter; 24 Jul 2024 burn on Nylocas; 25 Jun 2025 fire
 weakness (Matomenos) and earth weakness (blood spawn). No ToB Maiden change dated after 25 Jun 2025.
 
+## As implemented (content/combat TobMaiden.kt)
+
+Mode comes from the NPC id (`TobModes.of`: Entry = `_STORY` block, Hard = `_HARD` block, else Normal). Entry damage is
+`TobModes.damage` = Normal value / 2 (floor), applied to the Blackstorm and the splat (not to the trail, which has its own
+range). Boss HP and Matomenos HP are set by `TobModes.scale` / raids-tob `TobScaling` (TB10 / TB11, base = cache HP).
+
+- **Clock:** `spawned` sets her first attack to tick + **9**, then `attack` re-arms at tick + `speed` (**10**; Hard lowers it,
+  below). A per-tick loop (every tick, via `queueHit(1)`) runs, in this order: pools/trails, Matomenos, blood spawns. No
+  raiders in her arena (`TfaKit.arena`: living players within 24) = no attack, no re-arm.
+- **Attack choice:** if the blood lockout is spent she throws blood with chance **1/2**, else the Blackstorm. After a blood throw
+  the lockout is **2**, decremented on every Blackstorm, so two Blackstorms follow a blood throw (MA2). **OPEN-MA10 (code
+  label):** the 1/2 odds are not sourced. Clash: maiden.md's own OPEN-MA10 is a different item (see Open list).
+- **Blackstorm (MA1):** target = raider nearest her centre (SW tile + 3, +3; Chebyshev), capture-based. Anim 8092, projectile
+  1577 height 43/43, start 109, end 109 + 10 x distance cycles; the hit is queued `end / 30` ticks later (4 ticks at 3
+  tiles, 7 at 11). Style magic, `HitStyle.MAGIC`.
+  - Damage `(365 + 35c) / 10` (integer division, c = Matomenos that reached her): 36, 40, 43, 47, 50, 54, 57, 61, 64, 68,
+    71 for c = 0..10 (**OPEN-MA11**: rounded down). Entry: halved (18 at c = 0). Protect from Magic: `hit / 2` (floor); the
+    storm always lands, no accuracy roll.
+  - Hard: consecutive storms on the same player count (`sameTarget`; a different target resets it to 1; blood throws do not
+    count). From the 3rd on, `hit += 5 x (sameTarget - 2)` (uncapped unprayed). Prayed Hard = `min(50, hit / 2 + 5 x
+    max(0, sameTarget - 2))`, i.e. the ramp is in `hit` already and is added again after halving (**OPEN-MA8**: ramp 5 and
+    prayed cap 50 are from captures).
+  - Drain on the throw tick (not on landing): **30%** (`random(100) < 30`), Attack, Strength and Defence each lowered by
+    `dmg / 5 + 1` using the final (post-prayer) damage, floor 0, message "Your stats are drained." **OPEN-MA12:** which stats
+    (melee three assumed); capture says 30% and floor(hit / 5) + 1, the wiki (MA1) 50% and (damage + 1) / 5.
+- **Blood throw (MA2/MA3):** anim 8091. One projectile 1578 (height 43 -> 0, start 20, end 20 + 15 x distance) per raider
+  at the tile the raider stands on when she throws, landing `end / 30` ticks later; plus **2** extra splats at random
+  walkable tiles within **2** of the furthest raider (furthest from her centre; ties = first in list), landing `(20 + 15d +
+  25) / 30` ticks later (d = distance of that tile). No "which player when tied" rule beyond list order (**OPEN-MA2**).
+  - On landing: lingering-blood graphic, a splat pool lives until landing tick + **11**; it is removed when tick > that.
+  - **10** ticks after landing it may raise a blood spawn: not if 8 blood spawns are alive; chance **12%** if some raider
+    stood on that pool, else **9%** (capture-values; the wiki says 10% / 20%); at most **one** spawn per throw if no pool of
+    that throw was stood on (12 Aug 2021). Spawn appears on the pool tile, `huntRange` 0.
+  - Pool damage per tick on a raider standing on it: `5..10 + 2c` (inclusive roll), Entry halved after adding; typeless; heals
+    her by the same amount (capped at max HP); drains prayer by `raw / 2` (**OPEN-MA13**: wiki says only "drains prayer").
+    Only the first pool on a tile is used; standing on it marks the pool "stood on".
+- **Blood spawns:** do not attack; each tick, if no pool is on its tile it leaves a trail pool there (lasts **29** ticks, Hard
+  never: `until = -1`; also a scenery loc `TOB_MAIDEN_BLOOD`, shape 22, same lifetime), and with chance 1/2 it walks to a random
+  tile within **3**. Trail damage per tick to a raider on it: Normal/Hard `5..13`, Entry `2..5`, typeless (not halved again),
+  heals her by the same amount; no prayer drain. Hard spawns take 0 damage (`incoming` returns 0, still attackable).
+- **Matomenos (MA4):** form change on `afterHit` when `hp x 100 <= maxHp x {70, 50, 30}` (equal counts); a hit crossing several
+  thresholds fires each. Each: `transform(type + 1)` keeping HP, then a wave. Count: Normal `min(10, 2 x raiders)`
+  (at least 1 raider counted), Hard **10** (**9** when 1 raider or fewer), Entry **2** (**OPEN-MA6**). Tiles: a random subset
+  of 10 offsets from her spawn tile (N `(11,12) (15,12) (19,12) (22,12) (23,11)`, S the same x at z -8, `(23,-7)`), not
+  balanced per side, and Hard solo drops a random tile rather than S1 (**OPEN-MA9**: x columns from RuneLite). HP =
+  `TobModes.scale` of cache HP (so 100 base, i.e. the infobox/cache value, not Strat's 200/175/150; **OPEN-MA4**). They
+  inherit the raid-run tag (damage counts for MVP, MA6). Born tick recorded; from the **next** tick they `walkTo` her centre
+  unless frozen (MA5: any freeze, no accuracy roll is modelled). When the gap to her footprint is <= 1 they despawn, she
+  heals `2 x` its current HP (capped) and `c` rises by 1. Walk speed is the engine's (**OPEN-MA9**).
+- **Hard speed-up (MA7):** each of the first **5** Matomenos that reach her lowers `speed` by 1 (min **3**, which five
+  steps from 10 never reach); effective from her next attack. Not the RuneLite "attacked early" ratchet (**OPEN-MA7**).
+- **Death (MA7):** plays dying_a (`MAIDEN_DEATH_A`) and dismisses all minions. The captured T+1 / T+4 / T+8 death sequence is not
+  scripted here; the book and restores belong to raids-tob.
+- **Not implemented here:** Matomenos MVP is only the run tag; Blackstorm Hard cap beyond the prayed 50, Entry blood-spawn HP
+  raise (9 Jun 2021) and Entry Blackstorm formula beyond halving are not modelled.
+
 ## Open list
 
 OPEN-MA1 4-man HP rounding; OPEN-MA2 splat target among equally far players; OPEN-MA3 trail lifetime in ticks and spawn / move rules of the
@@ -99,8 +155,9 @@ blood spawn; OPEN-MA4 Matomenos HP (200/175/150 vs 100); OPEN-MA5 exact freeze r
 Entry Blood Nylocas HP; OPEN-MA7 Hard attack speed per Matomenos; OPEN-MA8 Hard cap and max-hit ramp numbers; OPEN-MA9
 Matomenos walk speed / arrival time, spawn tile coordinates and the delay between the HP threshold and the spawn;
 OPEN-MA10 the stat-drain target stat when two bonuses tie, the Blackstorm cap in Hard, the Entry Blackstorm formula (only
-the max hit 18 is stated), and the Entry splat damage; OPEN-MA11 Blackstorm rounding and 36.5 vs max hit 36. **11 open
-items.**
+the max hit 18 is stated), and the Entry splat damage; OPEN-MA11 Blackstorm rounding and 36.5 vs max hit 36 (code: `(365 + 35c) / 10`, floor, halved with `/ 2`);
+OPEN-MA12 the stats the Blackstorm drain lowers (code: Attack, Strength, Defence; 30% of storms, `dmg / 5 + 1`);
+OPEN-MA13 the prayer a blood splat drains (code: half its damage). **13 open items.**
 
 ## Conflicts between sources
 

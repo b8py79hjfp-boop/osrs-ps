@@ -217,3 +217,14 @@ public class DeathItemsRequest(
 
 /** Turns all of [player]'s prayers off (content rules such as a raid room ending). Combat handles it. */
 public class PrayersOffRequest(public val player: PlayerRef) : Event
+
+/**
+ * An inventory item used on another player that no owner of the inventory-on-player handler claims: published so
+ * several modules can react to their own items (ToB escape crystal) through the one registered handler.
+ */
+public class ItemOnPlayerEvent(
+    public val player: PlayerRef,
+    public val target: PlayerRef,
+    public val obj: Int,
+    public val slot: Int,
+) : Event

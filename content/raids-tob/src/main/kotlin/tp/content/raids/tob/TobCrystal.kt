@@ -23,6 +23,8 @@ public class TobCrystal : ContentPlugin {
         onItemOp(Objs.TOB_TELEPORT, "Teleport") { click ->
             if (click.slot in 0 until inv(Invs.INV).size && click.obj == Objs.TOB_TELEPORT) teleport(this, click.slot)
         }
+        // TB20: a crystal used on a party member who holds one (through the shared item-on-player handler).
+        events.on<tp.plugin.ItemOnPlayerEvent> { e -> if (e.obj == Objs.TOB_TELEPORT) useOn(e.player, e.target, e.slot) }
         onLogout { loggedOut(this) }
         onLogin { loggedIn(this) }
     }
