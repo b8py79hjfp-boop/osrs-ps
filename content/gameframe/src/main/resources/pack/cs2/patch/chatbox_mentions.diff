@@ -1,0 +1,48 @@
+# script 84
+# base-sha256 f7b4ec765acb19d9625cdca567e0ea355452aa12212791fe75f97c879290b4e8
+# D-094 chatbox re-skin: @mentions. Script 84 builds the chatbox lines (RuneLite calls it ChatBuilder). After each
+# message is read from the chat history, a message that contains the viewer's own name (tags removed, any case) and
+# was not sent by the viewer is wrapped in the mention colour. Game messages (type 0) are left alone.
+# Locals (RuneLite's ChatBuilder overlay comments): o0 own name, i11 type, o19 sender, o21 text, o24 timestamp.
+@@ mention highlight
+   chat_gethistoryex_byuid
+   istore                 21
+   ostore                 24
+   istore                 15
+   ostore                 21
+   ostore                 20
+   ostore                 19
+   istore                 12
+   istore                 11
++   oload                  0
++   string_length
++   iconst                 0
++   if_icmpeq              TP_MENTION_DONE
++   iload                  11
++   iconst                 0
++   if_icmpeq              TP_MENTION_DONE
++   oload                  19
++   removetags
++   lowercase
++   oload                  0
++   lowercase
++   compare
++   iconst                 0
++   if_icmpeq              TP_MENTION_DONE
++   oload                  21
++   removetags
++   lowercase
++   oload                  0
++   lowercase
++   iconst                 0
++   string_indexof_string
++   iconst                 -1
++   if_icmpeq              TP_MENTION_DONE
++   sconst                 "<col=ff9040>"
++   oload                  21
++   sconst                 "</col>"
++   join_string            3
++   ostore                 21
++TP_MENTION_DONE:
+   iload                  11
+   oload                  19

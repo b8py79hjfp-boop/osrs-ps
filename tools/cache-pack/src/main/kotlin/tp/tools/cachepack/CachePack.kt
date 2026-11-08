@@ -77,7 +77,22 @@ private fun verify(sourceDisk: Path, outRoot: Path): Int {
             val p = it.split('\t')
             CustomSymbol(p[0], p[1], p[2].toInt(), p.getOrElse(3) { "" })
         }
-    val result = Verifier.verify(sourceDisk, outRoot.resolve("disk"), custom)
+    val patched =
+        outRoot
+            .resolve("pack.properties")
+            .takeIf {
+                java.nio.file.Files
+                    .exists(it)
+            }?.let {
+                java.nio.file.Files
+                    .readAllLines(it)
+            }?.firstOrNull { it.startsWith("patchedScripts=") }
+            ?.substringAfter('=')
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?.toSet()
+            .orEmpty()
+    val result = Verifier.verify(sourceDisk, outRoot.resolve("disk"), custom, patched)
     (result.lines + result.failures).forEach(::println)
     println(if (result.ok) "verification passed" else "verification FAILED (${result.failures.size})")
     return if (result.ok) 0 else 1

@@ -14,6 +14,11 @@ dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories {
         mavenCentral()
+        // RuneLite's cache library (rs2asm assembler/disassembler) for tools/cache-pack script patches (D-094).
+        maven {
+            url = uri("https://repo.runelite.net")
+            content { includeGroup("net.runelite") }
+        }
     }
 }
 

@@ -15,6 +15,7 @@ import kotlin.io.path.name
  * pack/cs2/symbols/NAME.sym     extra Neptune symbols (varp, varc, param, if_script, ...)
  * pack/interfaces/NAME.if3      interface definitions (TOML, see [InterfacePacker])
  * pack/configs/NAME.toml        inv / varp / varbit definitions (see [ConfigPacker])
+ * pack/cs2/patch/NAME.diff      diffs of existing client scripts (see [ScriptPatches])
  * ```
  */
 internal class PackSource(val root: Path) {
@@ -22,8 +23,9 @@ internal class PackSource(val root: Path) {
     val symbols: List<Path> = filesIn(root.resolve("cs2/symbols"), "sym")
     val interfaces: List<Path> = filesIn(root.resolve("interfaces"), "if3")
     val configs: List<Path> = filesIn(root.resolve("configs"), "toml")
+    val patches: List<Path> = filesIn(root.resolve("cs2/patch"), "diff")
 
-    val isEmpty: Boolean get() = scripts.isEmpty() && interfaces.isEmpty() && configs.isEmpty()
+    val isEmpty: Boolean get() = scripts.isEmpty() && interfaces.isEmpty() && configs.isEmpty() && patches.isEmpty()
 
     override fun toString(): String = root.toString()
 

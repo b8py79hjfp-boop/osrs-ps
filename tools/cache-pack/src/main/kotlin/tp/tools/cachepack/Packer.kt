@@ -42,6 +42,8 @@ internal object Packer {
                     .flatMap { it.interfaces }
                     .map(InterfaceDef::parse)
                     .sortedBy { it.name }
+            // Applied (and hash-checked) before anything is written, like every other input.
+            val patched = patchScripts(source, options.packs)
             val scriptSources = options.packs.flatMap { it.scripts }
             val scriptNames = scriptSources.flatMap { ScriptName.headers(it).map { n -> n to it } }
             if (scriptNames.map { it.first }.distinct().size !=
@@ -82,6 +84,8 @@ internal object Packer {
                     val bytes = compiled[id] ?: throw IOException("Neptune wrote no output for ${name.full} (id $id)")
                     it.putGroup(Js5Archive.CLIENTSCRIPTS, id, intArrayOf(0), listOf(bytes), name.full.hashCode())
                 }
+                // D-094: patched existing scripts keep their id (and group name hash).
+                for ((id, bytes) in patched) it.putGroup(Js5Archive.CLIENTSCRIPTS, id, intArrayOf(0), listOf(bytes))
                 for (def in interfaces) {
                     val components = InterfacePacker.build(def, resolver)
                     val id = custom.get("interface", def.name) ?: error("no id for interface ${def.name}")
@@ -105,11 +109,21 @@ internal object Packer {
                     options.outRoot.resolve("pack.properties"),
                     "# Facts about this packed cache; the server's spot checks expect the group count (CacheSpotChecks).\n" +
                         "sourceGroups=$sourceGroups\ngroups=${sourceGroups + newGroups}\n" +
-                        "archivesTouched=${indexes.map { t -> t.first }.sorted().joinToString(",")}\n",
+                        "archivesTouched=${indexes.map { t -> t.first }.sorted().joinToString(",")}\n" +
+                        "patchedScripts=${patched.keys.sorted().joinToString(",")}\n",
                 )
                 return PackReport(custom.symbols, it.written, indexes, symbols.duplicates)
             }
         }
+    }
+
+    /** D-094: every diff in a pack's `cs2/patch` directory, applied to the source cache's script; one diff per script. */
+    private fun patchScripts(source: Js5Cache, packs: List<PackSource>): Map<Int, ByteArray> {
+        val patches = packs.flatMap { it.patches }.map(ScriptPatches::parse)
+        patches.groupBy { it.script }.filterValues { it.size > 1 }.keys.firstOrNull()?.let {
+            throw IOException("Script $it is patched by more than one diff")
+        }
+        return patches.associate { it.script to ScriptPatches.apply(source, it) }
     }
 
     private fun assignIds(

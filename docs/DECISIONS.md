@@ -1371,3 +1371,17 @@ means is not known.
   `donator_boosts` switch that defaults off on live 1:1 worlds, like ECONOMY.
 - **Saved texts.** The yell tag needs one, so player saves gain an optional `texts` object. It is additive: older
   saves load unchanged.
+
+## D-094 Patching existing client scripts (2026-11-08, chatbox re-skin)
+
+- **The capability.** `tools/cache-pack` can now patch an existing client script over its own id. Until now it could
+  only add new ids (D-071).
+- **What the repo keeps.** A pack holds a diff (`pack/cs2/patch/*.diff`), never Jagex's script. At pack time:
+  1. The source script is disassembled with RuneLite's cache library (BSD-2, `net.runelite:cache:1.13.6` from
+     repo.runelite.net, non-transitive).
+  2. Its sha256 is checked against the diff header, so a new revision fails the pack rather than mis-patching.
+  3. Each hunk must match exactly once; then the script is re-assembled.
+- **Round trip.** An unpatched script round-trips byte-identical (script 84: 15,625 bytes).
+- **Bookkeeping.** `pack.properties` lists `patchedScripts`. The verifier accepts exactly those as rewritten groups;
+  every other group must stay byte-identical.
+- **First use.** The chatbox mentions patch (docs/mechanics/chatbox.md).
