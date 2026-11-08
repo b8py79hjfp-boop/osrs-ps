@@ -54,6 +54,21 @@ class TfaSmokeScenario {
         assertEquals(run.at(TfaRaid.GUARDIAN_ENTRY), b.coord, "b followed")
         assertTrue(a.player.let { PlayerRef.of(it).isOpen(Interfaces.TFA_HUD) }, "HUD open")
 
+        // TFA17: a third player spectates from the lobby: hidden observer following the leader, then leaves.
+        val c = s.player("c", TfaSpectate.SPECTATE_RETURN)
+        tick()
+        val rc = PlayerRef.of(c.player)
+        TfaSpectate().start(rc, run)
+        tick(2)
+        assertTrue(c.player.observer && c.coord == a.coord, "spectator follows the leader: ${c.coord}")
+        c.input(ClientCommand.MoveClick(c.coord.x + 3, c.coord.z, false, false))
+        tick(2)
+        assertEquals(a.coord, c.coord, "an observer cannot walk")
+        TfaSpectate().stop(rc, toLobby = true)
+        tick()
+        assertEquals(TfaSpectate.SPECTATE_RETURN, c.coord, "back at the Strategy Board")
+        assertTrue(!c.player.observer && run.spectators.isEmpty())
+
         // Section 1 west (Ezekiel), back through the passageway.
         clear()
         door(Locs.TFA_NEXUS_SECTION1_DOOR_WEST, CoordGrid(4113, 5584), op = 1)

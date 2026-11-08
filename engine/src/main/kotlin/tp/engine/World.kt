@@ -361,6 +361,8 @@ class World(
     @Suppress("CyclomaticComplexMethod", "LongMethod", "ReturnCount") // one branch per command; early-out on invalid input
     private fun handleCommand(player: Player, command: ClientCommand) {
         tracer?.onCommand(player, command)
+        // IN11: an observer cannot move or interact with the world; interface input (its HUD) still works.
+        if (player.observer && command.isWorldAction()) return
         when (command) {
             is ClientCommand.MoveClick -> {
                 if (player.isDelayed) return // D2: route events aren't processed while delayed
@@ -631,7 +633,8 @@ class World(
         return CoordGrid(x, z, player.coord.level) in boat
     }
 
-    private fun isOtherVisible(player: Player, other: Player?): Boolean = other != null && other !== player && inView(player, other)
+    private fun isOtherVisible(player: Player, other: Player?): Boolean =
+        other != null && other !== player && !other.observer && inView(player, other)
 
     private fun inView(player: Player, other: Entity): Boolean =
         other.coord.level == player.coord.level &&
@@ -1441,3 +1444,10 @@ class Tracers(private vararg val all: TickTracer) : TickTracer {
 
     override fun onLogout(player: Player) = all.forEach { it.onLogout(player) }
 }
+
+/** Movement and world interactions (what an observer may not do). */
+private fun ClientCommand.isWorldAction(): Boolean =
+    this is ClientCommand.MoveClick || this is ClientCommand.OpLoc || this is ClientCommand.OpNpc ||
+        this is ClientCommand.OpPlayer || this is ClientCommand.OpObj || this is ClientCommand.OpLocT ||
+        this is ClientCommand.OpObjT || this is ClientCommand.OpNpcT || this is ClientCommand.OpPlayerT ||
+        this is ClientCommand.OpWorldEntity

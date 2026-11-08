@@ -137,6 +137,8 @@ data class AvatarState(
     val moveSteps: Int,
     val teleported: Boolean,
     val running: Boolean,
+    /** Hidden from every other player (an observer: raid spectators). */
+    val hidden: Boolean = false,
 )
 
 /**

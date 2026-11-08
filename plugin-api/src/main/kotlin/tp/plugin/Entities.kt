@@ -134,11 +134,10 @@ public sealed class EntityRef {
     public fun playersWithin(radius: Int): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
         e.world.forEachPlayer { p ->
-            if (p !== e && p.coord.level == coord.level &&
-                maxOf(kotlin.math.abs(p.coord.x - coord.x), kotlin.math.abs(p.coord.z - coord.z)) <= radius
-            ) {
-                out += PlayerRef(p)
-            }
+            // IN11: observers (spectators) are never picked.
+            val near =
+                p.coord.level == coord.level && maxOf(kotlin.math.abs(p.coord.x - coord.x), kotlin.math.abs(p.coord.z - coord.z)) <= radius
+            if (near && p !== e && !p.observer) out += PlayerRef(p)
         }
         return out
     }

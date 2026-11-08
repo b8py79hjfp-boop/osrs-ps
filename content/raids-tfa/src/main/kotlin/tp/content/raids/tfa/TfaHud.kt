@@ -34,6 +34,19 @@ internal object TfaHud {
                 p.clientScript(SCRIPT_TIMER, elapsed.toInt(), if (ended) 1 else 0)
             }
         }
+        // TFA17: spectators see the same orbs, names and timer (their own slot is none).
+        for (name in run.spectators) {
+            val p = world.onlinePlayer(name)?.takeIf { it.coord in inst } ?: continue
+            if (!p.isOpen(Interfaces.TFA_HUD)) {
+                p.openOverlay(Components.Toplevel.OVERLAY_HUD, Interfaces.TFA_HUD)
+                state.hudSentTo -= p.username
+            }
+            for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], orbs[k])
+            if (state.hudSentTo.add(p.username) || state.hudDirty) {
+                p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
+                p.clientScript(SCRIPT_TIMER, (world.tick - run.startedTick).toInt(), 0)
+            }
+        }
         state.hudDirty = false
     }
 

@@ -155,6 +155,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Whether a modal interface is open. */
     public val hasModal: Boolean get() = p.hasModal
 
+    /** IN11: an observer is hidden, untargetable and cannot move or interact on its own (raid spectating). */
+    public var observer: Boolean
+        get() = p.observer
+        set(value) {
+            p.observer = value
+        }
+
     /** Run toggle; setting it also updates varp `option_run` (what the run orb displays; RS Mod `toggleRun`). */
     public var runMode: Boolean
         get() = p.runMode

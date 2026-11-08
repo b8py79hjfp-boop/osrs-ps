@@ -196,6 +196,8 @@ internal class RspSession(
             // A one-tile step while in run mode is shown as a walk step (RS Mod `RspCycle.updateMoveSpeed`).
             coord.running && coord.moveSteps == 1 -> ext.setTempMoveSpeed(MOVE_WALK)
         }
+        // RSProt `PlayerAvatar.hidden`: skipped for every observer (raid spectators).
+        if (infos.playerInfo.avatar.hidden != coord.hidden) infos.playerInfo.avatar.hidden = coord.hidden
         infos.updateRootCoord(coord.level, coord.x, coord.z)
     }
 

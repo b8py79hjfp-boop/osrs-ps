@@ -64,3 +64,11 @@ Instanced map areas (player-owned houses, boss lairs, minigames): `engine/.../ma
 - **OPEN-IN1 (closed by IN9).**
 - **OPEN-IN3:** instances are per world and not persisted; content rebuilds them (a house is rebuilt from saved room
   data each visit); a player saved inside one follows IN8 after a restart.
+
+## IN11 Observers (raid spectating)
+
+- A player marked observer is hidden from every other player (RSProt `PlayerAvatar.hidden`: the avatar is skipped in
+  everyone else's player info), is not a valid op/target for other players, is skipped by `playersWithin` (so NPC
+  hunting, boss AoEs and multi-target attacks ignore it), and its movement and world-interaction packets are dropped;
+  interface input still works. Content moves it (follow-cam by teleport) and clears the flag when it stops watching.
+- No tick-order change: the flag is read where the visibility and input checks already run.

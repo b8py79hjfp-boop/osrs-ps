@@ -172,8 +172,14 @@ class Player internal constructor(
         }
     }
 
+    /**
+     * An observer (docs/mechanics/instances.md IN11; raid spectators): hidden from other players, not targetable, and
+     * its movement and interaction input is ignored while content moves it.
+     */
+    var observer: Boolean = false
+
     internal fun avatarState(): AvatarState =
-        AvatarState(coord.level, coord.x, coord.z, stepsThisTick, teleportedThisTick, isRunningNow)
+        AvatarState(coord.level, coord.x, coord.z, stepsThisTick, teleportedThisTick, isRunningNow, observer)
 
     override fun toString(): String = "Player($slot, $username, $coord)"
 
