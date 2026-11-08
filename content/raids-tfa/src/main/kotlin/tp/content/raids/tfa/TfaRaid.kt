@@ -112,7 +112,6 @@ internal object TfaRaid {
             raidOnlyItems = RAID_ONLY
             claimInv = Invs.TFA_CHESTS
             requirements = { p -> TfaConfig.requirement(p) }
-            scaling = { ctx, npc -> TfaScaling.apply(ctx, npc) }
             contribution =
                 ContributionRules(normalisedRooms = true, deathPenalty = { _, run -> TfaRewards.deathPenalty(run.scaling.partySize) })
             rewards = { snap, rng -> TfaLoot.roll(snap, rng) }

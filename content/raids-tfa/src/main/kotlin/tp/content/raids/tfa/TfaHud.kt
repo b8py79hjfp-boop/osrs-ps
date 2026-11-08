@@ -51,7 +51,8 @@ internal object TfaHud {
         if (!m.alive) return ORB_DEAD
         val p = present.firstOrNull { it.username.equals(name, ignoreCase = true) } ?: return ORB_DEAD
         val max = maxOf(1, p.maxHitpoints)
-        return 1 + (ORB_HEIGHT * p.hitpoints + max / 2) / max
+        // Overheal (brews) can exceed max: the orb shows full.
+        return 1 + (ORB_HEIGHT * p.hitpoints.coerceIn(0, max) + max / 2) / max
     }
 
     private fun setIfChanged(p: PlayerRef, varbit: Int, value: Int) {

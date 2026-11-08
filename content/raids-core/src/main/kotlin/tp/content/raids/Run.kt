@@ -134,11 +134,12 @@ public class RaidRun internal constructor(
         dirty = true
     }
 
-    internal companion object {
+    public companion object {
         /** NPCs spawned for a run carry its id, so only their damage counts (brief 3.16). */
-        val NPC_RUN = AttrKey<Long>("raid_run")
-        val PLAYER_RUN = AttrKey<Long>("raid_run_player")
+        internal val NPC_RUN = AttrKey<Long>("raid_run")
+        internal val PLAYER_RUN = AttrKey<Long>("raid_run_player")
 
-        fun npcRun(npc: NpcRef): Long? = npc[NPC_RUN]
+        /** The id of the run [npc] was spawned for, or null. */
+        public fun npcRun(npc: NpcRef): Long? = npc[NPC_RUN]
     }
 }

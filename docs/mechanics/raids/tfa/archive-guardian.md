@@ -43,3 +43,17 @@ below list only what a source states; everything else is `OPEN` and gets a named
 - Grounded start T: tendrils start at T+6, then every 3 ticks; grounded lasts 34 ticks (start point OPEN-AG5) or
   until 33% HP.
 - Mushroom spawned at T explodes at T+5.
+
+## As implemented (content/combat TfaArchiveGuardian.kt, raids-tfa TfaBosses.kt)
+
+- "Touch" on the Inert Guardian 16657 turns it into 16659 and it hunts the nexus. The HP bar shows the current pool:
+  the flying shield (550 ... 1,950 by scale), then the grounded HP (1,100 ... 3,910) kept across phases.
+- Shield at 0 → grounded (16660) for 34 ticks from the crash (OPEN-AG5), tendrils at +6 then every 3 ticks; back to
+  a fresh shield if the time runs out, or phase 2 (flying, grounded HP) at 33% of grounded HP. Phase 2 alternates
+  laser and mushrooms. Death of 16659 / 16660 ends the room.
+- Defence/Magic drift by Strat's formula from damage taken, never above the lowest value reached, floored at 156.
+- **OPEN-AG7:** tendril damage ("moderate"): 0-20 per hit, capped at 11 under Protect from Melee.
+- **OPEN-AG8:** the four batteries (16662, Attack) stand at the cache battery bases and are active whenever a shield is
+  up; destroying one takes 40% of the shield (phase 2: 40% of grounded HP as damage). The laser-only battery is not
+  modelled.
+- **OPEN-AG4 model:** laser = 35 x players alive (fatal above two players at 99 HP), Protect from Magic -20%.

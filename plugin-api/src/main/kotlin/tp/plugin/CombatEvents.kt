@@ -113,6 +113,12 @@ public object SharedAttrs {
      */
     public val MULTI_AREA: AttrKey<(tp.util.CoordGrid) -> Boolean> = AttrKey("multi_area")
 
+    /**
+     * NPC attr: the party size a raid scales this NPC for (set by raids-core when it spawns a run's NPC; TFA scales a
+     * solo raid as two). Boss scripts read it for their HP and mechanic tables. Absent = not a raid NPC.
+     */
+    public val RAID_SCALE: AttrKey<Int> = AttrKey("raid_scale")
+
     /** Rules of the running duel (bits of [DuelRules]); set from "FIGHT!" until the duel ends. */
     public val DUEL_RULES: AttrKey<Int> = AttrKey("duel_rules")
 

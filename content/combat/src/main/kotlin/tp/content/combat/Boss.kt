@@ -67,6 +67,8 @@ internal object Bosses {
             KingBlackDragon,
             Revenants,
             Maledictus,
+            ArchiveGuardian,
+            GuardianBattery,
         )
         ) {
             for (id in boss.ids) byType[id] = boss
