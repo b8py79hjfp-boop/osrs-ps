@@ -28,6 +28,12 @@ internal enum class RockKind {
 
     /** A Motherlode Mine rockfall: every attempt succeeds, 10 xp, no item (docs/mechanics/motherlode.md ML9). */
     ROCKFALL,
+
+    /**
+     * A Fractured Archive ascension rock: one roll for a shard, no enhancers and no depletion by mining; the world sinks and
+     * raises the rocks by timer ([AscensionRocks], docs/mechanics/skills/ascension-rocks.md AR1).
+     */
+    ASCENSION,
 }
 
 /** One product of a rock: [obj], [xp], and the success rates out of 256 at level 1 and 99 ([low], [high]). */
@@ -97,6 +103,23 @@ private val VEIN = Rock(RockKind.VEIN, 30, listOf(Yield(Objs.PAYDIRT, 60.0, 60, 
 
 /** Motherlode rockfall: no requirement, 10 xp, 18 s = 30 ticks to fall again (Wiki "Rockfall" Mining info). */
 private val ROCKFALL = Rock(RockKind.ROCKFALL, 1, listOf(Yield(-1, 10.0, 0, 0)), 30, false, "mine", "rocks", "rocks")
+
+/**
+ * Ascension rocks: level 80, 15 xp (Wiki "Ascension rocks" Mining info). The Wiki gives no success curve; low = high = 15 reproduces
+ * its "130 shards per hour" at level 99 with a dragon pickaxe (OPEN-AR1, docs/mechanics/skills/ascension-rocks.md AR3). The respawn
+ * is unused: the rock sinks by the world rotation timer, not by a mined ore.
+ */
+private val ASCENSION =
+    Rock(
+        RockKind.ASCENSION,
+        80,
+        listOf(Yield(Objs.ASCENSION_SHARDS, 15.0, 15, 15)),
+        0,
+        true,
+        "mine",
+        "ascension shards",
+        "ascension shards",
+    )
 
 /** Mining level 30 swaps rune essence for pure essence (Wiki "Rune Essence Mine", "Rune Essence (rock)"). */
 internal const val PURE_ESSENCE_LEVEL = 30
@@ -292,6 +315,14 @@ internal val ROCKS: Map<Int, RockLoc> =
             ),
         )
         putAll(locs(ROCKFALL, Locs.MOTHERLODE_ROCKFALL_1 to -1, Locs.MOTHERLODE_ROCKFALL_2 to -1))
+        putAll(
+            locs(
+                ASCENSION,
+                Locs.TFA_GATHERING_ROCK_ACTIVE01 to Locs.TFA_GATHERING_ROCK_INACTIVE01,
+                Locs.TFA_GATHERING_ROCK_ACTIVE02 to Locs.TFA_GATHERING_ROCK_INACTIVE02,
+                Locs.TFA_GATHERING_ROCK_ACTIVE03 to Locs.TFA_GATHERING_ROCK_INACTIVE03,
+            ),
+        )
     }
 
 /** Empty rocks: mining one only prints the Wiki's "no ore available" message ("Rocks (empty)"). */

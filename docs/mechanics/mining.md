@@ -89,6 +89,8 @@ comes from the Wiki pages named in the rule. Shared rules (success roll, clocks,
 - **MN15: prospector outfit.** Every Mining xp is multiplied by the outfit's bonus (motherlode.md ML12), through `MiningOutfit`.
 - **MN16: Motherlode veins and rockfalls** are rock kinds `VEIN` and `ROCKFALL` of this table (motherlode.md ML1, ML9).
 
+- **MN17: ascension rocks** are rock kind `ASCENSION` of this table (skills/ascension-rocks.md).
+
 ## OPEN
 
 - **OPEN-MN1:** which of the two empty rocks (`ROCKS1` 11390 / `ROCKS2` 11391) goes with which ore variant is not documented; the

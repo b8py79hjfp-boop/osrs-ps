@@ -84,6 +84,7 @@ public class Mining : ContentPlugin {
         if (clock.actionDelay < tick) {
             clock.actionDelay = tick + cycleDelay(p, pick)
         } else if (clock.actionDelay == tick) {
+            if (placed.rock.kind == RockKind.ASCENSION) AscensionRocks.onRoll(p, pick.ticks)
             attempt(p, loc, placed)
         }
     }
@@ -96,7 +97,8 @@ public class Mining : ContentPlugin {
             Skilling.stop(p)
             return p.stopInteraction()
         }
-        if (rock.gemTable && gemTable(p)) return
+        // AR4: ascension rocks take the standard gem pre-roll but not the glory's extra chance (no extra-resource enhancers).
+        if (rock.gemTable && gemTable(p, rock.kind != RockKind.ASCENSION)) return
         val product = roll(p, rock) ?: return
         // MN12: Varrock armour and the Mining cape sometimes give a second ore (and its xp).
         var count = 1 + MiningEnhancers.extraOres(p, rock)
@@ -117,6 +119,7 @@ public class Mining : ContentPlugin {
         }
         MiningOutfit.addXp(p, product.xp * count)
         repeat(count) { Bags.autoStore(p, product.obj) }
+        if (rock.kind == RockKind.ASCENSION) AscensionRocks.onShard(p)
         if (rock.kind == RockKind.VEIN) {
             if (Motherlode.veinDepletes(p, loc, placed)) {
                 p.anim(-1)
@@ -165,7 +168,7 @@ public class Mining : ContentPlugin {
                 rock.yields.firstOrNull { p.statRandom(Stats.MINING, it.low, it.high) }
             }
 
-            RockKind.ORE, RockKind.AMETHYST, RockKind.VEIN -> {
+            RockKind.ORE, RockKind.AMETHYST, RockKind.VEIN, RockKind.ASCENSION -> {
                 rock.yields[0].takeIf { p.statRandom(Stats.MINING, it.low, it.high) }
             }
 
@@ -187,11 +190,11 @@ public class Mining : ContentPlugin {
      * The Mining gem drop table: a 1 in 256 roll before each attempt; if it hits, the attempt gives a gem or nothing and
      * no ore, xp or depletion (Wiki "Mining gem drop table"). Returns whether the attempt was consumed.
      */
-    private fun gemTable(p: PlayerRef): Boolean {
+    private fun gemTable(p: PlayerRef, gloryApplies: Boolean = true): Boolean {
         // MN13: a charged glory adds a second 3 in 256 chance when the first roll fails (Wiki "Mining gem drop table").
         val hit =
             p.random(GEM_TABLE_ONE_IN) == 0 ||
-                (MiningEnhancers.glory(p) && p.random(GEM_TABLE_ONE_IN) < MiningEnhancers.GLORY_EXTRA_GEM_IN_256)
+                (gloryApplies && MiningEnhancers.glory(p) && p.random(GEM_TABLE_ONE_IN) < MiningEnhancers.GLORY_EXTRA_GEM_IN_256)
         if (!hit) return false
         val gem = pickWeighted(p, PRE_ROLL_GEMS, GEM_WEIGHT_TOTAL)
         if (gem >= 0 && p.transaction("mining") { add(Invs.INV, gem, 1) }) {
@@ -204,7 +207,7 @@ public class Mining : ContentPlugin {
     /** Whether the rock is used up: ore rocks with their ore, essence never, amethyst after its 2 or 3 crystals. */
     private fun depletes(p: PlayerRef, loc: LocRef, rock: Rock): Boolean =
         when (rock.kind) {
-            RockKind.ESSENCE, RockKind.VEIN, RockKind.ROCKFALL -> {
+            RockKind.ESSENCE, RockKind.VEIN, RockKind.ROCKFALL, RockKind.ASCENSION -> {
                 false
             }
 
