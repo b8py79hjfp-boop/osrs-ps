@@ -27,6 +27,9 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         var specials = 0
         var centreBlasts = 0
         var bladeDamage = 0
+        var stored = 0
+        var sets = 0
+        var bladeQuadrants = 0
         var explosionsLeft = 0
         var quadrant = 0
     }
@@ -50,8 +53,12 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         s.attacks++
         when (s.phase) {
             Phase.P1 -> p1(npc, s, victim)
-            Phase.P2 -> portals(npc)
+
+            Phase.P2 -> Unit
+
+            // P2 runs on its own timer (p2Loop): the Blade NPC has no attack speed.
             Phase.P3 -> p3(npc, s, victim)
+
             Phase.P4 -> p4(npc, s)
         }
     }
@@ -130,14 +137,48 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
 
     // ---- P2 (OC2)
 
-    /** OC2: purple portals damage the players standing in them (OPEN-OC5: 4 per player, 20 damage, 2-tick telegraph). */
-    private fun portals(npc: NpcRef) {
-        val tiles = TfaKit.arena(npc).flatMap { p -> List(PORTALS_PER_PLAYER) { BossCombat.randomTile(npc, p.coord, PORTAL_SPREAD) } }
-        for (t in tiles) npc.spotAnimAt(t, SpotAnims.TFA_PORTAL)
+    /**
+     * OC2: each set lays purple portal lines on the players' rows and columns; two orange portals cross at one safe
+     * tile per player. Anyone on a purple line off the orange crossing takes 20 (OPEN-OC5). After five sets the
+     * quadrant ends: the Blade releases the damage it stored, with diminishing returns per quadrant.
+     */
+    private fun portals(npc: NpcRef, s: State) {
+        val players = TfaKit.arena(npc)
+        val safe = players.map { p -> BossCombat.randomTile(npc, p.coord, PORTAL_SPREAD) }
+        val rows = players.map { it.coord.z }.toSet()
+        val cols = players.map { it.coord.x }.toSet()
+        for (t in safe) npc.spotAnimAt(t, SpotAnims.TFA_WAVE_DUST_SHORT)
+        for (p in players) npc.spotAnimAt(p.coord, SpotAnims.TFA_PORTAL)
         npc.queueHit(PORTAL_TELEGRAPH) {
             if (!npc.isInWorld) return@queueHit
-            for (p in TfaKit.arena(npc)) if (TfaKit.on(p, tiles)) CombatSystem.applyHit(p, npc, PORTAL_DAMAGE, HitStyle.TYPELESS)
+            for (p in TfaKit.arena(npc)) {
+                val onPurple = p.coord.z in rows || p.coord.x in cols
+                val onOrange = safe.any { it.x == p.coord.x && it.z == p.coord.z }
+                if (onPurple && !onOrange) CombatSystem.applyHit(p, npc, PORTAL_DAMAGE, HitStyle.TYPELESS)
+            }
         }
+        s.sets++
+        if (s.sets % SETS_PER_QUADRANT == 0) releaseBlade(npc, s)
+    }
+
+    private fun p2Loop(npc: NpcRef, s: State) {
+        npc.queueHit(P2_SET_TICKS) {
+            if (!npc.isInWorld || s.phase != Phase.P2) return@queueHit
+            portals(npc, s)
+            p2Loop(npc, s)
+        }
+    }
+
+    /** OC2 / OPEN-OC5: stored damage lands on the Blade at the quadrant's end, x0.8 for each earlier quadrant. */
+    private fun releaseBlade(npc: NpcRef, s: State) {
+        var factor = 1.0
+        repeat(s.bladeQuadrants) { factor *= DIMINISH }
+        s.bladeQuadrants++
+        val release = (s.stored * factor).toInt()
+        s.bladeDamage += release
+        s.stored = 0
+        npc.spotAnim(SpotAnims.TFA_ARENA_SWORD_DROP_EXPLOSION)
+        if (release > 0) CombatSystem.applyHit(npc, null, release, HitStyle.TYPELESS)
     }
 
     // ---- P3 (OC3)
@@ -330,7 +371,11 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
 
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
-        if (s.phase == Phase.P2) s.bladeDamage += damage
+        if (s.phase == Phase.P2 && source != null) {
+            // OC2: the Blade stores players' damage until its quadrant ends.
+            s.stored += damage
+            return 0
+        }
         if (s.phase == Phase.P3) return opposite(npc, source, damage)
         if (s.phase != Phase.P4) return damage
         // OC4: Deflect Melee halves melee; slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
@@ -385,6 +430,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
                 npc.transform(Npcs.TFA_OCELLUS_P2, restoreStats = true)
                 npc.teleport(s.centre)
                 TfaKit.setPool(npc, P2_HP)
+                p2Loop(npc, s)
                 true
             }
 
@@ -465,6 +511,11 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     private const val SOUL_PRAYED_MAX = 7
     private const val SOUL_SPLIT = 4
     private const val PERCENT = 100
+    private const val SETS_PER_QUADRANT = 5
+
+    /** OPEN-OC5: one portal set every 5 ticks. */
+    private const val P2_SET_TICKS = 5
+    private const val DIMINISH = 0.8
     private const val OPPOSITE_BONUS = 10
     private const val POOL_DELAY = 2
     private const val POOL_DAMAGE = 10
