@@ -166,7 +166,8 @@ OPEN-CX22 scavenger remainder and counts; OPEN-CX23 herb yield; OPEN-CX24 food-t
 beyond Overload; OPEN-CX26 boss drop scaling; OPEN-CX27 CM requirement; OPEN-CX28 target-time clock; OPEN-CX29 message
 strings; OPEN-CX30 PB buckets; OPEN-CX31 the corridors between rooms (cache cell edges are blocked; passages teleport to the
 neighbouring cell, DECISIONS D-083) and the passage / room-lock messages; OPEN-CX32 the NPC spawn tiles of every room (not in the
-cache: chosen from the cell's own features or spread over its floor, `CoxRooms`). **32 open items** (plus the reward items `OPEN-CR1` to `OPEN-CR14` in
+cache: chosen from the cell's own features or spread over its floor, `CoxRooms`); OPEN-CX33 the damage the entrance tendrils / Vasa's
+fire deal to a raider leaving mid-fight (10 assumed). **33 open items** (plus the reward items `OPEN-CR1` to `OPEN-CR14` in
 [cox/lobby-rewards.md](cox/lobby-rewards.md)).
 
 ## Conflicts between sources (raid-wide)

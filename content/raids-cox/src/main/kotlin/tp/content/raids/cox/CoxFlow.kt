@@ -11,6 +11,7 @@ import tp.plugin.ContentScope
 import tp.plugin.EntityRef
 import tp.plugin.LocRef
 import tp.plugin.PlayerRef
+import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.util.CoordGrid
 
@@ -108,6 +109,7 @@ public class CoxFlow : ContentPlugin {
             if (npc.type == tp.symbols.Npcs.OLM_HEAD) CoxOlmRoom.olmDied(run, npc) else CoxRooms.npcDied(run, npc, npc)
         }
         events.on<RaidEvent.Left> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let(CoxHud::leave) }
+        events.on<RaidEvent.Died> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let { dropRaidItems(it, e.run) } }
     }
 
     /**
@@ -155,6 +157,15 @@ public class CoxFlow : ContentPlugin {
         }
     }
 
+    /** CX35: a death drops every raid-only item at once where the raider fell (their own items are never lost). */
+    private fun dropRaidItems(player: PlayerRef, run: RaidRun) {
+        val inv = player.inv(Invs.INV)
+        val slots = (0 until inv.size).filter { inv.obj(it) in run.raid.raidOnlyItems }
+        if (slots.isEmpty()) return
+        val at = player.coord
+        player.transaction("cox_death_drop") { slots.all { dropAt(Invs.INV, it, inv.obj(it), inv.count(it), at, player.username) } }
+    }
+
     /** The lobby steps: Climb leaves the raid (Mount Quidamortem). */
     private fun climb(player: PlayerRef) {
         val run = runOf(player) ?: return
@@ -193,6 +204,10 @@ public class CoxFlow : ContentPlugin {
         if (side == cell.entrySide) {
             val back = st.plan.previous(cell) ?: return
             if (back.floor != cell.floor) return
+            // MU1 / SH1 / VE1 / VA1: tendrils (or Vasa's fire) at the entrance hurt whoever leaves mid-fight (OPEN-CX33).
+            if (cell.kind in ENTRANCE_HAZARDS && st.started[cell.index] && !st.done[cell.index]) {
+                player.events.publish(tp.plugin.DamageRequest(player, null, HAZARD_DAMAGE))
+            }
             if (back.kind == CoxKind.START && back.floor == 0) {
                 player.teleport(lobbyArrival(run, player, back))
             } else {
@@ -455,6 +470,10 @@ public class CoxFlow : ContentPlugin {
 
         private const val OP1 = 1
         private const val OP2 = 2
+
+        /** The rooms whose entrance hurts a raider leaving mid-fight, and the damage (OPEN-CX33: not stated). */
+        private val ENTRANCE_HAZARDS = setOf(CoxKind.MUTTADILES, CoxKind.SHAMANS, CoxKind.VESPULA, CoxKind.VASA)
+        private const val HAZARD_DAMAGE = 10
 
         /** OPEN-CX4: the refusal line is not captured. */
         private const val NO_CM_RELOAD = "Challenge Mode layouts cannot be reloaded."
