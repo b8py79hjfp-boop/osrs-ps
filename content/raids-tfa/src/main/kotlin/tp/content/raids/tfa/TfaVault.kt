@@ -19,12 +19,15 @@ import tp.symbols.Varbits
 internal object TfaVault {
     fun start(run: RaidRun, any: EntityRef) {
         Raids.complete(any, run)
-        for (p in run.presentPlayers(any)) {
-            p.setVarbit(Varbits.TFA_VAULT_OWN_CHEST, run.party.members.indexOfFirst { it.equals(p.username, ignoreCase = true) } + 1)
-            TfaChestUi.sync(p)
-        }
+        for (p in run.presentPlayers(any)) ownChest(p, run)
         Raids.spawn(any, run, Npcs.TFA_VAULT_EXIT_SMALL, TfaRaid.VAULT_RIFT)
         TfaFlow.state(run).chestsAt = any.tick + TfaConfig.brazierTicks
+    }
+
+    /** The player's own chest slot (1-based party slot); also for a member who reconnects in the vault. */
+    fun ownChest(p: tp.plugin.PlayerRef, run: RaidRun) {
+        p.setVarbit(Varbits.TFA_VAULT_OWN_CHEST, run.party.members.indexOfFirst { it.equals(p.username, ignoreCase = true) } + 1)
+        TfaChestUi.sync(p)
     }
 
     fun spawnChests(any: EntityRef, run: RaidRun) {

@@ -64,6 +64,9 @@ public class TfaSpectate : ContentPlugin {
         run.raid.id == TfaRaid.ID &&
             run.state !is RunState.Building &&
             run.state != RunState.Closed &&
+            run.state != RunState.Completed &&
+            run.state != RunState.Abandoned &&
+            run.state !is RunState.Failed &&
             run.instance != null &&
             (run.party.settings[TfaParties.SETTING_SPECTATE_OFF] ?: 0) == 0
 

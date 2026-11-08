@@ -78,6 +78,14 @@ public class TfaFlow : ContentPlugin {
             if (run.raid.id != TfaRaid.ID || run.state == RunState.Building || run.state == RunState.Closed) continue
             val state = state(run)
             TfaHud.tick(world, run, state)
+            // A member back in the vault after a logout gets their own chest slot again.
+            if (run.state == RunState.Completed) {
+                for (m in run.members.values) {
+                    if (!m.inside || !m.online) continue
+                    val p = world.onlinePlayer(m.name) ?: continue
+                    if (p.varbit(Varbits.TFA_VAULT_OWN_CHEST) == 0) TfaVault.ownChest(p, run)
+                }
+            }
             if (state.chestsAt >= 0 && world.tick >= state.chestsAt && !state.chestsSpawned) {
                 val any = run.party.members.firstNotNullOfOrNull { world.onlinePlayer(it) } ?: continue
                 TfaVault.spawnChests(any, run)
