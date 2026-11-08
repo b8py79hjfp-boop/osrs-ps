@@ -166,7 +166,7 @@ The work is committed at each green milestone.
   - hidden staff, with `::invisible`;
   - demotion closing the staff views, with the interface.
 - **Client facts:**
-  - OPEN-CM1 and OPEN-CM2 stay open for the RuneLite check.
+  - OPEN-CMD1 and OPEN-CMD2 stay open for the RuneLite check.
   - Device bans use RSProt's 24-byte login `uuid` (LoginBlockDecoder.kt:135-138).
   - Output stays on game messages (type 0); the console type (99) is not confirmed to render in RuneLite.
   - RuneLite's developer-tools plugin acts locally on 19 command names (`DevToolsPlugin`, lines 336-568).

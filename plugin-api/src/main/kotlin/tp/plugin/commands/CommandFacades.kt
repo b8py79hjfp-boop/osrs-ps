@@ -88,3 +88,36 @@ public const val YELL_OFF_KEY: String = "commands.yell.off"
 
 /** Whether a mute stops this player's chat now (public, private, clan and yell; commands brief §6). */
 public val PlayerRef.isMuted: Boolean get() = with(p.world) { p.isMuted() }
+
+/** Mutes, yell-mutes and jail in force (commands brief §7). */
+public val PlayerRef.sanctions: tp.util.Sanctions get() = p.sanctions
+
+/** Wall-clock now (sanction expiry is in epoch ms, commands brief §7). */
+public fun PlayerRef.nowMillis(): Long = System.currentTimeMillis()
+
+/**
+ * One moderation action through the hub (commands brief §6, §7): records, the targeting rule against the stored rank,
+ * cross-world and offline. [reply] runs on the world thread with null on success, else the reason.
+ */
+public fun PlayerRef.moderate(
+    sanction: tp.util.Sanction,
+    target: String,
+    durationMs: Long,
+    reason: String,
+    reply: PlayerRef.(String?) -> Unit,
+) {
+    val accounts = p.world.accounts ?: return reply("Moderation needs the account server.")
+    accounts.moderate(p, sanction, target, durationMs, reason) { r -> this.reply(r) }
+}
+
+/** `::history`: [reply] gets an error, or [target]'s records newest first. */
+public fun PlayerRef.moderationHistory(target: String, reply: PlayerRef.(String?, List<tp.util.ModRecord>) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Moderation needs the account server.", emptyList())
+    accounts.history(p, target) { e, records -> this.reply(e, records) }
+}
+
+/** `::lookup`: [reply] gets an error, or [target]'s card. */
+public fun PlayerRef.lookupPlayer(target: String, reply: PlayerRef.(String?, tp.util.PlayerCard?) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Moderation needs the account server.", null)
+    accounts.lookup(p, target) { e, card -> this.reply(e, card) }
+}

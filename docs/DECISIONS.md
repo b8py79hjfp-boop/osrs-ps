@@ -1281,9 +1281,9 @@ means is not known.
   - "Administrator" checks are now "administrator and above", so owners and developers pass them.
 - **Login and crowns.** The login response now sends `playerMod` (moderator and above; it was hardcoded false) and
   `staffModLevel` 2 for administrator and above. Public chat sends the crown (it was 0).
-  - OPEN-CM1: which client scripts read `staffmodlevel` and `playermod`, and what each value unlocks, is unverified
+  - OPEN-CMD1 (was OPEN-CM1, which collides with combat-magic): which client scripts read `staffmodlevel` and `playermod`, and what each value unlocks, is unverified
     (the cs2 dumps could not be read). It is checked in RuneLite.
-  - OPEN-CM2: the crown values (1 player-moderator, 2 J-Mod) follow the existing PM, friends-chat and clan code;
+  - OPEN-CMD2: the crown values (1 player-moderator, 2 J-Mod) follow the existing PM, friends-chat and clan code;
     public chat is to be checked in RuneLite.
 - **Bootstrap.**
   - `[ranks.bootstrap]`: developers, owners, administrators and moderators lists, applied at the account's next

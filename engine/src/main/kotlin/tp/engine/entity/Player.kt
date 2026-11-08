@@ -60,8 +60,8 @@ class Player internal constructor(
     /** Hidden staff (`::invisible`, commands brief §1): left out of player lists for lower ranks. */
     var invisible: Boolean = false
 
-    /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
-    var mutedUntil: Long = 0
+    /** Mutes, yell-mutes and jail in force (commands brief §7): from the login grant, then pushed live by the hub. */
+    var sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE
 
     /** The friends chat channel the player is in, as the hub last told this world (set live by the world node). */
     var channel: ChannelView? = null

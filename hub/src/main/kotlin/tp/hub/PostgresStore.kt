@@ -99,6 +99,81 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
 
     override fun lastIp(id: Long): String? = strings("SELECT last_ip FROM accounts WHERE id = ?", id).firstOrNull()
 
+    @Suppress("MagicNumber") // JDBC parameter indexes
+    override fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord =
+        sql { c ->
+            val q =
+                "INSERT INTO moderation_records (account_id, type, actor, reason, start_ms, expires_ms, scope) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"
+            c.prepareStatement(q).use { ps ->
+                with(record) {
+                    ps.setLong(1, accountId)
+                    ps.setString(2, type.name)
+                    ps.setString(3, actor)
+                    ps.setString(4, reason)
+                    ps.setLong(5, start)
+                    ps.setLong(6, expires)
+                    ps.setString(7, scope)
+                }
+                ps.executeQuery().use { rs ->
+                    rs.next()
+                    with(record) { tp.util.ModRecord(rs.getLong(1), accountId, type, actor, reason, start, expires, scope) }
+                }
+            }
+        }
+
+    override fun records(accountId: Long): List<tp.util.ModRecord> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM moderation_records WHERE account_id = ? ORDER BY id DESC").use { ps ->
+                ps.setLong(1, accountId)
+                ps.executeQuery().use { rs -> buildList { while (rs.next()) add(record(rs)) } }
+            }
+        }
+
+    @Suppress("MagicNumber") // JDBC parameter indexes
+    override fun liftRecords(accountId: Long, type: tp.util.RecordType, by: String, at: Long): Int =
+        sql { c ->
+            val q =
+                "UPDATE moderation_records SET lifted_by = ?, lifted_at_ms = ? WHERE account_id = ? AND type = ? " +
+                    "AND lifted_by = '' AND (expires_ms = -1 OR expires_ms > ?)"
+            c.prepareStatement(q).use { ps ->
+                ps.setString(1, by)
+                ps.setLong(2, at)
+                ps.setLong(3, accountId)
+                ps.setString(4, type.name)
+                ps.setLong(5, at)
+                ps.executeUpdate()
+            }
+        }
+
+    override fun scopeBanned(type: tp.util.RecordType, scope: String, now: Long): Boolean =
+        scope.isNotEmpty() &&
+            sql { c ->
+                val q =
+                    "SELECT 1 FROM moderation_records WHERE type = ? AND scope = ? AND lifted_by = '' " +
+                        "AND (expires_ms = -1 OR expires_ms > ?) LIMIT 1"
+                c.prepareStatement(q).use { ps ->
+                    ps.setString(1, type.name)
+                    ps.setString(2, scope)
+                    ps.setLong(3, now)
+                    ps.executeQuery().use { it.next() }
+                }
+            }
+
+    private fun record(rs: java.sql.ResultSet): tp.util.ModRecord =
+        tp.util.ModRecord(
+            rs.getLong("id"),
+            rs.getLong("account_id"),
+            tp.util.RecordType.valueOf(rs.getString("type")),
+            rs.getString("actor"),
+            rs.getString("reason"),
+            rs.getLong("start_ms"),
+            rs.getLong("expires_ms"),
+            rs.getString("scope"),
+            rs.getString("lifted_by"),
+            rs.getLong("lifted_at_ms"),
+        )
+
     override fun setLastIp(id: Long, ip: String) = exec("UPDATE accounts SET last_ip = ? WHERE id = ?", ip, id)
 
     override fun loadSave(id: Long): String? = strings("SELECT data FROM saves WHERE account_id = ?", id).firstOrNull()
@@ -607,6 +682,13 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                 """CREATE TABLE IF NOT EXISTS audit_log (
                     id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(), actor text NOT NULL, action text NOT NULL,
                     target text NOT NULL, detail text NOT NULL)""",
+                // Commands brief §7 (D-088): additive; accounts.muted_until / banned_until and ip_bans stay the fast checks.
+                """CREATE TABLE IF NOT EXISTS moderation_records (
+                    id bigserial PRIMARY KEY, account_id bigint NOT NULL REFERENCES accounts(id), type text NOT NULL,
+                    actor text NOT NULL, reason text NOT NULL, start_ms bigint NOT NULL, expires_ms bigint NOT NULL,
+                    scope text NOT NULL DEFAULT '', lifted_by text NOT NULL DEFAULT '', lifted_at_ms bigint NOT NULL DEFAULT 0)""",
+                "CREATE INDEX IF NOT EXISTS moderation_records_account ON moderation_records (account_id)",
+                "CREATE INDEX IF NOT EXISTS moderation_records_scope ON moderation_records (type, scope) WHERE scope <> ''",
             )
     }
 }

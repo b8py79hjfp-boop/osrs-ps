@@ -17,10 +17,9 @@ public class DevCommands : ContentPlugin {
                     DEV,
                 )
             ) {
-                message("Dev: ::pos ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace")
+                message("Dev: ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace")
             }
         }
-        onCommand("pos", tp.util.Rank.MODERATOR) { message("$coord tick $tick pid $pid") }
         onCommand("run", DEV) {
             runMode = !runMode
             message("Run: $runMode")

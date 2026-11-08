@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":cache"))
     implementation(project(":plugin-api"))
     runtimeOnly(project(":content:gameframe"))
+    runtimeOnly(project(":content:staff"))
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:combat"))
     runtimeOnly(project(":content:pvp"))
@@ -28,6 +29,10 @@ dependencies {
     runtimeOnly(project(":content:raids-toa"))
     testImplementation(project(":symbols"))
     testImplementation(project(":content:raids-core"))
+    // CrossWorldModerationScenario (commands brief §10): two worlds and the hub in one JVM.
+    testImplementation(project(":server"))
+    testImplementation(project(":hub"))
+    testImplementation(project(":services"))
     testRuntimeOnly(libs.logback.classic)
 }
 

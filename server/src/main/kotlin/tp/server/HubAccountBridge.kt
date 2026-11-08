@@ -25,8 +25,10 @@ import tp.services.CollectPart
 import tp.services.GeOffer
 import tp.services.HubServices
 import tp.services.LoginResult
-import tp.services.Sanction
+import tp.util.ModRecord
+import tp.util.PlayerCard
 import tp.util.Rank
+import tp.util.Sanction
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -52,7 +54,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 LoginResult.OK -> {
                     world.admitAuthorized(
                         request,
-                        AccountProfile(grant.accountId, grant.displayName, grant.rights, grant.save, grant.mutedUntil),
+                        AccountProfile(grant.accountId, grant.displayName, grant.rights, grant.save, grant.sanctions),
                     )
                 }
 
@@ -263,6 +265,46 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
+    override fun moderate(player: Player, sanction: Sanction, target: String, durationMs: Long, reason: String, reply: (String?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.")
+        io.execute {
+            val answer = call("moderate") { listOf(hub.moderation.apply(account, target, sanction, durationMs, reason)) }
+            val result = if (answer == null) "The hub did not answer." else answer[0]
+            world.execute { if (world.playerByAccount(account) === player) reply(result) }
+        }
+    }
+
+    override fun history(player: Player, target: String, reply: (String?, List<ModRecord>) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.", emptyList())
+        io.execute {
+            val a = call("history") { hub.moderation.history(account, target) }
+            world.execute {
+                if (world.playerByAccount(account) ===
+                    player
+                ) {
+                    reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value.orEmpty())
+                }
+            }
+        }
+    }
+
+    override fun lookup(player: Player, target: String, reply: (String?, PlayerCard?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.", null)
+        io.execute {
+            val a = call("lookup") { hub.moderation.lookup(account, target) }
+            world.execute {
+                if (world.playerByAccount(account) ===
+                    player
+                ) {
+                    reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value)
+                }
+            }
+        }
+    }
+
     override fun staff(player: Player, command: String, args: List<String>) {
         val account = player.accountId
         if (account == 0L) return
@@ -272,7 +314,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                     when (command) {
                         "broadcast" -> hub.broadcasts.broadcast(args.joinToString(" ")).let { "Broadcast sent." }
                         "update" -> hub.broadcasts.systemUpdate(args[0].toIntOrNull() ?: 0).let { "System update scheduled." }
-                        else -> moderate(account, command, args)
+                        else -> "Unknown command."
                     }
                 } ?: "The hub did not answer."
             world.execute { world.playerByAccount(account)?.session?.send(ServerMessage.GameMessage(reply)) }
@@ -289,7 +331,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val error =
                 call("report mute") {
-                    hub.moderation.apply(account, name, Sanction.MUTE, REPORT_MUTE_MINUTES, "report rule $rule")
+                    hub.moderation.apply(account, name, Sanction.MUTE, REPORT_MUTE_MS, "report rule $rule")
                         ?: ""
                 }
             val reply =
@@ -445,30 +487,13 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
-    private suspend fun moderate(account: Long, command: String, args: List<String>): String {
-        val sanction = SANCTIONS[command] ?: return "Unknown command."
-        val minutes = args.getOrNull(1)?.toIntOrNull() ?: 0
-        val reason = args.drop(if (args.getOrNull(1)?.toIntOrNull() != null) 2 else 1).joinToString(" ")
-        return hub.moderation.apply(account, args[0].replace('_', ' '), sanction, minutes, reason) ?: "Done: $command ${args[0]}."
-    }
-
     /** Runs a hub call on this (virtual) thread; failures are logged and give null. */
     private fun <T> call(what: String, block: suspend () -> T): T? =
         runCatching { runBlocking { block() } }.onFailure { logger.warn(it) { "hub $what call failed" } }.getOrNull()
 
     private companion object {
         /** OSRS report window: "Mute for 48 hours" (staff option). */
-        const val REPORT_MUTE_MINUTES = 48 * 60
-
-        val SANCTIONS =
-            mapOf(
-                "kick" to Sanction.KICK,
-                "mute" to Sanction.MUTE,
-                "unmute" to Sanction.UNMUTE,
-                "ban" to Sanction.BAN,
-                "ipban" to Sanction.IP_BAN,
-                "unban" to Sanction.UNBAN,
-            )
+        const val REPORT_MUTE_MS = 48 * 60 * 60_000L
     }
 }
 

@@ -9,7 +9,6 @@ import tp.services.Broadcast
 import tp.services.CollectPart
 import tp.services.HubServices
 import tp.services.LoginResult
-import tp.services.Sanction
 import tp.services.TpPb
 import tp.services.WorldInfo
 import tp.services.grpc.AccountRef
@@ -45,7 +44,9 @@ import tp.services.grpc.SystemUpdateRequest
 import tp.services.grpc.WorldList
 import tp.services.grpc.WorldRef
 import tp.services.grpc.WorldsGrpcKt
+import tp.services.toPb
 import tp.util.Rank
+import tp.util.Sanction
 import tp.services.grpc.Empty as PbEmpty
 import tp.services.grpc.GeOffer as PbOffer
 import tp.services.grpc.LoginRequest as PbLogin
@@ -130,7 +131,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 .setRights(g.rights.stored)
                 .setSave(g.save.orEmpty())
                 .setHasSave(g.save != null)
-                .setMutedUntil(g.mutedUntil)
+                .setSanctions(g.sanctions.toPb())
                 .build()
         }
 
@@ -291,94 +292,99 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
 
         override fun subscribe(request: WorldRef): Flow<PbSocialEvent> =
             callbackFlow {
-                val handle =
-                    hub.social.subscribe(request.worldId) { e ->
-                        val b = PbSocialEvent.newBuilder().setToAccount(e.toAccount)
-                        when (e) {
-                            is tp.services.SocialEvent.PrivateMessage -> {
-                                b.setPrivateMessage(
-                                    tp.services.grpc.PrivateMessage
-                                        .newBuilder()
-                                        .setFrom(
-                                            e.from,
-                                        ).setFromRights(e.fromRights.stored)
-                                        .setText(e.text),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.FriendStatus -> {
-                                b.setFriendStatus(
-                                    tp.services.grpc.FriendStatus
-                                        .newBuilder()
-                                        .setName(e.name)
-                                        .setWorldId(e.worldId),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.ChannelJoined -> {
-                                b.setChannelJoined(
-                                    tp.services.grpc.ChannelJoined
-                                        .newBuilder()
-                                        .setOwner(e.owner)
-                                        .setChannelName(e.channelName)
-                                        .setKickRank(e.kickRank)
-                                        .addAllMembers(e.members.map { it.toPb() }),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.ChannelLeft -> {
-                                b.setChannelLeft(
-                                    tp.services.grpc.ChannelLeft
-                                        .newBuilder()
-                                        .setKicked(e.kicked),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.ChannelMemberUpdate -> {
-                                b.setChannelMember(
-                                    tp.services.grpc.ChannelMemberUpdate
-                                        .newBuilder()
-                                        .setMember(e.member.toPb())
-                                        .setRemoved(e.removed),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.ChannelMessage -> {
-                                b.setChannelMessage(
-                                    tp.services.grpc.ChannelMessage
-                                        .newBuilder()
-                                        .setFrom(e.from)
-                                        .setFromRights(e.fromRights.stored)
-                                        .setChannelName(e.channelName)
-                                        .setWorldId(e.worldId)
-                                        .setText(e.text),
-                                )
-                            }
-
-                            is tp.services.SocialEvent.ClanState -> {
-                                b.setClanState(tp.services.ClanPb.state(e))
-                            }
-
-                            is tp.services.SocialEvent.ClanMessage -> {
-                                b.setClanMessage(tp.services.ClanPb.message(e))
-                            }
-
-                            is tp.services.SocialEvent.ClanInvite -> {
-                                b.setClanInvite(tp.services.ClanPb.invite(e))
-                            }
-
-                            is tp.services.SocialEvent.Muted -> {
-                                b.setMuted(
-                                    tp.services.grpc.Muted
-                                        .newBuilder()
-                                        .setUntil(e.until),
-                                )
-                            }
-                        }
-                        trySend(b.build())
-                    }
+                val handle = hub.social.subscribe(request.worldId) { e -> trySend(socialPb(e)) }
                 awaitClose { handle.close() }
             }
+
+        private fun socialPb(e: tp.services.SocialEvent): PbSocialEvent {
+            val b = PbSocialEvent.newBuilder().setToAccount(e.toAccount)
+            when (e) {
+                is tp.services.SocialEvent.PrivateMessage -> {
+                    b.setPrivateMessage(
+                        tp.services.grpc.PrivateMessage
+                            .newBuilder()
+                            .setFrom(
+                                e.from,
+                            ).setFromRights(e.fromRights.stored)
+                            .setText(e.text),
+                    )
+                }
+
+                is tp.services.SocialEvent.FriendStatus -> {
+                    b.setFriendStatus(
+                        tp.services.grpc.FriendStatus
+                            .newBuilder()
+                            .setName(e.name)
+                            .setWorldId(e.worldId),
+                    )
+                }
+
+                is tp.services.SocialEvent.ChannelJoined -> {
+                    b.setChannelJoined(
+                        tp.services.grpc.ChannelJoined
+                            .newBuilder()
+                            .setOwner(e.owner)
+                            .setChannelName(e.channelName)
+                            .setKickRank(e.kickRank)
+                            .addAllMembers(e.members.map { it.toPb() }),
+                    )
+                }
+
+                is tp.services.SocialEvent.ChannelLeft -> {
+                    b.setChannelLeft(
+                        tp.services.grpc.ChannelLeft
+                            .newBuilder()
+                            .setKicked(e.kicked),
+                    )
+                }
+
+                is tp.services.SocialEvent.ChannelMemberUpdate -> {
+                    b.setChannelMember(
+                        tp.services.grpc.ChannelMemberUpdate
+                            .newBuilder()
+                            .setMember(e.member.toPb())
+                            .setRemoved(e.removed),
+                    )
+                }
+
+                is tp.services.SocialEvent.ChannelMessage -> {
+                    b.setChannelMessage(
+                        tp.services.grpc.ChannelMessage
+                            .newBuilder()
+                            .setFrom(e.from)
+                            .setFromRights(e.fromRights.stored)
+                            .setChannelName(e.channelName)
+                            .setWorldId(e.worldId)
+                            .setText(e.text),
+                    )
+                }
+
+                is tp.services.SocialEvent.ClanState -> {
+                    b.setClanState(tp.services.ClanPb.state(e))
+                }
+
+                is tp.services.SocialEvent.ClanMessage -> {
+                    b.setClanMessage(tp.services.ClanPb.message(e))
+                }
+
+                is tp.services.SocialEvent.ClanInvite -> {
+                    b.setClanInvite(tp.services.ClanPb.invite(e))
+                }
+
+                is tp.services.SocialEvent.Sanctioned -> {
+                    b.setSanctioned(e.sanctions.toPb())
+                }
+
+                is tp.services.SocialEvent.Warned -> {
+                    b.setWarned(
+                        tp.services.grpc.Warned
+                            .newBuilder()
+                            .setReason(e.reason),
+                    )
+                }
+            }
+            return b.build()
+        }
     }
 
     private inner class TradingPostRpc : tp.services.grpc.TradingPostGrpcKt.TradingPostCoroutineImplBase() {
@@ -472,16 +478,28 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
     }
 
     private inner class Moderation : ModerationGrpcKt.ModerationCoroutineImplBase() {
-        override suspend fun apply(request: SanctionRequest): ErrorReply =
-            error(
-                hub.moderation.apply(
-                    request.staffAccount,
-                    request.target,
-                    Sanction.valueOf(request.sanction),
-                    request.minutes,
-                    request.reason,
-                ),
-            )
+        override suspend fun apply(request: SanctionRequest): ErrorReply {
+            val sanction = Sanction.entries.firstOrNull { it.name == request.sanction } ?: return error("Unknown action.")
+            return error(hub.moderation.apply(request.staffAccount, request.target, sanction, request.durationMs, request.reason))
+        }
+
+        override suspend fun history(request: tp.services.grpc.ModQuery): tp.services.grpc.HistoryReply {
+            val a = hub.moderation.history(request.staffAccount, request.target)
+            val b =
+                tp.services.grpc.HistoryReply
+                    .newBuilder()
+            a.error?.let(b::setError)
+            a.value?.forEach { b.addRecords(it.toPb()) }
+            return b.build()
+        }
+
+        override suspend fun lookup(request: tp.services.grpc.ModQuery): tp.services.grpc.LookupReply {
+            val a = hub.moderation.lookup(request.staffAccount, request.target)
+            return a.value?.toPb() ?: tp.services.grpc.LookupReply
+                .newBuilder()
+                .setError(a.error ?: "Not available.")
+                .build()
+        }
 
         override suspend fun audit(request: tp.services.grpc.AuditRequest): tp.services.grpc.Empty {
             hub.moderation.audit(request.actor, request.action, request.target, request.detail)

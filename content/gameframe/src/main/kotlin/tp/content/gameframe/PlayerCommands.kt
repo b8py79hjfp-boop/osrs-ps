@@ -19,6 +19,7 @@ import tp.plugin.commands.homeCoord
 import tp.plugin.commands.isMuted
 import tp.plugin.commands.onlineEverywhere
 import tp.plugin.commands.openUrl
+import tp.plugin.commands.sanctions
 import tp.plugin.commands.setYellOff
 import tp.plugin.commands.showList
 import tp.plugin.commands.worldId
@@ -240,6 +241,11 @@ public class PlayerCommands : ContentPlugin {
     /** §4: per-rank cooldown from the config (none above the listed ranks), mute check, then every world. */
     private fun yell(p: PlayerRef, text: String): CommandResult {
         if (p.isMuted) return CommandResult.Failed("You are muted and can't yell.")
+        val s = p.sanctions
+        if (s.yellMuted(System.currentTimeMillis())) {
+            val reason = if (s.yellMuteReason.isEmpty()) "" else " (${Tags.escape(s.yellMuteReason)})"
+            return CommandResult.Failed("You can't yell ${tp.util.Sanctions.describeUntil(s.yellMutedUntil)}$reason.")
+        }
         if (p.yellOff) return CommandResult.Failed("Turn yells back on with ::yell on first.")
         // Keyed by exact rank: a rank the config does not list (administrator and above by default) has none.
         val seconds = p.commandsConfig.yellCooldownSeconds[p.rank] ?: 0

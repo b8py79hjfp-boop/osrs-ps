@@ -606,7 +606,7 @@ class World(
 
             is ClientCommand.PublicChat -> {
                 if (command.text.isEmpty() || command.text.length > MAX_CHAT_LENGTH) return invalid(player, command)
-                if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(MUTED_MESSAGE))
+                if (player.isMuted()) return player.session.send(ServerMessage.GameMessage(mutedMessage(player)))
                 if (command.type == CHAT_TYPE_CLAN || command.type == CHAT_TYPE_GUEST_CLAN) {
                     // RSProt MessagePublic chat types: 3 = clan, 4 = guest clan.
                     val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
@@ -1150,8 +1150,15 @@ class World(
         return true
     }
 
-    /** Whether [this] is muted now (a negative mutedUntil is permanent). */
-    fun Player.isMuted(): Boolean = mutedUntil < 0 || mutedUntil > System.currentTimeMillis()
+    /** Commands brief §7: a muted player trying to chat sees the reason and the expiry. */
+    fun mutedMessage(player: Player): String {
+        val s = player.sanctions
+        val reason = if (s.muteReason.isEmpty()) "" else " (${tp.util.Tags.escape(s.muteReason)})"
+        return "You are muted ${tp.util.Sanctions.describeUntil(s.mutedUntil)}$reason and cannot talk."
+    }
+
+    /** Whether [this] is muted now (commands brief §7). */
+    fun Player.isMuted(): Boolean = sanctions.muted(System.currentTimeMillis())
 
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {
@@ -1302,7 +1309,7 @@ class World(
         if (profile != null) {
             player.accountId = profile.accountId
             player.rank = profile.rank
-            player.mutedUntil = profile.mutedUntil
+            player.sanctions = profile.sanctions
             profile.save?.let { PlayerSave.apply(player, it) }
         }
         addPlayer(player)
@@ -1520,7 +1527,6 @@ class World(
 
         /** Friends chat ranks a client may set: -1 (unranked) .. 6 (general); others carry 0. */
         private val CHANNEL_RANKS = -1..6
-        private const val MUTED_MESSAGE = "You are muted and cannot talk."
         private const val NO_HUB_MESSAGE = "Friends and private messages need the hub."
 
         /** Player/NPC view distance in tiles (RSProt player/NPC info default view distance 15). */

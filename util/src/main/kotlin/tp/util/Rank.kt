@@ -50,7 +50,7 @@ enum class Rank(val stored: String) {
     val playerMod: Boolean get() = atLeast(MODERATOR)
 
     companion object {
-        /** The J-Mod staff level the client checks (OPEN-CM1 until the cs2 reads are confirmed: docs/plans/commands.md). */
+        /** The J-Mod staff level the client checks (OPEN-CMD1 until the cs2 reads are confirmed: docs/mechanics/commands.md). */
         const val JMOD_LEVEL: Int = 2
 
         /** The rank stored as [value] (database, wire, config); also accepts the enum names. */

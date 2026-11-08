@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":net"))
     implementation(project(":engine"))
     runtimeOnly(project(":content:gameframe"))
+    runtimeOnly(project(":content:staff"))
     runtimeOnly(project(":content:dev"))
     runtimeOnly(project(":content:magic"))
     runtimeOnly(project(":content:drops"))

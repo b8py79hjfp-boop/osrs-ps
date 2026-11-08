@@ -68,7 +68,7 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
 
     /**
      * World thread: a `::yell` line to every player here who has not turned yells off. The text was escaped by the
-     * sender; the crown is the rank's chat icon (OPEN-CM2: `<img=0>` player-moderator, `<img=1>` J-Mod).
+     * sender; the crown is the rank's chat icon (OPEN-CMD2: `<img=0>` player-moderator, `<img=1>` J-Mod).
      */
     private fun yell(b: Broadcast.Yell) {
         val crown = b.rank.crown
@@ -119,9 +119,14 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 clanLinks.onEvent(player, e)
             }
 
-            is SocialEvent.Muted -> {
-                player.mutedUntil = e.until
-                player.session.send(ServerMessage.GameMessage(if (e.until == 0L) "You have been unmuted." else "You have been muted."))
+            is SocialEvent.Sanctioned -> {
+                val before = player.sanctions
+                player.sanctions = e.sanctions
+                world.content.onSanctionsChanged(player, before)
+            }
+
+            is SocialEvent.Warned -> {
+                world.content.onWarned(player, e.reason)
             }
         }
     }

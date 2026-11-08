@@ -15,6 +15,12 @@ interface ContentHandlers {
 
     fun onLogout(player: Player) {}
 
+    /** The hub changed [player]'s sanctions (commands brief §7); [before] is what was in force. World thread. */
+    fun onSanctionsChanged(player: Player, before: tp.util.Sanctions) {}
+
+    /** `::warn` arrived for [player] (commands brief §6). World thread. */
+    fun onWarned(player: Player, reason: String) {}
+
     /** `::command` typed in chat. Return false if unknown. */
     fun onCommand(player: Player, command: String, args: List<String>): Boolean = false
 

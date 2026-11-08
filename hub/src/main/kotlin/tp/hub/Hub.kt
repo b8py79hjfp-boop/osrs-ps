@@ -19,9 +19,9 @@ import tp.services.HiscoreService
 import tp.services.HubServices
 import tp.services.LoginGrant
 import tp.services.LoginResult
+import tp.services.ModAnswer
 import tp.services.ModerationService
 import tp.services.PresenceEntry
-import tp.services.Sanction
 import tp.services.SaveService
 import tp.services.SocialEvent
 import tp.services.SocialService
@@ -32,7 +32,12 @@ import tp.services.TpTrade
 import tp.services.TradingPostService
 import tp.services.WorldDirectory
 import tp.services.WorldInfo
+import tp.util.ModRecord
+import tp.util.PlayerCard
 import tp.util.Rank
+import tp.util.RecordType
+import tp.util.Sanction
+import tp.util.Sanctions
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
@@ -146,7 +151,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 ) {
                     return LoginGrant(LoginResult.THROTTLED)
                 }
-                if (db { store.ipBanned(ip) }) return LoginGrant(LoginResult.BANNED)
+                if (db { store.ipBanned(ip) || store.scopeBanned(RecordType.IP_BAN, ip, System.currentTimeMillis()) }) {
+                    return LoginGrant(LoginResult.BANNED)
+                }
                 var row = db { store.account(name) }
                 if (row == null &&
                     config.autoRegister
@@ -177,7 +184,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 val entry = PresenceEntry(row.id, row.displayName, worldId, rank, invisible = false)
                 presence[row.id] = entry
                 presenceChanged(online = listOf(entry))
-                return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, row.mutedUntil)
+                // Commands brief §7: sanctions set while offline apply now.
+                val sanctions = Sanctions.of(db { store.records(row.id) }, System.currentTimeMillis())
+                return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, sanctions)
             }
 
             override suspend fun logout(accountId: Long, worldId: Int, save: String) {
@@ -400,28 +409,123 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 db { store.audit(actor, action, target, detail) }
             }
 
-            override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String? {
+            @Suppress("ReturnCount") // guard clauses, one per refusal reason
+            override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, durationMs: Long, reason: String): String? {
                 val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
-                if (staff.rights == Rank.PLAYER) return "You don't have permission to do that."
-                if (sanction in ADMIN_ONLY && !staff.rights.atLeast(Rank.ADMINISTRATOR)) return "Only administrators can do that."
-                val row = db { store.account(target) } ?: return "Unknown player."
-                val until = if (minutes <= 0) -1L else System.currentTimeMillis() + minutes * MS_PER_MINUTE
-                when (sanction) {
-                    Sanction.KICK -> Unit
-                    Sanction.MUTE -> db { store.setMuted(row.id, until) }
-                    Sanction.UNMUTE -> db { store.setMuted(row.id, 0) }
-                    Sanction.BAN -> db { store.setBanned(row.id, until) }
-                    Sanction.UNBAN -> db { store.setBanned(row.id, 0) }
-                    Sanction.IP_BAN -> db { store.lastIp(row.id)?.let { store.setIpBan(it, true) } }
+                if (!staff.rights.atLeast(sanction.minRank)) return "You don't have permission to do that."
+                val row = db { store.account(target) } ?: return "There is no account called $target."
+                // Commands brief §1: checked here against the stored rank, so offline targets obey it too.
+                if (row.id != staff.id && !staff.rights.canTarget(row.rights)) return "You can't do that to ${row.displayName}."
+                val now = System.currentTimeMillis()
+                sanction.lifts?.let { type -> return lift(staff, row, sanction, type, now, reason) }
+                val type = sanction.record ?: return "Unknown action."
+                val expires =
+                    when {
+                        !type.lasting -> 0L
+                        durationMs == ModRecord.PERMANENT -> ModRecord.PERMANENT
+                        durationMs <= 0 -> return "That needs a duration."
+                        else -> now + durationMs
+                    }
+                val scope =
+                    when (type) {
+                        RecordType.IP_BAN -> db { store.lastIp(row.id) } ?: return "${row.displayName} has no known IP address."
+                        RecordType.DEVICE_BAN -> return "Device bans are not available yet."
+                        else -> ""
+                    }
+                db {
+                    store.addRecord(ModRecord(0, row.id, type, staff.displayName, reason, now, expires, scope))
+                    // D-088: the account columns stay the fast login and chat checks, written alongside the record.
+                    when (type) {
+                        RecordType.MUTE -> store.setMuted(row.id, expires)
+                        RecordType.BAN -> store.setBanned(row.id, expires)
+                        RecordType.IP_BAN -> if (expires == ModRecord.PERMANENT) store.setIpBan(scope, true)
+                        else -> Unit
+                    }
+                    store.audit(staff.displayName, sanction.name, row.displayName, "until=$expires reason=$reason")
                 }
-                db { store.audit(staff.displayName, sanction.name, row.displayName, "minutes=$minutes reason=$reason") }
-                if (sanction == Sanction.MUTE || sanction == Sanction.UNMUTE) {
-                    online[row.id]?.let { world -> deliver(world, SocialEvent.Muted(row.id, if (sanction == Sanction.MUTE) until else 0)) }
-                }
-                if (sanction == Sanction.KICK || sanction == Sanction.BAN || sanction == Sanction.IP_BAN) {
-                    online[row.id]?.let { world -> kickSinks[world]?.forEach { runCatching { it(row.id) } } }
-                }
+                pushSanctions(row.id, now)
+                val world = online[row.id]
+                if (world != null && type == RecordType.WARN) deliver(world, SocialEvent.Warned(row.id, reason))
+                if (world != null && type in KICKING) kickSinks[world]?.forEach { runCatching { it(row.id) } }
                 return null
+            }
+
+            private suspend fun lift(
+                staff: AccountRow,
+                row: AccountRow,
+                sanction: Sanction,
+                type: RecordType,
+                now: Long,
+                reason: String,
+            ): String? {
+                val lifted =
+                    db {
+                        val n = store.liftRecords(row.id, type, staff.displayName, now)
+                        when (type) {
+                            RecordType.MUTE -> store.setMuted(row.id, 0)
+                            RecordType.BAN -> store.setBanned(row.id, 0)
+                            RecordType.IP_BAN -> store.lastIp(row.id)?.let { store.setIpBan(it, false) }
+                            else -> Unit
+                        }
+                        if (n > 0) store.audit(staff.displayName, sanction.name, row.displayName, "lifted=$n reason=$reason")
+                        n
+                    }
+                if (lifted == 0) return "${row.displayName} has no active ${type.name.lowercase().replace('_', ' ')}."
+                pushSanctions(row.id, now)
+                return null
+            }
+
+            /** Commands brief §7: the change applies at once on the world the account is on. */
+            private suspend fun pushSanctions(accountId: Long, now: Long) {
+                val world = online[accountId] ?: return
+                val sanctions = Sanctions.of(db { store.records(accountId) }, now)
+                deliver(world, SocialEvent.Sanctioned(accountId, sanctions))
+            }
+
+            override suspend fun history(staffAccount: Long, target: String): ModAnswer<List<ModRecord>> {
+                val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
+                if (!staff.rights.isStaff) return ModAnswer("You don't have permission to do that.", null)
+                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val records = db { store.records(row.id) }
+                val admin = staff.rights.atLeast(Rank.ADMINISTRATOR)
+                // §8: IP addresses and device ids are for administrators only, and every view of them is audited.
+                if (admin &&
+                    records.any { it.scope.isNotEmpty() }
+                ) {
+                    db { store.audit(staff.displayName, "view-history-scopes", row.displayName, "") }
+                }
+                val shown =
+                    if (admin) {
+                        records
+                    } else {
+                        records.map {
+                            with(it) { ModRecord(id, accountId, type, actor, reason, start, expires, "", liftedBy, liftedAt) }
+                        }
+                    }
+                return ModAnswer(null, shown)
+            }
+
+            override suspend fun lookup(staffAccount: Long, target: String): ModAnswer<PlayerCard> {
+                val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
+                if (!staff.rights.isStaff) return ModAnswer("You don't have permission to do that.", null)
+                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val now = System.currentTimeMillis()
+                val records = db { store.records(row.id) }
+                val admin = staff.rights.atLeast(Rank.ADMINISTRATOR)
+                val ip = if (admin) db { store.lastIp(row.id) }.orEmpty() else ""
+                if (ip.isNotEmpty()) db { store.audit(staff.displayName, "view-ip", row.displayName, "") }
+                val card =
+                    PlayerCard(
+                        row.id,
+                        row.displayName,
+                        row.rights,
+                        online[row.id] ?: 0,
+                        Sanctions.of(records, now),
+                        row.bannedUntil,
+                        records.size,
+                        ip,
+                    )
+                return ModAnswer(null, card)
             }
 
             override fun subscribeKicks(worldId: Int, sink: (Long) -> Unit): AutoCloseable {
@@ -476,7 +580,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         const val MAX_TOP = 100
         const val MS_PER_MINUTE = 60_000L
         val NAME = Regex("[A-Za-z0-9 _-]{1,12}")
-        val ADMIN_ONLY = setOf(Sanction.IP_BAN, Sanction.BAN, Sanction.UNBAN)
+
+        /** Records that end the target's session at once. */
+        val KICKING = setOf(RecordType.KICK, RecordType.BAN, RecordType.IP_BAN, RecordType.DEVICE_BAN)
     }
 }
 

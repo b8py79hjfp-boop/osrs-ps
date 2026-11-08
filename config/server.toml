@@ -22,6 +22,13 @@ vote = ""
 store = ""
 hiscores = ""
 
+[commands.jail]
+# Where ::jail keeps players (never in the Wilderness or an instance). OSRS has no jail; this is the Draynor cell.
+x = 3128
+z = 3245
+level = 0
+radius = 2
+
 [commands.overrides]
 # teleto = "ADMINISTRATOR"
 # skull = "disabled"

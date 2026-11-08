@@ -97,7 +97,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                     r.displayName,
                     Rank.parseOrPlayer(r.rights.ifEmpty { Rank.PLAYER.name }),
                     if (r.hasSave) r.save else null,
-                    r.mutedUntil,
+                    r.sanctions.toSanctions(),
                 )
             }
 
@@ -368,8 +368,12 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                             sink(SocialEvent.FriendStatus(e.toAccount, e.friendStatus.name, e.friendStatus.worldId))
                         }
 
-                        e.hasMuted() -> {
-                            sink(SocialEvent.Muted(e.toAccount, e.muted.until))
+                        e.hasSanctioned() -> {
+                            sink(SocialEvent.Sanctioned(e.toAccount, e.sanctioned.toSanctions()))
+                        }
+
+                        e.hasWarned() -> {
+                            sink(SocialEvent.Warned(e.toAccount, e.warned.reason))
                         }
 
                         e.hasChannelJoined() -> {
@@ -605,7 +609,13 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
     override val moderation: ModerationService =
         object : ModerationService {
-            override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String? =
+            override suspend fun apply(
+                staffAccount: Long,
+                target: String,
+                sanction: tp.util.Sanction,
+                durationMs: Long,
+                reason: String,
+            ): String? =
                 err(
                     moderationStub
                         .apply(
@@ -615,11 +625,28 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                                     staffAccount,
                                 ).setTarget(target)
                                 .setSanction(sanction.name)
-                                .setMinutes(minutes)
+                                .setDurationMs(durationMs)
                                 .setReason(reason)
                                 .build(),
                         ).error,
                 )
+
+            override suspend fun history(staffAccount: Long, target: String): ModAnswer<List<tp.util.ModRecord>> {
+                val r = moderationStub.history(modQuery(staffAccount, target))
+                return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.recordsList.map { it.toRecord() })
+            }
+
+            override suspend fun lookup(staffAccount: Long, target: String): ModAnswer<tp.util.PlayerCard> {
+                val r = moderationStub.lookup(modQuery(staffAccount, target))
+                return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.toCard())
+            }
+
+            private fun modQuery(staffAccount: Long, target: String) =
+                tp.services.grpc.ModQuery
+                    .newBuilder()
+                    .setStaffAccount(staffAccount)
+                    .setTarget(target)
+                    .build()
 
             override suspend fun audit(actor: String, action: String, target: String, detail: String) {
                 moderationStub.audit(

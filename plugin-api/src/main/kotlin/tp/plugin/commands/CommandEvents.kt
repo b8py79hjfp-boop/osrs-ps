@@ -30,3 +30,9 @@ public fun PlayerRef.showList(title: String, rows: List<String>) {
 public class SkullRequest(public val player: PlayerRef) : Event {
     public var handled: Boolean = false
 }
+
+/** The hub changed [player]'s sanctions (commands brief §7); [before] is what was in force. */
+public class SanctionsChanged(public val player: PlayerRef, public val before: tp.util.Sanctions) : Event
+
+/** A moderator's `::warn` reached [player] (commands brief §6). */
+public class Warned(public val player: PlayerRef, public val reason: String) : Event

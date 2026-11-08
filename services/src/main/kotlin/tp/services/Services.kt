@@ -31,8 +31,8 @@ class LoginGrant(
     val rights: Rank = Rank.PLAYER,
     /** Latest durable save (JSON, versioned), or null for a new character. */
     val save: String? = null,
-    /** Muted until (epoch ms), 0 = not muted. */
-    val mutedUntil: Long = 0,
+    /** Mutes, yell-mutes and jail in force (commands brief §7: applied at the next login when set offline). */
+    val sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE,
 )
 
 interface AccountService {
@@ -86,8 +86,11 @@ sealed interface SocialEvent {
     /** A friend logged in/out or hopped ([worldId] 0 = offline). */
     class FriendStatus(override val toAccount: Long, val name: String, val worldId: Int) : SocialEvent
 
-    /** Mute changed while online ([until] epoch ms; 0 = unmuted, negative = permanent). */
-    class Muted(override val toAccount: Long, val until: Long) : SocialEvent
+    /** The account's sanctions changed (commands brief §7: applied at once on the world it is on). */
+    class Sanctioned(override val toAccount: Long, val sanctions: tp.util.Sanctions) : SocialEvent
+
+    /** `::warn`: shown to the player with the reason (commands brief §6). */
+    class Warned(override val toAccount: Long, val reason: String) : SocialEvent
 
     /** Joined a friends chat channel: the full member list. */
     class ChannelJoined(
@@ -350,11 +353,22 @@ interface HiscoreService {
     suspend fun top(stat: Int, count: Int): List<HiscoreEntry>
 }
 
-enum class Sanction { KICK, MUTE, BAN, IP_BAN, UNMUTE, UNBAN }
+/** A moderation reply: [error] for the staff member, else [value]. */
+class ModAnswer<T>(val error: String?, val value: T?)
 
 interface ModerationService {
-    /** Applies [sanction] to [target] (duration in minutes, 0 = permanent). Every action is audit-logged. */
-    suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String?
+    /**
+     * Applies [sanction] to [target] for [durationMs] ([tp.util.ModRecord.PERMANENT] = permanent; ignored by moments
+     * and lifts). Writes a `moderation_records` row (commands brief §7), checks the targeting rule against the stored
+     * rank (offline targets too), and pushes the change to the target's world. Null on success, else the reason.
+     */
+    suspend fun apply(staffAccount: Long, target: String, sanction: tp.util.Sanction, durationMs: Long, reason: String): String?
+
+    /** `::history`: [target]'s records, newest first. IP and device scopes only for administrators (§8). */
+    suspend fun history(staffAccount: Long, target: String): ModAnswer<List<tp.util.ModRecord>> = ModAnswer("Not available.", null)
+
+    /** `::lookup`: [target]'s player card. */
+    suspend fun lookup(staffAccount: Long, target: String): ModAnswer<tp.util.PlayerCard> = ModAnswer("Not available.", null)
 
     /**
      * Commands brief §4: one command execution in the append-only audit log. [actor] is the display name; [detail]

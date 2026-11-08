@@ -29,3 +29,35 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::time` | `::time` | `::uptime`, `::serverinfo` | INFO | — | Server time, uptime, world and player counts. |
 | `::vote` | `::vote` | — | INFO | — | Opens the voting page. |
 | `::yell` | `::yell <off\|on>`<br>`::yell <message…>` | — | SOCIAL | — | Sends a line to every world with your rank tag; ::yell off\|on stops or resumes receiving yells. |
+
+## Moderator
+
+| Command | Usage | Aliases | Impact | Target | Does |
+|---|---|---|---|---|---|
+| `::checkbank` | `::checkbank <player>` | — | MODERATION | yes | Read-only view of an online player's bank. (cross-world) |
+| `::checkequip` | `::checkequip <player>` | — | MODERATION | yes | Read-only view of an online player's equipment. (cross-world) |
+| `::checkinv` | `::checkinv <player>` | — | MODERATION | yes | Read-only view of an online player's inventory. (cross-world) |
+| `::history` | `::history <player>` | — | MODERATION | yes | Shows the player's moderation record. (cross-world) |
+| `::jail` | `::jail <player> <duration> <reason…>` | — | MODERATION | yes | Sends the player to the jail with no way out until it expires; applied at their next login if offline. (cross-world) |
+| `::kick` | `::kick <player> [reason…]` | — | MODERATION | yes | Logs the player out. Works cross-world. (cross-world) |
+| `::lookup` | `::lookup <player>` | — | MODERATION | yes | Shows the player's card: rank, world and sanctions in force. (cross-world) |
+| `::mute` | `::mute <player> <duration> <reason…>` | — | MODERATION | yes | Mutes public, private, clan and yell chat. Works cross-world and offline. (cross-world) |
+| `::note` | `::note <player> <text…>` | — | MODERATION | yes | Adds a private staff note to the player's record. (cross-world) |
+| `::pos` | `::pos` | `::mypos`, `::coords` | INFO | — | Your tile, map square (region) and zone. |
+| `::return` | `::return <player>` | — | MODERATION | yes | Sends a player you brought back to where they were. (cross-world) |
+| `::teleto` | `::teleto <player>` | `::goto` | MODERATION | yes | Teleports you to the player; on another world, offers a hop first. (cross-world) |
+| `::teletome` | `::teletome <player>` | `::bring` | MODERATION | yes | Brings the player to you (same world); ::return sends them back. (cross-world) |
+| `::unjail` | `::unjail <player> [reason…]` | — | MODERATION | yes | Releases a jailed player. (cross-world) |
+| `::unmute` | `::unmute <player> [reason…]` | — | MODERATION | yes | Lifts a mute. (cross-world) |
+| `::unyellmute` | `::unyellmute <player> [reason…]` | — | MODERATION | yes | Lifts a yell mute. (cross-world) |
+| `::warn` | `::warn <player> <reason…>` | — | MODERATION | yes | Shows the player a warning and records it. (cross-world) |
+| `::yellmute` | `::yellmute <player> <duration> <reason…>` | — | MODERATION | yes | Mutes yell only. (cross-world) |
+
+## Administrator
+
+| Command | Usage | Aliases | Impact | Target | Does |
+|---|---|---|---|---|---|
+| `::ban` | `::ban <player> <duration> <reason…>` | — | MODERATION | yes | Account ban, cluster-wide. (cross-world) |
+| `::ipban` | `::ipban <player> <duration> <reason…>` | — | MODERATION | yes | Bans the player's last IP address. (cross-world) |
+| `::unban` | `::unban <player> [reason…]` | — | MODERATION | yes | Lifts an account ban. (cross-world) |
+| `::unipban` | `::unipban <player> [reason…]` | — | MODERATION | yes | Lifts an IP ban. (cross-world) |

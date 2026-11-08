@@ -25,7 +25,18 @@ message LoginReply {
   string rights = 4; // tp.services.Rights name
   string save = 5;   // versioned save JSON, empty = new character
   bool has_save = 6;
-  int64 muted_until = 7;
+  reserved 7; // muted_until, now inside sanctions
+  SanctionsPb sanctions = 8;
+}
+
+// Commands brief §7: the sanctions in force on an account (0 = none, -1 = permanent).
+message SanctionsPb {
+  sint64 muted_until = 1;
+  string mute_reason = 2;
+  sint64 yell_muted_until = 3;
+  string yell_mute_reason = 4;
+  sint64 jailed_until = 5;
+  string jail_reason = 6;
 }
 
 message LogoutRequest {
@@ -127,10 +138,10 @@ message WorldRef {
 
 message SocialEvent {
   int64 to_account = 1;
+  reserved 4; // Muted, replaced by sanctioned
   oneof event {
     PrivateMessage private_message = 2;
     FriendStatus friend_status = 3;
-    Muted muted = 4;
     ChannelJoined channel_joined = 5;
     ChannelLeft channel_left = 6;
     ChannelMemberUpdate channel_member = 7;
@@ -138,6 +149,8 @@ message SocialEvent {
     ClanState clan_state = 9;
     ClanMessage clan_message = 10;
     ClanInvite clan_invite = 11;
+    SanctionsPb sanctioned = 12;
+    Warned warned = 13;
   }
 }
 
@@ -251,8 +264,8 @@ message RankRequest {
 }
 
 // Mute applied/lifted while online (epoch ms; 0 = unmuted, negative = permanent).
-message Muted {
-  int64 until = 1;
+message Warned {
+  string reason = 1;
 }
 
 message PrivateMessage {
@@ -474,9 +487,45 @@ service Hiscores {
 message SanctionRequest {
   int64 staff_account = 1;
   string target = 2;
-  string sanction = 3; // tp.services.Sanction name
-  int32 minutes = 4;
+  string sanction = 3; // tp.util.Sanction name
+  reserved 4; // minutes
   string reason = 5;
+  sint64 duration_ms = 6; // -1 = permanent
+}
+
+message ModQuery {
+  int64 staff_account = 1;
+  string target = 2;
+}
+
+message ModRecordPb {
+  int64 id = 1;
+  int64 account_id = 2;
+  string type = 3; // tp.util.RecordType name
+  string actor = 4;
+  string reason = 5;
+  int64 start = 6;
+  sint64 expires = 7;
+  string scope = 8;
+  string lifted_by = 9;
+  int64 lifted_at = 10;
+}
+
+message HistoryReply {
+  string error = 1; // empty = ok
+  repeated ModRecordPb records = 2;
+}
+
+message LookupReply {
+  string error = 1; // empty = ok
+  int64 account_id = 2;
+  string name = 3;
+  string rank = 4;
+  int32 world = 5;
+  SanctionsPb sanctions = 6;
+  sint64 banned_until = 7;
+  int32 records = 8;
+  string last_ip = 9;
 }
 
 message Kick {
@@ -492,6 +541,8 @@ message AuditRequest {
 
 service Moderation {
   rpc Apply(SanctionRequest) returns (ErrorReply);
+  rpc History(ModQuery) returns (HistoryReply);
+  rpc Lookup(ModQuery) returns (LookupReply);
   // Commands brief §4: a command execution for the append-only audit log.
   rpc Audit(AuditRequest) returns (Empty);
   rpc SubscribeKicks(WorldRef) returns (stream Kick);

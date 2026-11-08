@@ -46,6 +46,18 @@ interface HubStore : AutoCloseable {
 
     fun lastIp(id: Long): String?
 
+    /** Appends a moderation record (commands brief §7, D-088); returns it with its id. */
+    fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord
+
+    /** [accountId]'s records, newest first. */
+    fun records(accountId: Long): List<tp.util.ModRecord>
+
+    /** Marks every active [type] record of [accountId] lifted by [by] at [at]; how many it lifted. */
+    fun liftRecords(accountId: Long, type: tp.util.RecordType, by: String, at: Long): Int
+
+    /** Whether an active [type] record covers [scope] (an IP or device id). */
+    fun scopeBanned(type: tp.util.RecordType, scope: String, now: Long): Boolean
+
     fun setLastIp(id: Long, ip: String)
 
     fun loadSave(id: Long): String?

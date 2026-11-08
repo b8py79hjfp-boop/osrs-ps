@@ -12,8 +12,8 @@ class AccountProfile(
     val rank: tp.util.Rank,
     /** Versioned save JSON (engine `PlayerSave`), null for a new character. */
     val save: String?,
-    /** Muted until (epoch ms); 0 = not muted, negative = permanently. */
-    val mutedUntil: Long = 0,
+    /** Mutes, yell-mutes and jail in force (commands brief §7). */
+    val sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE,
 )
 
 /** A Grand Exchange offer as the hub reports it ([collectCoins]/[collectItems] wait to be collected). */
@@ -129,6 +129,24 @@ interface AccountBridge {
      * `update <seconds>`). Content has already checked the staff level; the hub checks rights again and audits.
      */
     fun staff(player: Player, command: String, args: List<String>) {}
+
+    /**
+     * Commands brief §6, §7: one moderation action through the hub (records, targeting rule, cross-world). [reply]
+     * runs on the world thread with null on success, else the reason, if [player] is still online.
+     */
+    fun moderate(player: Player, sanction: tp.util.Sanction, target: String, durationMs: Long, reason: String, reply: (String?) -> Unit) {
+        reply("Moderation needs the account server.")
+    }
+
+    /** `::history`: [reply] gets an error, or the records newest first. */
+    fun history(player: Player, target: String, reply: (String?, List<tp.util.ModRecord>) -> Unit) {
+        reply("Moderation needs the account server.", emptyList())
+    }
+
+    /** `::lookup`: [reply] gets an error, or the card. */
+    fun lookup(player: Player, target: String, reply: (String?, tp.util.PlayerCard?) -> Unit) {
+        reply("Moderation needs the account server.", null)
+    }
 
     /** Commands brief §4: one command execution for the hub's append-only audit log (off the world thread). */
     fun audit(actor: String, action: String, target: String, detail: String) {}

@@ -212,19 +212,8 @@ public class CommandDispatcher internal constructor(
     }
 }
 
-/** OSRS text tags in user-typed text are shown, never interpreted (§8: no fake crowns, colours or line breaks). */
-public object Tags {
-    public fun escape(text: String): String =
-        buildString(text.length) {
-            for (c in text) {
-                when (c) {
-                    '<' -> append("<lt>")
-                    '>' -> append("<gt>")
-                    else -> append(c)
-                }
-            }
-        }
-}
+/** OSRS text tags in user-typed text are shown, never interpreted (§8); the implementation lives in util. */
+public typealias Tags = tp.util.Tags
 
 /** [ParseContext] on a live world: its players and the cache names (built once per world, off the hot path). */
 internal class WorldParseContext(private val viewer: PlayerRef) : ParseContext {

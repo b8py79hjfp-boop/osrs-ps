@@ -40,7 +40,12 @@ internal class CommandsToml(
     val rules: List<String> = emptyList(),
     /** Command name to a rank name, or `disabled`. */
     val overrides: Map<String, String> = emptyMap(),
+    val jail: JailToml? = null,
 )
+
+/** `[commands.jail]` (commands brief §7). */
+@Serializable
+internal class JailToml(val x: Int, val z: Int, val level: Int = 0, val radius: Int = tp.util.commands.JailArea.DEFAULT.radius)
 
 /** One world's overrides of the shared `[commands]` (only the keys that differ). */
 @Serializable
@@ -89,6 +94,7 @@ internal class ServerConfig(private val toml: ServerToml) {
             urls = c.urls.filterValues { it.isNotBlank() },
             rules = c.rules,
             overrides = overrides,
+            jail = c.jail?.let { tp.util.commands.JailArea(it.x, it.z, it.level, it.radius) } ?: tp.util.commands.JailArea.DEFAULT,
         )
     }
 

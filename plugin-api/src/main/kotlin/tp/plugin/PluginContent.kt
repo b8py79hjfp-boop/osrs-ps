@@ -109,6 +109,14 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         h.events.publish(LoginEvent(ref))
     }
 
+    override fun onSanctionsChanged(player: Player, before: tp.util.Sanctions) {
+        h.events.publish(tp.plugin.commands.SanctionsChanged(ref(player), before))
+    }
+
+    override fun onWarned(player: Player, reason: String) {
+        h.events.publish(tp.plugin.commands.Warned(ref(player), reason))
+    }
+
     override fun onLogout(player: Player) {
         val ref = ref(player)
         h.events.publish(LogoutEvent(ref))

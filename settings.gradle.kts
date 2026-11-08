@@ -36,6 +36,7 @@ include(
     ":engine",
     ":plugin-api",
     ":content:gameframe",
+    ":content:staff",
     ":content:dev",
     ":content:combat",
     ":content:pvp",

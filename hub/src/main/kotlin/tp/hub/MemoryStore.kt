@@ -74,6 +74,35 @@ class MemoryStore : HubStore {
 
     override fun lastIp(id: Long): String? = lastIps[id]
 
+    private val records = java.util.concurrent.CopyOnWriteArrayList<tp.util.ModRecord>()
+    private val recordIds =
+        java.util.concurrent.atomic
+            .AtomicLong()
+
+    override fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord {
+        val stored =
+            with(record) { tp.util.ModRecord(recordIds.incrementAndGet(), accountId, type, actor, reason, start, expires, scope) }
+        records += stored
+        return stored
+    }
+
+    override fun records(accountId: Long): List<tp.util.ModRecord> =
+        records.filter { it.accountId == accountId }.sortedByDescending { it.id }
+
+    @Synchronized
+    override fun liftRecords(accountId: Long, type: tp.util.RecordType, by: String, at: Long): Int {
+        var lifted = 0
+        for ((i, r) in records.withIndex()) {
+            if (r.accountId != accountId || r.type != type || !r.active(at)) continue
+            records[i] = with(r) { tp.util.ModRecord(id, accountId, type, actor, reason, start, expires, scope, by, at) }
+            lifted++
+        }
+        return lifted
+    }
+
+    override fun scopeBanned(type: tp.util.RecordType, scope: String, now: Long): Boolean =
+        scope.isNotEmpty() && records.any { it.type == type && it.scope == scope && it.active(now) }
+
     override fun setLastIp(id: Long, ip: String) {
         lastIps[id] = ip
     }

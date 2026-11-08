@@ -8,6 +8,20 @@ import tp.util.Rank
  */
 enum class Impact { INFO, SOCIAL, ACCOUNT, MODERATION, OPERATIONS, DEBUG_VISUAL, CONVENIENCE, ECONOMY }
 
+/**
+ * The jail (commands brief §7): a tile and the square around it a jailed player cannot leave. Never in the Wilderness
+ * or an instance (checked at boot). OSRS has no player jail, so the place is ours (docs/mechanics/commands.md CMD3).
+ */
+data class JailArea(val x: Int, val z: Int, val level: Int, val radius: Int) {
+    fun contains(x: Int, z: Int, level: Int): Boolean =
+        level == this.level && kotlin.math.abs(x - this.x) <= radius && kotlin.math.abs(z - this.z) <= radius
+
+    companion object {
+        /** The Draynor jail cell (Prince Ali Rescue), a walkable tile checked with `cache-dump collision`. */
+        val DEFAULT: JailArea = JailArea(3128, 3245, 0, 2)
+    }
+}
+
 /** A world TOML override of one command (commands brief §3): a different minimum rank, or disabled. */
 sealed interface CommandOverride {
     data class MinRank(val rank: Rank) : CommandOverride
@@ -32,6 +46,8 @@ data class CommandsConfig(
     /** `::rules`: the lines shown (commands brief §6); none configured shows a default line. */
     val rules: List<String> = emptyList(),
     val overrides: Map<String, CommandOverride> = emptyMap(),
+    /** `::jail` (commands brief §7): where jailed players are kept. */
+    val jail: JailArea = JailArea.DEFAULT,
 ) {
     /**
      * Whether [impact] may run on this world (§3): enabled in the file, and ECONOMY never on a live world unless the
