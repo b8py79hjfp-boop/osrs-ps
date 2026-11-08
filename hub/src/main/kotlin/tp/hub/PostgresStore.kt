@@ -99,6 +99,24 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
 
     override fun lastIp(id: Long): String? = strings("SELECT last_ip FROM accounts WHERE id = ?", id).firstOrNull()
 
+    override fun recordSeen(accountId: Long, kind: String, value: String, at: Long) {
+        if (value.isEmpty()) return
+        exec(
+            "INSERT INTO account_seen (account_id, kind, value, last_seen_ms) VALUES (?, ?, ?, ?) " +
+                "ON CONFLICT (account_id, kind, value) DO UPDATE SET last_seen_ms = EXCLUDED.last_seen_ms",
+            accountId,
+            kind,
+            value,
+            at,
+        )
+    }
+
+    override fun seen(accountId: Long, kind: String): List<String> =
+        strings("SELECT value FROM account_seen WHERE account_id = ? AND kind = ? ORDER BY last_seen_ms DESC", accountId, kind)
+
+    override fun accountsSeen(kind: String, value: String): List<Long> =
+        strings("SELECT account_id::text FROM account_seen WHERE kind = ? AND value = ?", kind, value).map(String::toLong)
+
     @Suppress("MagicNumber") // JDBC parameter indexes
     override fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord =
         sql { c ->
@@ -688,6 +706,11 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                     actor text NOT NULL, reason text NOT NULL, start_ms bigint NOT NULL, expires_ms bigint NOT NULL,
                     scope text NOT NULL DEFAULT '', lifted_by text NOT NULL DEFAULT '', lifted_at_ms bigint NOT NULL DEFAULT 0)""",
                 "CREATE INDEX IF NOT EXISTS moderation_records_account ON moderation_records (account_id)",
+                // Commands brief §6 (alts, device bans), additive like moderation_records: every IP and device seen.
+                """CREATE TABLE IF NOT EXISTS account_seen (
+                    account_id bigint NOT NULL REFERENCES accounts(id), kind text NOT NULL, value text NOT NULL,
+                    last_seen_ms bigint NOT NULL, PRIMARY KEY (account_id, kind, value))""",
+                "CREATE INDEX IF NOT EXISTS account_seen_value ON account_seen (kind, value)",
                 "CREATE INDEX IF NOT EXISTS moderation_records_scope ON moderation_records (type, scope) WHERE scope <> ''",
             )
     }

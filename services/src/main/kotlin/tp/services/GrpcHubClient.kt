@@ -80,7 +80,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
     override val accounts: AccountService =
         object : AccountService {
-            override suspend fun login(username: String, password: String, worldId: Int, ip: String): LoginGrant {
+            override suspend fun login(username: String, password: String, worldId: Int, ip: String, device: String): LoginGrant {
                 val r =
                     accountsStub.login(
                         PbLogin
@@ -89,6 +89,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                             .setPassword(password)
                             .setWorldId(worldId)
                             .setIp(ip)
+                            .setDevice(device)
                             .build(),
                     )
                 return LoginGrant(
@@ -639,6 +640,11 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
             override suspend fun lookup(staffAccount: Long, target: String): ModAnswer<tp.util.PlayerCard> {
                 val r = moderationStub.lookup(modQuery(staffAccount, target))
                 return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.toCard())
+            }
+
+            override suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> {
+                val r = moderationStub.investigate(modQuery(staffAccount, target).toBuilder().setKind(kind).build())
+                return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.linesList)
             }
 
             private fun modQuery(staffAccount: Long, target: String) =

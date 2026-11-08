@@ -46,6 +46,15 @@ interface HubStore : AutoCloseable {
 
     fun lastIp(id: Long): String?
 
+    /** Remembers that [accountId] logged in from [kind] ("ip" or "device") [value] at [at] (commands brief §6: alts). */
+    fun recordSeen(accountId: Long, kind: String, value: String, at: Long)
+
+    /** [accountId]'s [kind] values, most recent first. */
+    fun seen(accountId: Long, kind: String): List<String>
+
+    /** Accounts that logged in from [kind] [value]. */
+    fun accountsSeen(kind: String, value: String): List<Long>
+
     /** Appends a moderation record (commands brief §7, D-088); returns it with its id. */
     fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord
 

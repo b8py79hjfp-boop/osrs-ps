@@ -16,11 +16,15 @@ public class CommandListView(public val player: PlayerRef, public val title: Str
     }
 }
 
-/** Shows [rows] under [title]: in the interface, or the first rows in chat. */
-public fun PlayerRef.showList(title: String, rows: List<String>) {
+/**
+ * Shows [rows] under [title]: in the interface, or the first rows in chat. A [private] list (IP addresses, device
+ * ids, alt links: commands brief §8) never falls back to chat.
+ */
+public fun PlayerRef.showList(title: String, rows: List<String>, private: Boolean = false) {
     val view = CommandListView(this, title, rows)
     events.publish(view)
     if (view.handled) return
+    if (private) return message("$title: open ::commands to view it (it is never shown in chat).")
     message("$title (${rows.size}):")
     for (row in rows.take(CommandListView.CHAT_ROWS)) message(row)
     if (rows.size > CommandListView.CHAT_ROWS) message("... and ${rows.size - CommandListView.CHAT_ROWS} more.")

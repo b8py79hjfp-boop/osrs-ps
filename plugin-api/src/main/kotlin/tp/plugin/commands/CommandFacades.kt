@@ -121,3 +121,20 @@ public fun PlayerRef.lookupPlayer(target: String, reply: PlayerRef.(String?, tp.
     val accounts = p.world.accounts ?: return reply("Moderation needs the account server.", null)
     accounts.lookup(p, target) { e, card -> this.reply(e, card) }
 }
+
+/** `::alts` ("alts") / `::checkip` ("ips"): administrators only, audited by the hub (commands brief §8). */
+public fun PlayerRef.investigate(target: String, kind: String, reply: PlayerRef.(String?, List<String>) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Moderation needs the account server.", emptyList())
+    accounts.investigate(p, target, kind) { e, lines -> this.reply(e, lines) }
+}
+
+/** A game broadcast on this world, or on every world through the hub ([everywhere]). */
+public fun PlayerRef.broadcast(text: String, everywhere: Boolean) {
+    val world = p.world
+    val accounts = world.accounts
+    if (everywhere && accounts != null) {
+        accounts.broadcastAll(p, text)
+    } else {
+        world.forEachPlayer { it.session.send(ServerMessage.GameMessage(text)) }
+    }
+}

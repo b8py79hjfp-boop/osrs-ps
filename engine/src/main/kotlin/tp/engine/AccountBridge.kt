@@ -143,6 +143,14 @@ interface AccountBridge {
         reply("Moderation needs the account server.", emptyList())
     }
 
+    /** `::alts` / `::checkip` (administrators, audited): [reply] gets an error, or the lines. */
+    fun investigate(player: Player, target: String, kind: String, reply: (String?, List<String>) -> Unit) {
+        reply("Moderation needs the account server.", emptyList())
+    }
+
+    /** `::broadcast --all`, `::update` (commands brief §6): to every world through the hub. */
+    fun broadcastAll(player: Player, text: String) {}
+
     /** `::lookup`: [reply] gets an error, or the card. */
     fun lookup(player: Player, target: String, reply: (String?, tp.util.PlayerCard?) -> Unit) {
         reply("Moderation needs the account server.", null)

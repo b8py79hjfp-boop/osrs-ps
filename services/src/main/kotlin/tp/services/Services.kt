@@ -40,7 +40,7 @@ interface AccountService {
      * Authenticates and takes the account's session lock for [worldId]. Fails with ALREADY_ONLINE while another world
      * holds it, and SAVE_PENDING while the last logout save isn't durable yet (dupe prevention: brief §7).
      */
-    suspend fun login(username: String, password: String, worldId: Int, ip: String): LoginGrant
+    suspend fun login(username: String, password: String, worldId: Int, ip: String, device: String = ""): LoginGrant
 
     /** Writes the final save durably (blank = nothing to write), then releases the session lock (world hop / logout). */
     suspend fun logout(accountId: Long, worldId: Int, save: String)
@@ -366,6 +366,12 @@ interface ModerationService {
 
     /** `::history`: [target]'s records, newest first. IP and device scopes only for administrators (§8). */
     suspend fun history(staffAccount: Long, target: String): ModAnswer<List<tp.util.ModRecord>> = ModAnswer("Not available.", null)
+
+    /**
+     * Administrator investigations (commands brief §6, §8; audited): [kind] "alts" lists accounts sharing an IP or
+     * device with [target]; "ips" lists the IPs [target] logged in from.
+     */
+    suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> = ModAnswer("Not available.", null)
 
     /** `::lookup`: [target]'s player card. */
     suspend fun lookup(staffAccount: Long, target: String): ModAnswer<tp.util.PlayerCard> = ModAnswer("Not available.", null)

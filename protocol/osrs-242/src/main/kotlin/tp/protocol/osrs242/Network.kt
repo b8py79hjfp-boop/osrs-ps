@@ -455,6 +455,9 @@ class Osrs242Network(
 
         override val resizable: Boolean = block.resizable
 
+        override val device: String =
+            if (block.uuid.all { it == 0.toByte() }) "" else block.uuid.joinToString("") { "%02x".format(it.toInt() and BYTE_MASK) }
+
         override fun accept(slot: Int, details: LoginDetails): ClientSession {
             val response =
                 LoginResponse.Ok(
@@ -504,6 +507,9 @@ class Osrs242Network(
         /** MOVE_GAMECLICK keyCombination value when ctrl is held (RSProt `MoveGameClick` docs: 1 = ctrl). */
         private const val CTRL_HELD = 1
         private const val BYTES_PER_MIB = 1L shl 20
+
+        /** One unsigned byte (device id hex). */
+        private const val BYTE_MASK = 0xff
         private const val BINARY_ARCHIVE = 10
 
         /** Huffman table: binary archive group named "huffman", file 0 (RS Mod `HuffmanProvider`). */

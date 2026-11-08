@@ -1322,3 +1322,15 @@ means is not known.
   command exists. A player who types `::bank` sees the official joke, never a hint that a staff `::bank` exists.
 - `Impact`, `CommandOverride` and `CommandsConfig` moved to `util` (`tp.util.commands`), next to `Rank`. Content
   modules depend only on plugin-api and symbols, and they declare an impact on every command.
+
+## D-090 Administrator suite: device ids, alts and hidden mode (2026-11-08)
+
+- **Device id.** The login block's 24-byte `uuid` goes to the hub as lower-case hex (`LoginRequest.device`, empty when
+  all zero) in a new `device` field of the hub login RPC.
+- **`account_seen` table.** A new, additive table (as D-088) records every IP and device each account logged in
+  from. `::alts` (accounts sharing either) and `::checkip` read it, and device bans use its latest device. Nothing
+  existing changes: `accounts.last_ip` stays.
+- **Privacy (§8).** Investigation results are administrator-only and audited (`view-alts`, `view-ips`). They are also
+  "private" lists, which are never shown in chat. Until the staff interface lands, the command says to open it.
+- **Hidden mode** hides the avatar from everyone (OPEN-CMD7: RSProt's flag is global).
+- **`::npc` is ECONOMY.** A spawned NPC can be killed for its drops.

@@ -61,6 +61,9 @@ public class ModeratorCommands : ContentPlugin {
         lift("unban", "unbanned", Sanction.UNBAN, "Lifts an account ban.")
         timed("ipban", "IP-banned", Sanction.IP_BAN, "Bans the player's last IP address.", "::ipban Big_Bob perm botting")
         lift("unipban", "IP-unbanned", Sanction.UN_IP_BAN, "Lifts an IP ban.")
+        // The login block's 24-byte machine id (RSProt LoginBlock.uuid; D-088): refused when the client sent none.
+        timed("deviceban", "device-banned", Sanction.DEVICE_BAN, "Bans the player's last device id.", "::deviceban Big_Bob perm botting")
+        lift("undeviceban", "device-unbanned", Sanction.UN_DEVICE_BAN, "Lifts a device ban.")
         mod("kick", "Logs the player out. Works cross-world.", "::kick Big_Bob afk in a minigame") {
             val who = player("player", allowOffline = true)
             val reason = text("reason", optional = true)

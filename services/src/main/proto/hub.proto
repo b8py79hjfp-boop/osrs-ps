@@ -16,6 +16,7 @@ message LoginRequest {
   string password = 2;
   int32 world_id = 3;
   string ip = 4;
+  string device = 5; // login block uuid as hex, empty = none (commands brief §6)
 }
 
 message LoginReply {
@@ -496,6 +497,12 @@ message SanctionRequest {
 message ModQuery {
   int64 staff_account = 1;
   string target = 2;
+  string kind = 3; // investigate: "alts" or "ips"
+}
+
+message LinesReply {
+  string error = 1; // empty = ok
+  repeated string lines = 2;
 }
 
 message ModRecordPb {
@@ -543,6 +550,7 @@ service Moderation {
   rpc Apply(SanctionRequest) returns (ErrorReply);
   rpc History(ModQuery) returns (HistoryReply);
   rpc Lookup(ModQuery) returns (LookupReply);
+  rpc Investigate(ModQuery) returns (LinesReply);
   // Commands brief §4: a command execution for the append-only audit log.
   rpc Audit(AuditRequest) returns (Empty);
   rpc SubscribeKicks(WorldRef) returns (stream Kick);

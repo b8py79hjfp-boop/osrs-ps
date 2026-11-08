@@ -122,7 +122,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
 
     private inner class Accounts : AccountsGrpcKt.AccountsCoroutineImplBase() {
         override suspend fun login(request: PbLogin): LoginReply {
-            val g = hub.accounts.login(request.username, request.password, request.worldId, request.ip)
+            val g = hub.accounts.login(request.username, request.password, request.worldId, request.ip, request.device)
             return LoginReply
                 .newBuilder()
                 .setResult(g.result.name)
@@ -490,6 +490,16 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                     .newBuilder()
             a.error?.let(b::setError)
             a.value?.forEach { b.addRecords(it.toPb()) }
+            return b.build()
+        }
+
+        override suspend fun investigate(request: tp.services.grpc.ModQuery): tp.services.grpc.LinesReply {
+            val a = hub.moderation.investigate(request.staffAccount, request.target, request.kind)
+            val b =
+                tp.services.grpc.LinesReply
+                    .newBuilder()
+            a.error?.let(b::setError)
+            a.value?.let(b::addAllLines)
             return b.build()
         }
 

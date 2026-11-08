@@ -143,7 +143,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     override val accounts: AccountService =
         object : AccountService {
             @Suppress("ReturnCount") // guard clauses, one per refusal reason
-            override suspend fun login(username: String, password: String, worldId: Int, ip: String): LoginGrant {
+            override suspend fun login(username: String, password: String, worldId: Int, ip: String, device: String): LoginGrant {
                 val name = username.trim()
                 if (name.isEmpty() || name.length > MAX_NAME) return LoginGrant(LoginResult.INVALID_CREDENTIALS)
                 if (failures.count("ip:$ip") >= config.maxFailuresPerIp ||
@@ -166,6 +166,16 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     return LoginGrant(LoginResult.INVALID_CREDENTIALS)
                 }
                 if (row.bannedUntil < 0 || row.bannedUntil > System.currentTimeMillis()) return LoginGrant(LoginResult.BANNED)
+                if (db {
+                        store.scopeBanned(
+                            RecordType.DEVICE_BAN,
+                            device,
+                            System.currentTimeMillis(),
+                        )
+                    }
+                ) {
+                    return LoginGrant(LoginResult.BANNED)
+                }
                 // Dupe prevention: the previous world's logout save must be durable first (brief §7).
                 pendingLogout[row.id]?.let { pending ->
                     if (withTimeoutOrNull(config.pendingSaveWaitMs) { pending.await() } == null) return LoginGrant(LoginResult.SAVE_PENDING)
@@ -175,6 +185,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 val save = db { store.loadSave(row.id) }
                 db {
                     store.setLastIp(row.id, ip)
+                    val at = System.currentTimeMillis()
+                    store.recordSeen(row.id, SEEN_IP, ip, at)
+                    store.recordSeen(row.id, SEEN_DEVICE, device, at)
                     store.audit(row.displayName, "login", "world $worldId", ip)
                 }
                 notifyFriendStatus(row.displayName, worldId)
@@ -428,9 +441,17 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     }
                 val scope =
                     when (type) {
-                        RecordType.IP_BAN -> db { store.lastIp(row.id) } ?: return "${row.displayName} has no known IP address."
-                        RecordType.DEVICE_BAN -> return "Device bans are not available yet."
-                        else -> ""
+                        RecordType.IP_BAN -> {
+                            db { store.lastIp(row.id) } ?: return "${row.displayName} has no known IP address."
+                        }
+
+                        RecordType.DEVICE_BAN -> {
+                            db { store.seen(row.id, SEEN_DEVICE).firstOrNull() } ?: return "${row.displayName}'s client sent no device id."
+                        }
+
+                        else -> {
+                            ""
+                        }
                     }
                 db {
                     store.addRecord(ModRecord(0, row.id, type, staff.displayName, reason, now, expires, scope))
@@ -504,6 +525,31 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     }
                 return ModAnswer(null, shown)
             }
+
+            override suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> {
+                val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
+                // §8: IP addresses, device ids and alt links are administrator and above, and every view is audited.
+                if (!staff.rights.atLeast(Rank.ADMINISTRATOR)) return ModAnswer("You don't have permission to do that.", null)
+                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val lines =
+                    db {
+                        when (kind) {
+                            "ips" -> store.seen(row.id, SEEN_IP)
+                            "alts" -> alts(row.id).mapNotNull { store.account(it)?.displayName }
+                            else -> null
+                        }
+                    } ?: return ModAnswer("Unknown investigation.", null)
+                db { store.audit(staff.displayName, "view-$kind", row.displayName, "${lines.size} rows") }
+                return ModAnswer(null, lines)
+            }
+
+            /** Accounts sharing an IP or a device with [accountId]. Blocking (inside db). */
+            private fun alts(accountId: Long): List<Long> =
+                (
+                    store.seen(accountId, SEEN_IP).flatMap { store.accountsSeen(SEEN_IP, it) } +
+                        store.seen(accountId, SEEN_DEVICE).flatMap { store.accountsSeen(SEEN_DEVICE, it) }
+                ).distinct()
+                    .filter { it != accountId }
 
             override suspend fun lookup(staffAccount: Long, target: String): ModAnswer<PlayerCard> {
                 val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
@@ -580,6 +626,10 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         const val MAX_TOP = 100
         const val MS_PER_MINUTE = 60_000L
         val NAME = Regex("[A-Za-z0-9 _-]{1,12}")
+
+        /** account_seen kinds. */
+        const val SEEN_IP = "ip"
+        const val SEEN_DEVICE = "device"
 
         /** Records that end the target's session at once. */
         val KICKING = setOf(RecordType.KICK, RecordType.BAN, RecordType.IP_BAN, RecordType.DEVICE_BAN)

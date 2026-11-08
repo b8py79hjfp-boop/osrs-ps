@@ -61,6 +61,12 @@ interface LoginRequest {
     /** Client IP address (the real one behind a PROXY-protocol proxy). */
     val address: String
 
+    /**
+     * The login block's 24-byte machine id as lower-case hex, or empty when the client sent none (all zero). Device
+     * bans and alt checks key on it (commands brief §6, D-088).
+     */
+    val device: String get() = ""
+
     /** The client's window was resizable at login (login block flag); picks the gameframe (gameframe-settings.md G8). */
     val resizable: Boolean get() = false
 

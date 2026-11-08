@@ -74,6 +74,25 @@ class MemoryStore : HubStore {
 
     override fun lastIp(id: Long): String? = lastIps[id]
 
+    /** (account, kind, value) -> last seen. */
+    private val seenRows = ConcurrentHashMap<Triple<Long, String, String>, Long>()
+
+    override fun recordSeen(accountId: Long, kind: String, value: String, at: Long) {
+        if (value.isNotEmpty()) seenRows[Triple(accountId, kind, value)] = at
+    }
+
+    override fun seen(accountId: Long, kind: String): List<String> =
+        seenRows.entries
+            .filter { it.key.first == accountId && it.key.second == kind }
+            .sortedByDescending { it.value }
+            .map { it.key.third }
+
+    override fun accountsSeen(kind: String, value: String): List<Long> =
+        seenRows.keys
+            .filter { it.second == kind && it.third == value }
+            .map { it.first }
+            .distinct()
+
     private val records = java.util.concurrent.CopyOnWriteArrayList<tp.util.ModRecord>()
     private val recordIds =
         java.util.concurrent.atomic

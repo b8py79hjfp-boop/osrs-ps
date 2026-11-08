@@ -47,8 +47,17 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
     override fun authorize(request: LoginRequest, world: World) {
         io.execute {
             val grant =
-                runCatching { runBlocking { hub.accounts.login(request.username, request.password, worldId, request.address) } }
-                    .onFailure { logger.warn(it) { "hub login failed for ${request.username}" } }
+                runCatching {
+                    runBlocking {
+                        hub.accounts.login(
+                            request.username,
+                            request.password,
+                            worldId,
+                            request.address,
+                            request.device,
+                        )
+                    }
+                }.onFailure { logger.warn(it) { "hub login failed for ${request.username}" } }
                     .getOrNull()
             when (grant?.result) {
                 LoginResult.OK -> {
@@ -288,6 +297,25 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 }
             }
         }
+    }
+
+    override fun investigate(player: Player, target: String, kind: String, reply: (String?, List<String>) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.", emptyList())
+        io.execute {
+            val a = call("investigate") { hub.moderation.investigate(account, target, kind) }
+            world.execute {
+                if (world.playerByAccount(account) ===
+                    player
+                ) {
+                    reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value.orEmpty())
+                }
+            }
+        }
+    }
+
+    override fun broadcastAll(player: Player, text: String) {
+        io.execute { call("broadcast") { hub.broadcasts.broadcast(text) } }
     }
 
     override fun lookup(player: Player, target: String, reply: (String?, PlayerCard?) -> Unit) {

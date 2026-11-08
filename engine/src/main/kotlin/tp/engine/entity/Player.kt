@@ -183,8 +183,9 @@ class Player internal constructor(
      */
     var observer: Boolean = false
 
+    // Hidden staff are hidden from every viewer: RSProt's `PlayerAvatar.hidden` is global (commands.md OPEN-CMD7).
     internal fun avatarState(): AvatarState =
-        AvatarState(coord.level, coord.x, coord.z, stepsThisTick, teleportedThisTick, isRunningNow, observer)
+        AvatarState(coord.level, coord.x, coord.z, stepsThisTick, teleportedThisTick, isRunningNow, observer || invisible)
 
     override fun toString(): String = "Player($slot, $username, $coord)"
 

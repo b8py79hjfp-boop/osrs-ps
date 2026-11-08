@@ -17,14 +17,13 @@ public class DevCommands : ContentPlugin {
                     DEV,
                 )
             ) {
-                message("Dev: ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace")
+                message("Dev: ::run ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n")
             }
         }
         onCommand("run", DEV) {
             runMode = !runMode
             message("Run: $runMode")
         }
-        onCommand("tele", DEV) { args -> tele(args) }
         onCommand("hp", DEV) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
         onCommand("setlevel", DEV) { args ->
             val stat = args.getOrNull(0)?.toIntOrNull()
@@ -45,19 +44,10 @@ public class DevCommands : ContentPlugin {
             message("Kit added: weapons, food, potions and runes.")
         }
         onCommand("wild", DEV) { teleport(CoordGrid(WILD_X, WILD_Z)) }
-        onCommand("trace", DEV) { message("Tick trace: ${toggleTrace()}") }
         // ::instance <squareX> <squareZ> [w] [l]: copies w x l map squares into a fresh instance (built off-thread,
         // instances.md IN6) and moves you to the same spot inside; ::instance leave tears it down (IN9) and returns you.
         onCommand("instance", DEV) { args -> devInstance(this, args) }
         onCommand("item", DEV) { args -> item(args) }
-        // ::if <interface id>: opens it as the main modal (interface layout checks against the real client).
-        onCommand("if", DEV) { args ->
-            args.getOrNull(0)?.toIntOrNull()?.let { openModal(tp.symbols.Components.Toplevel.MAINMODAL, it) }
-        }
-        // ::npc <type>: spawns that NPC next to you (no wandering).
-        onCommand("npc", DEV) { args ->
-            args.getOrNull(0)?.toIntOrNull()?.let { world?.spawnNpc(it, CoordGrid(coord.x + 1, coord.z, coord.level), 0) }
-        }
         // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
         onCommand("fight", DEV) { args ->
             val arg = args.getOrNull(0) ?: return@onCommand
@@ -79,17 +69,6 @@ public class DevCommands : ContentPlugin {
             } else {
                 message("Levels gained: ${addXp(stat, xp)}")
             }
-        }
-    }
-
-    private fun PlayerRef.tele(args: List<String>) {
-        val x = args.getOrNull(0)?.toIntOrNull()
-        val z = args.getOrNull(1)?.toIntOrNull()
-        val level = args.getOrNull(2)?.toIntOrNull() ?: coord.level
-        if (x == null || z == null) {
-            message("Usage: ::tele x z [level]")
-        } else {
-            teleport(CoordGrid(x, z, level))
         }
     }
 

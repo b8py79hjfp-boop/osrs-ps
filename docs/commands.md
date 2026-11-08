@@ -57,7 +57,35 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 
 | Command | Usage | Aliases | Impact | Target | Does |
 |---|---|---|---|---|---|
+| `::alts` | `::alts <player>` | — | MODERATION | yes | Accounts sharing an IP address or device with the player. Audited. (cross-world) |
 | `::ban` | `::ban <player> <duration> <reason…>` | — | MODERATION | yes | Account ban, cluster-wide. (cross-world) |
+| `::broadcast` | `::broadcast <message…>` | — | OPERATIONS | — | A game broadcast on this world; end with --all for every world. |
+| `::checkip` | `::checkip <player>` | — | MODERATION | yes | The IP addresses the player logged in from. Audited. (cross-world) |
+| `::deviceban` | `::deviceban <player> <duration> <reason…>` | — | MODERATION | yes | Bans the player's last device id. (cross-world) |
+| `::freeze` | `::freeze <player>` | — | MODERATION | yes | Stops the player moving while you investigate. |
+| `::invisible` | `::invisible` | `::hide` | MODERATION | — | Hidden mode on or off: left out of player lists for lower ranks. |
 | `::ipban` | `::ipban <player> <duration> <reason…>` | — | MODERATION | yes | Bans the player's last IP address. (cross-world) |
+| `::tele` | `::tele <x y [level]>`<br>`::tele <place…>` | — | OPERATIONS | — | Teleports you to a tile (x z [level], x,z,level or Jagex level,mx,mz,lx,lz) or a named place. |
 | `::unban` | `::unban <player> [reason…]` | — | MODERATION | yes | Lifts an account ban. (cross-world) |
+| `::undeviceban` | `::undeviceban <player> [reason…]` | — | MODERATION | yes | Lifts a device ban. (cross-world) |
+| `::unfreeze` | `::unfreeze <player>` | — | MODERATION | yes | Lets a frozen player move again. |
 | `::unipban` | `::unipban <player> [reason…]` | — | MODERATION | yes | Lifts an IP ban. (cross-world) |
+
+## Developer
+
+| Command | Usage | Aliases | Impact | Target | Does |
+|---|---|---|---|---|---|
+| `::anim` | `::anim <id> [delay]` | — | DEBUG_VISUAL | — | Plays animation (seq) <id> on you; -1 stops it. |
+| `::closeif` | `::closeif` | — | OPERATIONS | — | Closes the modal interface. |
+| `::cs2` | `::cs2 <id> [args…]` | — | OPERATIONS | — | Runs client script <id>; numeric arguments are sent as ints, the rest as strings. |
+| `::find` | `::find <query…>` | — | OPERATIONS | — | Searches cache names for ids; add item, npc or loc as the last word to pick the kind. |
+| `::gfx` | `::gfx <id> [height] [delay]` | — | DEBUG_VISUAL | — | Plays spot animation <id> on you, optionally raised by height and delayed. |
+| `::if` | `::if <id>` | — | OPERATIONS | — | Opens interface <id> as the main modal. |
+| `::jingle` | `::jingle <id>` | — | DEBUG_VISUAL | — | Plays jingle <id> over the music. |
+| `::npc` | `::npc <npc>` | — | ECONOMY | — | Spawns NPC <npc> on the tile next to you until removed with ::removenpc. |
+| `::removenpc` | `::removenpc` | — | OPERATIONS | — | Removes the NPCs you spawned with ::npc. |
+| `::song` | `::song <id>` | — | DEBUG_VISUAL | — | Plays music track <id> (cache music id). |
+| `::tick` | `::tick` | — | OPERATIONS | — | Shows this world's current tick. |
+| `::trace` | `::trace` | — | OPERATIONS | — | Streams your tick-inspector trace; run again to stop. |
+| `::varbit` | `::varbit <id> [value]` | — | OPERATIONS | — | Shows varbit <id>, or sets it to [value] (must fit its bits). |
+| `::varp` | `::varp <id> [value]` | — | OPERATIONS | — | Shows varp <id>, or sets it to [value]. |

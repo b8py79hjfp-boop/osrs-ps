@@ -24,6 +24,6 @@ public class StaffCommands : ContentPlugin {
 
     private companion object {
         val ADMIN = tp.util.Rank.ADMINISTRATOR
-        val ADMIN_COMMANDS = listOf("broadcast", "update")
+        val ADMIN_COMMANDS = listOf("update")
     }
 }
