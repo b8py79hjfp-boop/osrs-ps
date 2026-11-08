@@ -779,24 +779,27 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     override fun toString(): String = p.toString()
 
-    private companion object {
-        const val XP_TENTHS = 10
+    public companion object {
+        /** A handle on engine player [player], for tools that drive the engine directly (tools/scenario, tools/replay). */
+        public fun of(player: Player): PlayerRef = PlayerRef(player)
+
+        private const val XP_TENTHS = 10
 
         /** Skilling success chances are out of 256 (Wiki "Skilling success rate"). */
-        const val SUCCESS_SCALE = 256
+        private const val SUCCESS_SCALE = 256
 
         /** Rounding term of the success-rate interpolation. */
-        const val HALF = 0.5
-        const val ATT = 0
-        const val DEF = 1
-        const val STR = 2
-        const val HP = 3
-        const val RNG = 4
-        const val PRAY = 5
-        const val MAG = 6
+        private const val HALF = 0.5
+        private const val ATT = 0
+        private const val DEF = 1
+        private const val STR = 2
+        private const val HP = 3
+        private const val RNG = 4
+        private const val PRAY = 5
+        private const val MAG = 6
 
         /** 13/40 (Combat level formula, CL:37-57). */
-        const val MULT = 0.325
+        private const val MULT = 0.325
     }
 }
 

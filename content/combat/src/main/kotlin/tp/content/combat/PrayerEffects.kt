@@ -61,7 +61,7 @@ internal object DeathRules {
      * by a player in the Wilderness or on a PvP world) drops the rest for the killer, except untradeables, which go to
      * the grave; any other death puts the rest in the grave (death.md DE1-DE4, DE10).
      */
-    fun dropItems(dead: PlayerRef, killer: EntityRef?) {
+    fun dropItems(dead: PlayerRef, killer: EntityRef?, graveAt: tp.util.CoordGrid? = null) {
         val keep = (if (dead[SharedAttrs.SKULL_ICON] != null) 0 else KEPT) + if (dead.hasPrayer("Protect Item")) 1 else 0
         val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
         val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
@@ -84,7 +84,8 @@ internal object DeathRules {
                 .toSet()
         var lost = units.filter { it !in kept }
         // DE3: a death in instance space leaves the grave at the respawn point.
-        val at = if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
+        // A raid wipe names the grave tile (DeathPolicyRequest.graveAt: outside the raid's entrance).
+        val at = graveAt ?: if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
         if (!pvp) {
             val bag = if (inWilderness) StorageDeath.destroyLootingBag(dead, lost) else emptyList()
             return Graves.bury(

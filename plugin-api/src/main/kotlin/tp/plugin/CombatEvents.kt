@@ -172,3 +172,25 @@ public class CombatSpellCast(public val caster: PlayerRef, public val book: Int)
 
 /** A player's look changed outside the equipment module (skull); the appearance owner re-sends it. */
 public class AppearanceChanged(public val player: PlayerRef) : Event
+
+/**
+ * Asked when [player] is about to respawn after dying (raids: docs/mechanics/raids/common.md RC6). A handler that owns
+ * the death (the player is in its raid) sets [handled] and decides: [keepItems] keeps everything (a raid's "wait until
+ * the room ends" or a safe death), [respawnAt] moves the player there instead of the normal respawn, and [graveAt]
+ * puts a dangerous death's grave there (a raid wipe: gravestones outside the entrance). Unhandled, the normal rules
+ * apply; nothing changes for deaths outside such content.
+ */
+public class DeathPolicyRequest(public val player: PlayerRef, public val killer: EntityRef?) : Event {
+    public var handled: Boolean = false
+    public var keepItems: Boolean = false
+    public var respawnAt: tp.util.CoordGrid? = null
+    public var graveAt: tp.util.CoordGrid? = null
+}
+
+/**
+ * Applies the normal dangerous-death item rules to [player] now, with the grave at [graveAt] (a raid wipe also costs the
+ * players who died earlier in the room). Combat handles it; [done] says it ran.
+ */
+public class DeathItemsRequest(public val player: PlayerRef, public val graveAt: tp.util.CoordGrid) : Event {
+    public var done: Boolean = false
+}

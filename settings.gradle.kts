@@ -48,6 +48,8 @@ include(
     ":content:collectionlog",
     ":content:diaries",
     ":content:skills",
+    ":content:raids-core",
+    ":content:raids-tfa",
     ":services",
     ":server",
     ":hub",

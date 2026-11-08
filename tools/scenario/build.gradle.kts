@@ -21,7 +21,9 @@ dependencies {
     runtimeOnly(project(":content:sailing"))
     runtimeOnly(project(":content:quests"))
     runtimeOnly(project(":content:skills"))
+    runtimeOnly(project(":content:raids-core"))
     testImplementation(project(":symbols"))
+    testImplementation(project(":content:raids-core"))
     testRuntimeOnly(libs.logback.classic)
 }
 

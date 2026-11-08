@@ -77,6 +77,13 @@ public sealed class EntityRef {
         if (value == null) e.world.attrs.remove(key) else e.world.attrs[key] = value
     }
 
+    /** The online player called [username] in this entity's world (case-insensitive), or null. */
+    public fun onlinePlayer(username: String): PlayerRef? {
+        var found: tp.engine.entity.Player? = null
+        e.world.forEachPlayer { if (found == null && it.username.equals(username, ignoreCase = true)) found = it }
+        return found?.let { PlayerRef(it) }
+    }
+
     public fun anim(seq: Int, delay: Int = 0) {
         e.visual(Visual.Animate(seq, delay))
     }

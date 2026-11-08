@@ -28,6 +28,10 @@ public class Combat : ContentPlugin {
     override fun ContentScope.register() {
         // poison.md PO14: poison / venom requested by other modules.
         events.on<tp.plugin.PoisonRequest> { r -> if (r.venom) Poison.envenom(r.target) else Poison.poison(r.target, r.severity) }
+        events.on<tp.plugin.DeathItemsRequest> { r ->
+            DeathRules.dropItems(r.player, null, r.graveAt)
+            r.done = true
+        }
         // SE10: finishing items used on their monster.
         for ((item, npc, finish) in SlayerGear.finishUses()) {
             onUseOnNpc(item, npc) { target -> SlayerGear.use(player, target, finish, item) }
@@ -306,12 +310,15 @@ internal object CombatSystem {
     }
 
     private fun respawn(player: PlayerRef, killer: EntityRef?) {
-        // A safe death (Duel Arena) keeps every item and respawns where the minigame says.
+        // A safe death (Duel Arena) keeps every item and respawns where the minigame says; a raid can own the death
+        // (DeathPolicyRequest: wait in the room, or a wipe's graves outside the entrance).
         val safe = player[tp.plugin.SharedAttrs.SAFE_DEATH_AT]
-        if (safe == null) DeathRules.dropItems(player, killer)
+        val policy = if (safe == null) tp.plugin.DeathPolicyRequest(player, killer).also { player.events.publish(it) } else null
+        val owned = policy?.handled == true
+        if (safe == null && !(owned && policy?.keepItems == true)) DeathRules.dropItems(player, killer, policy?.graveAt)
         player.events.publish(DeathEvent(player, killer))
         player.message("Oh dear, you are dead!")
-        player.teleport(safe ?: RESPAWN)
+        player.teleport(safe ?: policy?.respawnAt ?: RESPAWN)
         for (stat in 0 until STAT_COUNT) player.setLevel(stat, player.baseLevel(stat))
         player.deactivateAllPrayers()
         Poison.clear(player)
