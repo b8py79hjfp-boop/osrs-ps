@@ -12,6 +12,7 @@ import tp.plugin.commands.Category
 import tp.plugin.commands.CommandBuilder
 import tp.plugin.commands.CommandResult
 import tp.plugin.commands.PlayerTarget
+import tp.plugin.commands.commandsConfig
 import tp.plugin.setXp
 import tp.plugin.xp
 import tp.plugin.xpForLevel
@@ -162,6 +163,10 @@ public class DeveloperEconomy : ContentPlugin {
             }
             val npc = npc("npc")
             signature(npc) { ctx ->
+                // A killed NPC drops loot, so this form needs ECONOMY even though the command is CONVENIENCE (§3).
+                if (!ctx.player.commandsConfig.allows(Impact.ECONOMY)) {
+                    return@signature ctx.fail("Killing NPCs makes drops: this world does not allow ECONOMY.")
+                }
                 val target =
                     ctx.player
                         .npcsWithin(ctx.player.coord, KILL_RADIUS)

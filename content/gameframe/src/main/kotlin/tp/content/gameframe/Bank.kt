@@ -53,6 +53,15 @@ public class Bank : ContentPlugin {
         onCommand("openbank", DEV_RANK, DEV_CONVENIENCE) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
         // Commands brief §2 (official): `::bank` makes the player say this; developers get the bank instead.
         commandFallback { name -> bankCommand(name) }
+        // §6 developer `::bank` (CONVENIENCE); everyone else, and developers on live worlds, get the joke above.
+        command("bank", DEV_RANK, tp.plugin.commands.Category.DEVELOPMENT, DEV_CONVENIENCE) {
+            description("Opens your bank.")
+            example("::bank")
+            signature { ctx ->
+                ctx.player.weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() }
+                ctx.done()
+            }
+        }
         events.on<BankTransfer> { t -> t.player.transfer(t) }
         events.on<tp.plugin.BankPinRequest> { r -> r.player.weakQueue(0) { if (with(BankPin) { unlock() }) r.then(player) } }
         onLogin { BankPin.onLogin(this) }
@@ -804,11 +813,7 @@ public class Bank : ContentPlugin {
     /** `::bank`: the official joke, or the bank for developers. */
     private fun PlayerRef.bankCommand(name: String): Boolean {
         if (name != "bank") return false
-        if (rank.atLeast(tp.util.Rank.DEVELOPER)) {
-            weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() }
-        } else {
-            say(SILLY)
-        }
+        say(SILLY)
         return true
     }
 

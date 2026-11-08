@@ -115,7 +115,8 @@ public class DeveloperTools : ContentPlugin {
     }
 
     private fun ContentScope.variables() {
-        dev("varp", Impact.OPERATIONS, "Shows varp <id>, or sets it to [value].", "::varp 173 1") {
+        // ECONOMY: a varp can hold a kill count or an unlock (as ::raid setkc), so writing one creates value (§3).
+        dev("varp", Impact.ECONOMY, "Shows varp <id>, or sets it to [value].", "::varp 173 1") {
             val id = int("id", min = 0)
             val value = int("value", optional = true)
             signature(id, value) { ctx ->
@@ -128,7 +129,7 @@ public class DeveloperTools : ContentPlugin {
                 }
             }
         }
-        dev("varbit", Impact.OPERATIONS, "Shows varbit <id>, or sets it to [value] (must fit its bits).", "::varbit 4070 1") {
+        dev("varbit", Impact.ECONOMY, "Shows varbit <id>, or sets it to [value] (must fit its bits).", "::varbit 4070 1") {
             val id = int("id", min = 0)
             val value = int("value", optional = true)
             signature(id, value) { ctx ->

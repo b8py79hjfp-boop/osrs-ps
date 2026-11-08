@@ -65,7 +65,10 @@ class CommandPermissionScenario {
             if (!def.available(config)) continue
             // Below the minimum: exactly the unknown reply, so the command's existence never leaks (§2).
             Rank.entries.lastOrNull { !it.atLeast(def.rank) }?.let { below ->
-                assertTrue(reply(players.getValue(below), def.name).startsWith(UNKNOWN_COMMAND), "::${def.name} hidden from $below")
+                val answer = reply(players.getValue(below), def.name)
+                // `::bank` keeps the official joke (overhead text, no game message) for everyone without the command (§2).
+                val expected = if (def.name in OFFICIAL_FALLBACKS) answer.isEmpty() else answer.startsWith(UNKNOWN_COMMAND)
+                assertTrue(expected, "::${def.name} hidden from $below: $answer")
             }
             // At the minimum: anything but the unknown reply (usage, a result, or a confirmation prompt).
             val at = reply(players.getValue(def.rank), def.name)
@@ -82,6 +85,13 @@ class CommandPermissionScenario {
         assertFalse(reply(dev, "checkinv r_owner").startsWith("You can't"), "a developer reaches an owner")
         val owner = players.getValue(Rank.OWNER)
         assertEquals("You can't use ::checkinv on r_developer.", reply(owner, "checkinv r_developer"))
+        // Equal ranks are out of reach (§1: developers reach anyone but another developer); yourself is always fine.
+        s.player("r_moderator2", CoordGrid(X, Z), rank = Rank.MODERATOR)
+        s.player("r_developer2", CoordGrid(X, Z), rank = Rank.DEVELOPER)
+        s.tick()
+        assertEquals("You can't use ::checkinv on r_moderator2.", reply(mod, "checkinv r_moderator2"))
+        assertEquals("You can't use ::checkinv on r_developer2.", reply(dev, "checkinv r_developer2"))
+        assertFalse(reply(mod, "checkinv r_moderator").startsWith("You can't"), "self is fine")
     }
 
     @Test
@@ -93,6 +103,12 @@ class CommandPermissionScenario {
         assertEquals(0L, inv(dev).total(Objs.COINS))
         assertTrue(reply(dev, "home").startsWith(UNKNOWN_COMMAND), "CONVENIENCE is off on live worlds too")
         assertFalse(reply(dev, "pos").startsWith(UNKNOWN_COMMAND), "other impacts still work")
+        for (def in content.registry.all.filter { it.impact == tp.util.commands.Impact.ECONOMY }) {
+            assertTrue(reply(dev, def.name).startsWith(UNKNOWN_COMMAND), "::${def.name} is ECONOMY: hidden on live")
+        }
+        assertFalse(reply(dev, "raid stats").startsWith(UNKNOWN_COMMAND), "owner raid tools stay on live")
+        assertEquals("That is an ECONOMY command, which this world does not allow.", reply(dev, "raid start permfixture"))
+        assertEquals("That needs the developer rank.", reply(players.getValue(Rank.OWNER), "raid start permfixture"))
     }
 
     @Test
@@ -195,7 +211,10 @@ class CommandPermissionScenario {
         val before = p.messages.size
         p.input(ClientCommand.Cheat(line))
         s.tick()
-        return p.messages.drop(before).firstOrNull().orEmpty()
+        return p.messages
+            .drop(before)
+            .firstOrNull()
+            .orEmpty()
     }
 
     /** An audit row without the parts that differ between two runs of one invocation. */
@@ -214,6 +233,9 @@ class CommandPermissionScenario {
 
     private companion object {
         const val BIG = 100_000
+
+        /** Names that keep their official behaviour for players without the command (§2). */
+        val OFFICIAL_FALLBACKS = setOf("bank")
 
         /** `fill`: give up after this many objs in a row are refused (the inventory is full). */
         const val MAX_MISSES = 200

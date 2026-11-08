@@ -217,6 +217,9 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   - the tick budget in `::tick`;
   - `::raid level` (ToA's invocation picker), forced CoX layouts and `::raids all` (CMD13);
   - per-viewer hidden mode (CMD7), cross-world or persistent tickets, and TFA's fee waiver.
+  - `::ipban <ip>` by raw address (today it bans the player's last IP);
+  - `::empty` is CONVENIENCE as §6 says, though §3's definition would make it ECONOMY (it destroys items). It is off
+    on live worlds either way.
 - **Needs the user:**
   - the RuneLite check through RSProx for every rank, typed and clicked;
   - the client-side OPENs CMD1, CMD2, CMD9, CMD10 and CMD5 (`::bank` and emotes in game).

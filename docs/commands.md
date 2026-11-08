@@ -81,7 +81,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::config` | `::config <rate_limit_per_second\|rate_limit_per_minute\|confirm_timeout_seconds\|yell_cooldown_player\|yell_cooldown_moderator> [value]` | — | OPERATIONS | — | Shows or changes a runtime-safe config key on this world until restart. |
 | `::kickall` | `::kickall [reason…]` | — | OPERATIONS | — | Kicks everyone on this world except staff. (confirmation) |
 | `::lockworld` | `::lockworld <on\|off>` | — | OPERATIONS | — | Staff-only logins on this world, for maintenance. |
-| `::raid` | `::raid <info> <run\|player…>`<br>`::raid <parties>`<br>`::raid <watch> <run\|player…>`<br>`::raid <leave>`<br>`::raid <kick> <player> [reason…]`<br>`::raid <end> <run\|player reason…>`<br>`::raid <reward> <run [player]…>`<br>`::raid <reissue> <run> <player>`<br>`::raid <waivefee> <player>`<br>`::raid <kc> <player> [raid…]`<br>`::raid <pb> <remove> <player raid mode size…>`<br>`::raid <pb> <player…>`<br>`::raid <disable\|enable> <raid…>`<br>`::raid <stats>`<br>`::raid <start> <raid [mode] [size]…>`<br>`::raid <skip>`<br>`::raid <room> <room\|next…>`<br>`::raid <level> <n>`<br>`::raid <layout> [code…]`<br>`::raid <seed> <n>`<br>`::raid <points> [[player] [set n]…]`<br>`::raid <setkc> <player raid mode n…>` | — | OPERATIONS | — | Raid tools: info, parties, watch, leave, kick, end, reward, reissue, waivefee, kc, pb, disable, enable, stats. |
+| `::raid` | `::raid <info> <run\|player…>`<br>`::raid <parties>`<br>`::raid <watch> <run\|player…>`<br>`::raid <leave>`<br>`::raid <kick> <player> [reason…]`<br>`::raid <end> <run\|player reason…>`<br>`::raid <reward> <run [player]…>`<br>`::raid <reissue> <run> <player>`<br>`::raid <waivefee> <player>`<br>`::raid <kc> <player> [raid…]`<br>`::raid <pb> <remove> <player raid mode size…>`<br>`::raid <pb> <player…>`<br>`::raid <disable\|enable> <raid…>`<br>`::raid <stats>`<br>`::raid <start> <raid [mode] [size]…>`<br>`::raid <skip>`<br>`::raid <room> <room\|next…>`<br>`::raid <level> <n>`<br>`::raid <layout> [code…]`<br>`::raid <seed> <n>`<br>`::raid <points> [[player] [set n]…]`<br>`::raid <setkc> <player raid mode n…>` | — | OPERATIONS | — | Raid tools (owner): info, parties, watch, leave, kick, end, reward, reissue, waivefee, kc, pb, disable, enable, stats. Developer only, and only where ECONOMY is allowed: start, skip, room, level, seed, points set, setkc. |
 | `::raids` | `::raids` | — | OPERATIONS | — | Lists this world's active runs: raid, mode, party, room, elapsed time and run id. |
 | `::rename` | `::rename <player> <new name…>` | — | OPERATIONS | yes | Changes a player's display name, kept in their history; their login name stays. (cross-world) |
 | `::saveall` | `::saveall` | — | OPERATIONS | — | Saves every player on this world now. |
@@ -95,6 +95,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 |---|---|---|---|---|---|
 | `::addxp` | `::addxp <skill> <xp>` | — | ECONOMY | — | Adds xp to a skill. |
 | `::anim` | `::anim <id> [delay]` | — | DEBUG_VISUAL | — | Plays animation (seq) <id> on you; -1 stops it. |
+| `::bank` | `::bank` | — | CONVENIENCE | — | Opens your bank. |
 | `::closeif` | `::closeif` | — | OPERATIONS | — | Closes the modal interface. |
 | `::copy` | `::copy <player>` | — | ECONOMY | yes | Copies an online player's equipment, inventory and stats onto you. |
 | `::cs2` | `::cs2 <id> [args…]` | — | OPERATIONS | — | Runs client script <id>; numeric arguments are sent as ints, the rest as strings. |
@@ -117,5 +118,5 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::spec` | `::spec` | — | CONVENIENCE | — | Fills your special attack energy. |
 | `::tick` | `::tick` | — | OPERATIONS | — | Shows this world's current tick. |
 | `::trace` | `::trace` | — | OPERATIONS | — | Streams your tick-inspector trace; run again to stop. |
-| `::varbit` | `::varbit <id> [value]` | — | OPERATIONS | — | Shows varbit <id>, or sets it to [value] (must fit its bits). |
-| `::varp` | `::varp <id> [value]` | — | OPERATIONS | — | Shows varp <id>, or sets it to [value]. |
+| `::varbit` | `::varbit <id> [value]` | — | ECONOMY | — | Shows varbit <id>, or sets it to [value] (must fit its bits). |
+| `::varp` | `::varp <id> [value]` | — | ECONOMY | — | Shows varp <id>, or sets it to [value]. |

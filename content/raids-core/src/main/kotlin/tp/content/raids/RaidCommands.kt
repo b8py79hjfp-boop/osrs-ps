@@ -30,7 +30,11 @@ public class RaidCommands : ContentPlugin {
             signature { ctx -> list(ctx.player) }
         }
         command("raid", Rank.OWNER, Category.RAIDS, Impact.OPERATIONS) {
-            description("Raid tools: info, parties, watch, leave, kick, end, reward, reissue, waivefee, kc, pb, disable, enable, stats.")
+            // One name, two tables (§6): the developer subcommands check the rank and ECONOMY themselves.
+            description(
+                "Raid tools (owner): info, parties, watch, leave, kick, end, reward, reissue, waivefee, kc, pb, disable, enable, " +
+                    "stats. Developer only, and only where ECONOMY is allowed: start, skip, room, level, seed, points set, setkc.",
+            )
             example("::raid info Big_Bob", "::raid end 12 instance bugged", "::raid reissue 12 Big_Bob")
             owner(this)
             developer(this)
