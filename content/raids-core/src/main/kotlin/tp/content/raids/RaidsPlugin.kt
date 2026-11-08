@@ -88,7 +88,7 @@ public class RaidsPlugin : ContentPlugin {
             m.deaths++
             run.teamDeaths++
             m.alive = false
-            m.points = maxOf(0.0, m.points - run.raid.contribution.deathPenalty(m, run))
+            m.points = maxOf(0.0, m.points - deathLoss(player, run.raid.contribution.deathPenalty(m, run)))
         }
         run.markDirty()
         player.events.publish(RaidEvent.Disconnected(run, m.name))

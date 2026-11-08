@@ -8,6 +8,7 @@ import tp.plugin.PlayerScript
 import tp.plugin.Stats
 import tp.symbols.Invs
 import tp.symbols.Objs
+import tp.util.DonatorPerk
 
 /**
  * Fishing (docs/mechanics/fishing.md). Spots are NPCs; the ids by spot type come from the Wiki (`fishing-spots.tsv`) and
@@ -127,15 +128,20 @@ public class Fishing : ContentPlugin {
         val big = fish.bigOneIn > 0 && p.random(fish.bigOneIn) == 0
         val obj = if (big) fish.bigObj else fish.obj
         val cooked = !big && tool.cooks && infernalCooks(p, fish)
+        // D-093 donator perks (perks.tsv rows "Gain a chance of automatically noting ..." and "Chance of catching an extra fish").
+        val item = if (cooked) obj else p.autoNoted(obj)
         val stored =
             p.transaction("fishing") {
-                (bait.obj < 0 || remove(Invs.INV, bait.obj, 1)) && (cooked || add(Invs.INV, obj, 1))
+                (bait.obj < 0 || remove(Invs.INV, bait.obj, 1)) && (cooked || add(Invs.INV, item, 1))
             }
         if (!stored) {
             Skilling.stop(p)
             return p.stopInteraction()
         }
         p.message(if (big) fish.bigMessage else fish.message, Skilling.SPAM)
+        if (!cooked && p.donatorRoll(DonatorPerk.CHANCE_OF_CATCHING_AN_EXTRA_FISH_WHEN_FISHING)) {
+            p.transaction("fishing donator extra") { add(Invs.INV, item, 1) }
+        }
         if (method == Method.BARBARIAN) BarbarianProgress.caughtLeapingFish(p)
         p.addXp(Stats.FISHING, fish.xp * anglerBonus(p))
         for (extra in fish.extras) p.addXp(extra.stat, extra.xp)
@@ -177,7 +183,10 @@ public class Fishing : ContentPlugin {
                     continue
                 }
                 val big = fish.bigOneIn > 0 && p.random(fish.bigOneIn) == 0
-                addOrDrop(Invs.INV, if (big) fish.bigObj else fish.obj, 1)
+                // D-093 donator perks (perks.tsv rows: auto-noting resources, extra fish when fishing).
+                val item = p.autoNoted(if (big) fish.bigObj else fish.obj)
+                addOrDrop(Invs.INV, item, 1)
+                if (p.donatorRoll(DonatorPerk.CHANCE_OF_CATCHING_AN_EXTRA_FISH_WHEN_FISHING)) addOrDrop(Invs.INV, item, 1)
                 p.message(if (big) fish.bigMessage else fish.message, Skilling.SPAM)
                 xp += fish.xp
             }

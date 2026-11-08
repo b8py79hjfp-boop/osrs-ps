@@ -63,7 +63,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 LoginResult.OK -> {
                     world.admitAuthorized(
                         request,
-                        AccountProfile(grant.accountId, grant.displayName, grant.rights, grant.save, grant.sanctions),
+                        AccountProfile(grant.accountId, grant.displayName, grant.rights, grant.save, grant.sanctions, grant.donator),
                     )
                 }
 
@@ -324,6 +324,21 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
 
     override fun setRank(player: Player, target: String, rank: tp.util.Rank, reply: (String?) -> Unit) =
         answer(player, "set rank", reply) { hub.moderation.setRank(it, target, rank) }
+
+    override fun recordDonation(player: Player, target: String, cents: Long, note: String, reply: (String?, tp.util.DonatorTier?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.", null)
+        io.execute {
+            val a = call("donation") { hub.moderation.recordDonation(account, target, cents, note) }
+            world.execute {
+                if (world.playerByAccount(account) ===
+                    player
+                ) {
+                    reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value)
+                }
+            }
+        }
+    }
 
     override fun rename(player: Player, target: String, newName: String, reply: (String?) -> Unit) =
         answer(player, "rename", reply) { hub.moderation.rename(it, target, newName) }

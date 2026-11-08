@@ -207,3 +207,30 @@ public fun PlayerRef.runCommandLine(line: String, source: Source = Source.INTERF
 
 /** The viewer's last ten commands, newest first (the interface's Recent view, §5). */
 public fun PlayerRef.recentCommands(): List<String> = (p.world.content as? PluginContent)?.dispatcher?.recentOf(this).orEmpty()
+
+/** This player's donator tier (D-093). */
+public val PlayerRef.donator: tp.util.DonatorTier get() = p.donator
+
+/**
+ * The donator [perk]'s value for this player in the perk's unit (tp.util.DonatorPerk). Gameplay boosts are 0 unless
+ * the world enables `donator_boosts` (off on live 1:1 worlds by default: D-093); cosmetic perks always apply.
+ */
+public fun PlayerRef.perk(perk: tp.util.DonatorPerk): Int {
+    if (perk !in COSMETIC_PERKS && !commandsConfig.donatorBoosts) return 0
+    return perk.value(p.donator)
+}
+
+/** Perks that change no gameplay: always on (D-093). */
+private val COSMETIC_PERKS =
+    setOf(
+        tp.util.DonatorPerk.EXCLUSIVE_CHAT_CROWN,
+        tp.util.DonatorPerk.YELL_CHANNEL_TIMER,
+        tp.util.DonatorPerk.ABILITY_TO_SET_A_CUSTOM_YELL_TAG,
+        tp.util.DonatorPerk.EXTRA_BANK_SPACE,
+    )
+
+/** `::donated` through the hub; [reply] gets an error, or the target's new tier. */
+public fun PlayerRef.recordDonation(target: String, cents: Long, note: String, reply: PlayerRef.(String?, tp.util.DonatorTier?) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Donations need the account server.", null)
+    accounts.recordDonation(p, target, cents, note) { e, tier -> this.reply(e, tier) }
+}

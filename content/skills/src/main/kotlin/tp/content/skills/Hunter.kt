@@ -16,6 +16,7 @@ import tp.symbols.Locs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.util.CoordGrid
+import tp.util.DonatorPerk
 
 /** The player timer that runs a player's laid traps once a tick. */
 private val TRAP_TIMER = TimerId("hunter.traps")
@@ -167,7 +168,9 @@ public class Hunter : ContentPlugin {
         p.anim(Seqs.HUMAN_HUNTING_DISMANTLE_NET)
         delay(PICKUP_TICKS)
         if (!traps(p).contains(trap) || trap.state == CATCHING) return
-        val amounts = creature?.loot?.map { it.min + p.random(it.max - it.min + 1) }.orEmpty()
+        // D-093 donator perk (perks.tsv row "Chance of receiving extra loot from hunter traps"): doubles every amount.
+        val doubled = creature != null && p.donatorRoll(DonatorPerk.CHANCE_OF_RECEIVING_EXTRA_LOOT_FROM_HUNTER_TRAPS)
+        val amounts = creature?.loot?.map { (it.min + p.random(it.max - it.min + 1)) * if (doubled) 2 else 1 }.orEmpty()
         val given =
             p.transaction("hunter collect") {
                 var ok = true

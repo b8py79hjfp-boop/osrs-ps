@@ -1359,3 +1359,15 @@ means is not known.
   - the sailing stage setter.
 - Why: §6 lists none of these for administrators, and §0.7 says to stop before giving a rank a power §6 doesn't
   list. Previously, administrators could spawn items on a live world.
+
+## D-093 Donator tiers (2026-11-08, the user's request)
+
+- **Scope.** The user asked for the Elorin donator benefits (docs/mechanics/donators.md), with two choices: tiers plus
+  every gameplay boost that hooks into systems we already have, and tiers granted by an owner command.
+- **The brief.** Commands brief §13 listed donator ranks under "Not now"; this request lifts that.
+- **Tier storage.** The tier is a separate account property derived from an additive `donations` table, not a
+  `Rank`. Donating never grants staff powers.
+- **Live worlds.** Gameplay perks are pay-to-win and not OSRS-faithful, so they sit behind a per-world
+  `donator_boosts` switch that defaults off on live 1:1 worlds, like ECONOMY.
+- **Saved texts.** The yell tag needs one, so player saves gain an optional `texts` object. It is additive: older
+  saves load unchanged.

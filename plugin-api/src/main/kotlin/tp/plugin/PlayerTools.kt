@@ -27,3 +27,11 @@ public fun PlayerRef.setXp(stat: Int, xp: Double) {
 
 /** XP is stored in tenths (engine PlayerStats). */
 private const val XP_TENTHS_PER_XP = 10.0
+
+/** A persisted short text [key] (saved with the account), or null (D-093). */
+public fun PlayerRef.savedText(key: String): String? = p.savedText[key]
+
+/** Sets (or with null clears) a persisted short text. */
+public fun PlayerRef.setSavedText(key: String, value: String?) {
+    if (value == null) p.savedText.remove(key) else p.savedText[key] = value
+}

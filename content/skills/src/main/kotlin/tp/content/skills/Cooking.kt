@@ -11,6 +11,7 @@ import tp.symbols.Invs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.symbols.Varbits
+import tp.util.DonatorPerk
 
 /**
  * Cooking (docs/mechanics/cooking.md): raw food used on a fire or range, or the "Cook" op of a range. With more than one raw item of
@@ -134,7 +135,8 @@ public class Cooking : ContentPlugin {
         val food = job.food
         val slot = slotToCook(p, food.raw, job.usedSlot)
         if (slot < 0) return false
-        val success = cannotBurn(p) || rolls(p, food, heat)
+        // D-093 donator perk (perks.tsv row "Decreased chance of burning food"): a burn is saved by one extra roll, only when burned.
+        val success = cannotBurn(p) || rolls(p, food, heat) || p.donatorRoll(DonatorPerk.DECREASED_CHANCE_OF_BURNING_FOOD)
         val product = if (success) food.cooked else food.burnt
         if (!p.transaction("cooking") { replaceAt(Invs.INV, slot, food.raw, product, 1) }) return false
         job.remaining--
@@ -144,6 +146,10 @@ public class Cooking : ContentPlugin {
         if (success) {
             p.addXp(Stats.COOKING, food.xp)
             p.message("You successfully $verb the $name.", Skilling.SPAM)
+            // D-093 donator perk (perks.tsv row "Chance of receiving an extra cooked food when cooking"): a bonus item, skipped if full.
+            if (p.donatorRoll(DonatorPerk.CHANCE_OF_RECEIVING_AN_EXTRA_COOKED_FOOD_WHEN_COOKING)) {
+                p.transaction("cooking donator extra") { add(Invs.INV, food.cooked, 1) }
+            }
         } else {
             p.message("You accidentally burn the $name.", Skilling.SPAM)
         }

@@ -8,6 +8,7 @@ import tp.plugin.Stats
 import tp.symbols.Invs
 import tp.symbols.Objs
 import tp.symbols.Seqs
+import tp.util.DonatorPerk
 
 /**
  * Herblore (docs/mechanics/herblore.md): cleaning grimy herbs (the "Clean" item op), unfinished and finished potions
@@ -101,6 +102,10 @@ public class Herblore : ContentPlugin {
             return false
         }
         if (!p.transaction("herblore") { take(r.inputs) && add(Invs.INV, r.output, r.count) }) return false
+        // D-093 donator perk (perks.tsv row "Chance of receiving an extra potion when mixing potions"): a bonus output, skipped if full.
+        if (p.donatorRoll(DonatorPerk.CHANCE_OF_RECEIVING_AN_EXTRA_POTION_WHEN_MIXING_POTIONS)) {
+            p.transaction("herblore donator extra") { add(Invs.INV, r.output, r.count) }
+        }
         return Production.award(p, Stats.HERBLORE, r.xp)
     }
 

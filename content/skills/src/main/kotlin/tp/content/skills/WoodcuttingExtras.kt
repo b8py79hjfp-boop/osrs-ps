@@ -3,8 +3,10 @@ package tp.content.skills
 import tp.plugin.ButtonClick
 import tp.plugin.PlayerRef
 import tp.plugin.WorldRef
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.symbols.Objs
+import tp.util.DonatorPerk
 
 /**
  * Woodcutting side effects of a log (docs/mechanics/woodcutting.md WC5 to WC8): bird nests and their contents, the
@@ -55,7 +57,11 @@ internal class WoodcuttingExtras {
                 else -> Objs.BIRD_NEST_SEEDS_JAN2019
             }
         val at = landing(p)
-        p.transaction("bird nest") { createOnGround(nest, 1, at, p.username) }
+        // D-093 donator perk (perks.tsv row "Bird nests' will automatically be placed into your inventory"): ground if full.
+        val kept =
+            p.perk(DonatorPerk.BIRD_NESTS_WILL_AUTOMATICALLY_BE_PLACED_INTO_YOUR_INVENTORY) == 1 &&
+                p.transaction("bird nest") { add(Invs.INV, nest, 1) }
+        if (!kept) p.transaction("bird nest") { createOnGround(nest, 1, at, p.username) }
         p.message("<col=ef1020>A bird's nest falls out of the tree.</col>")
     }
 

@@ -20,6 +20,7 @@ import tp.plugin.RunePouch
 import tp.plugin.chatNpc
 import tp.plugin.chatPlayer
 import tp.plugin.choice
+import tp.plugin.commands.perk
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
@@ -289,7 +290,8 @@ public class Bank : ContentPlugin {
         ifEvents(Components.Bankmain.DROPDOWN_CONTENT, 0..DROPDOWN_LAST, IfEvents.op(1))
     }
 
-    private fun capacity(bank: InvView): Int = minOf(DEFAULT_CAPACITY, bank.size)
+    // D-093 donator "Extra Bank space"; capped by the cache bank inv size (1410): Uber's +1300 is cut (donators.md).
+    private fun PlayerRef.capacity(bank: InvView): Int = minOf(DEFAULT_CAPACITY + perk(tp.util.DonatorPerk.EXTRA_BANK_SPACE), bank.size)
 
     private fun PlayerRef.bankOpen(): Boolean = isOpen(Interfaces.BANKMAIN)
 

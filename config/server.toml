@@ -12,6 +12,8 @@ rate_limit_per_minute = 30
 confirm_timeout_seconds = 30
 yell_cooldown_seconds = { PLAYER = 30, MODERATOR = 5 }
 reason_presets = ["Spam", "Offensive language", "Scamming", "Botting", "Rule breaking"]
+# D-093: donator gameplay boosts (drop rate, xp, skilling extras). Default: on unless live = true.
+# donator_boosts = true
 # `::rules` shows these lines.
 rules = []
 

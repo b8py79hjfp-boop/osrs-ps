@@ -33,6 +33,8 @@ class LoginGrant(
     val save: String? = null,
     /** Mutes, yell-mutes and jail in force (commands brief §7: applied at the next login when set offline). */
     val sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE,
+    /** From the account's donation total (D-093). */
+    val donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE,
 )
 
 interface AccountService {
@@ -88,6 +90,9 @@ sealed interface SocialEvent {
 
     /** The account's sanctions changed (commands brief §7: applied at once on the world it is on). */
     class Sanctioned(override val toAccount: Long, val sanctions: tp.util.Sanctions) : SocialEvent
+
+    /** A donation changed the account's donator tier (D-093). */
+    class DonatorChanged(override val toAccount: Long, val tier: tp.util.DonatorTier) : SocialEvent
 
     /** `::setrank` changed the account's rank (commands brief §8: takes effect at once). */
     class RankChanged(override val toAccount: Long, val rank: Rank) : SocialEvent
@@ -379,6 +384,13 @@ interface ModerationService {
 
     /** `::setrank` (commands brief §1, §6): checked with [Rank.canSetRank], audited, and applied live. */
     suspend fun setRank(staffAccount: Long, target: String, rank: Rank): String? = "Not available."
+
+    /**
+     * `::donated` (owner, D-093): records a donation of [cents] for [target] (audited, additive). The tier follows the
+     * new total and is pushed to the target's world. The answer holds the new tier, or the reason.
+     */
+    suspend fun recordDonation(staffAccount: Long, target: String, cents: Long, note: String): ModAnswer<tp.util.DonatorTier> =
+        ModAnswer("Not available.", null)
 
     /** `::rename` (owner): a new display name, kept in the history; the login name stays. */
     suspend fun rename(staffAccount: Long, target: String, newName: String): String? = "Not available."

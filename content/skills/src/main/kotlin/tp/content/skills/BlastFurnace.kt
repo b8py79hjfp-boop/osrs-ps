@@ -13,12 +13,14 @@ import tp.plugin.Teleported
 import tp.plugin.TimerId
 import tp.plugin.chatNpc
 import tp.plugin.choice
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.symbols.Varbits
+import tp.util.DonatorPerk
 
 /**
  * The Blast Furnace (docs/mechanics/blast-furnace.md): ore on the conveyor belt, the melting pot, the bar dispenser, the
@@ -329,9 +331,12 @@ public class BlastFurnace : ContentPlugin {
         if (hot && !gloves) return p.message("The bars are still molten. Cool them with a bucket of water, or wear ice gloves.")
         val gauntlets = worn(p, GLOVES_SLOT) == Objs.GAUNTLETS_OF_GOLDSMITHING
         var xp = 0.0
+        val noteBars = p.perk(DonatorPerk.RECEIVE_NOTED_BARS_WHEN_SMELTING_IN_THE_BLAST_FURNACE) == 1
         for (r in BlastFurnaceData.BARS) {
-            val n = minOf(count(p, bars(r.bar)), p.inv(Invs.INV).freeSlots)
-            if (n <= 0 || !p.transaction("blast furnace bars") { add(Invs.INV, r.bar, n) }) continue
+            // D-093 donator perk (perks.tsv row "Receive noted bars when smelting in the Blast Furnace"): noted bars stack in one slot.
+            val note = if (noteBars) p.noted(r.bar) else -1
+            val n = if (note >= 0) count(p, bars(r.bar)) else minOf(count(p, bars(r.bar)), p.inv(Invs.INV).freeSlots)
+            if (n <= 0 || !p.transaction("blast furnace bars") { add(Invs.INV, if (note >= 0) note else r.bar, n) }) continue
             set(p, bars(r.bar), count(p, bars(r.bar)) - n)
             xp += n * if (r.bar == Objs.GOLD_BAR && gauntlets) BlastFurnaceData.GOLDSMITH_GOLD_XP else r.xp
         }

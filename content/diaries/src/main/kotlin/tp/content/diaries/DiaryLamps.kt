@@ -4,10 +4,12 @@ import tp.plugin.AttrKey
 import tp.plugin.ButtonClick
 import tp.plugin.PlayerRef
 import tp.plugin.Stats
+import tp.plugin.commands.perk
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
 import tp.symbols.Varps
+import tp.util.DonatorPerk
 
 /**
  * The tiers' Antique lamps (docs/mechanics/achievement-diaries.md AD9): "Rub" opens the experience interface (240); the player
@@ -67,7 +69,9 @@ internal class DiaryLamps(private val diaries: Diaries, private val statOfKey: M
         if (!player.transaction("diary lamp") { removeAt(Invs.INV, lamp.slot, lamp.obj, 1) }) return
         player[LAMP] = null
         player.closeModal()
-        player.addXp(lamp.stat, lamp.info.xp.toDouble())
+        // D-093 donator perk (perks.tsv row "Bonus exp from effigies/lamps").
+        val bonus = player.perk(DonatorPerk.BONUS_EXP_FROM_EFFIGIES_LAMPS)
+        player.addXp(lamp.stat, if (bonus == 0) lamp.info.xp.toDouble() else lamp.info.xp.toDouble() * (PERCENT + bonus) / PERCENT)
     }
 
     fun closed(player: PlayerRef) {
@@ -75,6 +79,9 @@ internal class DiaryLamps(private val diaries: Diaries, private val statOfKey: M
     }
 
     companion object {
+        /** Percent denominator for the donator lamp bonus. */
+        private const val PERCENT = 100
+
         /** Cache enum 681: component index of interface 240 minus one to the stat id (client script 3806). */
         const val COMPONENT_STAT_ENUM = 681
 

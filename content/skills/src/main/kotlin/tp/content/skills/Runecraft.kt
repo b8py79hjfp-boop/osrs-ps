@@ -6,12 +6,14 @@ import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.plugin.Stats
 import tp.plugin.TimerId
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.symbols.SpotAnims
 import tp.util.CoordGrid
+import tp.util.DonatorPerk
 
 /**
  * Runecraft (docs/mechanics/runecraft.md): the mysterious ruins of the thirteen regular runic altars, crafting runes on
@@ -121,7 +123,9 @@ public class Runecraft : ContentPlugin {
         }
         val current = p.level(Stats.RUNECRAFT)
         if (current < level) return p.message("You need a Runecraft level of $level to craft $name runes.")
-        val runes = essence * perEssence(current)
+        // D-093 donator perk (perks.tsv row "Receive extra runes when Runecrafting"): deterministic, rounded down.
+        val baseRunes = essence * perEssence(current)
+        val runes = baseRunes * (DONATOR_PERCENT + p.perk(DonatorPerk.RECEIVE_EXTRA_RUNES_WHEN_RUNECRAFTING)) / DONATOR_PERCENT
         val done =
             p.transaction("runecraft") {
                 (rune0 == 0 || remove(Invs.INV, RunecraftData.RUNE_ESSENCE, rune0)) &&

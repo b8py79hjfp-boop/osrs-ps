@@ -7,6 +7,7 @@ import tp.plugin.EventBus
 import tp.plugin.LootEvent
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.util.CoordGrid
 
@@ -36,6 +37,9 @@ private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef, p
     private val loot = ArrayList<Loot>()
     private val ring: Boolean by lazy { wearsRingOfWealth() }
 
+    /** D-093 donator "Global drop rate boost": every drop chance (not explicit empty slots) times this; 1 for none. */
+    private val boost: Double = 1.0 + killer.perk(tp.util.DonatorPerk.GLOBAL_DROP_RATE_BOOST) / PERCENT
+
     fun run(d: NpcDrops) {
         d.always.forEach { resolve(it, 0) }
         // D3: a pre-roll hit replaces the main roll; otherwise the main table is rolled.
@@ -61,7 +65,9 @@ private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef, p
     }
 
     /** Whether a roll of [chance] succeeds: uniform in [0, [RESOLUTION]) against the chance scaled to it. */
-    private fun hit(chance: Double): Boolean = npc.random(RESOLUTION) < chance * RESOLUTION
+    private fun hit(chance: Double): Boolean = npc.random(RESOLUTION) < minOf(1.0, chance * boost) * RESOLUTION
+
+    private fun chanceOf(l: DropLine): Double = if (l.obj == DropData.NOTHING && l.table == null) l.chance else l.chance * boost
 
     /**
      * One roll over [lines] whose chances are exclusive (D2): the line whose cumulative range holds the roll, or null for
@@ -72,13 +78,13 @@ private class DropRoll(private val npc: NpcRef, private val killer: PlayerRef, p
         if (lines.isEmpty()) return null
         val removed = ring && lines.any { it.ringRemoves }
         var total = 0.0
-        for (l in lines) if (!(removed && l.ringRemoves)) total += l.chance
+        for (l in lines) if (!(removed && l.ringRemoves)) total += chanceOf(l)
         val span = if (removed) total else maxOf(total, 1.0)
         val target = npc.random(RESOLUTION).toDouble() / RESOLUTION * span
         var cumulative = 0.0
         for (l in lines) {
             if (removed && l.ringRemoves) continue
-            cumulative += l.chance
+            cumulative += chanceOf(l)
             if (target < cumulative) return l
         }
         return null
@@ -156,3 +162,6 @@ private fun inChaosRegion(at: CoordGrid): Boolean = at.x in CHAOS_X && at.z in C
 
 private val CHAOS_X = 1920..3903
 private val CHAOS_Z = 9474..11263
+
+/** Percent to fraction (the donator drop boost). */
+private const val PERCENT = 100.0

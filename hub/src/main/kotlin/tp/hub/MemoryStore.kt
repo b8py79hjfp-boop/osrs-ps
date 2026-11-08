@@ -115,6 +115,14 @@ class MemoryStore : HubStore {
             .map { it.first }
             .distinct()
 
+    private val donations = ConcurrentHashMap<Long, Long>()
+
+    override fun addDonation(accountId: Long, cents: Long, actor: String, note: String, at: Long) {
+        donations.merge(accountId, cents, Long::plus)
+    }
+
+    override fun donationTotal(accountId: Long): Long = donations[accountId] ?: 0L
+
     private val records = java.util.concurrent.CopyOnWriteArrayList<tp.util.ModRecord>()
     private val recordIds =
         java.util.concurrent.atomic

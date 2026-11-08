@@ -102,10 +102,12 @@ public class Mining : ContentPlugin {
         val product = roll(p, rock) ?: return
         // MN12: Varrock armour and the Mining cape sometimes give a second ore (and its xp).
         var count = 1 + MiningEnhancers.extraOres(p, rock)
-        var stored = p.transaction("mining") { add(Invs.INV, product.obj, count) }
+        // D-093 donator perk (perks.tsv row "Gain a chance of automatically noting resources ..."): plain ores and clay only.
+        val item = if (rock.kind == RockKind.ORE || rock.kind == RockKind.CASCADE) p.autoNoted(product.obj) else product.obj
+        var stored = p.transaction("mining") { add(Invs.INV, item, count) }
         if (!stored && count > 1) {
             count = 1
-            stored = p.transaction("mining") { add(Invs.INV, product.obj, 1) }
+            stored = p.transaction("mining") { add(Invs.INV, item, 1) }
         }
         if (!stored) {
             p.message("Your inventory is too full to hold any more ${rock.noun}.")
@@ -118,7 +120,7 @@ public class Mining : ContentPlugin {
             p.message("You manage to ${rock.verb} some ${rock.mined}.", Skilling.SPAM)
         }
         MiningOutfit.addXp(p, product.xp * count)
-        repeat(count) { Bags.autoStore(p, product.obj) }
+        if (item == product.obj) repeat(count) { Bags.autoStore(p, product.obj) }
         if (rock.kind == RockKind.ASCENSION) AscensionRocks.onShard(p)
         if (rock.kind == RockKind.VEIN) {
             if (Motherlode.veinDepletes(p, loc, placed)) {

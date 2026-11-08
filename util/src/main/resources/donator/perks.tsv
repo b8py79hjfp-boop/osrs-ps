@@ -1,0 +1,77 @@
+Benefit	Regular$25	Super$50	Extreme$250	Legendary$1,000	Supreme$2,500	Uber$5,000
+Exclusive chat-crown	✓	✓	✓	✓	✓	✓
+Exclusive zone	✓	✗	✓	✗	✗	✓
+Yell-channel (::yell) timer	30s	15s	5s	5s	0s	0s
+Ability to set a custom yell-tag	✗	✗	✗	50m	50m	25m
+Reduced cooldown on restoring special attack at Restoration pools	20%	55%	100%	100%	100%	100%
+Chance of receiving an additional Token when voting	5%	10%	15%	30%	40%	50%
+Market tax cut	✗	0.5%	1.0%	1.5%	2.0%	3.0%
+Extra Town board slots	1	1	2	3	3	3
+Bonus Town board experience & points	✗	✗	5%	5%	5%	7%
+Extra Bank space	100	300	500	800	1000	1300
+Extra Preset slots	5	10	15	20	25	25
+Your Thralls last longer	✗	✗	15s	30s	45s	1m
+Extra Pk points when killing other players	10%	20%	30%	40%	50%	60%
+Extra points when spotting Penguins	1	2	3	4	5	6
+Extra points from Pest Control	2	4	6	8	10	12
+Get your free Slayer task reset more often	01:50	01:40	01:20	01:00	00:40	00:30
+Free clue scroll daily skips	2	4	6	8	10	12
+Increased Clue scroll rewards drop rate	5%	10%	15%	20%	25%	30%
+Chance of receiving extra rewards when opening the Crystal Chest	10%	15%	20%	25%	30%	35%
+You have a chance of keeping your Frozen key when entering Nex's lair	✗	✓	✓	✓	✓	✓
+Godwars dungeon killcount requirement is lowered	20	15	10	5	0	0
+Discount when decanting potions	20%	40%	60%	80%	85%	90%
+Receive more points back when reverting upgraded items	10%	20%	30%	40%	50%	60%
+Bonus exp from Tears of Guthix	5%	10%	15%	20%	25%	30%
+Bonus exp when exchanging Agility tickets	30	186	470	730	930	1130
+Bonus exp from effigies/lamps	10%	20%	30%	40%	50%	60%
+Bonus exp when doing Dungeoneering	3%	6%	9%	12%	14%	16%
+Receive extra runes when Runecrafting	25%	50%	75%	100%	150%	200%
+Bird Houses catch time	35min	30min	25min	20min	15min	10min
+Increased chance of receiving a Mark of grace	16%	25%	33%	42%	50%	60%
+Decreased chance of burning food	10%	20%	30%	40%	50%	60%
+Chance of receiving additional Summoning charms (with RoW equipped)	10%	20%	30%	40%	50%	60%
+Gain immunity to poison, venom and dragonfire when not in the Wilderness	✗	✗	✗	✗	✗	✓
+Regen 1 prayer point every 5 seconds when not in the Wilderness	✗	✗	✗	✗	✗	✓
+Gain the ability to claim daily rewards	✗	✗	✗	✗	✗	✓
+Chance to automatically trigger imbued Ring of Wealth effect on monster drop	✗	✗	✗	✗	✗	4%
+Gain Effigy drop rate chance	✗	✗	✗	✗	✗	50%
+Gain the ability to create Lizard shaman instances without a tablet	✗	✗	✗	✗	✗	✓
+Tokkul monster drops are doubled	✗	✗	✗	✗	✗	✓
+Thieving from stalls is automated	✗	✗	✗	✗	✓	✓
+Gain the ability to configure the Looting bag to auto-deposit loot	✗	✗	✗	✗	✓	✓
+You lose less points when dying in Raids	✗	✗	✗	✗	5%	10%
+Gain a chance of automatically noting resources when Fishing, Woodcutting or Mining	✗	✗	✗	✗	20%	30%
+Receive bonus Stardust from Shooting stars	✗	✗	✗	1	2	3
+Gain the ability to teleport directly to penguins using the Penguin spy notebook	✗	✗	✗	✓	✓	✓
+Chance of catching an extra fish when fishing	✗	✗	✗	10%	50%	100%
+Chance of burning an extra log when firemaking	✗	✗	✗	✗	✗	10%
+Chance of receiving an extra cooked food when cooking	✗	✗	✗	30%	30%	30%
+Chance of receiving an extra potion when mixing potions	✗	✗	✗	30%	50%	50%
+Chance of receiving extra loot from hunter traps	✗	✗	✗	50%	50%	50%
+Removes the requirement for needing bait when hunting Grenwalls	✗	✗	✗	✓	✓	✓
+Ability to see when the next Shooting Star will crash (::nextstar)	✗	✗	✗	✓	✓	✓
+Ability to teleport directly to crashed Shooting Stars (::star)	✗	✗	✗	✓	✓	✓
+Ability to teleport directly to active Evil Trees (::eviltree)	✗	✗	✗	✓	✓	✓
+Ability to see Grifolaroo location/next spawn time (::grif)	✗	✗	✗	✓	✓	✓
+Ability to see Wildy Wyrm next spawn time (::wyrm)	✗	✗	✗	✓	✓	✓
+Receive noted bars when smelting in the Blast Furnace	✗	✗	✗	✓	✓	✓
+Bob offers a discount when repairing your gear	✗	✗	✗	25%	25%	25%
+Chance to receive a full Crystal key as a drop from monsters	✗	✗	✗	1/500	1/250	1/250
+Effigies and Crystal keys monster drops are automatically sent to your bank	✗	✗	✗	✓	✓	✓
+Immunity to Evil Tree roots spawning and interrupting you	✗	✓	✓	✓	✓	✓
+Burnt pages will automatically be placed in your inventory when Firemaking	✗	✓	✓	✓	✓	✓
+Bird nests' will automatically be placed into your inventory when Woodcutting	✗	✓	✓	✓	✓	✓
+Gain access to an exclusive Gem mine located below Shilo Village	✗	✓	✓	✓	✓	✓
+Gain the ability to blacklist an additional player in Edgeville PvP	✗	✓	✓	✓	✓	✓
+Gain bonus experience in the Extreme donator zone	✗	✗	✗	5%	10%	10%
+Discount when purchasing flasks from the Extreme donator zone merchant	✗	✗	✓	✓	✓	✓
+Gain bonus experience in the Uber donator zone	✗	✗	✗	✗	✗	20%
+Smithing speed is increased in the Uber donator zone	✗	✗	✗	✗	✗	50%
+Pets obtained outside the Wilderness are automatically insured	✗	✗	✓	✓	✓	✓
+Chance to receive extra Birds' nest when emptying Bird Houses	✗	✗	✓	✓	✓	✓
+Gain access to the exclusive minigame Rune Sudoku (in ezone)	✗	✗	✓	✓	✓	✓
+Auto-bank clue scrolls / bottles / nests / geodes	✗	✗	✗	✗	✓	✓
+Extra Slayer master cape daily uses	25	50	75	100	125	175
+Increases the chance of receiving Upgrade Point Tokens	✗	✗	10%	15%	20%	25%
+Global drop rate boost	✗	✗	1%	2%	3%	4%

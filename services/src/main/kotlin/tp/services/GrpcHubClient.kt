@@ -99,6 +99,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                     Rank.parseOrPlayer(r.rights.ifEmpty { Rank.PLAYER.name }),
                     if (r.hasSave) r.save else null,
                     r.sanctions.toSanctions(),
+                    tp.util.DonatorTier.parse(r.donator) ?: tp.util.DonatorTier.NONE,
                 )
             }
 
@@ -371,6 +372,11 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
                         e.hasSanctioned() -> {
                             sink(SocialEvent.Sanctioned(e.toAccount, e.sanctioned.toSanctions()))
+                        }
+
+                        e.hasDonatorChanged() -> {
+                            val tier = tp.util.DonatorTier.parse(e.donatorChanged.tier) ?: tp.util.DonatorTier.NONE
+                            sink(SocialEvent.DonatorChanged(e.toAccount, tier))
                         }
 
                         e.hasRankChanged() -> {
@@ -670,6 +676,25 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                                 .build(),
                         ).error,
                 )
+
+            override suspend fun recordDonation(
+                staffAccount: Long,
+                target: String,
+                cents: Long,
+                note: String,
+            ): ModAnswer<tp.util.DonatorTier> {
+                val r =
+                    moderationStub.recordDonation(
+                        tp.services.grpc.DonationRequest
+                            .newBuilder()
+                            .setStaffAccount(staffAccount)
+                            .setTarget(target)
+                            .setCents(cents)
+                            .setNote(note)
+                            .build(),
+                    )
+                return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, tp.util.DonatorTier.parse(r.tier))
+            }
 
             override suspend fun rename(staffAccount: Long, target: String, newName: String): String? =
                 err(

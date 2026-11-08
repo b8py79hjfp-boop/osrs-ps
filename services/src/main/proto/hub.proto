@@ -28,6 +28,7 @@ message LoginReply {
   bool has_save = 6;
   reserved 7; // muted_until, now inside sanctions
   SanctionsPb sanctions = 8;
+  string donator = 9; // tp.util.DonatorTier name (D-093)
 }
 
 // Commands brief §7: the sanctions in force on an account (0 = none, -1 = permanent).
@@ -153,6 +154,7 @@ message SocialEvent {
     SanctionsPb sanctioned = 12;
     Warned warned = 13;
     RankChanged rank_changed = 14;
+    DonatorChanged donator_changed = 15;
   }
 }
 
@@ -551,6 +553,24 @@ message LookupReply {
   sint64 banned_until = 7;
   int32 records = 8;
   string last_ip = 9;
+  string donator = 10;
+  int64 donated_cents = 11;
+}
+
+message DonationRequest {
+  int64 staff_account = 1;
+  string target = 2;
+  int64 cents = 3;
+  string note = 4;
+}
+
+message DonationReply {
+  string error = 1; // empty = ok
+  string tier = 2;
+}
+
+message DonatorChanged {
+  string tier = 1;
 }
 
 message Kick {
@@ -571,6 +591,7 @@ service Moderation {
   rpc Investigate(ModQuery) returns (LinesReply);
   rpc SetRank(SetRankRequest) returns (ErrorReply);
   rpc Rename(RenameRequest) returns (ErrorReply);
+  rpc RecordDonation(DonationRequest) returns (DonationReply);
   // Commands brief §4: a command execution for the append-only audit log.
   rpc Audit(AuditRequest) returns (Empty);
   rpc SubscribeKicks(WorldRef) returns (stream Kick);

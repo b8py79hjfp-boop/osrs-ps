@@ -242,7 +242,7 @@ public class Raids internal constructor() {
             val m = run.member(player.username) ?: return
             m.deaths++
             run.teamDeaths++
-            m.points = maxOf(0.0, m.points - run.raid.contribution.deathPenalty(m, run))
+            m.points = maxOf(0.0, m.points - deathLoss(player, run.raid.contribution.deathPenalty(m, run)))
             policy.handled = true
             run.raidEvent(player, RaidEvent.Died(run, m.name))
             run.dirty = true

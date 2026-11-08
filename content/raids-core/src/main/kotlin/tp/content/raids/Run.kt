@@ -4,6 +4,7 @@ import tp.plugin.AttrKey
 import tp.plugin.InstanceRef
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
+import tp.plugin.commands.perk
 import tp.util.CoordGrid
 import java.util.SplittableRandom
 
@@ -154,3 +155,11 @@ public class RaidRun internal constructor(
         public fun npcRun(npc: NpcRef): Long? = npc[NPC_RUN]
     }
 }
+
+/** D-093 donator perk ("You lose less points when dying in Raids"): [penalty] less that percentage. */
+internal fun deathLoss(player: tp.plugin.PlayerRef, penalty: Double): Double {
+    val less = player.perk(tp.util.DonatorPerk.YOU_LOSE_LESS_POINTS_WHEN_DYING_IN_RAIDS)
+    return if (less == 0) penalty else penalty * (PERCENT - less) / PERCENT
+}
+
+private const val PERCENT = 100.0

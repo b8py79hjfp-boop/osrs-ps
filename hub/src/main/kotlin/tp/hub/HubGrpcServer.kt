@@ -132,6 +132,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 .setSave(g.save.orEmpty())
                 .setHasSave(g.save != null)
                 .setSanctions(g.sanctions.toPb())
+                .setDonator(g.donator.name)
                 .build()
         }
 
@@ -376,6 +377,14 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                     b.setSanctioned(e.sanctions.toPb())
                 }
 
+                is tp.services.SocialEvent.DonatorChanged -> {
+                    b.setDonatorChanged(
+                        tp.services.grpc.DonatorChanged
+                            .newBuilder()
+                            .setTier(e.tier.name),
+                    )
+                }
+
                 is tp.services.SocialEvent.RankChanged -> {
                     b.setRankChanged(
                         tp.services.grpc.RankChanged
@@ -515,6 +524,16 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
         override suspend fun setRank(request: tp.services.grpc.SetRankRequest): ErrorReply {
             val rank = tp.util.Rank.parse(request.rank) ?: return error("Unknown rank.")
             return error(hub.moderation.setRank(request.staffAccount, request.target, rank))
+        }
+
+        override suspend fun recordDonation(request: tp.services.grpc.DonationRequest): tp.services.grpc.DonationReply {
+            val a = hub.moderation.recordDonation(request.staffAccount, request.target, request.cents, request.note)
+            val b =
+                tp.services.grpc.DonationReply
+                    .newBuilder()
+            a.error?.let(b::setError)
+            a.value?.let { b.setTier(it.name) }
+            return b.build()
         }
 
         override suspend fun rename(request: tp.services.grpc.RenameRequest): ErrorReply =

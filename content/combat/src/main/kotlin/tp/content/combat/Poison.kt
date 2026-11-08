@@ -59,13 +59,13 @@ internal object Poison {
 
     private fun poisonImmune(e: EntityRef): Boolean =
         when (e) {
-            is PlayerRef -> state(e) < 0 || Toxic.wearsSerpentineHelm(e)
+            is PlayerRef -> state(e) < 0 || Toxic.wearsSerpentineHelm(e) || DonatorImmunity.active(e)
             is NpcRef -> NpcCombatTable.of(e.type)?.poisonImmune == true
         }
 
     private fun venomImmune(e: EntityRef): Boolean =
         when (e) {
-            is PlayerRef -> state(e) < VENOM_IMMUNE_BELOW || Toxic.wearsSerpentineHelm(e)
+            is PlayerRef -> state(e) < VENOM_IMMUNE_BELOW || Toxic.wearsSerpentineHelm(e) || DonatorImmunity.active(e)
             is NpcRef -> NpcCombatTable.of(e.type)?.venomImmune == true
         }
 

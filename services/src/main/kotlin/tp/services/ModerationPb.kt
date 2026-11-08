@@ -53,7 +53,20 @@ fun PlayerCard.toPb(): LookupReply =
         .setBannedUntil(bannedUntil)
         .setRecords(records)
         .setLastIp(lastIp)
+        .setDonator(donator.name)
+        .setDonatedCents(donatedCents)
         .build()
 
 fun LookupReply.toCard(): PlayerCard =
-    PlayerCard(accountId, name, Rank.parseOrPlayer(rank), world, sanctions.toSanctions(), bannedUntil, records, lastIp)
+    PlayerCard(
+        accountId,
+        name,
+        Rank.parseOrPlayer(rank),
+        world,
+        sanctions.toSanctions(),
+        bannedUntil,
+        records,
+        lastIp,
+        tp.util.DonatorTier.parse(donator) ?: tp.util.DonatorTier.NONE,
+        donatedCents,
+    )

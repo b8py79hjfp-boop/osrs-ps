@@ -199,7 +199,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 presenceChanged(online = listOf(entry))
                 // Commands brief §7: sanctions set while offline apply now.
                 val sanctions = Sanctions.of(db { store.records(row.id) }, System.currentTimeMillis())
-                return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, sanctions)
+                val donator = tp.util.DonatorTier.forCents(db { store.donationTotal(row.id) })
+                return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, sanctions, donator)
             }
 
             override suspend fun logout(accountId: Long, worldId: Int, save: String) {
@@ -577,6 +578,26 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 return null
             }
 
+            override suspend fun recordDonation(
+                staffAccount: Long,
+                target: String,
+                cents: Long,
+                note: String,
+            ): ModAnswer<tp.util.DonatorTier> {
+                val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
+                if (!staff.rights.atLeast(Rank.OWNER)) return ModAnswer("You don't have permission to do that.", null)
+                if (cents <= 0 || cents > MAX_DONATION_CENTS) return ModAnswer("That amount isn't valid.", null)
+                val row = db { store.accountByName(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val tier =
+                    db {
+                        store.addDonation(row.id, cents, staff.displayName, note, System.currentTimeMillis())
+                        store.audit(staff.displayName, "donation", row.displayName, "cents=$cents note=$note")
+                        tp.util.DonatorTier.forCents(store.donationTotal(row.id))
+                    }
+                online[row.id]?.let { world -> deliver(world, SocialEvent.DonatorChanged(row.id, tier)) }
+                return ModAnswer(null, tier)
+            }
+
             override suspend fun rename(staffAccount: Long, target: String, newName: String): String? {
                 val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
                 if (!staff.rights.atLeast(Rank.OWNER)) return "You don't have permission to do that."
@@ -623,6 +644,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                         row.bannedUntil,
                         records.size,
                         ip,
+                        tp.util.DonatorTier.forCents(db { store.donationTotal(row.id) }),
+                        db { store.donationTotal(row.id) },
                     )
                 return ModAnswer(null, card)
             }
@@ -679,6 +702,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         const val MAX_TOP = 100
         const val MS_PER_MINUTE = 60_000L
         val NAME = Regex("[A-Za-z0-9 _-]{1,12}")
+
+        /** `::donated`: at most $100,000 per entry, so a typo can't create a fortune (our limit). */
+        const val MAX_DONATION_CENTS = 10_000_000L
 
         /** `::audit`: rows returned per query. */
         const val AUDIT_ROWS = 100

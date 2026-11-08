@@ -7,10 +7,12 @@ import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
 import tp.plugin.Stats
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Objs
 import tp.symbols.Varbits
+import tp.util.DonatorPerk
 
 /**
  * The ticket dispensers of the Brimhaven Agility Arena (docs/mechanics/agility.md AG14; Wiki "Ticket dispenser", "Brimhaven Agility
@@ -44,7 +46,9 @@ public class BrimhavenArena : ContentPlugin {
         }
         p[CLAIMED] = minute
         // Wiki: 30 xp for every 10 Agility levels, boosts and drains included, maxing out at 300 (level 100).
-        p.addXp(Stats.AGILITY, minOf(p.level(Stats.AGILITY) / LEVELS_PER_STEP * XP_PER_STEP, MAX_XP).toDouble())
+        // D-093 donator perk (perks.tsv row "Bonus exp when exchanging Agility tickets"): flat xp on top.
+        val base = minOf(p.level(Stats.AGILITY) / LEVELS_PER_STEP * XP_PER_STEP, MAX_XP)
+        p.addXp(Stats.AGILITY, (base + p.perk(DonatorPerk.BONUS_EXP_WHEN_EXCHANGING_AGILITY_TICKETS)).toDouble())
         // Wiki "Brimhaven Agility Arena" Rewards: with the elite Karamja diary a 10% chance of two tickets and vouchers.
         val count = if (p.varbit(Varbits.KARAMJA_DIARY_ELITE_COMPLETE) == 1 && p.random(DOUBLE_CHANCE_DENOMINATOR) == 0) 2 else 1
         p.transaction("agility arena ticket") {

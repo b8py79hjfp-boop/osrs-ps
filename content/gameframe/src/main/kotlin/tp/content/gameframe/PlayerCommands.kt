@@ -14,11 +14,13 @@ import tp.plugin.commands.UNKNOWN_COMMAND
 import tp.plugin.commands.changePassword
 import tp.plugin.commands.commandRegistry
 import tp.plugin.commands.commandsConfig
+import tp.plugin.commands.donator
 import tp.plugin.commands.guidePrice
 import tp.plugin.commands.homeCoord
 import tp.plugin.commands.isMuted
 import tp.plugin.commands.onlineEverywhere
 import tp.plugin.commands.openUrl
+import tp.plugin.commands.perk
 import tp.plugin.commands.sanctions
 import tp.plugin.commands.setYellOff
 import tp.plugin.commands.showList
@@ -26,7 +28,10 @@ import tp.plugin.commands.worldId
 import tp.plugin.commands.worldPlayerCount
 import tp.plugin.commands.yell
 import tp.plugin.commands.yellOff
+import tp.plugin.savedText
 import tp.symbols.Invs
+import tp.util.DonatorPerk
+import tp.util.DonatorTier
 import tp.util.Rank
 import tp.util.commands.Impact
 import java.time.Instant
@@ -250,14 +255,17 @@ public class PlayerCommands : ContentPlugin {
         }
         if (p.yellOff) return CommandResult.Failed("Turn yells back on with ::yell on first.")
         // Keyed by exact rank: a rank the config does not list (administrator and above by default) has none.
-        val seconds = p.commandsConfig.yellCooldownSeconds[p.rank] ?: 0
+        val rankSeconds = p.commandsConfig.yellCooldownSeconds[p.rank] ?: 0
+        // D-093: a donator's yell timer (perks.tsv "Yell-channel (::yell) timer") when it is shorter.
+        val seconds = if (p.donator == DonatorTier.NONE) rankSeconds else minOf(rankSeconds, p.perk(DonatorPerk.YELL_CHANNEL_TIMER))
         val until = p[YELL_UNTIL] ?: 0L
         if (p.tick < until) {
             val left = ((until - p.tick) * MS_PER_TICK + MS_PER_SECOND - 1) / MS_PER_SECOND
             return CommandResult.Failed("You can yell again in $left s.")
         }
         if (seconds > 0) p[YELL_UNTIL] = p.tick + seconds * MS_PER_SECOND / MS_PER_TICK
-        p.yell(text)
+        val tag = p.savedText(DonatorCommands.YELL_TAG_KEY)?.takeIf { p.perk(DonatorPerk.ABILITY_TO_SET_A_CUSTOM_YELL_TAG) > 0 }
+        p.yell(if (tag == null) text else "[$tag] $text")
         return CommandResult.Done()
     }
 

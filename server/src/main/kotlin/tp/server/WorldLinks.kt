@@ -125,6 +125,11 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 world.content.onSanctionsChanged(player, before)
             }
 
+            is SocialEvent.DonatorChanged -> {
+                player.donator = e.tier
+                player.session.send(ServerMessage.GameMessage("Thank you! Your donator tier is now ${e.tier.title}."))
+            }
+
             is SocialEvent.RankChanged -> {
                 val before = player.rank
                 player.rank = e.rank

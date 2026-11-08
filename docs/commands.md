@@ -13,6 +13,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::commands` | `::commands [search…]` | — | INFO | — | Lists the commands you can use here; a search word narrows the list. |
 | `::confirm` | `::confirm` | — | INFO | — | Runs the destructive command waiting for confirmation (within 30 seconds). |
 | `::discord` | `::discord` | — | INFO | — | Opens the Discord page. |
+| `::donator` | `::donator`<br>`::donator <player…>` | — | INFO | — | Your donator tier and its perks; staff can look up another player's tier. |
 | `::drops` | `::drops <npc>` | — | INFO | — | Shows an NPC's drop table with rates. |
 | `::empty` | `::empty` | — | CONVENIENCE | — | Destroys everything in your inventory. (confirmation) |
 | `::forums` | `::forums` | — | INFO | — | Opens the forums page. |
@@ -30,6 +31,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::time` | `::time` | `::uptime`, `::serverinfo` | INFO | — | Server time, uptime, world and player counts. |
 | `::vote` | `::vote` | — | INFO | — | Opens the voting page. |
 | `::yell` | `::yell <off\|on>`<br>`::yell <message…>` | — | SOCIAL | — | Sends a line to every world with your rank tag; ::yell off\|on stops or resumes receiving yells. |
+| `::yelltag` | `::yelltag <tag\|off…>` | — | SOCIAL | — | Sets the tag shown before your yells (Legendary donators and above), or clears it with off. |
 
 ## Moderator
 
@@ -80,6 +82,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::cancelupdate` | `::cancelupdate` | — | OPERATIONS | — | Cancels the system-update timer on every world. |
 | `::command` | `::command <enable\|disable> <command…>` | — | OPERATIONS | — | Enables or disables a command on this world until restart (never ECONOMY on). |
 | `::config` | `::config <rate_limit_per_second\|rate_limit_per_minute\|confirm_timeout_seconds\|yell_cooldown_player\|yell_cooldown_moderator> [value]` | — | OPERATIONS | — | Shows or changes a runtime-safe config key on this world until restart. |
+| `::donated` | `::donated <player> <dollars [note]…>` | — | OPERATIONS | yes | Records a donation in dollars; the player's donator tier follows their total. (cross-world) |
 | `::kickall` | `::kickall [reason…]` | — | OPERATIONS | — | Kicks everyone on this world except staff. (confirmation) |
 | `::lockworld` | `::lockworld <on\|off>` | — | OPERATIONS | — | Staff-only logins on this world, for maintenance. |
 | `::raid` | `::raid <info> <run\|player…>`<br>`::raid <parties>`<br>`::raid <watch> <run\|player…>`<br>`::raid <leave>`<br>`::raid <kick> <player> [reason…]`<br>`::raid <end> <run\|player reason…>`<br>`::raid <reward> <run [player]…>`<br>`::raid <reissue> <run> <player>`<br>`::raid <waivefee> <player>`<br>`::raid <kc> <player> [raid…]`<br>`::raid <pb> <remove> <player raid mode size…>`<br>`::raid <pb> <player…>`<br>`::raid <disable\|enable> <raid…>`<br>`::raid <stats>`<br>`::raid <start> <raid [mode] [size]…>`<br>`::raid <skip>`<br>`::raid <room> <room\|next…>`<br>`::raid <level> <n>`<br>`::raid <layout> [code…]`<br>`::raid <seed> <n>`<br>`::raid <points> [[player] [set n]…]`<br>`::raid <setkc> <player raid mode n…>` | — | OPERATIONS | — | Raid tools (owner): info, parties, watch, leave, kick, end, reward, reissue, waivefee, kc, pb, disable, enable, stats. Developer only, and only where ECONOMY is allowed: start, skip, room, level, seed, points set, setkc. |

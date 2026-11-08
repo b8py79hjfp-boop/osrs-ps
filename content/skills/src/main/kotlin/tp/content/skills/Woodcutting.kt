@@ -104,7 +104,9 @@ public class Woodcutting : ContentPlugin {
         if (logs) {
             if (!extras.infernalBurn(p, axe, kind.logs)) {
                 p.message("You get some ${p.objName(kind.logs).lowercase()}.", Skilling.SPAM)
-                p.transaction("woodcutting") { add(Invs.INV, kind.logs, 1) }
+                // D-093 donator perk (perks.tsv row "Gain a chance of automatically noting resources ..."): the log may arrive noted.
+                val item = p.autoNoted(kind.logs)
+                p.transaction("woodcutting") { add(Invs.INV, item, 1) }
             }
             p.addXp(Stats.WOODCUTTING, kind.xp * extras.xpMultiplier(p))
             extras.rollNest(p)

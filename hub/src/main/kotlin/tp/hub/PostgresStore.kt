@@ -17,6 +17,7 @@ import java.sql.ResultSet
  * start (`CREATE TABLE IF NOT EXISTS`, schema version in `meta`). Each write is its own committed transaction, so a
  * returned [writeSave] is durable.
  */
+@Suppress("LargeClass") // one method per HubStore operation; splitting would only scatter the SQL
 class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore {
     private val ds =
         HikariDataSource(
@@ -129,6 +130,19 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
         if (banned) exec("INSERT INTO ip_bans (ip) VALUES (?) ON CONFLICT DO NOTHING", ip) else exec("DELETE FROM ip_bans WHERE ip = ?", ip)
 
     override fun lastIp(id: Long): String? = strings("SELECT last_ip FROM accounts WHERE id = ?", id).firstOrNull()
+
+    override fun addDonation(accountId: Long, cents: Long, actor: String, note: String, at: Long) =
+        exec(
+            "INSERT INTO donations (account_id, cents, actor, note, at_ms) VALUES (?, ?, ?, ?, ?)",
+            accountId,
+            cents,
+            actor,
+            note,
+            at,
+        )
+
+    override fun donationTotal(accountId: Long): Long =
+        strings("SELECT COALESCE(SUM(cents), 0)::text FROM donations WHERE account_id = ?", accountId).firstOrNull()?.toLong() ?: 0L
 
     override fun recordSeen(accountId: Long, kind: String, value: String, at: Long) {
         if (value.isEmpty()) return
@@ -742,6 +756,11 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                     account_id bigint NOT NULL REFERENCES accounts(id), kind text NOT NULL, value text NOT NULL,
                     last_seen_ms bigint NOT NULL, PRIMARY KEY (account_id, kind, value))""",
                 "CREATE INDEX IF NOT EXISTS account_seen_value ON account_seen (kind, value)",
+                // D-093: donations, additive like moderation_records; the donator tier is derived from the sum.
+                """CREATE TABLE IF NOT EXISTS donations (
+                    id bigserial PRIMARY KEY, account_id bigint NOT NULL REFERENCES accounts(id), cents bigint NOT NULL,
+                    actor text NOT NULL, note text NOT NULL, at_ms bigint NOT NULL)""",
+                "CREATE INDEX IF NOT EXISTS donations_account ON donations (account_id)",
                 "CREATE INDEX IF NOT EXISTS moderation_records_scope ON moderation_records (type, scope) WHERE scope <> ''",
             )
     }

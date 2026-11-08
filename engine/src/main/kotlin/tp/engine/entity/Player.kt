@@ -37,6 +37,9 @@ class Player internal constructor(
     /** Persisted content state outside varps (fee paid flags, cooldown ticks): saved as the `attrs` object. */
     val saved: HashMap<String, Long> = HashMap()
 
+    /** Persisted short texts (D-093: the donator yell tag), saved with the account. */
+    val savedText: HashMap<String, String> = HashMap()
+
     /** Inventories by inv id; created through [World.inventory], mutated only by [World.transaction]. */
     internal val invs = HashMap<Int, Inventory>()
 
@@ -62,6 +65,9 @@ class Player internal constructor(
 
     /** Mutes, yell-mutes and jail in force (commands brief §7): from the login grant, then pushed live by the hub. */
     var sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE
+
+    /** Donator tier (D-093): from the login grant, then pushed live by the hub after `::donated`. */
+    var donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE
 
     /** The friends chat channel the player is in, as the hub last told this world (set live by the world node). */
     var channel: ChannelView? = null

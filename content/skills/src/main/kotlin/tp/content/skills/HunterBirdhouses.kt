@@ -7,10 +7,12 @@ import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
 import tp.plugin.choice
+import tp.plugin.commands.perk
 import tp.symbols.Invs
 import tp.symbols.Objs
 import tp.symbols.Seqs
 import tp.symbols.Varps
+import tp.util.DonatorPerk
 
 /**
  * Bird house trapping (docs/mechanics/hunter.md HU20 .. HU24). The four spaces on Fossil Island are multi-locs (cache locs 30565 ..
@@ -82,7 +84,15 @@ public class HunterBirdhouses : ContentPlugin {
         for (space in SPACE_LOCS.indices) draw(p, space)
     }
 
-    private fun ready(p: PlayerRef, v: Long): Boolean = p.epochMinutes - startOf(v) >= FILL_MINUTES
+    /**
+     * D-093 donator perk (perks.tsv row "Bird Houses catch time"): the tier's catch time in minutes when it is shorter than the
+     * official [FILL_MINUTES].
+     */
+    private fun ready(p: PlayerRef, v: Long): Boolean {
+        val donator = p.perk(DonatorPerk.BIRD_HOUSES_CATCH_TIME)
+        val minutes = if (donator > 0) minOf(FILL_MINUTES, donator.toLong()) else FILL_MINUTES
+        return p.epochMinutes - startOf(v) >= minutes
+    }
 
     // ---- ops
 
@@ -257,7 +267,10 @@ public class HunterBirdhouses : ContentPlugin {
         val over = (level.coerceAtLeast(HALF_LEVEL) - HALF_LEVEL).toDouble() / (Stats.MAX_LEVEL - HALF_LEVEL)
         val chance = t.nestPermille / PERMILLE * (HALF_SCALE + HALF_SCALE * over)
         val foot = wearsRabbitFoot(p)
-        repeat(NEST_ROLLS) {
+        // D-093 donator perk (perks.tsv row "Chance to receive extra Birds' nest when emptying Bird Houses"): the table gives only a
+        // tick, read as one extra roll of the nest table.
+        val extraRoll = if (p.perk(DonatorPerk.CHANCE_TO_RECEIVE_EXTRA_BIRDS_NEST_WHEN_EMPTYING_BIRD_HOUSES) == 1) 1 else 0
+        repeat(NEST_ROLLS + extraRoll) {
             if (p.random(PERMILLE_INT) < (chance * PERMILLE_INT).toInt()) out += clueNest(p, out) ?: nestTable(p, foot)
         }
         return out

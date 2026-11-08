@@ -77,6 +77,7 @@ internal object Dragonfire {
      */
     @Suppress("MagicNumber") // the Wiki table's max hits
     fun kbdMax(p: PlayerRef, special: Boolean): Int {
+        if (DonatorImmunity.active(p)) return 0
         val shield = hasShield(p)
         val prayer = p.protects(CombatStyle.MAGIC)
         if (special) {
@@ -123,6 +124,7 @@ internal object Dragonfire {
      */
     @Suppress("MagicNumber", "CyclomaticComplexMethod") // the Wiki table
     fun ordinaryMax(p: PlayerRef, metallic: Boolean, resisted: Boolean): Int {
+        if (DonatorImmunity.active(p)) return 0
         val shield = hasShield(p)
         val prayer = !metallic && p.protects(CombatStyle.MAGIC)
         val potion = antifire(p)
@@ -161,7 +163,8 @@ internal object Dragonfire {
     private const val BURNT = "You're horribly burnt by the dragon fire!"
 
     /** Whether any protection is up (the special breath effect chance drops from 1/2 to 1/8, DF3). */
-    fun protectedFrom(p: PlayerRef): Boolean = hasShield(p) || p.protects(CombatStyle.MAGIC) || antifire(p) > 0
+    fun protectedFrom(p: PlayerRef): Boolean =
+        hasShield(p) || p.protects(CombatStyle.MAGIC) || antifire(p) > 0 || DonatorImmunity.active(p)
 }
 
 /**

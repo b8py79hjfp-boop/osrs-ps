@@ -14,6 +14,8 @@ class AccountProfile(
     val save: String?,
     /** Mutes, yell-mutes and jail in force (commands brief §7). */
     val sanctions: tp.util.Sanctions = tp.util.Sanctions.NONE,
+    /** From the account's donation total (D-093). */
+    val donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE,
 )
 
 /** A Grand Exchange offer as the hub reports it ([collectCoins]/[collectItems] wait to be collected). */
@@ -157,6 +159,11 @@ interface AccountBridge {
     /** `::setrank` / `::rename` (owner): [reply] gets null on success, else the reason (world thread). */
     fun setRank(player: Player, target: String, rank: tp.util.Rank, reply: (String?) -> Unit) {
         reply("Ranks need the account server.")
+    }
+
+    /** `::donated` (owner, D-093): [reply] gets an error, or the target's new tier (world thread). */
+    fun recordDonation(player: Player, target: String, cents: Long, note: String, reply: (String?, tp.util.DonatorTier?) -> Unit) {
+        reply("Donations need the account server.", null)
     }
 
     fun rename(player: Player, target: String, newName: String, reply: (String?) -> Unit) {

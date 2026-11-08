@@ -27,6 +27,9 @@ import tp.util.CoordGrid
 object PlayerSave {
     const val VERSION = 1
 
+    /** Saved texts are short labels (the yell tag); anything longer in a save is cut. */
+    private const val MAX_TEXT = 32
+
     /** Forward migrations: index i upgrades version i+1 to i+2. */
     private val migrations: List<(JsonObject) -> JsonObject> = emptyList()
 
@@ -62,6 +65,15 @@ object PlayerSave {
                         for ((key, value) in player.saved) put(key, value)
                     },
                 )
+                // D-093: short saved texts (the donator yell tag). Optional: older saves have none.
+                if (player.savedText.isNotEmpty()) {
+                    put(
+                        "texts",
+                        buildJsonObject {
+                            for ((key, value) in player.savedText) put(key, value)
+                        },
+                    )
+                }
                 put(
                     "invs",
                     buildJsonObject {
@@ -122,6 +134,7 @@ object PlayerSave {
         }
         doc["varps"]?.jsonObject?.forEach { (id, v) -> player.vars.restore(id.toInt(), v.jsonPrimitive.int) }
         doc["attrs"]?.jsonObject?.forEach { (key, v) -> v.jsonPrimitive.longOrNull?.let { player.saved[key] = it } }
+        doc["texts"]?.jsonObject?.forEach { (key, v) -> player.savedText[key] = v.jsonPrimitive.content.take(MAX_TEXT) }
         doc["invs"]?.jsonObject?.forEach { (id, o) ->
             val obj = o.jsonObject
             val stack = InvStack.valueOf(obj.getValue("stack").jsonPrimitive.content)

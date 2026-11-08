@@ -53,6 +53,8 @@ data class CommandsConfig(
      * class the world turned off, except ECONOMY, which only the file can allow (§3).
      */
     val runtimeEnabled: Set<String> = emptySet(),
+    /** D-093: donator gameplay boosts (drop rate, xp, skilling extras). Off on live 1:1 worlds unless the file says so. */
+    val donatorBoosts: Boolean = !live,
 ) {
     /**
      * Whether [impact] may run on this world (§3): enabled in the file, and ECONOMY never on a live world unless the

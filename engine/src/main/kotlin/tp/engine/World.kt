@@ -1331,6 +1331,7 @@ class World(
             player.accountId = profile.accountId
             player.rank = profile.rank
             player.sanctions = profile.sanctions
+            player.donator = profile.donator
             profile.save?.let { PlayerSave.apply(player, it) }
         }
         addPlayer(player)

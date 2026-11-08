@@ -41,6 +41,8 @@ internal class CommandsToml(
     /** Command name to a rank name, or `disabled`. */
     val overrides: Map<String, String> = emptyMap(),
     val jail: JailToml? = null,
+    /** D-093: donator gameplay boosts; default on for dev worlds, off for live ones. */
+    @SerialName("donator_boosts") val donatorBoosts: Boolean? = null,
 )
 
 /** `[commands.jail]` (commands brief §7). */
@@ -54,6 +56,7 @@ internal class WorldToml(
     @SerialName("enabled_impacts") val enabledImpacts: List<String>? = null,
     @SerialName("allow_economy_on_live") val allowEconomyOnLive: Boolean? = null,
     val overrides: Map<String, String> = emptyMap(),
+    @SerialName("donator_boosts") val donatorBoosts: Boolean? = null,
 )
 
 /** Commands brief §1: the first ranks, applied once each and audited (there is no in-game path to the first developer). */
@@ -94,6 +97,7 @@ internal class ServerConfig(private val toml: ServerToml) {
             urls = c.urls.filterValues { it.isNotBlank() },
             rules = c.rules,
             overrides = overrides,
+            donatorBoosts = w?.donatorBoosts ?: c.donatorBoosts ?: !live,
             jail = c.jail?.let { tp.util.commands.JailArea(it.x, it.z, it.level, it.radius) } ?: tp.util.commands.JailArea.DEFAULT,
         )
     }

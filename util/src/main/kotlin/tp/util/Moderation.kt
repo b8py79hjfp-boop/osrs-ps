@@ -141,4 +141,7 @@ class PlayerCard(
     val bannedUntil: Long,
     val records: Int,
     val lastIp: String = "",
+    /** Donator tier and the total donated in cents (D-093). */
+    val donator: DonatorTier = DonatorTier.NONE,
+    val donatedCents: Long = 0,
 )

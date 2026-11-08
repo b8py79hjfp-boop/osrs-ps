@@ -8,8 +8,10 @@ import tp.plugin.LocRef
 import tp.plugin.PlayerRef
 import tp.plugin.PlayerScript
 import tp.plugin.Stats
+import tp.plugin.commands.perk
 import tp.symbols.Objs
 import tp.util.CoordGrid
+import tp.util.DonatorPerk
 
 /**
  * Agility courses (docs/mechanics/agility.md): the Gnome Stronghold course, the ten rooftops (Draynor to Ardougne) and the
@@ -147,7 +149,14 @@ public class Agility : ContentPlugin {
         if (last != null && minute < last + MARK_COOLDOWN_MINUTES) return
         val penalised = course.markLevelPenalty && p.baseLevel(Stats.AGILITY) >= course.level + MARK_LEVEL_PENALTY_OVER
         val reduction = if (penalised) MARK_PENALTY_FACTOR else 1
-        if (p.random(course.markDenominator * reduction) >= course.markNumerator) return
+        // D-093 donator perk (perks.tsv row "Increased chance of receiving a Mark of grace"): numerator x (100+p)/100 over a
+        // x100 bound, one roll; at perk 0 the original roll is untouched. A threshold at or over the bound always passes.
+        val boost = p.perk(DonatorPerk.INCREASED_CHANCE_OF_RECEIVING_A_MARK_OF_GRACE)
+        if (boost == 0) {
+            if (p.random(course.markDenominator * reduction) >= course.markNumerator) return
+        } else if (p.random(course.markDenominator * reduction * DONATOR_PERCENT) >= course.markNumerator * (DONATOR_PERCENT + boost)) {
+            return
+        }
         p.setSaved(SAVED_LAST_MARK, minute)
         val spot = course.markSpots[p.random(course.markSpots.size)]
         p.transaction("mark of grace") { createOnGround(Objs.GRACE, 1, spot, p.username, MARK_LIFETIME) }

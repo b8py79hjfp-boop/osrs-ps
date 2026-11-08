@@ -67,6 +67,12 @@ interface HubStore : AutoCloseable {
     /** Accounts that logged in from [kind] [value]. */
     fun accountsSeen(kind: String, value: String): List<Long>
 
+    /** Appends a donation of [cents] for [accountId] (D-093: additive; never edited or deleted). */
+    fun addDonation(accountId: Long, cents: Long, actor: String, note: String, at: Long)
+
+    /** [accountId]'s donation total in cents. */
+    fun donationTotal(accountId: Long): Long
+
     /** Appends a moderation record (commands brief §7, D-088); returns it with its id. */
     fun addRecord(record: tp.util.ModRecord): tp.util.ModRecord
 

@@ -224,11 +224,19 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   - the RuneLite check through RSProx for every rank, typed and clicked;
   - the client-side OPENs CMD1, CMD2, CMD9, CMD10 and CMD5 (`::bank` and emotes in game).
 - **Not now (brief §13):**
-  - donator, YouTuber and other cosmetic ranks, and custom chat icons;
+  - YouTuber and other cosmetic ranks, and custom chat icons (donator tiers were added later: D-093);
   - a web moderation panel and a Discord bot;
   - spectating another player's camera;
   - per-staff macros;
   - automated bot detection.
+
+## Donators (docs/mechanics/donators.md, D-093)
+
+- Done (2026-11-08): six tiers from an additive donations table (`::donated`, owner; `::donator`; `::yelltag`), the
+  yell timer and tag, bank space, and every gameplay perk that has a system to hook (DN5), behind `donator_boosts`
+  (off on live worlds).
+- Open: the donator crown (no sprite packing, OPEN-DN2) and bank space above the cache's 1410 slots (OPEN-DN1).
+  The perks for systems we don't have are listed in DN6.
 
 ## Next
 
