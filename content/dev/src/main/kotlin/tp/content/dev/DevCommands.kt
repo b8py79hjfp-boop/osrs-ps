@@ -25,11 +25,6 @@ public class DevCommands : ContentPlugin {
             message("Run: $runMode")
         }
         onCommand("hp", DEV, ECONOMY) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
-        onCommand("setlevel", DEV, ECONOMY) { args ->
-            val stat = args.getOrNull(0)?.toIntOrNull()
-            val level = args.getOrNull(1)?.toIntOrNull()
-            if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
-        }
         onCommand("spellbook", DEV, CONVENIENCE) { args ->
             // 0 standard, 1 ancient, 2 lunar, 3 arceuus (varbit `spellbook`).
             val book = args.getOrNull(0)?.toIntOrNull()
@@ -47,7 +42,6 @@ public class DevCommands : ContentPlugin {
         // ::instance <squareX> <squareZ> [w] [l]: copies w x l map squares into a fresh instance (built off-thread,
         // instances.md IN6) and moves you to the same spot inside; ::instance leave tears it down (IN9) and returns you.
         onCommand("instance", DEV, tp.util.commands.Impact.DEBUG_VISUAL) { args -> devInstance(this, args) }
-        onCommand("item", DEV, ECONOMY) { args -> item(args) }
         // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
         onCommand("fight", DEV, CONVENIENCE) { args ->
             val arg = args.getOrNull(0) ?: return@onCommand
@@ -69,16 +63,6 @@ public class DevCommands : ContentPlugin {
             } else {
                 message("Levels gained: ${addXp(stat, xp)}")
             }
-        }
-    }
-
-    private fun PlayerRef.item(args: List<String>) {
-        val id = args.getOrNull(0)?.toIntOrNull()
-        val count = args.getOrNull(1)?.toIntOrNull() ?: 1
-        if (id == null) {
-            message("Usage: ::item id [count]")
-        } else if (!transaction("dev ::item") { add(Invs.INV, id, count) }) {
-            message("Couldn't add $count x $id (unknown obj or no space).")
         }
     }
 

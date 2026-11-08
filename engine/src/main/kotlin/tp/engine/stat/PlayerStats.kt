@@ -41,6 +41,11 @@ class PlayerStats internal constructor() {
         return gained
     }
 
+    /** Sets [stat]'s xp outright (developer tools, commands brief §6): base and current level follow it. */
+    fun setXp(stat: Int, tenths: Int) {
+        restore(stat, tenths, Xp.levelFor(tenths.coerceIn(0, MAX_XP_TENTHS) / XP_SCALE))
+    }
+
     /** Restores a saved stat (persistence): xp in tenths and the current level; base comes from xp. */
     internal fun restore(stat: Int, xpTenths: Int, currentLevel: Int) {
         xp[stat] = xpTenths.coerceIn(0, MAX_XP_TENTHS)

@@ -91,16 +91,28 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 
 | Command | Usage | Aliases | Impact | Target | Does |
 |---|---|---|---|---|---|
+| `::addxp` | `::addxp <skill> <xp>` | — | ECONOMY | — | Adds xp to a skill. |
 | `::anim` | `::anim <id> [delay]` | — | DEBUG_VISUAL | — | Plays animation (seq) <id> on you; -1 stops it. |
 | `::closeif` | `::closeif` | — | OPERATIONS | — | Closes the modal interface. |
+| `::copy` | `::copy <player>` | — | ECONOMY | yes | Copies an online player's equipment, inventory and stats onto you. |
 | `::cs2` | `::cs2 <id> [args…]` | — | OPERATIONS | — | Runs client script <id>; numeric arguments are sent as ints, the rest as strings. |
 | `::find` | `::find <query…>` | — | OPERATIONS | — | Searches cache names for ids; add item, npc or loc as the last word to pick the kind. |
 | `::gfx` | `::gfx <id> [height] [delay]` | — | DEBUG_VISUAL | — | Plays spot animation <id> on you, optionally raised by height and delayed. |
+| `::god` | `::god` | — | CONVENIENCE | — | God mode on or off: invulnerable, with unlimited run, prayer and special attack. |
+| `::heal` | `::heal [player]` | — | CONVENIENCE | yes | Restores hitpoints, prayer, run energy and special attack (yours or a player's). |
 | `::if` | `::if <id>` | — | OPERATIONS | — | Opens interface <id> as the main modal. |
+| `::item` | `::item <item> [amount] [noted]` | — | ECONOMY | — | Spawns an item into your inventory (a staff spawn). |
 | `::jingle` | `::jingle <id>` | — | DEBUG_VISUAL | — | Plays jingle <id> over the music. |
+| `::kill` | `::kill <player>`<br>`::kill <npc>` | — | CONVENIENCE | yes | Kills an online player, or the nearest NPC of a type. |
+| `::loc` | `::loc <loc> [shape] [rotation]` | — | ECONOMY | — | Puts a temporary loc on your tile (10 minutes, or until ::removeloc). |
+| `::master` | `::master` | — | ECONOMY | — | Sets every skill to 99. |
 | `::npc` | `::npc <npc>` | — | ECONOMY | — | Spawns NPC <npc> on the tile next to you until removed with ::removenpc. |
+| `::removeloc` | `::removeloc` | — | ECONOMY | — | Removes the locs you placed with ::loc (the map's own loc comes back). |
 | `::removenpc` | `::removenpc` | — | OPERATIONS | — | Removes the NPCs you spawned with ::npc. |
+| `::resetstats` | `::resetstats` | — | ECONOMY | — | Resets every skill to level 1 (Hitpoints 10). (confirmation) |
+| `::setlevel` | `::setlevel <skill> <level>` | — | ECONOMY | — | Sets a skill's level (1-99), with the xp for it. |
 | `::song` | `::song <id>` | — | DEBUG_VISUAL | — | Plays music track <id> (cache music id). |
+| `::spec` | `::spec` | — | CONVENIENCE | — | Fills your special attack energy. |
 | `::tick` | `::tick` | — | OPERATIONS | — | Shows this world's current tick. |
 | `::trace` | `::trace` | — | OPERATIONS | — | Streams your tick-inspector trace; run again to stop. |
 | `::varbit` | `::varbit <id> [value]` | — | OPERATIONS | — | Shows varbit <id>, or sets it to [value] (must fit its bits). |
