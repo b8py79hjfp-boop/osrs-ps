@@ -269,6 +269,11 @@ internal object ToaTomb {
     /** [p]'s view of the eight chests and the sarcophagus (a no-op until the raid has completed). */
     fun syncChests(p: PlayerRef, run: RaidRun) {
         if (run.state != RunState.Completed) return
+        if (run.member(p.username)?.inside != true) {
+            // Left the chamber (Osmumten, an escape): the chests are not theirs to see any more.
+            left(p)
+            return
+        }
         val me = run.party.members.indexOfFirst { it.equals(p.username, ignoreCase = true) }
         val winner = isWinner(run, p.username)
         val purple = run.members.values.any { it.reward?.tags?.contains(ToaLoot.TAG_PURPLE) == true }

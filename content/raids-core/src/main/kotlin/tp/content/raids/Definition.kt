@@ -160,6 +160,8 @@ public class RecordsDef(
     public val teamTimeMessage: ((partySize: Int, time: String, personalBest: String?, newBest: Boolean) -> String)? = null,
     /** How a time is written for [player] (CoX honours the precise-timing option); null = `m:ss.cc`. */
     public val formatTime: ((player: PlayerRef, ticks: Long) -> String)? = null,
+    /** The mode a finished run counts as (ToA: the final raid level after a missed time limit); null = the starting mode. */
+    public val modeOf: ((RaidRun) -> String)? = null,
 )
 
 /** Maps run state to a raid's HUD and party varbits (brief 3.15); called at the end of a tick when the run changed. */

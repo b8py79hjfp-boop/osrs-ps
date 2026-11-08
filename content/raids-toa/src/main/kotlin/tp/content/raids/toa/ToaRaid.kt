@@ -147,6 +147,11 @@ internal object ToaRaid {
             rewards = { snap, rng -> ToaLoot.roll(snap, rng) }
             records =
                 RecordsDef(
+                    // TA18 / OPEN-TA8: KC, PB and messages follow the final raid level (a missed time limit can drop the mode).
+                    modeOf = { run ->
+                        val level = run.extraSettings[ToaLoot.FINAL_LEVEL]
+                        if (ToaConfig.modeUsesFinalLevel && level != null) modeOf(level) else run.scaling.mode
+                    },
                     kcVarp = Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT,
                     kcMessage = { "Your completed Tombs of Amascut count is: <col=ff0000>$it</col>." },
                     // TA62 (the challenge-time line; the room split in front of it is ToaFlow's).

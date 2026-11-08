@@ -108,6 +108,11 @@ internal object ToaKit {
         return damage * minOf(PERCENT, keep) / PERCENT
     }
 
+    /** Reports a fight event to the raid module (points ledger titles, Wardens downs). */
+    fun signal(npc: NpcRef, player: PlayerRef?, key: String, amount: Int = 1) {
+        npc.events.publish(tp.plugin.RaidSignal(npc, player, key, amount))
+    }
+
     const val QUIET_PRAYERS = "Quiet Prayers"
     const val DEADLY_PRAYERS = "Deadly Prayers"
     private const val QUIET_THROUGH = 10

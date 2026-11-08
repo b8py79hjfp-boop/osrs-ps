@@ -268,6 +268,8 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
     }
 
     private fun tick(npc: NpcRef, s: State) {
+        // The Swimmer: ticks a player spends in the water (plane 0 below the platform).
+        for (p in ToaKit.raiders(npc)) if (p.coord.level == 0) ToaKit.signal(npc, p, "toa.zebak.water_tick")
         wave(npc, s)
         pools(npc, s)
         bleed(npc, s)

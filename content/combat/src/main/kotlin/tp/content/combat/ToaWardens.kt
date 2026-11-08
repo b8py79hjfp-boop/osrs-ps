@@ -362,6 +362,8 @@ internal object ToaWardens : Boss(
     /** WD23 / WD25: the core comes out for 21 / 29 / 37 ticks by the Warden's health; everything of P2 stops (WD29). */
     private fun eject(npc: NpcRef, s: State) {
         npc.anim(Seqs.NPC_WARDENS_KNEEL01)
+        // WD26: a "down" (the points stop after the third).
+        ToaKit.signal(npc, null, "toa.wardens.down")
         npc.stopInteraction()
         npc.transform(if (s.foughtElidinis) Npcs.TOA_WARDEN_ELIDINIS_PHASE2_EXPOSED else Npcs.TOA_WARDEN_TUMEKEN_PHASE2_EXPOSED, restoreStats = false)
         npc.hitpoints = 1
@@ -735,6 +737,9 @@ internal object ToaWardens : Boss(
     override fun died(npc: NpcRef, killer: EntityRef?) {
         val s = state(npc) ?: return
         if (npc != s.p3) return
+        // The Clutch: the final blow by a player left alone in the arena.
+        val alive = ToaKit.raiders(npc)
+        if (killer is PlayerRef && alive.size == 1 && alive.first() == killer) ToaKit.signal(npc, killer, "toa.wardens.finished")
         s.phantom?.despawn()
         Bosses.dismissMinions(s.obelisk)
         val top = Bosses.topDamager(npc) ?: return

@@ -292,6 +292,8 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
                 if (last == null || last == p.coord) continue
                 val q = quadrantOf(npc, last) ?: continue
                 val orb = Bosses.summon(npc, q.orb, last, huntRange = 0, inheritRun = true)
+                // The Baller: orbs this player dropped.
+                ToaKit.signal(npc, p, "toa.akkha.orb")
                 orb[ORB_LIFE] = ORB_LIFETIME
                 if (ToaKit.has(npc, FEELING_SPECIAL)) {
                     val ahead = CoordGrid(2 * p.coord.x - last.x, 2 * p.coord.z - last.z, p.coord.level)

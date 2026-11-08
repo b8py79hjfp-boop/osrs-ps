@@ -80,7 +80,11 @@ internal object Specials {
         }
         if (!SpecialRules.ready(player, row)) return
         if (row.style == SpecStyle.INSTANT && !row.instantAttack()) {
-            if (SpecialEffects.buff(player, row)) player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - SpecialEffects.energy(player, row))
+            if (SpecialEffects.buff(player, row)) {
+                val spent = SpecialEffects.energy(player, row)
+                player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - spent)
+                player.events.publish(tp.plugin.SpecialUsed(player, row.name, spent))
+            }
             return
         }
         player.setVarp(Varps.SA_ATTACK, 1)

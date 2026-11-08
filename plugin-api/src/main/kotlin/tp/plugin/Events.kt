@@ -119,6 +119,15 @@ public class ConsumeCheck(
     public var refusal: String? = null,
 ) : Event
 
+/**
+ * A raid fight reports something only it can see (content/combat -> the raid module): [key] names it (ToA:
+ * `toa.wardens.down`, `toa.wardens.finished`, `toa.akkha.orb`, `toa.zebak.water_tick`), [npc] is the fight's NPC.
+ */
+public class RaidSignal(public val npc: NpcRef, public val player: PlayerRef?, public val key: String, public val amount: Int = 1) : Event
+
+/** [player] spent [tenths] of special attack energy (tenths of a percent) on [special] (content/combat). */
+public class SpecialUsed(public val player: PlayerRef, public val special: String, public val tenths: Int) : Event
+
 /** Delays [player]'s next attack by [ticks] (content/combat; ToA nectar's "small attack delay"). */
 public class AttackDelayRequest(public val player: PlayerRef, public val ticks: Int) : Event
 

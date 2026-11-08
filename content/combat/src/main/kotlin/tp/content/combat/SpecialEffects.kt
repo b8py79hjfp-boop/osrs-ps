@@ -45,6 +45,7 @@ internal object SpecialEffects {
             player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) + cost(player, row))
             return Attacks.playerAttack(player, target)
         }
+        player.events.publish(tp.plugin.SpecialUsed(player, row.name, energyUsed))
         if (row.name == "Scatter ashes") return scatterAshes(player, target, row)
         // SP5: Quick Smash fires on top of the attack delay; Momentum Throw "counts as a normal attack".
         val instantFree = row.instant && row.name != "Momentum Throw"

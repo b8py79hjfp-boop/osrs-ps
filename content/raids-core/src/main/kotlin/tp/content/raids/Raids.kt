@@ -398,7 +398,7 @@ public class Raids internal constructor() {
                 r.practiceMessage?.let { player.message(it(n.toInt())) }
                 return
             }
-            val mode = run.scaling.mode
+            val mode = r.modeOf?.invoke(run) ?: run.scaling.mode
             val varp = r.kcVarpByMode[mode] ?: r.kcVarp
             val kc = player.varp(varp) + 1
             player.setVarp(varp, kc)
