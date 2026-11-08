@@ -81,6 +81,12 @@ internal object ToaKit {
         return CoordGrid(f.origin.x + template.x - f.template.x, f.origin.z + template.z - f.template.z, template.level)
     }
 
+    /** Template x (real map) -> this NPC's instance x (no tile is built, so no z is needed). */
+    fun atX(npc: NpcRef, templateX: Int): Int {
+        val f = CoxKit.frame(npc) ?: return templateX
+        return f.origin.x + templateX - f.template.x
+    }
+
     /** Instance tile -> template tile. */
     fun template(npc: NpcRef, tile: CoordGrid): CoordGrid {
         val f = CoxKit.frame(npc) ?: return tile

@@ -213,7 +213,7 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
                     p.spotAnim(ROAR_DUST)
                     ToaKit.hitRolled(npc, p, ROAR_MAX)
                     p.teleport(
-                        CoordGrid(minOf(p.coord.x + ROAR_KNOCK, ToaKit.at(npc, CoordGrid(ARENA_MAX_X, 0)).x), p.coord.z, p.coord.level),
+                        CoordGrid(minOf(p.coord.x + ROAR_KNOCK, ToaKit.atX(npc, ARENA_MAX_X)), p.coord.z, p.coord.level),
                     )
                 }
             }

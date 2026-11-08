@@ -163,23 +163,26 @@ internal object Bosses {
         inheritRun: Boolean = false,
         scale: Boolean = false,
     ): NpcRef {
-        val minion = owner.spawnNpc(type, at, wanderRange = 0)
-        if (inheritRun) {
-            // A raid minion that counts as the run's NPC (ToB: Vasilias, Matomenos damage counts for the MVP).
-            owner[SharedAttrs.RAID_RUN]?.let { minion[SharedAttrs.RAID_RUN] = it }
-            owner[SharedAttrs.RAID_SCALE]?.let { minion[SharedAttrs.RAID_SCALE] = it }
-            owner[SharedAttrs.RAID_ORDER]?.let { minion[SharedAttrs.RAID_ORDER] = it }
-            owner[SharedAttrs.RAID_MODE]?.let { minion[SharedAttrs.RAID_MODE] = it }
-            owner[SharedAttrs.RAID_ROOM]?.let { minion[SharedAttrs.RAID_ROOM] = it }
-            if (scale) {
-                owner[SharedAttrs.RAID_SCALER]?.let {
-                    minion[SharedAttrs.RAID_SCALER] = it
-                    it(minion)
+        // Tagged before the spawn hooks run, so a summoned boss's own script sees its run, room and scaling.
+        val minion =
+            owner.spawnNpc(type, at, 0) {
+                if (inheritRun) {
+                    // A raid minion that counts as the run's NPC (ToB: Vasilias, Matomenos damage counts for the MVP).
+                    owner[SharedAttrs.RAID_RUN]?.let { this[SharedAttrs.RAID_RUN] = it }
+                    owner[SharedAttrs.RAID_SCALE]?.let { this[SharedAttrs.RAID_SCALE] = it }
+                    owner[SharedAttrs.RAID_ORDER]?.let { this[SharedAttrs.RAID_ORDER] = it }
+                    owner[SharedAttrs.RAID_MODE]?.let { this[SharedAttrs.RAID_MODE] = it }
+                    owner[SharedAttrs.RAID_ROOM]?.let { this[SharedAttrs.RAID_ROOM] = it }
+                    if (scale) {
+                        owner[SharedAttrs.RAID_SCALER]?.let {
+                            this[SharedAttrs.RAID_SCALER] = it
+                            it(this)
+                        }
+                    }
                 }
+                this[MINION] = true
+                this[OWNER] = owner
             }
-        }
-        minion[MINION] = true
-        minion[OWNER] = owner
         minion.huntRange = huntRange
         val list = owner[MINIONS] ?: ArrayList<NpcRef>().also { owner[MINIONS] = it }
         list += minion

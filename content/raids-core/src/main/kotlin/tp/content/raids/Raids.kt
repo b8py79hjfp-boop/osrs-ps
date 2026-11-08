@@ -467,15 +467,20 @@ public class Raids internal constructor() {
         }
 
         /** Spawns NPC [type] for [run] at instance tile [at] (generated layouts): tagged and scaled like [spawn]. */
-        public fun spawnAt(any: EntityRef, run: RaidRun, type: Int, at: CoordGrid): NpcRef {
-            val npc = any.spawnNpc(type, at)
+        public fun spawnAt(any: EntityRef, run: RaidRun, type: Int, at: CoordGrid, init: (NpcRef.() -> Unit)? = null): NpcRef =
+            any.spawnNpc(type, at, 0) {
+                tag(run, this)
+                init?.invoke(this)
+            }
+
+        /** Tags [npc] to [run] and scales it (brief 3.7); done before its spawn handlers run. */
+        private fun tag(run: RaidRun, npc: NpcRef) {
             npc[RaidRun.NPC_RUN] = run.id.value
             npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
             npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
             npc[tp.plugin.SharedAttrs.RAID_SCALER] = { n -> run.raid.scaling(run.scaling, n) }
             npc[tp.plugin.SharedAttrs.RAID_MODE] = run.scaling.mode
             run.raid.scaling(run.scaling, npc)
-            return npc
         }
 
         /** Where [room] is entered in [run] (its per-run entry, else its template entry). */
@@ -486,16 +491,8 @@ public class Raids internal constructor() {
             room.waitAt?.let { run.at(it) } ?: entryOf(run, room, any)
 
         /** Spawns NPC [type] for [run] at template tile [template]: tagged to the run and scaled (brief 3.7). */
-        public fun spawn(any: EntityRef, run: RaidRun, type: Int, template: CoordGrid): NpcRef {
-            val npc = any.spawnNpc(type, run.at(template))
-            npc[RaidRun.NPC_RUN] = run.id.value
-            npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
-            npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
-            npc[tp.plugin.SharedAttrs.RAID_SCALER] = { n -> run.raid.scaling(run.scaling, n) }
-            npc[tp.plugin.SharedAttrs.RAID_MODE] = run.scaling.mode
-            run.raid.scaling(run.scaling, npc)
-            return npc
-        }
+        public fun spawn(any: EntityRef, run: RaidRun, type: Int, template: CoordGrid, init: (NpcRef.() -> Unit)? = null): NpcRef =
+            spawnAt(any, run, type, run.at(template), init)
 
         private fun RaidRun.raidEvent(any: EntityRef, event: RaidEvent) {
             any.events.publish(event)

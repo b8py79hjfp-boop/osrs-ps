@@ -365,8 +365,9 @@ public class ToaFlow : ContentPlugin {
                 // TA12 / TA22: the time ends at the final blow (the run completes when the burial chamber starts, as in
                 // ToB); the white teleport crystal leads there (OPEN-TA33: where it appears; assumed the arrival tile).
                 st.endTick = now
-                // WD46: the white crystal appears where the Warden stood (the dying NPC when the fight reports it).
-                val at = (any as? tp.plugin.NpcRef)?.coord ?: run.at(ToaRaid.WARDENS_ENTRY)
+                // WD46: the white crystal appears where the Warden stood: the middle of its footprint (the fight reports the
+                // dying NPC, whose coord is its south-west tile).
+                val at = (any as? tp.plugin.NpcRef)?.let { n -> n.coord.translate(n.size / 2, n.size / 2) } ?: run.at(ToaRaid.WARDENS_ENTRY)
                 any.addLoc(Locs.TOA_TELEPORT_CRYSTAL_CONTINUE_WARDENS, at, CENTREPIECE, 0)
                 return
             }

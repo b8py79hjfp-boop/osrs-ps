@@ -1133,8 +1133,11 @@ class World(
         }
     }
 
-    /** Adds an NPC of config [type] (size from its config). */
-    fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int): Npc =
+    /**
+     * Adds an NPC of config [type] (size from its config). [init] runs before the spawn hooks, so attributes it sets
+     * (a raid's run, scaling and room) are already there when content's spawn handlers see the NPC.
+     */
+    fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int, init: ((Npc) -> Unit)? = null): Npc =
         spawnNpc(
             type,
             data.configs.npcs
@@ -1142,10 +1145,11 @@ class World(
                 .size,
             at,
             wanderRange,
+            init,
         )
 
     /** Adds an NPC; index = first free slot (index order = processing order). */
-    fun spawnNpc(type: Int, size: Int, at: CoordGrid, wanderRange: Int): Npc {
+    fun spawnNpc(type: Int, size: Int, at: CoordGrid, wanderRange: Int, init: ((Npc) -> Unit)? = null): Npc {
         var index = npcs.indexOf(null)
         if (index < 0) {
             index = npcs.size
@@ -1153,6 +1157,7 @@ class World(
         }
         val npc = Npc(this, index, type, size, at, wanderRange)
         npcs[index] = npc
+        init?.invoke(npc)
         network.npcAdded(npc.index, type, at.level, at.x, at.z)
         content.onNpcSpawn(npc)
         return npc

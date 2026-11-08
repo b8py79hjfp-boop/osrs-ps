@@ -45,6 +45,10 @@ internal object ToaWardens : Boss(
     Npcs.TOA_WARDEN_TUMEKEN_PHASE3,
     Npcs.TOA_WARDEN_ELIDINIS_PHASE3_CHARGING,
     Npcs.TOA_WARDEN_TUMEKEN_PHASE3_CHARGING,
+    Npcs.TOA_WARDEN_ELIDINIS_PHASE1,
+    Npcs.TOA_WARDEN_TUMEKEN_PHASE1,
+    Npcs.TOA_WARDEN_ELIDINIS_PHASE3_INACTIVE,
+    Npcs.TOA_WARDEN_TUMEKEN_PHASE3_INACTIVE,
 ) {
     private enum class Phase { ONE, TWO, THREE }
 
@@ -126,8 +130,14 @@ internal object ToaWardens : Boss(
         val s = state(npc) ?: return damage
         return when {
             npc.type in P3_CHARGING -> 0
+
             npc.type == Npcs.TOA_WARDENS_P2_OBELISK_NPC -> 0
+
             npc.type in EXPOSED -> 0
+
+            // WD8: the charging phase 1 Wardens are not attackable; WD15: nor is the fallen one (no ops).
+            npc.type in INERT -> 0
+
             else -> damage
         }.also { if (s.phase == Phase.ONE && npc != s.obelisk) return 0 }
     }
@@ -530,6 +540,13 @@ internal object ToaWardens : Boss(
         for (m in Bosses.minions(s.obelisk)) if (m != p3) m.despawn()
     }
 
+    /** A phase 3 summon (siphon, phantom, Amascut): the obelisk's minion, framed by the phase 3 square, not the obelisk's. */
+    private fun p3Summon(s: State, type: Int, at: CoordGrid): NpcRef {
+        val n = Bosses.summon(s.obelisk, type, at, huntRange = 0, inheritRun = true)
+        s.p3Frame?.let { n[SharedAttrs.RAID_ROOM] = it }
+        return n
+    }
+
     private fun tile(f: RaidRoomFrame, t: CoordGrid): CoordGrid =
         CoordGrid(f.origin.x + t.x - f.template.x, f.origin.z + t.z - f.template.z, t.level)
 
@@ -617,7 +634,7 @@ internal object ToaWardens : Boss(
         for (t in layout) {
             val at = tile(s.p3Frame ?: return, t)
             for (p in ToaKit.on(w, at)) p.teleport(BossCombat.randomTile(w, at, 2))
-            val sip = Bosses.summon(s.obelisk, Npcs.TOA_WARDENS_ENERGY, at, huntRange = 0, inheritRun = true)
+            val sip = p3Summon(s, Npcs.TOA_WARDENS_ENERGY, at)
             sip[STATE] = s
             sip.overrideStats(IntArray(STATS) { i -> if (i == HITPOINTS) hp else sip.baseLevel(i) })
             sip.hitpoints = hp
@@ -637,7 +654,7 @@ internal object ToaWardens : Boss(
                     else -> Npcs.TOA_WARDENS_BABA
                 }
             val spot = tile(s.p3Frame ?: return, PHANTOM_SPOT)
-            s.phantom = Bosses.summon(s.obelisk, type, spot, huntRange = 0, inheritRun = true).also { it.frozenUntil = Long.MAX_VALUE }
+            s.phantom = p3Summon(s, type, spot).also { it.frozenUntil = Long.MAX_VALUE }
         }
     }
 
@@ -685,7 +702,7 @@ internal object ToaWardens : Boss(
         w.hitpoints = minOf(w.maxHitpoints, w.hitpoints + w.maxHitpoints * ENRAGE_HEAL / PERCENT)
         w.setLevel(NpcStat.DEFENCE, ENRAGE_DEFENCE)
         val spot = tile(s.p3Frame ?: return, AMASCUT_SPOT)
-        Bosses.summon(s.obelisk, Npcs.TOA_AMASCUT_P3_ENRAGE, spot, huntRange = 0, inheritRun = true).frozenUntil = Long.MAX_VALUE
+        p3Summon(s, Npcs.TOA_AMASCUT_P3_ENRAGE, spot).frozenUntil = Long.MAX_VALUE
     }
 
     /** WD43 / WD44 (OPEN-WD13): a strike every 2 ticks (Insanity 1), a row torn away every 10 ticks (Insanity 6) up to the Warden's row. */
@@ -770,7 +787,8 @@ internal object ToaWardens : Boss(
         val alive = ToaKit.raiders(npc)
         if (killer is PlayerRef && alive.size == 1 && alive.first() == killer) ToaKit.signal(npc, killer, "toa.wardens.finished")
         s.phantom?.despawn()
-        Bosses.dismissMinions(s.obelisk)
+        // The Warden is itself the obelisk's minion: it stays for its own death (the DeathEvent ends the room).
+        for (m in Bosses.minions(s.obelisk)) if (m != npc) m.despawn()
         val top = Bosses.topDamager(npc) ?: return
         if (top.varbit(Varbits.TOA_BOOK_WARDENS) == 0) ToaKit.giveOrDrop(top, Objs.TOA_BOOK_WARDENS, "wardens drop")
     }
@@ -943,6 +961,13 @@ internal object ToaWardens : Boss(
             Npcs.TOA_WARDEN_ELIDINIS_PHASE2_RANGE,
             Npcs.TOA_WARDEN_TUMEKEN_PHASE2_MAGE,
             Npcs.TOA_WARDEN_TUMEKEN_PHASE2_RANGE,
+        )
+    private val INERT =
+        setOf(
+            Npcs.TOA_WARDEN_ELIDINIS_PHASE1,
+            Npcs.TOA_WARDEN_TUMEKEN_PHASE1,
+            Npcs.TOA_WARDEN_ELIDINIS_PHASE3_INACTIVE,
+            Npcs.TOA_WARDEN_TUMEKEN_PHASE3_INACTIVE,
         )
     private val EXPOSED = setOf(Npcs.TOA_WARDEN_ELIDINIS_PHASE2_EXPOSED, Npcs.TOA_WARDEN_TUMEKEN_PHASE2_EXPOSED)
     private val P3_FORMS = setOf(Npcs.TOA_WARDEN_ELIDINIS_PHASE3, Npcs.TOA_WARDEN_TUMEKEN_PHASE3)

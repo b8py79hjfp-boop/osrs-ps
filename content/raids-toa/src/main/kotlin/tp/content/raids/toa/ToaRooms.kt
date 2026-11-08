@@ -76,10 +76,11 @@ public class ToaRooms : ContentPlugin {
                 ToaRaid.WARDENS to BossSpawn(Npcs.TOA_WARDENS_P1_OBELISK_NPC_INACTIVE, CoordGrid(3807, 5153, 1), ToaNpcs.P3_WARDENS),
             )
 
-        fun frame(run: RaidRun, room: String): RaidRoomFrame? = square(room)?.let { frameOf(run, it) }
+        /** [room]'s square on [level] (a frame's `contains` is per level: Akkha's arena and the Wardens' P1/P2 are level 1). */
+        fun frame(run: RaidRun, room: String, level: Int = 0): RaidRoomFrame? = square(room)?.let { frameOf(run, it, level) }
 
-        private fun frameOf(run: RaidRun, sq: Pair<Int, Int>): RaidRoomFrame {
-            val template = CoordGrid(sq.first * SQUARE, sq.second * SQUARE)
+        private fun frameOf(run: RaidRun, sq: Pair<Int, Int>, level: Int = 0): RaidRoomFrame {
+            val template = CoordGrid(sq.first * SQUARE, sq.second * SQUARE, level)
             return RaidRoomFrame(run.at(template), 0, SQUARE, template)
         }
 
@@ -87,9 +88,8 @@ public class ToaRooms : ContentPlugin {
 
         /** [Raids.spawn] for [room], with the room's frame on the NPC. */
         fun spawn(any: EntityRef, run: RaidRun, room: String, type: Int, template: CoordGrid): NpcRef {
-            val npc = Raids.spawn(any, run, type, template)
-            frame(run, room)?.let { npc[SharedAttrs.RAID_ROOM] = it }
-            return npc
+            val f = frame(run, room, template.level)
+            return Raids.spawn(any, run, type, template) { f?.let { this[SharedAttrs.RAID_ROOM] = it } }
         }
 
         /** The Wardens' phase 3 square's frame (the fight moves there). */

@@ -317,7 +317,7 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
         for (m in Bosses.minions(npc)) if (m.type in RUBBLE) m.despawn()
         for (p in ToaKit.raiders(npc)) {
             // The scream knocks everyone to the bottom of the arena (west).
-            val to = CoordGrid(ToaKit.at(npc, CoordGrid(SCREAM_X, 0)).x, p.coord.z, p.coord.level)
+            val to = CoordGrid(ToaKit.atX(npc, SCREAM_X), p.coord.z, p.coord.level)
             p.anim(Seqs.HUMAN_TROLL_FLYBACK_MERGE)
             knock(npc, p, to)
         }

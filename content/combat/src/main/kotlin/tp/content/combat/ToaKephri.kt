@@ -168,7 +168,7 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
                 val row = p.coord.z
                 p.teleport(rear)
                 ToaKit.stun(p, DUNG_STUN)
-                for (x in rear.x + 1..ToaKit.at(npc, CoordGrid(ARENA_MAX_X, 0)).x) {
+                for (x in rear.x + 1..ToaKit.atX(npc, ARENA_MAX_X)) {
                     val t = CoordGrid(x, row, p.coord.level)
                     if (!npc.isWalkable(t)) continue
                     npc.spotAnimAt(t, SpotAnims.KEPHRI_DUNG_DROP)

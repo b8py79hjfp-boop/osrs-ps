@@ -199,6 +199,10 @@ public sealed class EntityRef {
     /** Spawns NPC [type] at [at] (wandering [wanderRange]) and returns it; it respawns like any NPC unless removed. */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int = 0): NpcRef = NpcRef(e.world.spawnNpc(type, at, wanderRange))
 
+    /** [spawnNpc] with [init] run on the NPC before any spawn handler sees it (tag it first, then let its script start). */
+    public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int, init: NpcRef.() -> Unit): NpcRef =
+        NpcRef(e.world.spawnNpc(type, at, wanderRange) { NpcRef(it).init() })
+
     /** Allocates an empty instanced area of [widthSquares] × [lengthSquares] map squares (64 tiles each) in this world. */
     public fun createInstance(widthSquares: Int = 1, lengthSquares: Int = 1): InstanceRef =
         InstanceRef(e.world.instances.create(widthSquares, lengthSquares), e.world)
