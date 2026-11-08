@@ -1107,3 +1107,18 @@ the post-3 November rules. The brief ranks cache dbtables above the wiki, but TF
 boss patterns and shop are server-only tables whose columns are stripped from the client cache (only row names and the
 stats tables 264/265 survive), so the wiki is the authority for those numbers and everything else is OPEN with a named
 config flag (BRIEF §0.4).
+
+## D-080 Raid boss values: which source wins (2026-11-08)
+
+The wiki leaves most raid boss timings and numbers unstated. Two further sources now cover TFA and ToB:
+RuneLite plugins (docs/mechanics/raids/{tfa,tob}/runelite-timings.md) and RSProx packet-capture analyses of the live game
+(`MRobertEvers/oldschool-clientc`, docs/mechanics/raids/{tfa,tob}/capture-values.md). Order, per value:
+- **Timings** (cycles, delays, telegraphs): the cache's own names first (e.g. `NPC_BORK_14_CYCLE_STUN01`), then the RuneLite
+  plugin value (the user asked for plugin timings; LU was updated 2026-11-07, after the last patch), then the capture,
+  then the wiki. Where the plugin itself marks a value medium/low and the captures and another source agree against it,
+  the captures win (Ocellus P4 deflect order: Deflect Melee first, as the capture and the trainer show).
+- **Damage, HP, counts, heals, rotations** (what client plugins cannot see): the capture first, then the wiki, then a named
+  OPEN model. TFA captures are rev 241 from 20-22 Oct (before the 28 Oct / 3 Nov patches): a value a later patch notes
+  changed keeps the patch note. ToB capture damage is from seasonal worlds (about 10% less damage taken), so only ToB
+  timings and counts are taken from it.
+- No code is copied from either source (LU has no licence file; oldschool-clientc has none either): facts only.

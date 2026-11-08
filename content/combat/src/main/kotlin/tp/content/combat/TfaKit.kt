@@ -81,6 +81,12 @@ internal object TfaKit {
         return false
     }
 
+    /** The tiles on the straight line from [a] to [b] (both ends included). */
+    fun line(a: CoordGrid, b: CoordGrid): List<CoordGrid> {
+        val steps = maxOf(kotlin.math.abs(b.x - a.x), kotlin.math.abs(b.z - a.z), 1)
+        return (0..steps).map { i -> CoordGrid(a.x + (b.x - a.x) * i / steps, a.z + (b.z - a.z) * i / steps, a.level) }.distinct()
+    }
+
     /** The first raid party member (orb order, leader first) alive near [npc], else the nearest player. */
     fun firstInOrbOrder(npc: NpcRef): PlayerRef? {
         val players = arena(npc)

@@ -168,6 +168,8 @@ public class BossScripts : ContentPlugin {
             boss.spawned(this)
         }
         onLogin { Dragonfire.onLogin(this) }
+        // TFA Ocellus censers (OC3): "Interact" on an active censer.
+        for (id in TfaOcellus.CENSERS) onOpLoc(id, 1) { loc -> TfaOcellus.useCenser(player, id, loc.coord) }
     }
 }
 

@@ -22,9 +22,14 @@ public class TfaBosses : ContentPlugin {
         onOpNpc(Npcs.TFA_GUARDIAN_START, 1) { inert ->
             val run = runOf(inert) ?: return@onOpNpc
             if ((run.state as? RunState.InRoom)?.room?.id != "guardian") return@onOpNpc
+            if (inert[WOKEN] == true) return@onOpNpc
+            inert[WOKEN] = true
             inert.anim(tp.symbols.Seqs.NPC_ARCHIVE_GUARDIAN_SPAWN01)
-            inert.transform(Npcs.TFA_GUARDIAN, restoreStats = true)
-            inert.huntRange = ARENA_HUNT
+            // RuneLite (blert GuardianDataTracker): it stays the inert NPC for 5 ticks after the start animation.
+            inert.queueHit(WAKE_TICKS) {
+                inert.transform(Npcs.TFA_GUARDIAN, restoreStats = true)
+                inert.huntRange = ARENA_HUNT
+            }
         }
         events.on<DeathEvent> { e ->
             val npc = e.entity as? NpcRef ?: return@on
@@ -93,6 +98,10 @@ public class TfaBosses : ContentPlugin {
 
         /** The nexus arena: the Guardian hunts anyone in it. */
         const val ARENA_HUNT = 16
+
+        /** blert-io/plugin GuardianDataTracker.java:39-50: 5 ticks from the start animation to the fighting form. */
+        const val WAKE_TICKS = 5
+        val WOKEN = tp.plugin.AttrKey<Boolean>("tfa_guardian_woken")
 
         /** A side room fits within this distance of any of its NPCs. */
         const val ROOM_SCAN = 40

@@ -20,6 +20,8 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private class State {
         var melees = 0
         var enraged = false
+        var basics = 0
+        var lastBasic = -1L
 
         /** EZ3: the centre of the 3x3 the players are forced into for the finale. */
         var box: CoordGrid? = null
@@ -42,16 +44,19 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
             finale(npc, s)
             return
         }
-        if (distance) {
-            magic(npc)
-            return
-        }
-        cleave(npc, victim)
-        s.melees++
-        if (s.melees % LIGHTNING_EVERY == 0) {
+        // RuneLite (LU Ezekiel.java:53-65): two basic attacks, then the star (the lightning); a pause of 9+ ticks between
+        // basics starts the count over. Attack cycle 5 for every attack.
+        if (s.lastBasic >= 0 && npc.tick - s.lastBasic >= PAUSE_RESET) s.basics = 0
+        if (s.basics >= BASICS_PER_STAR) {
+            s.basics = 0
+            npc.anim(Seqs.NPC_EZEKIEL_SPECIAL01)
             lightning(npc, delay = 1)
             swords(npc)
+            return
         }
+        s.basics++
+        s.lastBasic = npc.tick
+        if (distance) magic(npc) else cleave(npc, victim)
     }
 
     /** EZ1: melee cleaves "almost 360°"; the safe tile is directly behind him, opposite the tank. */
@@ -120,32 +125,35 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private fun swords(npc: NpcRef) {
         val players = TfaKit.arena(npc)
         if (players.isEmpty()) return
-        val count = SWORDS_MIN + npc.random(SWORD_VARIANTS)
-        repeat(count) {
-            val p = players[npc.random(players.size)]
-            val horizontal = npc.random(2) == 0
-            val line = line(p.coord, horizontal)
-            val start =
-                if (horizontal) {
-                    CoordGrid(p.coord.x - SWORD_REACH, p.coord.z, p.coord.level)
-                } else {
-                    CoordGrid(
-                        p.coord.x,
-                        p.coord.z - SWORD_REACH,
-                        p.coord.level,
-                    )
-                }
+        // RuneLite (LU Ezekiel.java, EzekielOverlay.java): a set of three swords sits in one wall; each flies straight
+        // across to the opposite wall in its own lane (the width of the sword NPC), launching 15 ticks after it spawns,
+        // the three one tick apart: flying east/west the northern sword first, flying north/south the western first.
+        val p = players[npc.random(players.size)]
+        val dir = DIRECTIONS[npc.random(DIRECTIONS.size)]
+        val horizontal = dir.first != 0
+        val width = SWORD_SIZE
+        for (k in 0 until SWORDS_PER_SET) {
+            // Lanes side by side, the target's lane in the middle; order N->S (east/west) or W->E (north/south).
+            val offset = (1 - k) * width
+            val laneX = if (horizontal) npc.spawn.x - dir.first * SWORD_REACH else p.coord.x - width / 2 + offset * -1
+            val laneZ = if (horizontal) p.coord.z - width / 2 + offset else npc.spawn.z - dir.second * SWORD_REACH
+            val start = CoordGrid(laneX, laneZ, p.coord.level)
+            val lane = lane(start, dir, width)
             val sword = Bosses.summon(npc, Npcs.TFA_EZEKIEL_SWORD, start, huntRange = 0)
+            sword.spotAnim(SpotAnims.VFX_EZEKIEL_SWORD_DROP01)
             // EZ2: a "perfect dodge" (in the sword's path, out of it when it lands) restores 3% special energy.
-            val inPath = TfaKit.arena(npc).filter { TfaKit.on(it, line) }
-            sword.spotAnim(SpotAnims.VFX_EZEKIEL_SWORD_TELEGRAPH01)
-            sword.queueHit(SWORD_TELEGRAPH) {
+            val inPath = HashSet<String>()
+            sword.queueHit(SWORD_TELEGRAPH - 1 + k) { for (v in TfaKit.arena(npc)) if (TfaKit.on(v, lane)) inPath += v.username }
+            sword.queueHit(SWORD_TELEGRAPH + k) {
                 if (!npc.isInWorld) return@queueHit
                 for (v in TfaKit.arena(npc)) {
-                    if (TfaKit.on(v, line)) CombatSystem.applyHit(v, npc, BossCombat.roll(npc, 0, SWORD_MAX), HitStyle.TYPELESS)
+                    if (TfaKit.on(v, lane)) {
+                        CombatSystem.applyHit(v, npc, BossCombat.roll(npc, 0, SWORD_MAX), HitStyle.TYPELESS)
+                    } else if (v.username in inPath) {
+                        TfaKit.addSpecEnergy(v, DODGE_ENERGY)
+                    }
                 }
-                for (v in inPath) if (!v.isDying && !TfaKit.on(v, line)) TfaKit.addSpecEnergy(v, DODGE_ENERGY)
-                if (line.any { TfaKit.under(npc, it) }) {
+                if (lane.any { TfaKit.under(npc, it) }) {
                     npc.anim(Seqs.NPC_EZEKIEL_WEAKEN01)
                     npc.setAttackClock(maxOf(npc.attackClock(), npc.tick + STUN_TICKS))
                 } else {
@@ -153,13 +161,29 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
                     npc.spotAnim(SpotAnims.EZEKIEL_HEAL_SPOTANIM_VFX01)
                     npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + SWORD_HEAL)
                 }
+                sword.transform(Npcs.TFA_EZEKIEL_SWORD_NOOP, restoreStats = false)
                 sword.despawn()
             }
         }
     }
 
-    private fun line(c: CoordGrid, horizontal: Boolean): List<CoordGrid> =
-        (-SWORD_REACH..SWORD_REACH).map { d -> if (horizontal) CoordGrid(c.x + d, c.z, c.level) else CoordGrid(c.x, c.z + d, c.level) }
+    /** The tiles a sword of [width] crosses from [start] in [dir] to the opposite wall (2 x reach tiles). */
+    private fun lane(start: CoordGrid, dir: Pair<Int, Int>, width: Int): List<CoordGrid> {
+        val out = ArrayList<CoordGrid>()
+        for (d in 0..SWORD_REACH * 2) {
+            for (w in 0 until width) {
+                out +=
+                    if (dir.first !=
+                        0
+                    ) {
+                        CoordGrid(start.x + dir.first * d, start.z + w, start.level)
+                    } else {
+                        CoordGrid(start.x + w, start.z + dir.second * d, start.level)
+                    }
+            }
+        }
+        return out
+    }
 
     /**
      * EZ3: the finale: three lightning patterns in a row over the players' 3x3 on an 11-tick cycle (OPEN-EZ4: the 11
@@ -173,33 +197,43 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
         npc.spotAnim(SpotAnims.VFX_EZEKIEL_FINALE_CAST01)
         val struck = HashSet<String>()
         val watching = TfaKit.arena(npc)
-        val patterns = IntArray(FINALE_PATTERNS) { npc.random(BOX) }
-        if (patterns.last() == MIDDLE) patterns[FINALE_PATTERNS - 1] = if (npc.random(2) == 0) 0 else BOX - 1
-        for ((k, safeColumn) in patterns.withIndex()) {
-            val safeX = box.x - 1 + safeColumn
-            val struckTiles =
-                (-1..1).flatMap { dx -> (-1..1).map { dz -> CoordGrid(box.x + dx, box.z + dz, box.level) } }.filter {
-                    it.x !=
-                        safeX
-                }
-            val at = 1 + k * FINALE_GAP
-            npc.queueHit(at) { for (t in struckTiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_SWORD_TELEGRAPH01) }
-            npc.queueHit(at + BURST_GAP) {
+        // RuneLite (LU Ezekiel.java:184-281): each round queues three strikes at once, landing about 4, 5 and 6 ticks
+        // ahead in a random order, on the 3x3 in front of him; each leaves one side column (stand in its back corner) or
+        // the whole back row (stand in its middle) safe. Wiki EZ3: the middle pattern (the back row) is never last.
+        val kinds = mutableListOf(SAFE_LEFT, SAFE_RIGHT, SAFE_BACK)
+        val order = IntArray(FINALE_PATTERNS) { kinds.removeAt(npc.random(kinds.size)) }
+        if (order.last() == SAFE_BACK) {
+            order[FINALE_PATTERNS - 1] = order[0]
+            order[0] = SAFE_BACK
+        }
+        val backZ = box.z + 1
+        for ((k, kind) in order.withIndex()) {
+            val tiles = (-1..1).flatMap { dx -> (-1..1).map { dz -> CoordGrid(box.x + dx, box.z + dz, box.level) } }
+            val safe = tiles.filter { t -> safeTile(kind, t, box, backZ) }
+            val hit = tiles - safe.toSet()
+            for (t in hit) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_SWORD_TELEGRAPH01)
+            npc.queueHit(FINALE_FIRST + k) {
                 if (!npc.isInWorld) return@queueHit
-                for (t in struckTiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_FINALE_IMPACT_MEDIUM01)
+                for (t in hit) npc.spotAnimAt(t, IMPACTS[k])
                 for (p in TfaKit.arena(npc)) {
-                    val inBox = kotlin.math.abs(p.coord.x - box.x) <= 1 && kotlin.math.abs(p.coord.z - box.z) <= 1
-                    if (inBox && p.coord.x == safeX) continue
+                    if (safe.any { it.x == p.coord.x && it.z == p.coord.z }) continue
                     struck += p.username
                     CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, LIGHTNING_MAX), HitStyle.TYPELESS)
                 }
             }
         }
-        npc.queueHit(1 + (FINALE_PATTERNS - 1) * FINALE_GAP + BURST_GAP + 1) {
+        npc.queueHit(FINALE_FIRST + FINALE_PATTERNS) {
             for (p in watching) if (!p.isDying && p.username !in struck) TfaKit.addSpecEnergy(p, FINALE_DODGE_ENERGY)
         }
         npc.setAttackClock(npc.tick + FINALE_CYCLE)
     }
+
+    private fun safeTile(kind: Int, t: CoordGrid, box: CoordGrid, backZ: Int): Boolean =
+        when (kind) {
+            SAFE_LEFT -> t.x == box.x - 1
+            SAFE_RIGHT -> t.x == box.x + 1
+            else -> t.z == backZ
+        }
 
     /**
      * EZ3: below 35% he moves to one side, the players are forced into a 3x3 in front of him and three more swords
@@ -240,13 +274,20 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     }
 
     /** ezekiel.md data: HP for 2..8 players. */
+    private val DIRECTIONS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
+    private val IMPACTS =
+        intArrayOf(
+            SpotAnims.VFX_EZEKIEL_FINALE_IMPACT_LARGE01,
+            SpotAnims.VFX_EZEKIEL_FINALE_IMPACT_MEDIUM01,
+            SpotAnims.VFX_EZEKIEL_FINALE_IMPACT_SMALL01,
+        )
+
     private val HP = intArrayOf(3000, 4350, 5610, 6870, 8130, 9390, 10650)
 
     private const val HUNT = 20
     private const val MELEE_SCAN = 6
     private const val MAX_HIT = 77
     private const val MAGIC_MAX = 40
-    private const val LIGHTNING_EVERY = 2
     private const val CROSS_ARM = 2
     private const val BURSTS = 2
     private const val BURST_GAP = 2
@@ -255,8 +296,12 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
 
     /** EZ2: "3-4 Animated Swords". */
     private const val SWORD_VARIANTS = 2
-    private const val SWORD_REACH = 10
-    private const val SWORD_TELEGRAPH = 4
+
+    /** RuneLite (LU): lanes run up to 30 tiles, wall to wall (15 each way from the room's centre line). */
+    private const val SWORD_REACH = 15
+
+    /** RuneLite (LU Ezekiel.java:39-43): a sword launches 15 ticks after it spawns (settles OPEN-EZ8). */
+    private const val SWORD_TELEGRAPH = 15
     private const val SWORD_MAX = 80
     private const val SWORD_HEAL = 50
 
@@ -265,13 +310,27 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private const val FINALE_DODGE_ENERGY = 90
     private const val STUN_TICKS = 5
     private const val FINALE_PATTERNS = 3
+    private const val SAFE_LEFT = 0
+    private const val SAFE_RIGHT = 1
+    private const val SAFE_BACK = 2
+
+    /** RuneLite (LU): the finale strikes land about 4, 5 and 6 ticks after the round starts. */
+    private const val FINALE_FIRST = 4
+
+    /** RuneLite (LU Ezekiel.java:53-65): two basics per star; a 9+ tick pause resets the count. */
+    private const val BASICS_PER_STAR = 2
+    private const val PAUSE_RESET = 9
+
+    /** RuneLite (LU): three swords per set, one tick apart. */
+    private const val SWORDS_PER_SET = 3
+
+    /** Cache: the Animated Sword NPC 16653 is size 3, the width of its lane. */
+    private const val SWORD_SIZE = 3
     private const val FINALE_SWORDS = 3
     private const val BOX = 3
-    private const val MIDDLE = 1
     private const val SIDE_SHIFT = 6
     private const val BOX_GAP = 1
     private const val TANK_SWITCH_ONE_IN = 3
-    private const val FINALE_GAP = 3
     private const val FINALE_CYCLE = 11
     private const val ENRAGE_PERCENT = 35
     private const val PERCENT = 100

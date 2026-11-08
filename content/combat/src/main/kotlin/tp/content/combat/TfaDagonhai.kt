@@ -5,6 +5,7 @@ import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
 import tp.symbols.Npcs
+import tp.symbols.Seqs
 import tp.symbols.SpotAnims
 
 /**
@@ -76,6 +77,13 @@ internal object TfaDagonhai : Boss(
                 (if (empowered) EMPOWER_DEN else 1)
         val magic = npc.random(2) == 0
         CombatSystem.announceAttack(npc, victim, if (magic) CombatStyle.MAGIC else CombatStyle.RANGED)
+        val elder = npc.type == Npcs.TFA_DAGONHAI_LEADER
+        // RuneLite (LU DagonhaiTrio.java:136-142): the Elder attacks every 5 ticks, ranged (seq 14593) or magic (14597),
+        // hitting 5 ticks after the animation (thrown 2 ticks in, 3 ticks to land).
+        if (elder) {
+            npc.anim(if (magic) Seqs.NPC_DAGONHAI_ATTACK_MAGIC_01 else Seqs.NPC_DAGONHAI_ATTACK_RANGED_01)
+            npc.setAttackClock(npc.tick + ELDER_SPEED)
+        }
         // DH2: the Elder's attacks hit the target and every player within 3 tiles of them.
         val targets =
             if (npc.type ==
@@ -87,11 +95,12 @@ internal object TfaDagonhai : Boss(
             }
         for (p in targets) {
             val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
-            BossCombat.strike(npc, p, if (magic) AttackType.MAGIC else AttackType.RANGED, max, BossCombat.delay(npc, p, style))
+            val delay = if (elder) ELDER_HIT_DELAY else BossCombat.delay(npc, p, style)
+            BossCombat.strike(npc, p, if (magic) AttackType.MAGIC else AttackType.RANGED, max, delay)
         }
     }
 
-    /** DH3 / DH4: a channel ("I'll feed the flames!" ...); OPEN-DH3: it lasts 6 ticks; OPEN-DH5: any magic hit interrupts. */
+    /** DH3 / DH4: a channel ("I'll feed the flames!" ...); RuneLite (LU DagonhaiTrio.java:68-75): it completes 18 ticks after the yell. */
     private fun channel(npc: NpcRef, t: Trio) {
         t.channelElement = npc.random(CHANTS.size)
         npc.say(CHANTS[t.channelElement])
@@ -113,38 +122,82 @@ internal object TfaDagonhai : Boss(
         c.say("The ritual grows stronger!")
     }
 
-    /** DH5: Zamorak (~25 + fireballs), Bandos (up to 55 + shockwave), Saradomin (heals 10-20). */
+    /**
+     * DH5 tomes (RuneLite LU DagonhaiTrio.java:68-78, 186-221; DagonhaiTrioOverlay.java): "What have we here?" warns, the
+     * god is called 3 ticks later; the tome travels from the reader to the cauldron along the floor, and a player on
+     * that path within 4 ticks of the call blocks it ("Curse you!"); otherwise it completes 8 ticks after the call.
+     */
     private fun tome(npc: NpcRef, t: Trio, victim: EntityRef) {
-        when (t.tome++ % TOMES) {
+        val god = t.tome++ % TOMES
+        npc.say("What have we here?")
+        npc.queueHit(TOME_CALL) {
+            if (!npc.isInWorld) return@queueHit
+            npc.say(GOD_YELLS[god])
+            val cauldron = t.focus?.coord ?: npc.spawn
+            val path = TfaKit.line(npc.coord, cauldron)
+            var blocked = false
+            for (k in 0..TOME_BLOCK) {
+                npc.queueHit(k) {
+                    if (!blocked && TfaKit.arena(npc).any { TfaKit.on(it, path) }) {
+                        blocked = true
+                        npc.say("Curse you!")
+                    }
+                }
+            }
+            npc.queueHit(TOME_COMPLETE) {
+                if (npc.isInWorld && !blocked) tomeEffect(npc, t, god, victim, cauldron)
+            }
+        }
+    }
+
+    private fun tomeEffect(npc: NpcRef, t: Trio, god: Int, victim: EntityRef, cauldron: tp.util.CoordGrid) {
+        when (god) {
+            // Zamorak: ~25 to the target and flame glyphs that erupt 3-5 ticks after they appear (LU overlay:167).
             0 -> {
                 BossCombat.strike(npc, victim, AttackType.MAGIC, ZAMORAK_MAX, 2, accurate = true)
-                for (p in TfaKit.arena(npc)) if (p.distanceTo(victim) in 1..1) CombatSystem.queueHit(p, npc, FIREBALL, HitStyle.MAGIC, 2)
-            }
-
-            1 -> {
-                BossCombat.strike(npc, victim, AttackType.CRUSH, BANDOS_MAX, 1)
-                // DH5: "+ shockwave" (OPEN-DH7: 15 to everyone within 2 tiles of the target).
                 for (p in TfaKit.arena(npc)) {
-                    if (p != victim &&
-                        p.distanceTo(victim) <= SHOCKWAVE_RANGE
-                    ) {
-                        CombatSystem.queueHit(p, npc, SHOCKWAVE, HitStyle.MELEE, 1)
+                    val glyph = p.coord
+                    npc.spotAnimAt(glyph, SpotAnims.TFA_DAGONHAI_DEMONIC_STRENGTH_TELEGRAPH)
+                    npc.queueHit(GLYPH_MIN + npc.random(GLYPH_SPREAD)) {
+                        if (npc.isInWorld && p.coord == glyph) CombatSystem.applyHit(p, npc, FIREBALL, HitStyle.MAGIC)
                     }
                 }
             }
 
+            // Bandos: up to 55 to the target and a shockwave ring spreading one tile per tick from the cauldron
+            // (LU overlay:104-106; OPEN-DH7: 15 per player it reaches).
+            1 -> {
+                BossCombat.strike(npc, victim, AttackType.CRUSH, BANDOS_MAX, 1)
+                for (p in TfaKit.arena(npc)) {
+                    if (p == victim) continue
+                    val d = maxOf(kotlin.math.abs(p.coord.x - cauldron.x), kotlin.math.abs(p.coord.z - cauldron.z))
+                    npc.queueHit(maxOf(1, d)) {
+                        val now = maxOf(kotlin.math.abs(p.coord.x - cauldron.x), kotlin.math.abs(p.coord.z - cauldron.z))
+                        if (npc.isInWorld && now == d) CombatSystem.applyHit(p, npc, SHOCKWAVE, HitStyle.MELEE)
+                    }
+                }
+            }
+
+            // Saradomin: blue lightning (hurts, ~4 ticks after its telegraph) on players and yellow (heals, ~5 ticks) on
+            // the trio (LU overlay:189-190); heals 10-20, or 50 when empowered (DH5; OPEN-DH8: blue 20).
             else -> {
-                npc.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_HEAL_IMPACT)
-                // DH5: "heals 10-20 or 50 + lightning": the empowered tome heals 50 and calls lightning on a player
-                // (OPEN-DH8: 20 damage).
                 val empowered = npc.tick < t.empoweredUntil
                 val heal = if (empowered) SARA_EMPOWERED else SARA_MIN + npc.random(SARA_MAX - SARA_MIN + 1)
-                for (m in t.members) m.hitpoints = minOf(m.maxHitpoints, m.hitpoints + heal)
+                for (m in t.members) {
+                    m.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_HEAL_TELEGRAPH_150)
+                    m.queueHit(YELLOW_DELAY) {
+                        m.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_HEAL_LIGHTNING)
+                        if (m.isInWorld) m.hitpoints = minOf(m.maxHitpoints, m.hitpoints + heal)
+                    }
+                }
                 if (empowered) {
-                    val players = TfaKit.arena(npc)
-                    players.getOrNull(npc.random(maxOf(1, players.size)))?.let { p ->
-                        p.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_LIGHTNING)
-                        CombatSystem.queueHit(p, npc, SARA_LIGHTNING, HitStyle.MAGIC, 1)
+                    for (p in TfaKit.arena(npc)) {
+                        val at = p.coord
+                        npc.spotAnimAt(at, SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_TELEGRAPH_150)
+                        npc.queueHit(BLUE_DELAY) {
+                            npc.spotAnimAt(at, SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_LIGHTNING)
+                            if (npc.isInWorld && p.coord == at) CombatSystem.applyHit(p, npc, SARA_LIGHTNING, HitStyle.MAGIC)
+                        }
                     }
                 }
             }
@@ -263,6 +316,9 @@ internal object TfaDagonhai : Boss(
     private val FOCUS_RING = listOf(0 to 4, 3 to 3, 4 to 0, 3 to -3, 0 to -4, -3 to -3, -4 to 0, -3 to 3)
     private val PORTAL_CORNERS = listOf(-7 to 7, 7 to -7)
 
+    /** RuneLite (LU DagonhaiTrio.java:186-221): the god yells, Zamorak / Bandos / Saradomin. */
+    private val GOD_YELLS = listOf("Zamorak empowers!", "Bandosian strength!", "Saradominist zeal!")
+
     /** DH4 chants. */
     private val CHANTS = listOf("I'll feed the flames!", "I'll guide the flow!", "I'll focus the winds!", "I'll strengthen the bond!")
 
@@ -281,7 +337,16 @@ internal object TfaDagonhai : Boss(
     private const val EMPOWER_NUM = 3
     private const val EMPOWER_DEN = 2
     private const val EMPOWER_TICKS = 30
-    private const val CHANNEL_TICKS = 6
+    private const val CHANNEL_TICKS = 18
+    private const val TOME_CALL = 3
+    private const val TOME_BLOCK = 4
+    private const val TOME_COMPLETE = 8
+    private const val GLYPH_MIN = 3
+    private const val GLYPH_SPREAD = 3
+    private const val BLUE_DELAY = 4
+    private const val YELLOW_DELAY = 5
+    private const val ELDER_SPEED = 5
+    private const val ELDER_HIT_DELAY = 5
     private const val RITUAL_STEP = 25
     private const val RITUAL_FULL = 100
     private const val RITUAL_LOSS = 20
@@ -294,7 +359,6 @@ internal object TfaDagonhai : Boss(
     private const val SARA_EMPOWERED = 50
     private const val SARA_LIGHTNING = 20
     private const val SHOCKWAVE = 15
-    private const val SHOCKWAVE_RANGE = 2
     private const val STUN_TICKS = 5
     private const val STUN_BONUS_NUM = 115
     private const val STUN_BONUS_DEN = 100

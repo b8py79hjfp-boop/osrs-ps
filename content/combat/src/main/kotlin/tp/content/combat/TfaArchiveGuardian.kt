@@ -27,6 +27,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         var groundHp = groundMax
         var attacks = 0
         var groundedAt = -1L
+        var downs = 0
         var damage = 0
         var lowestDefence = BASE_DEFENCE
     }
@@ -137,6 +138,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private fun ground(npc: NpcRef, s: State) {
         s.phase = Phase.GROUNDED
         s.groundedAt = npc.tick
+        s.downs++
         npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_IDLE_TO_GROUND01)
         npc.spotAnim(SpotAnims.VFX_GUARDIAN_IDLETOGROUND_SPOTANIM01)
         npc.transform(Npcs.TFA_GUARDIAN_UNSHIELDED, restoreStats = false)
@@ -148,7 +150,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
 
     private fun grounded(npc: NpcRef, s: State) {
         // OPEN-AG5: the 34 ticks count from the crash.
-        if (npc.tick - s.groundedAt >= GROUNDED_TICKS) {
+        if (npc.tick - s.groundedAt >= if (s.downs == 1) FIRST_GROUNDED_TICKS else LATER_GROUNDED_TICKS) {
             fly(npc, s, Phase.SHIELDED)
             return
         }
@@ -207,7 +209,8 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private fun laser(npc: NpcRef) {
         val players = arenaPlayers(npc)
         val target = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_SPECIAL_ATTACK01)
+        // RuneLite (LU): the laser and the mushroom attack share the special animation ENRAGED_PHASE01 (14754).
+        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
         npc.spotAnim(SpotAnims.VFX_GUARDIAN_SPECIAL_ATTACK_SPOTANIM01)
         CombatSystem.announceAttack(npc, target, CombatStyle.MAGIC)
         var damage = LASER_PER_ALIVE * players.size
@@ -231,9 +234,20 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
      * 3-4 damage within 2 tiles. OPEN-AG6: drowsiness and the prayer drain are modelled as a 2-tick bind and -10 prayer.
      */
     private fun mushrooms(npc: NpcRef) {
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_SWOOSH_ATTACK01)
+        // RuneLite (LU): same special animation; mushrooms appear within 2 ticks and the attack hits 5 ticks after it.
+        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
         val tiles = arenaPlayers(npc).flatMap { p -> List(MUSHROOMS_PER_PLAYER) { BossCombat.randomTile(npc, p.coord, MUSHROOM_SPREAD) } }
-        for (t in tiles) npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_SPAWN, t, LOC_SHAPE, 0, MUSHROOM_TICKS)
+        npc.queueHit(MUSHROOM_APPEAR) {
+            for (t in tiles) {
+                npc.addLoc(
+                    Locs.TFA_GUARDIAN_MUSHROOM_SPAWN,
+                    t,
+                    LOC_SHAPE,
+                    0,
+                    MUSHROOM_TICKS - MUSHROOM_APPEAR,
+                )
+            }
+        }
         npc.queueHit(MUSHROOM_TICKS) {
             if (!npc.isInWorld) return@queueHit
             for (t in tiles) {
@@ -345,7 +359,13 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     /** AG3 timings. */
     private const val TENDRIL_DELAY = 6
     private const val TENDRIL_EVERY = 3
-    private const val GROUNDED_TICKS = 34
+
+    /**
+     * RuneLite (luuj/fracturedarchive ArchiveGuardian.java, "set in game"): grounded 35 ticks the first time and 40
+     * every later time, counted from the crash animation (the wiki's 34 is superseded; settles OPEN-AG5).
+     */
+    private const val FIRST_GROUNDED_TICKS = 35
+    private const val LATER_GROUNDED_TICKS = 40
     private const val TENDRIL_HITS = 3
 
     /** OPEN-AG7: "moderate" tendril damage; Protect from Melee caps it at 11 (AG3). */
@@ -355,7 +375,9 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     /** OPEN-AG4: the laser model. */
     private const val LASER_PER_ALIVE = 35
     private const val LASER_PRAYER_PERCENT = 20
-    private const val LASER_DELAY = 2
+
+    /** RuneLite (LU ArchiveGuardian.java:78): the laser hits 10 ticks after the special animation. */
+    private const val LASER_DELAY = 10
     private const val BEHIND_REACH = 2
     private const val BEHIND_MAX = 10
     private const val SPORE_PRAYER = 10
@@ -368,6 +390,9 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private const val MUSHROOMS_PER_PLAYER = 2
     private const val MUSHROOM_SPREAD = 2
     private const val MUSHROOM_TICKS = 5
+
+    /** RuneLite (LU ArchiveGuardian.java:76): mushrooms appear within 2 ticks of the special animation. */
+    private const val MUSHROOM_APPEAR = 1
     private const val MUSHROOM_FADE_TICKS = 2
     private const val MUSHROOM_INNER = 1
     private const val MUSHROOM_OUTER = 2

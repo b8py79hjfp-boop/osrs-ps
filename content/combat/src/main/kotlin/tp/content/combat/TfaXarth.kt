@@ -5,6 +5,8 @@ import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
 import tp.symbols.Npcs
+import tp.symbols.Seqs
+import tp.symbols.SpotAnims
 import tp.util.CoordGrid
 
 /**
@@ -18,7 +20,6 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
         var magics = 0
         var shielded = true
         var phase2 = false
-        var nextCorpse = -1L
         var lastHeal = -1L
         var attacks = 0
     }
@@ -54,7 +55,9 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
         }
         // XA1: phase 1 targets the closest player.
         val target = TfaKit.arena(npc).minByOrNull { TfaKit.gap(npc, it) } ?: return
+        npc.anim(Seqs.XARTH_ATTACK_MAGIC_01)
         CombatSystem.announceAttack(npc, target, CombatStyle.MAGIC)
+        BossCombat.projectile(npc, target, SpotAnims.LUC2_UNDEAD_DEMON_FIREBALL_PROJ_BIG, BossCombat.delay(npc, target, CombatStyle.MAGIC))
         val delay = BossCombat.delay(npc, target, CombatStyle.MAGIC)
         BossCombat.strike(npc, target, AttackType.MAGIC, MAGIC_MAX, delay) { dealt -> if (dealt > 0) burn(npc, target, delay) }
     }
@@ -74,9 +77,13 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
      */
     private fun explosion(npc: NpcRef, s: State) {
         npc.say("Burn!")
+        // RuneLite (LU Xarth.java:27-35): the root (seq 14991) and the AoE (14992) are attacks on his 4-tick cycle.
+        npc.anim(Seqs.XARTH_ATTACK_ROOT_01)
         for (p in TfaKit.arena(npc)) p.frozenUntil = maxOf(p.frozenUntil, npc.tick + BIND_TICKS)
+        npc.setAttackClock(npc.tick + EXPLOSION_DELAY + ATTACK_SPEED)
         npc.queueHit(EXPLOSION_DELAY) {
             if (!npc.isInWorld) return@queueHit
+            npc.anim(Seqs.XARTH_ATTACK_AOE_01)
             val players = TfaKit.arena(npc)
             val pillars = Bosses.minions(npc, Npcs.TFA_XARTH_RUBBLE_NPC)
             for (p in players) {
@@ -103,13 +110,33 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
     }
 
     private fun phase2(npc: NpcRef, s: State, victim: EntityRef, distance: Boolean) {
-        corpses(npc, s)
         stepCorpses(npc)
-        if (s.attacks % FLAME_EVERY == 0) flames(npc)
-        if (!distance) {
-            CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
-            BossCombat.strike(npc, victim, AttackType.SLASH, MELEE_MAX, 0)
-        } else {
+        when {
+            s.attacks % FLAME_EVERY == 0 -> {
+                npc.anim(Seqs.XARTH_ATTACK_FLAME_BLAST_01)
+                flames(npc)
+            }
+
+            // RuneLite (LU Xarth.java:126-163): once his ranged attacks have started, his magic is only the corpse volley.
+            s.attacks % VOLLEY_EVERY == 0 -> {
+                volley(npc)
+            }
+
+            !distance -> {
+                npc.anim(Seqs.XARTH_ATTACK_MELEE_01)
+                CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+                BossCombat.strike(npc, victim, AttackType.SLASH, MELEE_MAX, 0)
+            }
+
+            else -> {
+                rangedAttack(npc, victim)
+            }
+        }
+    }
+
+    private fun rangedAttack(npc: NpcRef, victim: EntityRef) {
+        run {
+            npc.anim(Seqs.XARTH_ATTACK_RANGED_01)
             CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
             // XA2: ranged damage is decided on impact.
             val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
@@ -117,6 +144,26 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
                 if (npc.isInWorld) BossCombat.strike(npc, victim, AttackType.RANGED, RANGED_MAX, 0)
             }
         }
+    }
+
+    /**
+     * XA2 / RuneLite (LU Xarth.java:152-204): the corpse volley (seq 15017): fireballs (projectile 4034) at tiles, each
+     * spawning a corpse where it lands; a corpse stands still 2 ticks, then walks one tile per tick to him. OPEN-XA5:
+     * one fireball per player, aimed near the room's edge.
+     */
+    private fun volley(npc: NpcRef) {
+        npc.anim(Seqs.XARTH_ATTACK_SUMMON_01)
+        repeat(maxOf(1, TfaKit.arena(npc).size)) {
+            val (dx, dz) = EDGES[npc.random(EDGES.size)]
+            val at = BossCombat.randomTile(npc, CoordGrid(npc.coord.x + dx, npc.coord.z + dz, npc.coord.level), EDGE_SPREAD)
+            npc.spotAnimAt(at, SpotAnims.LUC2_UNDEAD_DEMON_FIREBALL_PROJ_BIG)
+            npc.queueHit(FIREBALL_FLIGHT) { if (npc.isInWorld) spawnCorpseAt(npc, at) }
+        }
+    }
+
+    private fun spawnCorpseAt(npc: NpcRef, at: CoordGrid) {
+        val corpse = Bosses.summon(npc, Npcs.TFA_XARTH_CORPSE, at, huntRange = 0)
+        corpse.queueHit(CORPSE_STAND) { if (corpse.isInWorld && !corpse.isFrozen) corpse.walkTo(npc.coord) }
     }
 
     /** XA2: flames land on a player and spread to adjacent tiles (OPEN-XA4: 3 spreads, 4 ticks apart, 8 per tick). */
@@ -137,16 +184,6 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
                 }
             }
         }
-    }
-
-    /** XA2: corpses spawn at the room's edge and walk to him (OPEN-XA5: one every 15 ticks, 12 tiles out). */
-    private fun corpses(npc: NpcRef, s: State) {
-        if (npc.tick < s.nextCorpse) return
-        s.nextCorpse = npc.tick + CORPSE_EVERY
-        val (dx, dz) = EDGES[npc.random(EDGES.size)]
-        val at = CoordGrid(npc.coord.x + dx, npc.coord.z + dz, npc.coord.level)
-        val corpse = Bosses.summon(npc, Npcs.TFA_XARTH_CORPSE, at, huntRange = 0)
-        corpse.walkTo(npc.coord)
     }
 
     /** Corpses keep walking to him (unless frozen) and heal him on arrival. */
@@ -194,7 +231,6 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
         val s = state(npc)
         if (!s.phase2 && npc.hitpoints * 2 <= npc.maxHitpoints) {
             s.phase2 = true
-            s.nextCorpse = npc.tick
             // XA2: the pillars are gone in phase 2.
             for (r in Bosses.minions(npc, Npcs.TFA_XARTH_RUBBLE_NPC)) r.transform(Npcs.TFA_XARTH_RUBBLE_NPC_DESTROYED, restoreStats = false)
         }
@@ -227,7 +263,13 @@ internal object TfaXarth : Boss(Npcs.TFA_XARTH) {
     private const val FLAME_SPREADS = 3
     private const val FLAME_SPREAD_TICKS = 4
     private const val FLAME_DAMAGE = 8
-    private const val CORPSE_EVERY = 15
+    private const val VOLLEY_EVERY = 4
+    private const val EDGE_SPREAD = 2
+    private const val FIREBALL_FLIGHT = 3
+    private const val CORPSE_STAND = 2
+
+    /** RuneLite (LU Xarth.java:27-35): every attack, specials included, is on a 4-tick cycle. */
+    private const val ATTACK_SPEED = 4
     private const val HEAL_WINDOW = 10
     private const val BLAST_DAMAGE = 30
 }

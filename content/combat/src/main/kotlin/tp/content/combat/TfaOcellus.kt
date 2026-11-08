@@ -5,41 +5,66 @@ import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
+import tp.symbols.Locs
 import tp.symbols.Npcs
+import tp.symbols.Seqs
 import tp.symbols.SpotAnims
 import tp.symbols.Varbits
 import tp.util.CoordGrid
 
 /**
- * Ocellus, the TFA final boss (docs/mechanics/raids/tfa/ocellus.md OC1-OC4), one NPC through four phases:
- * P1 ranged/magic from the corners with tendril channels and two centre blasts; P2 the Blade (purple portals; half the
- * damage dealt to it comes off P3's pool); P3 two melee and a wave per cycle with a special every two cycles (Prayer,
- * Untether, Prayer, Insolence); P4 below a quarter of P3's pool: deflection, void explosions and soul-split blasts, and
- * less damage from slow weapons.
+ * Ocellus, the TFA final boss (docs/mechanics/raids/tfa/ocellus.md OC1-OC4), one NPC through four phases, timed from
+ * the RuneLite plugins (runelite-timings.md, LU = luuj/fracturedarchive FinalBoss.java):
+ * - P1 (16674): volleys of water (magic) and fire (ranged) every 5 ticks from the corners; at each corner a slow ground
+ *   attack sends seven tendrils 2 ticks apart, each going off 5 ticks after it appears; at 66% and 25% he teleports to
+ *   the centre for four quick ground attacks of two tendrils each (6 and 8 ticks), then "Embrace... annihilation..." or
+ *   "Death... awaits..." by the tendrils mitigated.
+ * - P2 (16675, the Blade): every 5 ticks the portals about to fire light up 4 ticks ahead; one portal per inner wall
+ *   stays dark (orange) and their lanes cross in a 2x2 safe area; three fixed sequences of six volleys; the Blade
+ *   stores damage and releases it at each quadrant's end; half of it comes off P3's pool.
+ * - P3 (16677): two basic attacks (4 ticks) and a sweep (5) make a combo; two combos, then a special: Prayer and an
+ *   "orange" special in turn (Untether first, then Untether / Insolence alternating, Insolence right after a quadrant
+ *   move); three quadrant moves ("Run!", 15 ticks), each followed by the void marker; the four censers.
+ * - P4 (the last quadrant): a 21-tick ranged deflect then a 19-tick melee deflect, each opening with a void chain (6
+ *   explosions 2 ticks apart, 3 ticks after the telegraph) and closing with a soul-split blast.
  */
+@Suppress("LargeClass") // one boss through four phases; the capture pass splits the phases into their own files
 internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs.TFA_OCELLUS_P3) {
     private enum class Phase { P1, P2, P3, P4 }
+
+    private enum class Special { PRAYER, UNTETHER, INSOLENCE }
 
     private class State(val centre: CoordGrid, val size: Int) {
         var phase = Phase.P1
         var attacks = 0
-        var cycles = 0
-        var specials = 0
+        var corner = 0
         var centreBlasts = 0
-        var bladeDamage = 0
         var stored = 0
-        var sets = 0
+        var bladeDamage = 0
+        var volleys = 0
+        var sequence = 0
         var bladeQuadrants = 0
-        var explosionsLeft = 0
+        var basics = 0
+        var combos = 0
+        var specials = 0
+        var orangeUntether = true
+        var insolenceNext = false
+        var moves = 0
         var quadrant = 0
+        var deflect: HitStyle? = null
     }
 
     private val STATE = AttrKey<State>("tfa_ocellus")
 
+    /** Censer buffs on a player: (style, until tick). */
+    val CENSER_STYLE = AttrKey<HitStyle>("tfa_censer_style")
+    val CENSER_UNTIL = AttrKey<Long>("tfa_censer_until")
+
     private fun state(npc: NpcRef): State =
-        npc[STATE] ?: State(npc.spawn, TfaKit.size(npc)).also {
+        npc[STATE] ?: State(CoordGrid(npc.spawn.x + 1, npc.spawn.z + 1, npc.spawn.level), TfaKit.size(npc)).also {
             npc[STATE] = it
             TfaKit.setPool(npc, P1_HP[it.size - MIN_SCALE])
+            placeCensers(npc, it)
             // ocellus.md: varbit TFA_OCELLUS_MET reveals his name and his stats category.
             for (p in TfaKit.arena(npc)) p.setVarbit(Varbits.TFA_OCELLUS_MET, 1)
         }
@@ -56,131 +81,159 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
 
             Phase.P2 -> Unit
 
-            // P2 runs on its own timer (p2Loop): the Blade NPC has no attack speed.
+            // P2 runs on its own 5-tick timer (p2Loop): the Blade has no attack speed.
             Phase.P3 -> p3(npc, s, victim)
 
-            Phase.P4 -> p4(npc, s)
+            Phase.P4 -> Unit // P4 runs on its own deflect cycle (p4Cycle).
         }
+    }
+
+    /**
+     * OC3 censers (locs 62693-62700, cache: "Interact", each with an inactive form): one in each quadrant, shuffled every
+     * fight; the fight starts in the quadrant diagonally opposite the Bandosian Censer (RuneLite LU FinalBoss.java:117-122).
+     * OPEN-OC14: each sits 4 tiles beyond its quadrant's landing spot, away from the centre.
+     */
+    private fun placeCensers(npc: NpcRef, s: State) {
+        val order = CENSERS.toMutableList()
+        val placed = IntArray(QUADRANTS.size)
+        for (q in QUADRANTS.indices) placed[q] = order.removeAt(npc.random(order.size))
+        for ((q, id) in placed.withIndex()) {
+            val (dx, dz) = QUADRANTS[q]
+            val at =
+                CoordGrid(
+                    s.centre.x + dx + Integer.signum(dx) * CENSER_OUT,
+                    s.centre.z + dz + Integer.signum(dz) * CENSER_OUT,
+                    s.centre.level,
+                )
+            npc.addLoc(id, at, WALL_SHAPE, 0)
+        }
+        val bandos = placed.indexOf(Locs.TFA_OCELLUS_ARTIFACT_DAMAGE_MELEE)
+        s.quadrant = (bandos + 2) % QUADRANTS.size
+    }
+
+    /**
+     * A censer used (OC3): Bandosian = melee, Armadylean = ranged (OPEN-OC14: +10% damage for 100 ticks), Zarosian = +50%
+     * special energy, Saradomin = +40 Hitpoints and +40 Prayer; the censer goes inactive for the rest of the fight.
+     */
+    fun useCenser(p: PlayerRef, id: Int, at: CoordGrid) {
+        when (id) {
+            Locs.TFA_OCELLUS_ARTIFACT_DAMAGE_MELEE -> {
+                buff(p, HitStyle.MELEE)
+            }
+
+            Locs.TFA_OCELLUS_ARTIFACT_DAMAGE_RANGED -> {
+                buff(p, HitStyle.RANGED)
+            }
+
+            Locs.TFA_OCELLUS_ARTIFACT_SPEC -> {
+                TfaKit.addSpecEnergy(p, ZAROS_SPEC)
+            }
+
+            Locs.TFA_OCELLUS_ARTIFACT_HEAL -> {
+                p.hitpoints = minOf(p.maxHitpoints, p.hitpoints + SARA_RESTORE)
+                p.setLevel(Stat.PRAYER, minOf(p.baseLevel(Stat.PRAYER), p.level(Stat.PRAYER) + SARA_RESTORE))
+            }
+        }
+        p.addLoc(id + 1, at, WALL_SHAPE, 0)
+    }
+
+    private fun buff(p: PlayerRef, style: HitStyle) {
+        p[CENSER_STYLE] = style
+        p[CENSER_UNTIL] = p.tick + CENSER_TICKS
     }
 
     // ---- P1 (OC1)
 
     private fun p1(npc: NpcRef, s: State, victim: EntityRef) {
-        if (s.attacks % CORNER_EVERY == 0) {
-            corner(npc, s)
+        if (s.attacks % CASTS_PER_CORNER == 0) {
+            cornerTendrils(npc, s)
             return
         }
-        if (s.attacks % BARRAGE_EVERY == 0) {
-            barrage(npc)
-            return
-        }
-        if (victim is PlayerRef && TfaKit.gap(npc, victim) <= SLAM_RANGE && npc.random(2) == 0) {
+        volley(npc)
+        npc.setAttackClock(npc.tick + VOLLEY_SPEED)
+        if (victim is PlayerRef && TfaKit.gap(npc, victim) <= SLAM_RANGE) {
             for (p in TfaKit.arena(npc)) if (TfaKit.gap(npc, p) <= SLAM_RANGE) BossCombat.strike(npc, p, AttackType.CRUSH, SLAM_MAX, 1)
-            return
         }
-        val magic = s.attacks % 2 == 0
-        val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
-        CombatSystem.announceAttack(npc, victim, style)
-        val delay = BossCombat.delay(npc, victim, style)
-        BossCombat.projectile(npc, victim, SpotAnims.TFA_OCELLUS_SF_PROJ, delay)
-        BossCombat.strike(npc, victim, if (magic) AttackType.MAGIC else AttackType.RANGED, MAX_HIT, delay)
     }
 
-    /**
-     * OC1: the ranged barrage: lines of projectiles along rows and columns (the patterns are the stripped dbtable 141,
-     * OPEN-OC3: a row and a column through each of up to three players, 2-tick telegraph, 20 to anyone still on one).
-     */
-    private fun barrage(npc: NpcRef) {
-        val players = TfaKit.arena(npc).take(BARRAGE_LINES)
-        val rows = players.map { it.coord.z }.toSet()
-        val cols = players.map { it.coord.x }.toSet()
-        for (p in players) npc.spotAnimAt(p.coord, SpotAnims.TFA_OCELLUS_SF_PROJ)
-        npc.queueHit(BARRAGE_TELEGRAPH) {
-            if (!npc.isInWorld) return@queueHit
-            for (p in TfaKit.arena(npc)) {
-                if (p.coord.z in rows || p.coord.x in cols) CombatSystem.applyHit(p, npc, BARRAGE_DAMAGE, HitStyle.RANGED)
-            }
+    /** RuneLite (LU FinalBoss.java:405-410): one cast fires water (magic, spotanim 4228) and fire (ranged, 4231) shots. */
+    private fun volley(npc: NpcRef) {
+        for (p in TfaKit.arena(npc)) {
+            val magic = npc.random(2) == 0
+            val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
+            npc.spotAnim(if (magic) SpotAnims.VFX_OCELLUS_WATER_ATTACK01_SPOTANIM else SpotAnims.VFX_OCELLUS_FIRE_ATTACK01_SPOTANIM)
+            val delay = BossCombat.delay(npc, p, style)
+            BossCombat.projectile(npc, p, SpotAnims.TFA_OCELLUS_SF_PROJ, delay)
+            BossCombat.strike(npc, p, if (magic) AttackType.MAGIC else AttackType.RANGED, MAX_HIT, delay)
         }
     }
 
     /**
-     * OC1: at a corner seven tendrils channel into him; a player on a tendril mitigates it and takes a little damage.
-     * OPEN-OC10: each unmitigated tendril heals him 20; a mitigating player takes 5.
+     * RuneLite (LU FinalBoss.java:437-442): at a corner the slow ground attack sends seven tendrils one after another, 2
+     * ticks apart, each going off 5 ticks after it appears; corner attacks are 8 ticks apart. A player on a tendril
+     * mitigates it (takes a little damage); an unmitigated one heals him (OPEN-OC10: 5 and 20).
      */
-    private fun corner(npc: NpcRef, s: State) {
-        val (dx, dz) = CORNERS[npc.random(CORNERS.size)]
+    private fun cornerTendrils(npc: NpcRef, s: State) {
+        val (dx, dz) = CORNERS[s.corner++ % CORNERS.size]
         npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
-        val tendrils = List(TENDRILS) { BossCombat.randomTile(npc, npc.coord, TENDRIL_SPREAD) }
-        for (t in tendrils) npc.spotAnimAt(t, SpotAnims.TFA_PORTAL)
-        npc.queueHit(CHANNEL_TICKS) {
-            if (!npc.isInWorld) return@queueHit
-            val players = TfaKit.arena(npc)
-            var unmitigated = 0
-            for (t in tendrils) {
-                val standing = players.filter { it.coord.x == t.x && it.coord.z == t.z }
-                if (standing.isEmpty()) {
-                    unmitigated++
-                } else {
-                    standing.forEach {
-                        CombatSystem.applyHit(
-                            it,
-                            npc,
-                            TENDRIL_HIT,
-                            HitStyle.TYPELESS,
-                        )
-                    }
-                }
+        npc.anim(Seqs.NPC_OCELLUS_PHASE1_CHARGE)
+        for (k in 0 until CORNER_TENDRILS) {
+            npc.queueHit(k * TENDRIL_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                val players = TfaKit.arena(npc)
+                val at = players.getOrNull(npc.random(maxOf(1, players.size)))?.coord ?: return@queueHit
+                tendril(npc, at, TENDRIL_FUSE)
             }
-            npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + unmitigated * TENDRIL_HEAL)
+        }
+        npc.setAttackClock(npc.tick + CORNER_ATTACK_SPEED)
+    }
+
+    private fun tendril(npc: NpcRef, at: CoordGrid, fuse: Int, mitigated: MutableList<Boolean>? = null) {
+        npc.spotAnimAt(at, SpotAnims.TFA_PORTAL)
+        npc.queueHit(fuse) {
+            if (!npc.isInWorld) return@queueHit
+            val standing = TfaKit.arena(npc).filter { it.coord.x == at.x && it.coord.z == at.z }
+            if (standing.isEmpty()) {
+                npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + TENDRIL_HEAL)
+            } else {
+                standing.forEach { CombatSystem.applyHit(it, npc, TENDRIL_HIT, HitStyle.TYPELESS) }
+            }
+            mitigated?.add(standing.isNotEmpty())
         }
     }
 
     /**
-     * OC1: at 66% and 25% he teleports to the centre, then "Embrace... annihilation..." (80+) or "Death... awaits..."
-     * (17-18) by how many tendrils were mitigated (OPEN-OC11: annihilation when fewer than half the players stood on
-     * the eight centre tendrils).
+     * RuneLite (LU FinalBoss.java:415-434): at the centre (teleport-in seq 14813) four quick ground attacks (seq 14809),
+     * each spawning two tendrils on neighbouring sides, the first going off 6 ticks after appearing and the second 8;
+     * then the finisher (seq 14810): "Embrace... annihilation..." (80+) or "Death... awaits..." (17-18) by how many were
+     * mitigated (OPEN-OC11: annihilation when fewer than half).
      */
     private fun centreBlast(npc: NpcRef, s: State) {
         s.centreBlasts++
-        npc.teleport(s.centre)
-        val tendrils = List(CENTRE_TENDRILS) { BossCombat.randomTile(npc, s.centre, TENDRIL_SPREAD) }
-        for (t in tendrils) npc.spotAnimAt(t, SpotAnims.TFA_PORTAL)
-        npc.setAttackClock(npc.tick + CENTRE_TICKS + 1)
-        npc.queueHit(CENTRE_TICKS) {
+        npc.teleport(CoordGrid(s.centre.x - 1, s.centre.z - 1, s.centre.level))
+        npc.anim(Seqs.NPC_OCELLUS_PHASE1_TELEPORT_IN)
+        val mitigated = ArrayList<Boolean>()
+        for (k in 0 until CENTRE_ATTACKS) {
+            npc.queueHit(1 + k * CENTRE_ATTACK_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                npc.anim(Seqs.NPC_OCELLUS_PHASE1_CHARGE)
+                val (a, b) = SIDE_PAIRS[k % SIDE_PAIRS.size]
+                tendril(npc, CoordGrid(s.centre.x + a.first, s.centre.z + a.second, s.centre.level), FIRST_FUSE, mitigated)
+                tendril(npc, CoordGrid(s.centre.x + b.first, s.centre.z + b.second, s.centre.level), SECOND_FUSE, mitigated)
+            }
+        }
+        val finish = 1 + (CENTRE_ATTACKS - 1) * CENTRE_ATTACK_GAP + SECOND_FUSE + 1
+        npc.setAttackClock(npc.tick + finish + 1)
+        npc.queueHit(finish) {
             if (!npc.isInWorld) return@queueHit
-            val players = TfaKit.arena(npc)
-            val mitigated = players.count { p -> tendrils.any { it.x == p.coord.x && it.z == p.coord.z } }
-            val annihilate = mitigated * 2 < players.size
+            npc.anim(Seqs.NPC_OCELLUS_PHASE1_EXPEND)
+            val annihilate = mitigated.count { it } * 2 < mitigated.size
             npc.say(if (annihilate) "Embrace... annihilation..." else "Death... awaits...")
-            for (p in players) CombatSystem.applyHit(p, npc, if (annihilate) ANNIHILATION else DEATH_AWAITS, HitStyle.TYPELESS)
+            for (p in TfaKit.arena(npc)) CombatSystem.applyHit(p, npc, if (annihilate) ANNIHILATION else DEATH_AWAITS, HitStyle.TYPELESS)
         }
     }
 
     // ---- P2 (OC2)
-
-    /**
-     * OC2: each set lays purple portal lines on the players' rows and columns; two orange portals cross at one safe
-     * tile per player. Anyone on a purple line off the orange crossing takes 20 (OPEN-OC5). After five sets the
-     * quadrant ends: the Blade releases the damage it stored, with diminishing returns per quadrant.
-     */
-    private fun portals(npc: NpcRef, s: State) {
-        val players = TfaKit.arena(npc)
-        val safe = players.map { p -> BossCombat.randomTile(npc, p.coord, PORTAL_SPREAD) }
-        val rows = players.map { it.coord.z }.toSet()
-        val cols = players.map { it.coord.x }.toSet()
-        for (t in safe) npc.spotAnimAt(t, SpotAnims.TFA_WAVE_DUST_SHORT)
-        for (p in players) npc.spotAnimAt(p.coord, SpotAnims.TFA_PORTAL)
-        npc.queueHit(PORTAL_TELEGRAPH) {
-            if (!npc.isInWorld) return@queueHit
-            for (p in TfaKit.arena(npc)) {
-                val onPurple = p.coord.z in rows || p.coord.x in cols
-                val onOrange = safe.any { it.x == p.coord.x && it.z == p.coord.z }
-                if (onPurple && !onOrange) CombatSystem.applyHit(p, npc, PORTAL_DAMAGE, HitStyle.TYPELESS)
-            }
-        }
-        s.sets++
-        if (s.sets % SETS_PER_QUADRANT == 0) releaseBlade(npc, s)
-    }
 
     private fun p2Loop(npc: NpcRef, s: State) {
         npc.queueHit(P2_SET_TICKS) {
@@ -188,6 +241,58 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
             portals(npc, s)
             p2Loop(npc, s)
         }
+    }
+
+    /**
+     * RuneLite (LU FinalBoss.java:1059-1190): each inner wall of the party's quadrant has six portals, 2 tiles apart from
+     * the corner; a lane is a portal's tile and the next one. Every 5 ticks the portals about to fire light up (loc
+     * 62685) 4 ticks ahead; one portal per inner wall stays dark (orange) and the orange lanes cross in a 2x2 safe area.
+     * The orange portals follow one of three fixed sequences of six volleys ({row, column}). Purple lanes hit for 20
+     * (OPEN-OC5). After six volleys the quadrant ends and the Blade releases its stored damage.
+     */
+    private fun portals(npc: NpcRef, s: State) {
+        val players = TfaKit.arena(npc)
+        if (players.isEmpty()) return
+        if (s.volleys % VOLLEYS_PER_SEQUENCE == 0) s.sequence = npc.random(SEQUENCES.size)
+        val (orangeRow, orangeCol) = SEQUENCES[s.sequence][s.volleys % VOLLEYS_PER_SEQUENCE]
+        val qx = Integer.signum(players[0].coord.x - s.centre.x).let { if (it == 0) 1 else it }
+        val qz = Integer.signum(players[0].coord.z - s.centre.z).let { if (it == 0) 1 else it }
+        // Light the walls' firing portals.
+        for (k in 0 until PORTALS_PER_WALL) {
+            if (k !=
+                orangeRow
+            ) {
+                npc.addLoc(
+                    Locs.TFA_OCELLUS_QUADRANT_WALL_ACTIVE,
+                    CoordGrid(s.centre.x, s.centre.z + qz * (1 + k * 2), s.centre.level),
+                    WALL_SHAPE,
+                    0,
+                    PORTAL_TELEGRAPH,
+                )
+            }
+            if (k !=
+                orangeCol
+            ) {
+                npc.addLoc(
+                    Locs.TFA_OCELLUS_QUADRANT_WALL_ACTIVE,
+                    CoordGrid(s.centre.x + qx * (1 + k * 2), s.centre.z, s.centre.level),
+                    WALL_SHAPE,
+                    0,
+                    PORTAL_TELEGRAPH,
+                )
+            }
+        }
+        npc.queueHit(PORTAL_TELEGRAPH) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(npc)) {
+                val row = (kotlin.math.abs(p.coord.z - s.centre.z) - 1) / 2
+                val col = (kotlin.math.abs(p.coord.x - s.centre.x) - 1) / 2
+                val safe = row == orangeRow && col == orangeCol
+                if (!safe) CombatSystem.applyHit(p, npc, PORTAL_DAMAGE, HitStyle.TYPELESS)
+            }
+        }
+        s.volleys++
+        if (s.volleys % VOLLEYS_PER_SEQUENCE == 0) releaseBlade(npc, s)
     }
 
     /** OC2 / OPEN-OC5: stored damage lands on the Blade at the quadrant's end, x0.8 for each earlier quadrant. */
@@ -206,136 +311,133 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
 
     private fun p3(npc: NpcRef, s: State, target: EntityRef) {
         // OC3 (28 Oct): the quadrant's tank is the leader first, then orb order, skipping dead players.
-        val victim: EntityRef = tank(npc) ?: target
-        if (s.attacks % CYCLE == 1) voidPools(npc, victim)
-        if (s.attacks % SPAWN_EVERY == 0) voidSpawn(npc)
-        val step = s.attacks % CYCLE
-        if (step != 0) {
-            // Two melee, then the directional wave.
-            if (step < CYCLE - 1) melee(npc, victim) else wave(npc, victim)
+        val victim: EntityRef = TfaKit.firstInOrbOrder(npc) ?: target
+        if (s.basics < BASICS_PER_COMBO) {
+            s.basics++
+            basic(npc, victim)
             return
         }
-        s.cycles++
-        if (s.cycles % 2 != 0) {
-            melee(npc, victim)
-            return
-        }
-        if (s.specials % VINE_EVERY == VINE_EVERY - 1) vine(npc, victim)
-        when (SPECIALS[s.specials++ % SPECIALS.size]) {
-            Special.PRAYER -> prayerSpecial(npc)
-            Special.UNTETHER -> untether(npc)
-            Special.INSOLENCE -> insolence(npc)
-        }
+        s.basics = 0
+        sweep(npc, victim)
+        s.combos++
+        voidPools(npc, victim)
+        if (s.combos % COMBOS_PER_SPECIAL == 0 && s.moves < MOVES) special(npc, s, victim)
     }
 
-    /** The tank: the first party member in orb order who is alive in the arena. */
-    private fun tank(npc: NpcRef): PlayerRef? {
-        val players = TfaKit.arena(npc)
-        val order = npc[tp.plugin.SharedAttrs.RAID_ORDER] ?: return players.firstOrNull()
-        return order.firstNotNullOfOrNull { n -> players.firstOrNull { it.username.equals(n, ignoreCase = true) } }
-    }
-
-    /** OC3: void pools under everyone but the tank (OPEN-OC15: 10 damage if still there 2 ticks later). */
-    private fun voidPools(npc: NpcRef, tank: EntityRef) {
-        for (p in TfaKit.arena(npc)) {
-            if (p == tank) continue
-            val at = p.coord
-            npc.spotAnimAt(at, SpotAnims.TFA_PORTAL)
-            npc.queueHit(POOL_DELAY) { if (npc.isInWorld && p.coord == at) CombatSystem.applyHit(p, npc, POOL_DAMAGE, HitStyle.TYPELESS) }
-        }
-    }
-
-    /** OC3 secondary: the Void Vine roots a player and hits 50+ unless broken in time (OPEN-OC16: 8 ticks). */
-    private fun vine(npc: NpcRef, tank: EntityRef) {
-        val players = TfaKit.arena(npc).filter { it != tank }.ifEmpty { TfaKit.arena(npc) }
-        val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
-        val vine = Bosses.summon(npc, Npcs.TFA_OCELLUS_P3_VOID_VINE, BossCombat.randomTile(npc, p.coord, 1), huntRange = 0)
-        p.frozenUntil = maxOf(p.frozenUntil, npc.tick + VINE_TICKS)
-        vine.queueHit(VINE_TICKS) {
-            if (vine.isInWorld && vine.hitpoints > 0) {
-                CombatSystem.applyHit(p, npc, VINE_DAMAGE, HitStyle.TYPELESS)
-                vine.despawn()
-            }
-        }
-    }
-
-    /**
-     * OC3 secondary: void spawns: a Void Siphon heals him while it lives, a Void Augmenter strengthens his hits, a Void
-     * Rift attacks (OPEN-OC17: one every 12 attacks in turn; siphon 10 HP per attack, augmenter +20%).
-     */
-    private fun voidSpawn(npc: NpcRef) {
-        val type = VOID_SPAWNS[(npc[SPAWNED] ?: 0) % VOID_SPAWNS.size]
-        npc[SPAWNED] = (npc[SPAWNED] ?: 0) + 1
-        Bosses.summon(npc, type, BossCombat.randomTile(npc, npc.coord, SPAWN_SPREAD))
-    }
-
-    private fun augmented(npc: NpcRef): Boolean = Bosses.minions(npc, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF).isNotEmpty()
-
-    /** OC3: each quadrant ends with a destruction charge: anyone still near him after 4 ticks takes 50; he moves on. */
-    private fun destruction(npc: NpcRef, s: State) {
-        s.quadrant++
-        npc.say("Crumble...")
-        val at = npc.coord
-        // QM3Nov: "a small delay after Ocellus' Void Spin (Prayer punish) before he can destroy a quadrant".
-        val spin = npc[VOID_SPIN] ?: -1L
-        val wait = DESTRUCTION_DELAY + if (spin >= 0 && npc.tick - spin <= PRAYER_WINDOW + 1) SPIN_GAP else 0
-        npc.queueHit(wait) {
-            if (!npc.isInWorld) return@queueHit
-            for (p in TfaKit.arena(npc)) {
-                if (maxOf(kotlin.math.abs(p.coord.x - at.x), kotlin.math.abs(p.coord.z - at.z)) <= DESTRUCTION_RADIUS) {
-                    CombatSystem.applyHit(p, npc, DESTRUCTION_DAMAGE, HitStyle.TYPELESS)
-                }
-            }
-            val (dx, dz) = QUADRANTS[s.quadrant % QUADRANTS.size]
-            npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
-        }
-    }
-
-    private fun melee(npc: NpcRef, victim: EntityRef) {
-        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+    /** RuneLite (LU FinalBoss.java:99-107): a basic melee (seq 14842) is a 4-tick attack; hybrid (14844, 7) when out of reach. */
+    private fun basic(npc: NpcRef, victim: EntityRef) {
         if (victim is PlayerRef && TfaKit.gap(npc, victim) > 1) {
-            // OC3: a spread void shot (20+) when the tank is unreachable.
-            for (p in TfaKit.arena(npc)) BossCombat.strike(npc, p, AttackType.MAGIC, VOID_SHOT, BossCombat.delay(npc, p, CombatStyle.MAGIC))
+            // OC3: a spread void shot (20+) when the tank is unreachable; the hybrid's style shows on him (4328-4330).
+            npc.anim(Seqs.NPC_OCELLUS_PHASE3_MELEE_HYBRID)
+            val style = if (npc.random(2) == 0) CombatStyle.MAGIC else CombatStyle.RANGED
+            npc.spotAnim(
+                if (style ==
+                    CombatStyle.MAGIC
+                ) {
+                    SpotAnims.VFX_OCELLUS_PHASE3_MELEE_HYBRID_MAGIC
+                } else {
+                    SpotAnims.VFX_OCELLUS_PHASE3_MELEE_HYBRID_RANGED
+                },
+            )
+            for (p in TfaKit.arena(npc)) {
+                BossCombat.strike(
+                    npc,
+                    p,
+                    if (style ==
+                        CombatStyle.MAGIC
+                    ) {
+                        AttackType.MAGIC
+                    } else {
+                        AttackType.RANGED
+                    },
+                    VOID_SHOT,
+                    BossCombat.delay(npc, p, style),
+                )
+            }
+            npc.setAttackClock(npc.tick + HYBRID_SPEED)
             return
         }
-        val max = if (augmented(npc)) P3_MELEE_MAX * AUGMENT_NUM / AUGMENT_DEN else P3_MELEE_MAX
-        BossCombat.strike(npc, victim, AttackType.SLASH, max, 0)
-        for (siphon in Bosses.minions(npc, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL)) {
-            npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + SIPHON_HEAL)
-            siphon.spotAnim(SpotAnims.TFA_PORTAL)
-        }
+        npc.anim(Seqs.NPC_OCELLUS_PHASE3_MELEE_BASIC)
+        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+        BossCombat.strike(npc, victim, AttackType.SLASH, P3_MELEE_MAX, 0)
+        npc.setAttackClock(npc.tick + BASIC_SPEED)
     }
 
-    /** The directional wave at the target's line (OPEN-OC12: everyone within 1 tile of the line from him to the target, 25). */
-    private fun wave(npc: NpcRef, victim: EntityRef) {
-        for (p in TfaKit.arena(npc)) {
-            val near = p == victim || p.distanceTo(victim) <= 1
-            if (near) BossCombat.strike(npc, p, AttackType.RANGED, WAVE_MAX, BossCombat.delay(npc, p, CombatStyle.RANGED))
+    /** RuneLite (LU): the sweep (seq 14846, 5 ticks) at the tank and the players next to them (OPEN-OC12: 25). */
+    private fun sweep(npc: NpcRef, victim: EntityRef) {
+        npc.anim(Seqs.NPC_OCELLUS_PHASE3_MELEE_SLASH)
+        for (p in TfaKit.arena(npc)) if (p == victim || p.distanceTo(victim) <= 1) BossCombat.strike(npc, p, AttackType.SLASH, WAVE_MAX, 1)
+        npc.setAttackClock(npc.tick + SWEEP_SPEED)
+    }
+
+    /**
+     * RuneLite (LU FinalBoss.java:164-169, 817-829): Prayer and an "orange" special in turn, starting with Prayer; the
+     * orange ones start with Untether and alternate with Insolence, except that right after a quadrant move it is
+     * Insolence; no specials after the third move.
+     */
+    private fun special(npc: NpcRef, s: State, victim: EntityRef) {
+        val special =
+            if (s.specials++ % 2 == 0) {
+                Special.PRAYER
+            } else if (s.insolenceNext) {
+                s.insolenceNext = false
+                Special.INSOLENCE
+            } else {
+                val u = s.orangeUntether
+                s.orangeUntether = !u
+                if (u) Special.UNTETHER else Special.INSOLENCE
+            }
+        when (special) {
+            Special.PRAYER -> prayerSpecial(npc, s)
+            Special.UNTETHER -> untether(npc)
+            Special.INSOLENCE -> insolence(npc, victim)
         }
     }
 
     /**
-     * OC3 Prayer special: a player still using an overhead after the 3-tick window loses it (OPEN-OC7: and takes 20).
+     * RuneLite (LU FinalBoss.java:794-801, 1477-1488): the first hit lands 6 ticks after PRAYER_IN (seq 14869): an
+     * overhead still on loses it (OPEN-OC7: and takes 20). Later in P3 he holds it (14870): a second hit ~3 ticks on
+     * punishes an overhead that is off again.
      */
-    private fun prayerSpecial(npc: NpcRef) {
-        npc.say("Pray...")
+    private fun prayerSpecial(npc: NpcRef, s: State) {
+        npc.anim(Seqs.NPC_OCELLUS_PHASE3_PRAYER_IN)
         npc[VOID_SPIN] = npc.tick
-        npc.queueHit(PRAYER_WINDOW) {
+        npc.queueHit(PRAYER_FIRST) {
             if (!npc.isInWorld) return@queueHit
             for (p in TfaKit.arena(npc)) {
-                val praying = p.protects(CombatStyle.MELEE) || p.protects(CombatStyle.RANGED) || p.protects(CombatStyle.MAGIC)
-                if (praying) {
+                if (praying(p)) {
                     p.deactivateAllPrayers()
                     CombatSystem.applyHit(p, npc, PRAYER_PUNISH, HitStyle.TYPELESS)
                 }
             }
         }
+        if (s.moves >= 1) {
+            npc.queueHit(PRAYER_FIRST + 1) { if (npc.isInWorld) npc.anim(Seqs.NPC_OCELLUS_PHASE3_PRAYER_LOOP) }
+            npc.queueHit(PRAYER_FIRST + PRAYER_HOLD) {
+                if (!npc.isInWorld) return@queueHit
+                npc.spotAnim(SpotAnims.VFX_OCELLUS_PHASE3_MELEE_PRAYER_OUT)
+                for (p in TfaKit.arena(npc)) if (!praying(p)) CombatSystem.applyHit(p, npc, PRAYER_PUNISH, HitStyle.TYPELESS)
+            }
+        }
+        npc.setAttackClock(npc.tick + PRAYER_FIRST + PRAYER_HOLD + 1)
     }
 
-    /** Untether: a void eruption of 40+ unless inside the purple lines (OPEN-OC13: within 2 tiles of him is safe). */
+    private fun praying(p: PlayerRef) = p.protects(CombatStyle.MELEE) || p.protects(CombatStyle.RANGED) || p.protects(CombatStyle.MAGIC)
+
+    /**
+     * RuneLite (LU FinalBoss.java:141-146): Untether: four floor waves 4 ticks apart, then the arena-wide hit when he
+     * lands 12 ticks after the fourth (OPEN-OC13: 40 beyond 2 tiles of him, inside the purple lines is safe).
+     */
     private fun untether(npc: NpcRef) {
         npc.say("Untether...")
-        npc.queueHit(UNTETHER_DELAY) {
+        for (w in 1..UNTETHER_WAVES) {
+            npc.queueHit(w * UNTETHER_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                for (p in TfaKit.arena(npc)) if (TfaKit.gap(npc, p) == w) CombatSystem.applyHit(p, npc, UNTETHER_WAVE, HitStyle.TYPELESS)
+            }
+        }
+        val land = UNTETHER_WAVES * UNTETHER_GAP + UNTETHER_LAND
+        npc.queueHit(land) {
             if (!npc.isInWorld) return@queueHit
             for (p in TfaKit.arena(npc)) {
                 if (TfaKit.gap(npc, p) >
@@ -345,39 +447,146 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
                 }
             }
         }
+        npc.setAttackClock(npc.tick + land + 1)
     }
 
-    /** Insolence: waves at three players. */
-    private fun insolence(npc: NpcRef) {
-        npc.say("Insolence!")
-        val players = TfaKit.arena(npc).shuffled(java.util.Random(npc.random(Int.MAX_VALUE).toLong())).take(INSOLENCE_TARGETS)
-        for (p in players) wave(npc, p)
+    /**
+     * RuneLite (LU FinalBoss.java:89-104, 1583-1595): "Insolence..." 2 ticks before the first of three slams (seq 14848),
+     * 5 ticks apart, each at a player and the tiles around them (locs 62703-62705; OPEN: 25).
+     */
+    private fun insolence(npc: NpcRef, victim: EntityRef) {
+        npc.say("Insolence...")
+        for (k in 0 until INSOLENCE_SLAMS) {
+            npc.queueHit(INSOLENCE_LEAD + k * INSOLENCE_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                npc.anim(Seqs.NPC_OCELLUS_PHASE3_MELEE_SUPERIOR_SLASH)
+                val players = TfaKit.arena(npc)
+                val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: victim
+                npc.addLoc(INSOLENCE_LOCS[k], p.coord, FLOOR_SHAPE, 0, INSOLENCE_GAP)
+                for (v in players) if (v.distanceTo(p) <= 1) CombatSystem.applyHit(v, npc, WAVE_MAX, HitStyle.TYPELESS)
+            }
+        }
+        npc.setAttackClock(npc.tick + INSOLENCE_LEAD + INSOLENCE_SLAMS * INSOLENCE_GAP)
+    }
+
+    /** OC3: void pools under everyone but the tank (OPEN-OC15: 10 if still there 2 ticks later). */
+    private fun voidPools(npc: NpcRef, tank: EntityRef) {
+        for (p in TfaKit.arena(npc)) {
+            if (p == tank) continue
+            val at = p.coord
+            npc.addLoc(Locs.TFA_OCELLUS_VOID_DEGEN_AOE, at, FLOOR_SHAPE, 0, POOL_DELAY + 1)
+            npc.queueHit(POOL_DELAY) { if (npc.isInWorld && p.coord == at) CombatSystem.applyHit(p, npc, POOL_DAMAGE, HitStyle.TYPELESS) }
+        }
+    }
+
+    /**
+     * RuneLite (LU FinalBoss.java:803-847): a quadrant move: "Run!", the destruction 15 ticks later (anyone still near him
+     * takes 50, OPEN), he lands on the next quadrant spot; 18 ticks after the line the void marks a player (spotanim
+     * 4302), drops at the earliest 3 ticks later once the player has stopped 2 ticks, and explodes 2 ticks after
+     * dropping (none on the move into the last quadrant). The QM3Nov Void Spin gap delays a move that overlaps it.
+     */
+    private fun quadrantMove(npc: NpcRef, s: State) {
+        s.moves++
+        s.insolenceNext = true
+        npc.say("Run!")
+        npc.anim(Seqs.NPC_OCELLUS_QUADRANT_DESTROY_IN)
+        val spin = npc[VOID_SPIN] ?: -1L
+        val wait = RUN_COUNTDOWN + if (spin >= 0 && npc.tick - spin <= PRAYER_FIRST + 1) SPIN_GAP else 0
+        val at = npc.coord
+        npc.queueHit(wait) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(npc)) {
+                if (maxOf(kotlin.math.abs(p.coord.x - at.x), kotlin.math.abs(p.coord.z - at.z)) <= DESTRUCTION_RADIUS) {
+                    CombatSystem.applyHit(p, npc, DESTRUCTION_DAMAGE, HitStyle.TYPELESS)
+                }
+            }
+            s.quadrant = (s.quadrant + 1) % QUADRANTS.size
+            val (dx, dz) = QUADRANTS[s.quadrant]
+            npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
+        }
+        if (s.moves < MOVES) voidMarker(npc, wait + VOID_MARK_AFTER_MOVE - RUN_COUNTDOWN)
+    }
+
+    private fun voidMarker(npc: NpcRef, after: Int) {
+        npc.queueHit(after) {
+            if (!npc.isInWorld) return@queueHit
+            val players = TfaKit.arena(npc)
+            val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return@queueHit
+            p.spotAnim(SpotAnims.VFX_OCELLUS_QUADRANT_BOMB_SPAWN_01)
+            follow(npc, p, p.coord, 0, VOID_MIN_DROP)
+        }
+    }
+
+    /** Watches [p] until they have stood still 2 ticks (no earlier than [wait] ticks), then drops the void there. */
+    private fun follow(npc: NpcRef, p: PlayerRef, last: CoordGrid, still: Int, wait: Int) {
+        npc.queueHit(1) {
+            if (!npc.isInWorld || p.isDying) return@queueHit
+            val now = p.coord
+            val stillNow = if (now == last) still + 1 else 0
+            if (wait <= 1 && stillNow >= VOID_STOP) {
+                npc.addLoc(Locs.TFA_OCELLUS_VOID_DEGEN_BOMB, now, FLOOR_SHAPE, 0, VOID_FUSE + 1)
+                npc.queueHit(VOID_FUSE) {
+                    npc.spotAnimAt(now, SpotAnims.VFX_OCELLUS_QUADRANT_BOMB_IDLE_01)
+                    for (v in TfaKit.arena(npc)) {
+                        if (v.coord.x - now.x in -1..1 &&
+                            v.coord.z - now.z in -1..1
+                        ) {
+                            CombatSystem.applyHit(v, npc, VOID_DAMAGE, HitStyle.TYPELESS)
+                        }
+                    }
+                }
+            } else {
+                follow(npc, p, now, stillNow, wait - 1)
+            }
+        }
     }
 
     // ---- P4 (OC4)
 
-    private fun p4(npc: NpcRef, s: State) {
-        if (s.explosionsLeft > 0) {
-            s.explosionsLeft--
-            for (p in TfaKit.arena(npc)) {
-                // OC4: the void explosion lands under the player; a perfect dodge (off the tile as it lands) cuts their
-                // next attack's cooldown by 3 ticks.
-                val t = p.coord
-                npc.spotAnimAt(t, SpotAnims.TFA_PORTAL)
-                npc.queueHit(1) {
-                    if (!npc.isInWorld) return@queueHit
-                    if (p.coord.x == t.x && p.coord.z == t.z) {
-                        CombatSystem.applyHit(p, npc, EXPLOSION, HitStyle.TYPELESS)
-                    } else {
-                        p.setAttackClock(maxOf(p.tick, p.attackClock() - DODGE_COOLDOWN_CUT))
+    /**
+     * RuneLite (LU FinalBoss.java:352-360, 677-733): a ranged deflect for 21 ticks, then a melee deflect for 19, each
+     * opening with a void chain: the telegraph (spotanim 4340) on every player, the soul-fragment effect 3 ticks before
+     * it, then six explosions (4339) 2 ticks apart chasing them, the first 3 ticks after the telegraph; a dodged explosion
+     * cuts the player's next attack cooldown by 3. Each deflect ends with a soul-split blast (40+ unprayed, 6-7 prayed).
+     * OPEN-OC8: the trainer (TR) puts the melee deflect first; the plugin order is used.
+     */
+    private fun p4Cycle(npc: NpcRef, s: State, ranged: Boolean) {
+        if (!npc.isInWorld || s.phase != Phase.P4) return
+        s.deflect = if (ranged) HitStyle.RANGED else HitStyle.MELEE
+        npc.anim(Seqs.NPC_OCELLUS_PHASE3_DEFLECT_IN)
+        for (p in TfaKit.arena(npc)) p.spotAnim(SpotAnims.VFX_OCELLUS_SOUL_FRAGMENT_PLAYER_IDLE)
+        npc.queueHit(FRAGMENT_LEAD) { voidChain(npc) }
+        val length = if (ranged) RANGED_DEFLECT else MELEE_DEFLECT
+        npc.queueHit(length) {
+            if (!npc.isInWorld || s.phase != Phase.P4) return@queueHit
+            soulSplit(npc, if (ranged) CombatStyle.RANGED else CombatStyle.MAGIC)
+            p4Cycle(npc, s, !ranged)
+        }
+    }
+
+    private fun voidChain(npc: NpcRef) {
+        if (!npc.isInWorld) return
+        for (p in TfaKit.arena(npc)) p.spotAnim(SpotAnims.VFX_VOID_CHAIN_PLAYER_TELEGRAPH)
+        for (k in 0 until CHAIN_EXPLOSIONS) {
+            npc.queueHit(CHAIN_LEAD + k * CHAIN_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                for (p in TfaKit.arena(npc)) {
+                    val t = p.coord
+                    npc.spotAnimAt(t, SpotAnims.VFX_VOID_CHAIN_EXPLOSION)
+                    npc.queueHit(1) {
+                        if (p.coord == t) {
+                            CombatSystem.applyHit(p, npc, EXPLOSION, HitStyle.TYPELESS)
+                        } else {
+                            p.setAttackClock(maxOf(p.tick, p.attackClock() - DODGE_COOLDOWN_CUT))
+                        }
                     }
                 }
             }
-            npc.setAttackClock(npc.tick + EXPLOSION_GAP)
-            return
         }
-        // Soul-split void blast: 40+ unprayed, 6-7 prayed (OPEN-OC8: the style alternates magic / ranged).
-        val style = if (s.attacks % 2 == 0) CombatStyle.MAGIC else CombatStyle.RANGED
+    }
+
+    /** OC4: soul-split void blast, 40+ unprayed, 6-7 prayed; it heals him a quarter of what it deals. */
+    private fun soulSplit(npc: NpcRef, style: CombatStyle) {
         for (p in TfaKit.arena(npc)) {
             val dmg =
                 if (p.protects(
@@ -392,39 +601,42 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
                 npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + dmg / SOUL_SPLIT)
             }
         }
-        if (s.attacks % P4_CYCLE == 0) s.explosionsLeft = EXPLOSION_CYCLES
     }
 
     // ---- damage and phase changes
 
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
+        var d = censer(source, damage, style)
         if (s.phase == Phase.P2 && source != null) {
             // OC2: the Blade stores players' damage until its quadrant ends.
-            s.stored += damage
+            s.stored += d
             return 0
         }
-        if (s.phase == Phase.P3) return opposite(npc, source, damage)
-        if (s.phase != Phase.P4) return damage
-        // OC4: Deflect Melee halves melee, Deflect Range (later in the cycle, while the soul-split blasts run) halves
-        // ranged; slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
-        val deflected = if (s.explosionsLeft > 0) HitStyle.MELEE else HitStyle.RANGED
-        var d = if (style == deflected) damage / 2 else damage
+        if (s.phase == Phase.P3) return opposite(npc, source, d)
+        if (s.phase != Phase.P4) return d
+        if (style == s.deflect) d /= 2
+        // OC4: slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
         val speed = (source as? PlayerRef)?.attackSpeed() ?: return d
-        d =
-            when {
-                speed >= SLOW_5 -> d * (PERCENT - CUT_5) / PERCENT
-                speed == SLOW_4 -> d * (PERCENT - CUT_4) / PERCENT
-                speed == SLOW_3 -> d * (PERCENT - CUT_3) / PERCENT
-                else -> d
-            }
-        return d
+        return when {
+            speed >= SLOW_5 -> d * (PERCENT - CUT_5) / PERCENT
+            speed == SLOW_4 -> d * (PERCENT - CUT_4) / PERCENT
+            speed == SLOW_3 -> d * (PERCENT - CUT_3) / PERCENT
+            else -> d
+        }
+    }
+
+    /** A Bandosian (melee) or Armadylean (ranged) censer's buff (OPEN-OC14: +10% damage of that style for 100 ticks). */
+    private fun censer(source: EntityRef?, damage: Int, style: HitStyle): Int {
+        val p = source as? PlayerRef ?: return damage
+        val until = p[CENSER_UNTIL] ?: return damage
+        return if (p.tick < until && p[CENSER_STYLE] == style) damage * (PERCENT + CENSER_BONUS) / PERCENT else damage
     }
 
     /** OC3: +10% damage from attacks made from directly opposite the tank. */
     private fun opposite(npc: NpcRef, source: EntityRef?, damage: Int): Int {
         val p = source as? PlayerRef ?: return damage
-        val tank = tank(npc) ?: return damage
+        val tank = TfaKit.firstInOrbOrder(npc) ?: return damage
         if (p == tank) return damage
         val cx = npc.coord.x + npc.size / 2
         val cz = npc.coord.z + npc.size / 2
@@ -438,16 +650,20 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         val s = state(npc)
         val pct = npc.hitpoints * PERCENT / maxOf(1, npc.maxHitpoints)
         if (s.phase == Phase.P1 && s.centreBlasts < CENTRE_AT.size && pct <= CENTRE_AT[s.centreBlasts]) centreBlast(npc, s)
-        // OC3: four quadrants: each 25% of the pool lost ends one (the last one is P4).
-        if (s.phase == Phase.P3 && s.quadrant < QUADRANT_ENDS.size && pct <= QUADRANT_ENDS[s.quadrant]) destruction(npc, s)
-        if (s.phase == Phase.P3 && pct <= P4_AT) {
-            s.phase = Phase.P4
-            npc.say("Enough!")
-            s.explosionsLeft = EXPLOSION_CYCLES
-            // OC4: "the blue-wind orb takes half his current HP (rounded down)".
-            npc.spotAnim(SpotAnims.TFA_WAVE_DUST)
-            CombatSystem.applyHit(npc, null, npc.hitpoints / 2, HitStyle.TYPELESS)
+        // OC3 / RuneLite: three quadrant moves (at 75 / 50 / 25%); the last quadrant is P4.
+        if (s.phase == Phase.P3 && s.moves < MOVES && pct <= QUADRANT_ENDS[s.moves]) {
+            quadrantMove(npc, s)
+            if (s.moves == MOVES) startP4(npc, s)
         }
+    }
+
+    private fun startP4(npc: NpcRef, s: State) {
+        s.phase = Phase.P4
+        npc.say("Enough!")
+        // OC4: "the blue-wind orb takes half his current HP (rounded down)".
+        npc.spotAnim(SpotAnims.TFA_WAVE_DUST)
+        CombatSystem.applyHit(npc, null, npc.hitpoints / 2, HitStyle.TYPELESS)
+        npc.queueHit(RUN_COUNTDOWN + 1) { p4Cycle(npc, s, ranged = true) }
     }
 
     override fun died(npc: NpcRef, killer: EntityRef?) {
@@ -461,7 +677,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
                 // OC2: the Blade (P2), with defence restored (the phase's own stats).
                 s.phase = Phase.P2
                 npc.transform(Npcs.TFA_OCELLUS_P2, restoreStats = true)
-                npc.teleport(s.centre)
+                npc.teleport(CoordGrid(s.centre.x - 1, s.centre.z - 1, s.centre.level))
                 TfaKit.setPool(npc, P2_HP)
                 p2Loop(npc, s)
                 true
@@ -473,6 +689,11 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
                 npc.transform(Npcs.TFA_OCELLUS_P3, restoreStats = true)
                 TfaKit.setPool(npc, REMAINDER_HP[s.size - MIN_SCALE])
                 npc.hitpoints = maxOf(1, npc.maxHitpoints - s.bladeDamage / 2)
+                npc.say("This... is enough")
+                // RuneLite (LU): the fight's start quadrant; the first void marks a player 15 ticks after the line.
+                val (dx, dz) = QUADRANTS[s.quadrant]
+                npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
+                voidMarker(npc, FIRST_VOID)
                 true
             }
 
@@ -482,96 +703,132 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         }
     }
 
-    private enum class Special { PRAYER, UNTETHER, INSOLENCE }
+    /** RuneLite (LU FinalBoss.java:1182-1190): the three orange sequences, {row, column} per volley. */
+    private val SEQUENCES =
+        listOf(
+            listOf(1 to 1, 3 to 1, 1 to 3, 1 to 1, 2 to 2, 4 to 1),
+            listOf(2 to 2, 2 to 3, 1 to 4, 2 to 2, 2 to 4, 3 to 3),
+            listOf(1 to 0, 1 to 3, 1 to 5, 3 to 3, 2 to 2, 3 to 0),
+        )
 
-    private val SPAWNED = AttrKey<Int>("tfa_ocellus_spawns")
-    private val VOID_SPIN = AttrKey<Long>("tfa_ocellus_void_spin")
-    private val VOID_SPAWNS =
-        intArrayOf(Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BASIC)
-
-    /** OC3: the four diagonal quadrants (OPEN-OC9: 6 tiles out from the arena centre). */
+    /** RuneLite (LU FinalBoss.java:1820-1864): quadrant landing spots (south-west tile) from the arena centre. */
     private val QUADRANTS = listOf(-6 to -6, 6 to -6, 6 to 6, -6 to 6)
-    private val QUADRANT_ENDS = intArrayOf(75, 50)
+    private val CORNERS = listOf(-8 to -8, 8 to -8, 8 to 8, -8 to 8)
 
-    /** OC3: specials in the order Prayer, Untether, Prayer, Insolence. */
-    private val SPECIALS = listOf(Special.PRAYER, Special.UNTETHER, Special.PRAYER, Special.INSOLENCE)
+    /** P1 centre: the two tendrils of each quick ground attack, on neighbouring sides. */
+    private val SIDE_PAIRS =
+        listOf(
+            (0 to 3) to (3 to 0),
+            (3 to 0) to (0 to -3),
+            (0 to -3) to (-3 to 0),
+            (-3 to 0) to (0 to 3),
+        )
+    private val INSOLENCE_LOCS =
+        intArrayOf(
+            Locs.TFA_OCELLUS_VOID_DEGEN_AOE_INSOLENCE_1,
+            Locs.TFA_OCELLUS_VOID_DEGEN_AOE_INSOLENCE_4,
+            Locs.TFA_OCELLUS_VOID_DEGEN_AOE_INSOLENCE_7,
+        )
+    private val VOID_SPIN = AttrKey<Long>("tfa_ocellus_void_spin")
+
+    /** The four active censers (cache gamevals `TFA_OCELLUS_ARTIFACT_*`; the inactive form is id + 1). */
+    val CENSERS =
+        intArrayOf(
+            Locs.TFA_OCELLUS_ARTIFACT_DAMAGE_MELEE,
+            Locs.TFA_OCELLUS_ARTIFACT_DAMAGE_RANGED,
+            Locs.TFA_OCELLUS_ARTIFACT_SPEC,
+            Locs.TFA_OCELLUS_ARTIFACT_HEAL,
+        )
 
     /** ocellus.md: P1 HP and the "remainder" (P3) HP for 2..8 players; OPEN-OC2: P2 is a fixed 1,000 pool. */
     private val P1_HP = intArrayOf(2500, 3630, 4680, 5730, 6780, 7830, 8880)
     private val REMAINDER_HP = intArrayOf(5250, 7610, 9820, 12020, 14230, 16430, 18640)
     private const val P2_HP = 1000
 
-    /** OC1: centre blasts at 66% and 25%. */
+    /** OC1: centre blasts at 66% and 25%; OC3: quadrant moves at 75 / 50 / 25%. */
     private val CENTRE_AT = intArrayOf(66, 25)
-    private val CORNERS = listOf(-8 to -8, 8 to -8, -8 to 8, 8 to 8)
+    private val QUADRANT_ENDS = intArrayOf(75, 50, 25)
 
     private const val MIN_SCALE = 2
     private const val HUNT = 24
     private const val MAX_HIT = 24
-    private const val CORNER_EVERY = 8
+    private const val VOLLEY_SPEED = 5
+    private const val CASTS_PER_CORNER = 4
     private const val SLAM_RANGE = 2
     private const val SLAM_MAX = 35
-    private const val TENDRILS = 7
-    private const val CENTRE_TENDRILS = 8
-    private const val TENDRIL_SPREAD = 4
-    private const val CHANNEL_TICKS = 6
+    private const val CORNER_TENDRILS = 7
+    private const val TENDRIL_GAP = 2
+    private const val TENDRIL_FUSE = 5
+    private const val CORNER_ATTACK_SPEED = 8
     private const val TENDRIL_HIT = 5
     private const val TENDRIL_HEAL = 20
-    private const val CENTRE_TICKS = 8
+    private const val CENTRE_ATTACKS = 4
+    private const val CENTRE_ATTACK_GAP = 2
+    private const val FIRST_FUSE = 6
+    private const val SECOND_FUSE = 8
     private const val ANNIHILATION = 80
     private const val DEATH_AWAITS = 17
-    private const val PORTALS_PER_PLAYER = 4
-    private const val PORTAL_SPREAD = 3
-    private const val PORTAL_TELEGRAPH = 2
+    private const val P2_SET_TICKS = 5
+    private const val PORTAL_TELEGRAPH = 4
+    private const val PORTALS_PER_WALL = 6
+    private const val VOLLEYS_PER_SEQUENCE = 6
     private const val PORTAL_DAMAGE = 20
-    private const val CYCLE = 3
+    private const val WALL_SHAPE = 10
+    private const val FLOOR_SHAPE = 22
+    private const val DIMINISH = 0.8
+    private const val BASICS_PER_COMBO = 2
+    private const val COMBOS_PER_SPECIAL = 2
+    private const val BASIC_SPEED = 4
+    private const val SWEEP_SPEED = 5
+    private const val HYBRID_SPEED = 7
     private const val VOID_SHOT = 20
     private const val P3_MELEE_MAX = 30
     private const val WAVE_MAX = 25
-    private const val PRAYER_WINDOW = 3
+    private const val PRAYER_FIRST = 6
+    private const val PRAYER_HOLD = 3
     private const val PRAYER_PUNISH = 20
-    private const val UNTETHER_DELAY = 3
+    private const val UNTETHER_WAVES = 4
+    private const val UNTETHER_GAP = 4
+    private const val UNTETHER_LAND = 12
+    private const val UNTETHER_WAVE = 15
     private const val UNTETHER_SAFE = 2
     private const val UNTETHER_DAMAGE = 40
-    private const val INSOLENCE_TARGETS = 3
-    private const val P4_AT = 25
-    private const val P4_CYCLE = 6
-    private const val EXPLOSION_CYCLES = 6
-    private const val EXPLOSION_GAP = 2
+    private const val INSOLENCE_SLAMS = 3
+    private const val INSOLENCE_LEAD = 2
+    private const val INSOLENCE_GAP = 5
+    private const val POOL_DELAY = 2
+    private const val POOL_DAMAGE = 10
+    private const val MOVES = 3
+    private const val RUN_COUNTDOWN = 15
+    private const val SPIN_GAP = 3
+    private const val DESTRUCTION_RADIUS = 3
+    private const val DESTRUCTION_DAMAGE = 50
+    private const val VOID_MARK_AFTER_MOVE = 18
+    private const val FIRST_VOID = 15
+    private const val VOID_MIN_DROP = 3
+    private const val VOID_STOP = 2
+    private const val VOID_FUSE = 2
+    private const val VOID_DAMAGE = 30
+    private const val RANGED_DEFLECT = 21
+    private const val MELEE_DEFLECT = 19
+    private const val FRAGMENT_LEAD = 3
+    private const val CHAIN_LEAD = 3
+    private const val CHAIN_GAP = 2
+    private const val CHAIN_EXPLOSIONS = 6
     private const val EXPLOSION = 15
+    private const val DODGE_COOLDOWN_CUT = 3
     private const val SOUL_MIN = 40
     private const val SOUL_MAX = 45
     private const val SOUL_PRAYED_MIN = 6
     private const val SOUL_PRAYED_MAX = 7
     private const val SOUL_SPLIT = 4
     private const val PERCENT = 100
-    private const val BARRAGE_EVERY = 5
-    private const val BARRAGE_LINES = 3
-    private const val BARRAGE_TELEGRAPH = 2
-    private const val BARRAGE_DAMAGE = 20
-    private const val DODGE_COOLDOWN_CUT = 3
-    private const val SETS_PER_QUADRANT = 5
-
-    /** OPEN-OC5: one portal set every 5 ticks. */
-    private const val P2_SET_TICKS = 5
-    private const val DIMINISH = 0.8
     private const val OPPOSITE_BONUS = 10
-    private const val POOL_DELAY = 2
-    private const val POOL_DAMAGE = 10
-    private const val VINE_EVERY = 3
-    private const val VINE_TICKS = 8
-    private const val VINE_DAMAGE = 50
-    private const val SPAWN_EVERY = 12
-    private const val SPAWN_SPREAD = 5
-    private const val SIPHON_HEAL = 10
-    private const val AUGMENT_NUM = 6
-    private const val AUGMENT_DEN = 5
-    private const val DESTRUCTION_DELAY = 4
-
-    /** OPEN-OC18: the Void Spin gap before a destruction (3 ticks). */
-    private const val SPIN_GAP = 3
-    private const val DESTRUCTION_RADIUS = 3
-    private const val DESTRUCTION_DAMAGE = 50
+    private const val CENSER_BONUS = 10
+    private const val CENSER_TICKS = 100
+    private const val CENSER_OUT = 4
+    private const val ZAROS_SPEC = 500
+    private const val SARA_RESTORE = 40
     private const val SLOW_3 = 3
     private const val SLOW_4 = 4
     private const val SLOW_5 = 5

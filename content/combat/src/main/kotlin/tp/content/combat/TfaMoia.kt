@@ -4,30 +4,37 @@ import tp.plugin.AttrKey
 import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
+import tp.plugin.PlayerRef
 import tp.symbols.Npcs
 import tp.symbols.Seqs
 import tp.symbols.SpotAnims
 import tp.util.CoordGrid
 
 /**
- * Moia, TFA room 3 west (docs/mechanics/raids/tfa/moia.md MO0-MO3): 3-4 ranged attacks, a teleport and a slow magic
- * projectile; every second magic attack a smoke cough poisons and drains prayer (at most four); eight undead binders
- * circle the arena and shuffle every 15 ticks; at 33% she heals the binders, consumes one and a countdown ends with
- * every surviving binder hitting everyone.
+ * Moia, TFA room 3 west (docs/mechanics/raids/tfa/moia.md MO0-MO3; timings from RuneLite, luuj/fracturedarchive
+ * Necromancer.java, in runelite-timings.md). 3-4 fast ranged attacks, then a special in the order magic, magic, cough:
+ * a magic special is a teleport and a slow magic dagger landing 6 ticks after the throw; the cough lands 3 ticks after
+ * its throw and every coughing player coughs again every 8 ticks, at most four times, spreading it to whoever is next
+ * to them or to a binder they touch. Eight undead binders walk nine spots and shuffle one spot on every 15 ticks. In
+ * the enrage ("Cease this futile...") she vanishes, then charges ("Useless corpses... Give me your strength!", then
+ * "Again!") for 41, 39, 37 ... ticks; each charge ends with every surviving binder hitting everyone.
  */
 internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
-    private class State(val centre: CoordGrid) {
+    private class State(val start: CoordGrid) {
         var ranged = 0
         var rangedBurst = 0
-        var magics = 0
-        var coughs = 0
+        var specials = 0
         var enraged = false
-        var countdownAt = -1L
+        var charge = 0
+        var chargeEndsAt = -1L
         var shuffleAt = -1L
         var ring = 0
     }
 
     private val STATE = AttrKey<State>("tfa_moia")
+
+    /** Per player: coughs left. */
+    private val COUGHS = AttrKey<Int>("tfa_moia_coughs")
 
     private fun state(npc: NpcRef): State {
         TfaKit.scale(npc, HP)
@@ -35,10 +42,8 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
             npc[STATE] = it
             it.rangedBurst = BURST_MIN + npc.random(BURST_VARIANTS)
             it.shuffleAt = npc.tick + SHUFFLE_TICKS
+            // MO0: she starts outside the arena (her start tile; RuneLite: the binders' grid centre = start + (8, 1)).
             binders(npc, it)
-            // MO0: "Moia starts outside the arena, so a ranged or magic weapon is needed" (her first side position).
-            val (dx, dz) = SIDE_OFFSETS[0]
-            npc.teleport(CoordGrid(it.centre.x + dx, it.centre.z + dz, it.centre.level))
         }
     }
 
@@ -49,7 +54,10 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         val s = state(npc)
         tickBinders(npc, s)
-        if (s.countdownAt >= 0 && npc.tick >= s.countdownAt) countdown(npc, s)
+        if (s.enraged) {
+            enragedAttack(npc, s, victim)
+            return
+        }
         if (s.ranged < s.rangedBurst) {
             s.ranged++
             ranged(npc, victim)
@@ -57,123 +65,158 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
         }
         s.ranged = 0
         s.rangedBurst = BURST_MIN + npc.random(BURST_VARIANTS)
-        teleport(npc, s)
-        magic(npc, victim)
-        s.magics++
-        if (s.magics % MAGICS_PER_COUGH == 0 && s.coughs < MAX_COUGHS) cough(npc, s)
-    }
-
-    private fun ranged(npc: NpcRef, victim: EntityRef) {
-        npc.anim(Seqs.MOIA_DAGGER_ATTACK01)
-        CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
-        val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
-        BossCombat.projectile(npc, victim, SpotAnims.MOIA_DAGGER_SPIN, delay)
-        BossCombat.strike(npc, victim, AttackType.RANGED, RANGED_MAX, delay)
-    }
-
-    /** MO2: a slow magic projectile after the teleport (OPEN-MO6: 4 ticks extra flight). */
-    private fun magic(npc: NpcRef, victim: EntityRef) {
-        npc.anim(Seqs.MOIA_PROJECTILE_ATTACK01)
-        CombatSystem.announceAttack(npc, victim, CombatStyle.MAGIC)
-        val delay = BossCombat.delay(npc, victim, CombatStyle.MAGIC) + SLOW_EXTRA
-        BossCombat.projectile(npc, victim, SpotAnims.MOIA_DAGGER_MAGIC, delay)
-        BossCombat.strike(npc, victim, AttackType.MAGIC, MAGIC_MAX, delay) { victim.spotAnim(SpotAnims.MOIA_DAGGER_MAGIC_IMPACT) }
-    }
-
-    /** MO2: "she teleports to another side" (OPEN-MO7: a random point on a ring around the arena centre). */
-    private fun teleport(npc: NpcRef, s: State) {
-        npc.spotAnim(SpotAnims.MOIA_TELEPORT_SPOTANIM)
-        val side = npc.random(SIDES)
-        val (dx, dz) = SIDE_OFFSETS[side]
-        npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
-        npc.spotAnim(SpotAnims.MOIA_TELEPORT_IN_SPOTANIM)
-    }
-
-    /** MO2: a smoke cough: poison ramping 2 -> 5 -> 13 -> 20 and a prayer drain (OPEN-MO8: drain 10). */
-    private fun cough(npc: NpcRef, s: State) {
-        val severity = COUGH_POISON[minOf(s.coughs, COUGH_POISON.size - 1)]
-        s.coughs++
-        npc.anim(Seqs.MOIA_CHANT01)
-        // MO2: the cough lands on the target; for the next 8 ticks contact (a tile away) with a coughed player or a
-        // binder spreads it, so the target leaving the group in time keeps it to themself.
-        val target = TfaKit.arena(npc).let { it.getOrNull(npc.random(maxOf(1, it.size))) } ?: return
-        val infected = HashSet<String>()
-        infect(target, severity, infected)
-        for (t in 1..SPREAD_TICKS) {
-            npc.queueHit(t) {
-                if (!npc.isInWorld) return@queueHit
-                val players = TfaKit.arena(npc)
-                val carriers = players.filter { it.username in infected }
-                val binders = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
-                for (p in players) {
-                    if (p.username in infected) continue
-                    val touching = carriers.any { it.distanceTo(p) <= 1 } || binders.any { TfaKit.gap(it, p) <= 1 }
-                    if (touching) infect(p, severity, infected)
-                }
-            }
+        // RuneLite (LU Necromancer.java:131-149): before the enrage the specials repeat magic, magic, cough.
+        if (s.specials++ % SPECIAL_CYCLE == SPECIAL_CYCLE - 1) {
+            cough(npc, victim)
+        } else {
+            teleport(npc, s)
+            magic(npc, victim)
         }
     }
 
-    private fun infect(p: tp.plugin.PlayerRef, severity: Int, infected: MutableSet<String>) {
-        infected += p.username
-        p.spotAnim(SpotAnims.MOIA_INFECT_SPOTANIM)
-        if (!Toxic.wearsSerpentineHelm(p)) Poison.poison(p, severity)
-        BossCombat.drainPrayer(p, COUGH_DRAIN)
+    /** The fast ranged dagger (projectile 4214 `MOIA_DAGGER`). */
+    private fun ranged(npc: NpcRef, victim: EntityRef) {
+        npc.anim(Seqs.MOIA_PROJECTILE_ATTACK01)
+        CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
+        val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
+        BossCombat.projectile(npc, victim, SpotAnims.MOIA_DAGGER, delay)
+        BossCombat.strike(npc, victim, AttackType.RANGED, RANGED_MAX, delay)
     }
 
-    // ---- undead binders (MO1)
+    /** RuneLite (LU Necromancer.java:66): the slow magic dagger (projectile 4213) lands 6 ticks after the throw. */
+    private fun magic(npc: NpcRef, victim: EntityRef) {
+        npc.anim(Seqs.MOIA_PROJECTILE_ATTACK01)
+        CombatSystem.announceAttack(npc, victim, CombatStyle.MAGIC)
+        BossCombat.projectile(npc, victim, SpotAnims.MOIA_DAGGER_MAGIC, MAGIC_FLIGHT)
+        BossCombat.strike(npc, victim, AttackType.MAGIC, MAGIC_MAX, MAGIC_FLIGHT) { victim.spotAnim(SpotAnims.MOIA_DAGGER_MAGIC_IMPACT) }
+    }
+
+    /** MO2 / RuneLite (seq 14788 = the magic special): she teleports to another side of the binders' grid. */
+    private fun teleport(npc: NpcRef, s: State) {
+        npc.anim(Seqs.MOIA_TELEPORT01)
+        npc.spotAnim(SpotAnims.MOIA_TELEPORT_SPOTANIM)
+        val centre = gridCentre(s)
+        val (dx, dz) = SIDE_OFFSETS[npc.random(SIDE_OFFSETS.size)]
+        npc.teleport(CoordGrid(centre.x + dx, centre.z + dz, centre.level))
+        npc.spotAnim(SpotAnims.MOIA_TELEPORT_IN_SPOTANIM)
+    }
+
+    // ---- the cough (MO2; RuneLite LU Necromancer.java:69-79, 348-406)
+
+    /** The dagger throw (seq 14786, projectile 4218) coughs its target 3 ticks later. */
+    private fun cough(npc: NpcRef, victim: EntityRef) {
+        npc.anim(Seqs.MOIA_DAGGER_ATTACK01)
+        val p = victim as? PlayerRef ?: return
+        BossCombat.projectile(npc, p, SpotAnims.MOIA_INFECT_ATTACK_PROJANIM, FIRST_COUGH)
+        npc.queueHit(FIRST_COUGH) { if (npc.isInWorld) infect(npc, p) }
+    }
+
+    /** [p] starts coughing unless already ("being coughed on again does not restart it"). */
+    private fun infect(npc: NpcRef, p: PlayerRef) {
+        if ((p[COUGHS] ?: 0) > 0) return
+        p[COUGHS] = MAX_COUGHS
+        coughOnce(npc, p, 0)
+    }
+
+    /** One cough: the wiki's ramp (2, 5, 13, 20) and a prayer drain (OPEN-MO8: 10); it spreads by contact. */
+    private fun coughOnce(npc: NpcRef, p: PlayerRef, k: Int) {
+        if (!npc.isInWorld || p.isDying) {
+            p[COUGHS] = 0
+            return
+        }
+        p.spotAnim(SpotAnims.MOIA_INFECT_SPOTANIM)
+        if (!Toxic.wearsSerpentineHelm(p)) CombatSystem.applyHit(p, npc, COUGH_DAMAGE[minOf(k, COUGH_DAMAGE.size - 1)], HitStyle.TYPELESS)
+        BossCombat.drainPrayer(p, COUGH_DRAIN)
+        val binders = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
+        for (other in TfaKit.arena(npc)) {
+            if (other == p) continue
+            val touching = other.distanceTo(p) <= 1 || binders.any { TfaKit.gap(it, other) <= 1 && TfaKit.gap(it, p) <= 1 }
+            if (touching) infect(npc, other)
+        }
+        val left = (p[COUGHS] ?: 0) - 1
+        p[COUGHS] = left
+        if (left > 0) npc.queueHit(COUGH_EVERY) { coughOnce(npc, p, k + 1) }
+    }
+
+    // ---- undead binders (MO1; RuneLite LU Necromancer.java:152-181)
+
+    private fun gridCentre(s: State) = CoordGrid(s.start.x + GRID_CENTRE.first, s.start.z + GRID_CENTRE.second, s.start.level)
+
+    private fun spot(s: State, k: Int): CoordGrid {
+        val (dx, dz) = SPOTS[(k + s.ring) % SPOTS.size]
+        return CoordGrid(s.start.x + dx, s.start.z + dz, s.start.level)
+    }
 
     private fun binders(npc: NpcRef, s: State) {
-        for (k in 0 until BINDERS) Bosses.summon(npc, Npcs.TFA_MOIA_MINION, ringTile(s, k), huntRange = 0)
+        for (k in 0 until BINDERS) Bosses.summon(npc, Npcs.TFA_MOIA_MINION, spot(s, k), huntRange = 0)
     }
 
-    private fun ringTile(s: State, k: Int): CoordGrid {
-        val (dx, dz) = RING[(k + s.ring) % RING.size]
-        return CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level)
-    }
-
-    /** MO1: the binders cycle clockwise every 15 ticks; anyone underneath is pushed out with minor damage. */
+    /** Every 15 ticks each binder moves one spot on (the last loops to the first); anyone under one is pushed out. */
     private fun tickBinders(npc: NpcRef, s: State) {
         if (npc.tick < s.shuffleAt) return
         s.shuffleAt = npc.tick + SHUFFLE_TICKS
         s.ring++
         for ((k, b) in Bosses.minions(npc, Npcs.TFA_MOIA_MINION).withIndex()) {
-            val to = ringTile(s, k)
+            val to = spot(s, k)
             b.teleport(to)
             for (p in BossCombat.playersOn(npc, to)) CombatSystem.applyHit(p, b, PUSH_DAMAGE, HitStyle.TYPELESS)
         }
-        // MO1: binders are respawned during the fight.
+        // MO1: binders are respawned during the fight (not in the enrage).
         val missing = BINDERS - Bosses.minions(npc, Npcs.TFA_MOIA_MINION).size
-        if (!s.enraged) repeat(missing) { Bosses.summon(npc, Npcs.TFA_MOIA_MINION, ringTile(s, BINDERS - 1 - it), huntRange = 0) }
+        if (!s.enraged) repeat(missing) { Bosses.summon(npc, Npcs.TFA_MOIA_MINION, spot(s, BINDERS - 1 - it), huntRange = 0) }
     }
 
-    /** MO3: at 33% she heals the binders, consumes the middle one 10 ticks later (+80 HP) and the countdown starts. */
+    // ---- enrage (MO3)
+
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc)
         if (s.enraged || npc.hitpoints * THIRDS > npc.maxHitpoints) return
         s.enraged = true
-        val binders = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
-        for (b in binders) {
+        npc.say("Cease this futile resistance!")
+        // RuneLite (LU Necromancer.java:367-374): she vanishes for about 10 ticks.
+        npc.setAttackClock(npc.tick + VANISH_TICKS)
+        for (b in Bosses.minions(npc, Npcs.TFA_MOIA_MINION)) {
             b.hitpoints = b.maxHitpoints
             b.spotAnim(SpotAnims.MOIA_MINION_EMPOWER_SPOTANIM_01)
         }
+        // MO3: 10 ticks later she consumes a binder, +80 HP (OPEN-MO5: the amount by scale).
         npc.queueHit(CONSUME_DELAY) {
             val eaten = Bosses.minions(npc, Npcs.TFA_MOIA_MINION).firstOrNull() ?: return@queueHit
             eaten.despawn()
             npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + CONSUME_HEAL)
         }
-        s.countdownAt = npc.tick + CONSUME_DELAY + COUNTDOWN
+        startCharge(npc, s)
     }
 
-    /** MO3 / OPEN-MO3: each surviving binder deals about 25 to everyone; then a fresh countdown. */
-    private fun countdown(npc: NpcRef, s: State) {
-        val alive = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
-        for (b in alive) b.spotAnim(SpotAnims.MOIA_CHANT_PLAYER_EXPLODE)
-        for (p in TfaKit.arena(npc)) if (alive.isNotEmpty()) CombatSystem.applyHit(p, npc, BINDER_BLAST * alive.size, HitStyle.TYPELESS)
-        s.countdownAt = npc.tick + COUNTDOWN
+    /** RuneLite (LU Necromancer.java:126-136): the first charge lasts 41 ticks, each next one 2 less. */
+    private fun startCharge(npc: NpcRef, s: State) {
+        npc.anim(Seqs.MOIA_CHANT01)
+        npc.say(if (s.charge == 0) "Useless corpses... Give me your strength!" else "Again!")
+        s.chargeEndsAt = npc.tick + maxOf(MIN_CHARGE, FIRST_CHARGE - CHARGE_STEP * s.charge)
+        s.charge++
+    }
+
+    /** RuneLite (LU Necromancer.java:183-188): in the enrage she attacks every 5 ticks, one animation for both styles. */
+    private fun enragedAttack(npc: NpcRef, s: State, victim: EntityRef) {
+        if (s.chargeEndsAt >= 0 && npc.tick >= s.chargeEndsAt) {
+            // OPEN-MO3: each surviving binder deals about 25 to everyone.
+            val alive = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
+            for (b in alive) b.spotAnim(SpotAnims.MOIA_CHANT_PLAYER_EXPLODE)
+            if (alive.isNotEmpty()) for (p in TfaKit.arena(npc)) CombatSystem.applyHit(p, npc, BINDER_BLAST * alive.size, HitStyle.TYPELESS)
+            startCharge(npc, s)
+        }
+        val magic = npc.random(2) == 0
+        npc.anim(Seqs.MOIA_PROJECTILE_ATTACK01)
+        val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
+        CombatSystem.announceAttack(npc, victim, style)
+        val delay = if (magic) MAGIC_FLIGHT else BossCombat.delay(npc, victim, style)
+        BossCombat.projectile(npc, victim, if (magic) SpotAnims.MOIA_DAGGER_MAGIC else SpotAnims.MOIA_DAGGER, delay)
+        BossCombat.strike(npc, victim, if (magic) AttackType.MAGIC else AttackType.RANGED, if (magic) MAGIC_MAX else RANGED_MAX, delay)
+        npc.setAttackClock(npc.tick + ENRAGED_SPEED)
     }
 
     override fun died(npc: NpcRef, killer: EntityRef?) {
+        npc.say("Hmph")
         Bosses.dismissMinions(npc)
     }
 
@@ -183,30 +226,41 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
      */
     private val HP = intArrayOf(1900, 2755, 3553, 4351, 5149, 5947, 6745)
 
-    /** MO1 / OPEN-MO7: eight binders evenly on a ring of radius 6 (and Moia's four sides at radius 9). */
-    private val RING = listOf(0 to 6, 4 to 4, 6 to 0, 4 to -4, 0 to -6, -4 to -4, -6 to 0, -4 to 4)
-    private val SIDE_OFFSETS = listOf(0 to 9, 9 to 0, 0 to -9, -9 to 0)
-    private val COUGH_POISON = intArrayOf(2, 5, 13, 20)
+    /** RuneLite (LU Necromancer.java:152-181): the nine binder spots from her start tile, in walking order. */
+    private val SPOTS = listOf(4 to 5, 8 to 3, 12 to 5, 12 to 1, 12 to -3, 8 to -1, 4 to -3, 4 to 1, 8 to 1)
+
+    /** RuneLite: the binders' grid centre is her start tile + (8, 1). */
+    private val GRID_CENTRE = 8 to 1
+
+    /** OPEN-MO7: her four teleport sides, 7 tiles out from the grid centre. */
+    private val SIDE_OFFSETS = listOf(0 to 7, 7 to 0, 0 to -7, -7 to 0)
+
+    /** MO2 (wiki): the cough ramp. */
+    private val COUGH_DAMAGE = intArrayOf(2, 5, 13, 20)
 
     private const val HUNT = 20
     private const val BURST_MIN = 3
     private const val BURST_VARIANTS = 2
-    private const val MAGICS_PER_COUGH = 2
-    private const val MAX_COUGHS = 4
+    private const val SPECIAL_CYCLE = 3
     private const val RANGED_MAX = 32
     private const val MAGIC_MAX = 44
-    private const val SLOW_EXTRA = 4
-    private const val SIDES = 4
+    private const val MAGIC_FLIGHT = 6
+    private const val FIRST_COUGH = 3
+    private const val COUGH_EVERY = 8
+    private const val MAX_COUGHS = 4
     private const val COUGH_DRAIN = 10
-    private const val SPREAD_TICKS = 8
     private const val BINDERS = 8
     private const val SHUFFLE_TICKS = 15
     private const val PUSH_DAMAGE = 3
     private const val THIRDS = 3
+    private const val VANISH_TICKS = 10
     private const val CONSUME_DELAY = 10
     private const val CONSUME_HEAL = 80
-    private const val COUNTDOWN = 40
+    private const val FIRST_CHARGE = 41
+    private const val CHARGE_STEP = 2
+    private const val MIN_CHARGE = 5
     private const val BINDER_BLAST = 25
+    private const val ENRAGED_SPEED = 5
 }
 
 /** MO1: an undead binder melees anyone within 2 tiles; Protect from Melee blocks it (OPEN-MO9: max 15). */

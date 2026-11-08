@@ -4,6 +4,7 @@ import tp.plugin.AttrKey
 import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
+import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Seqs
 import tp.symbols.SpotAnims
@@ -63,9 +64,11 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         for (p in TfaKit.arena(npc, npc.size + 1)) if (TfaKit.gap(npc, p) <= 1) BossCombat.strike(npc, p, AttackType.CRUSH, MAX_HIT, 0)
     }
 
+    /** RuneLite (LU Dreadnoth.java:47-52): a blood blob (projectile 4211/4212) aimed at a player is his ranged attack. */
     private fun ranged(npc: NpcRef, victim: EntityRef) {
         CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
         val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
+        BossCombat.projectile(npc, victim, SpotAnims.VFX_DREADNOTH_RANGED_PROJ01, delay)
         BossCombat.strike(npc, victim, AttackType.RANGED, MAX_HIT, delay)
     }
 
@@ -74,23 +77,39 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
      * OPEN-DR1: one jelly per two players; OPEN-DR3: slam max 45, jelly puddles 3x3 under each player for 10 ticks.
      */
     private fun slam(npc: NpcRef) {
-        npc.anim(Seqs.NPC_JELLY_JUMP_3)
-        npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
-        val players = TfaKit.arena(npc)
-        for (p in players) BossCombat.strike(npc, p, AttackType.CRUSH, MAX_HIT, 1)
-        for (p in players) puddle(npc, p.coord)
-        repeat(maxOf(1, players.size / 2)) {
-            val at = BossCombat.randomTile(npc, npc.coord, JELLY_SPREAD)
-            Bosses.summon(npc, Npcs.TFA_JELLY_MINION, at)
+        // RuneLite (LU Dreadnoth.java:61-67): a slam is a jump (seq 14777) that lands 6 ticks later.
+        npc.anim(Seqs.DREADNOTH_JUMP01)
+        npc.setAttackClock(npc.tick + JUMP_LAND_SLOW)
+        npc.queueHit(JUMP_LAND_SLOW) {
+            if (!npc.isInWorld) return@queueHit
+            npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
+            val players = TfaKit.arena(npc)
+            for (p in players) BossCombat.strike(npc, p, AttackType.CRUSH, MAX_HIT, 0)
+            for (p in players) splatter(npc, p.coord)
+            repeat(maxOf(1, players.size / 2)) {
+                val at = BossCombat.randomTile(npc, npc.coord, JELLY_SPREAD)
+                Bosses.summon(npc, Npcs.TFA_JELLY_MINION, at)
+            }
         }
     }
 
-    private fun puddle(npc: NpcRef, centre: CoordGrid) {
-        for (t in 1..PUDDLE_TICKS) {
-            npc.queueHit(t + 1) {
-                if (!npc.isInWorld) return@queueHit
-                for (v in BossCombat.playersOn(npc, centre, radius = 1)) {
-                    CombatSystem.applyHit(v, npc, BossCombat.roll(npc, PUDDLE_MIN, PUDDLE_MAX), HitStyle.TYPELESS)
+    /**
+     * RuneLite (LU Dreadnoth.java:223-241): a blob aimed at a tile leaves floor jelly, loc 62609
+     * `TFA_JELLY_BOSS_DAMAGE_TILE` (6-8 per tick, DR2); OPEN-DR3: one tile per player for 10 ticks.
+     */
+    private fun splatter(npc: NpcRef, at: CoordGrid) {
+        npc.queueHit(BLOB_FLIGHT) {
+            if (!npc.isInWorld) return@queueHit
+            npc.addLoc(Locs.TFA_JELLY_BOSS_DAMAGE_TILE, at, FLOOR_SHAPE, 0, PUDDLE_TICKS)
+            for (t in 1..PUDDLE_TICKS) {
+                npc.queueHit(t) {
+                    if (!npc.isInWorld) return@queueHit
+                    for (v in BossCombat.playersOn(
+                        npc,
+                        at,
+                    )) {
+                        CombatSystem.applyHit(v, npc, BossCombat.roll(npc, PUDDLE_MIN, PUDDLE_MAX), HitStyle.TYPELESS)
+                    }
                 }
             }
         }
@@ -106,8 +125,11 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
         val players = TfaKit.arena(npc)
         val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
         val at = p.coord
-        npc.anim(Seqs.NPC_JELLY_JUMP_3)
+        npc.anim(Seqs.DREADNOTH_JUMP02)
         npc.say("*glub glub*")
+        // RuneLite (LU Dreadnoth.java:65-72): after "glub glub" (or below 25%) a jump lands in 4 ticks and he waits 4
+        // more before the next.
+        npc.setAttackClock(npc.tick + JUMP_LAND + JUMP_COOLDOWN)
         npc.queueHit(JUMP_LAND) {
             if (!npc.isInWorld) return@queueHit
             npc.teleport(CoordGrid(at.x - npc.size / 2, at.z - npc.size / 2, at.level))
@@ -165,7 +187,11 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
     private const val PUDDLE_TICKS = 10
     private const val PUDDLE_MIN = 6
     private const val PUDDLE_MAX = 8
-    private const val JUMP_LAND = 2
+    private const val JUMP_LAND = 4
+    private const val JUMP_COOLDOWN = 4
+    private const val JUMP_LAND_SLOW = 6
+    private const val BLOB_FLIGHT = 2
+    private const val FLOOR_SHAPE = 22
     private const val JUMP_HEAL = 35
     private const val ENRAGE_AT = 25
     private const val PERCENT = 100
