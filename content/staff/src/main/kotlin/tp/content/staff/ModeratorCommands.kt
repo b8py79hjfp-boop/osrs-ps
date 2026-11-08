@@ -39,11 +39,11 @@ public class ModeratorCommands : ContentPlugin {
         staffChat()
     }
 
-    /** D-096: `::sc` staff chat, to staff on every world through the hub; the chatbox Staff tab shows only these lines. */
+    /** D-096: `::sc` staff chat, to staff on every world through the hub. */
     private fun ContentScope.staffChat() {
         command("sc", Rank.MODERATOR, Category.MODERATION, Impact.SOCIAL) {
             aliases("staffchat")
-            description("Sends a line to every member of staff online, on every world (shown in the chatbox Staff tab).")
+            description("Sends a line to every member of staff online, on every world.")
             example("::sc can someone check world 2?")
             val message = text("message")
             signature(message) { ctx ->

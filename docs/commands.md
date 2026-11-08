@@ -48,7 +48,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::note` | `::note <player> <text…>` | — | MODERATION | yes | Adds a private staff note to the player's record. (cross-world) |
 | `::pos` | `::pos` | `::mypos`, `::coords` | INFO | — | Your tile, map square (region) and zone. |
 | `::return` | `::return <player>` | — | MODERATION | yes | Sends a player you brought back to where they were. (cross-world) |
-| `::sc` | `::sc <message…>` | `::staffchat` | SOCIAL | — | Sends a line to every member of staff online, on every world (shown in the chatbox Staff tab). |
+| `::sc` | `::sc <message…>` | `::staffchat` | SOCIAL | — | Sends a line to every member of staff online, on every world. |
 | `::teleto` | `::teleto <player>` | `::goto` | MODERATION | yes | Teleports you to the player; on another world, offers a hop first. (cross-world) |
 | `::teletome` | `::teletome <player>` | `::bring` | MODERATION | yes | Brings the player to you (same world); ::return sends them back. (cross-world) |
 | `::unjail` | `::unjail <player> [reason…]` | — | MODERATION | yes | Releases a jailed player. (cross-world) |

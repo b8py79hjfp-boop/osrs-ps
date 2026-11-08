@@ -1384,7 +1384,8 @@ means is not known.
 - **Round trip.** An unpatched script round-trips byte-identical (script 84: 15,625 bytes).
 - **Bookkeeping.** `pack.properties` lists `patchedScripts`. The verifier accepts exactly those as rewritten groups;
   every other group must stay byte-identical.
-- **First use.** The chatbox mentions patch (docs/mechanics/chatbox.md).
+- **First use.** The chatbox mentions patch. **Reverted 2026-11-08** at the user's request, with the rest of the chatbox
+  re-skin (timestamps and transparency defaults, mentions). The patching capability stays; no script is patched now.
 
 ## D-095 Chat icons: sprite appends, our icon table, and yell lines (2026-11-08)
 
@@ -1398,9 +1399,14 @@ means is not known.
   tier's) and the donator name colour directly.
 - **Player-sent chat.** Public, private, friends and clan messages carry a "chat crown" byte, and the client maps it
   to an icon with a table I have no source for. So icons and colours for those are drawn by the patched chat-line
-  script from a server-kept roster (D-096), not by inventing crown values.
+  script from a server-kept roster (D-096), not by inventing crown values. (That roster was reverted with the chatbox;
+  yell lines keep their icons and colours.)
 
 ## D-096 Chatbox tabs: interface patches, tab state, roster and staff chat (2026-11-08)
+
+**Reverted 2026-11-08** at the user's request: interface 162 and scripts 84, 178, 193 and 2823 are the official
+ones again, and the roster and Staff tab are gone. Kept: the interface-patch capability in `tools/cache-pack`, the
+icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game messages to staff on every world).
 
 - **The capability.** `tools/cache-pack` can patch an existing interface: `pack/interface-patches/<name>.toml`. Each
   file has one `[[patch]]` (interface, name, `base_components`), `[[set]]` edits to existing components (x, y, width,
