@@ -105,6 +105,13 @@ internal object CoxHerblore {
     /** HL5: the boost is re-applied every 15 s (25 ticks) for 5 minutes (500 ticks), then 50 hitpoints are healed. */
     private const val OVERLOAD_REAPPLY_TICKS = 25
     private const val OVERLOAD_TICKS = 500
+
+    /** HL9: antipoison immunity 90 s / 6 min / 9 min by tier. */
+    private val ANTIPOISON_TICKS = intArrayOf(150, 600, 900)
+
+    /** Varbit widths (client-contract 1.2): 5419 is 6 bits, 5417 is 7 bits. */
+    private const val RATE_MAX = 63
+    private const val TIMER_MAX = 127
     private const val OVERLOAD_HEAL = 50
 
     /** HL5: 50 damage in hits of 10; OPEN-RS15: the hits come one per tick and never take the player below 1 hitpoint. */
@@ -284,9 +291,9 @@ internal object CoxHerblore {
                 startOverload(tier)
             }
 
-            // The cure and the 150 / 600 / 900 tick immunity belong to the combat module's poison state (HL9; see the report).
+            // HL9: cures poison with 150 / 600 / 900 ticks of immunity (the poison state is the combat module's).
             CoxPotion.ANTIPOISON -> {
-                Unit
+                events.publish(tp.plugin.CurePoisonRequest(this, ANTIPOISON_TICKS[tier]))
             }
         }
     }
@@ -329,9 +336,15 @@ internal object CoxHerblore {
         val interval = maxOf(1, PRAYER_WINDOW_TICKS / activations)
         stopTimer(PRAYER_TIMER)
         this[PRAYER_STATE] = intArrayOf(minOf(activations, PRAYER_DURATION[tier] / interval))
+        // Client-contract 2.2 buff bar: tier 12397, restores left 5417, interval 5419 (RuneLite: ticks = 5417 x interval).
+        setVarbit(tp.symbols.Varbits.RAIDS_PRAYER_ENHANCE_TIER, tier + 1)
+        setVarbit(tp.symbols.Varbits.RAIDS_PRAYERENHANCE_RATE, minOf(interval, RATE_MAX))
+        setVarbit(tp.symbols.Varbits.RAIDS_PRAYERENHANCE_TIMER, minOf(this[PRAYER_STATE]?.get(0) ?: 0, TIMER_MAX))
         timer(PRAYER_TIMER, interval, soft = true) {
             val left = this[PRAYER_STATE] ?: return@timer stopTimer(PRAYER_TIMER)
             if (level(Stats.PRAYER) < baseLevel(Stats.PRAYER)) setLevel(Stats.PRAYER, level(Stats.PRAYER) + 1)
+            setVarbit(tp.symbols.Varbits.RAIDS_PRAYERENHANCE_TIMER, minOf(maxOf(0, left[0] - 1), TIMER_MAX))
+            if (left[0] - 1 <= 0) setVarbit(tp.symbols.Varbits.RAIDS_PRAYER_ENHANCE_TIER, 0)
             if (--left[0] <= 0) {
                 this[PRAYER_STATE] = null
                 stopTimer(PRAYER_TIMER)
@@ -346,9 +359,16 @@ internal object CoxHerblore {
     private fun PlayerRef.startOverload(tier: Int) {
         for (s in intArrayOf(Stats.ATTACK, Stats.DEFENCE, Stats.STRENGTH, Stats.RANGED, Stats.MAGIC)) boost(s, tier)
         this[OVERLOAD_STATE] = intArrayOf(tier, 0)
+        // Client-contract 2.2 buff bar: tier 5420 (1-3) and the cycles of 25 ticks left in 5418 (RuneLite: ticks = x25).
+        setVarbit(tp.symbols.Varbits.RAIDS_OVERLOAD_TIER, tier + 1)
+        setVarbit(tp.symbols.Varbits.RAIDS_OVERLOAD_TIMER, OVERLOAD_TICKS / OVERLOAD_REAPPLY_TICKS)
         timer(OVERLOAD_TIMER, 1, soft = true) {
             val state = this[OVERLOAD_STATE] ?: return@timer stopTimer(OVERLOAD_TIMER)
             val elapsed = ++state[1]
+            if (elapsed % OVERLOAD_REAPPLY_TICKS == 0) {
+                setVarbit(tp.symbols.Varbits.RAIDS_OVERLOAD_TIMER, maxOf(0, (OVERLOAD_TICKS - elapsed) / OVERLOAD_REAPPLY_TICKS))
+            }
+            if (elapsed >= OVERLOAD_TICKS) setVarbit(tp.symbols.Varbits.RAIDS_OVERLOAD_TIER, 0)
             if (elapsed <= OVERLOAD_HITS) overloadHit()
             if (elapsed % OVERLOAD_REAPPLY_TICKS == 0) {
                 for (s in intArrayOf(Stats.ATTACK, Stats.DEFENCE, Stats.STRENGTH, Stats.RANGED, Stats.MAGIC)) boost(s, state[0])

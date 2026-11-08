@@ -51,6 +51,8 @@ public class Combat : ContentPlugin {
             if (!req.handled) CombatSystem.applyHit(req.target, null, req.damage, req.style)
             req.handled = true
         }
+        // PO6: a content potion's cure (immunity in poison intervals of 30 ticks).
+        events.on<tp.plugin.CurePoisonRequest> { r -> Poison.cure(r.player, r.immunityTicks / POISON_INTERVAL, antiVenom = false) }
         events.on<tp.plugin.SpellAccuracyRoll> { roll ->
             val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC, target = roll.target)
             roll.hit = Formulas.hits(attack, Attacks.defenceRoll(roll.target, AttackType.MAGIC), roll.caster::random)
@@ -82,6 +84,9 @@ public class Combat : ContentPlugin {
     public companion object {
         /** Player op slot of "Attack" (set by PvP content; RS Mod `LoginScript` leaves slot 2 for it). */
         public const val ATTACK_OP: Int = 2
+
+        /** PO6: one poison interval is 30 ticks (Antipoison's 90 s = 5 intervals). */
+        private const val POISON_INTERVAL = 30
     }
 }
 

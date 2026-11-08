@@ -95,6 +95,12 @@ public class ConsumeRequest(public val player: PlayerRef, public val invId: Int,
 /** [player] used the emote named [name] in the emote tab (e.g. "Cheer"); locked emotes are refused after this. */
 public class EmotePerformed(public val player: PlayerRef, public val name: String) : Event
 
+/**
+ * Asks the combat module to cure [player]'s poison and give [immunityTicks] of immunity (content potions such as the
+ * Chambers of Xeric antipoisons; the poison state belongs to combat).
+ */
+public class CurePoisonRequest(public val player: PlayerRef, public val immunityTicks: Int) : Event
+
 /** [player] ate ([drink] false) or drank a dose of [obj] (content/combat food and potions; e.g. Wintertodt warmth). */
 public class Consumed(public val player: PlayerRef, public val obj: Int, public val drink: Boolean) : Event
 
