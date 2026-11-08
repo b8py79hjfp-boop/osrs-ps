@@ -6,8 +6,8 @@ Archive/Strategies" (Strat, tagged under construction), "The Fractured Archive (
 Fractured Archive)", "Archivist's folio", "Orion", "Elemental fragments", "Living record (tier 1)", "Archive key",
 "Alliance records", "Raids", the unique items' pages, and the updates "The Fractured Archive - Out Today" (20 Oct,
 OutToday), "Halloween Event 2026, TFA Tweaks & More!" (28 Oct, Halloween), "Quest Month Kick Off, TFA Tweaks & More"
-(3 Nov, QM3Nov), "The Fractured Archive - Everything You Need To Know" (6 Oct preview, Everything; used only for
-intent). Client side: [tfa/client-contract.md](tfa/client-contract.md). Bosses: `tfa/<boss>.md`.
+(3 Nov, QM3Nov), "The Fractured Archive - Everything You Need To Know" (6 Oct preview, Everything; its "on launch"
+statements are used where no later source contradicts them). Client side: [tfa/client-contract.md](tfa/client-contract.md). Bosses: `tfa/<boss>.md`.
 
 **Which build the cache matches (TFA-D1).** The 3 November update added clickboxes under the Archive Guardian and
 Ocellus phase 3. In cache 2757 NPCs 16659/16660 and 16677 carry extra tiny models 51447/51448 that no other NPC uses
@@ -25,8 +25,8 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 | Id | Rule | Source |
 |---|---|---|
 | TFA1 | Needs **While Guthix Sleeps**. The miniquest "The Fractured Archive" starts on the first attempt to enter the lobby. **OPEN-TFA1:** where it starts (Main: on entering the lobby; miniquest page: near the Ancient Guthixian Temple entrance; OutToday: a messenger on login after the hotfix gives a note). | Main; miniquest page; OutToday |
-| TFA2 | Reached from the Tears of Guthix cave with a lit sapphire lantern (a light creature carries the player), then crawling through the opening to the south-west; a Guthixian temple teleport lands nearby; the charged archivist's folio teleports there. Cache: the only outside entrance loc is at (4050, 4567, 0), "Blocked cavity" until varbit `WGS_TFA_SHORTCUT_UNLOCKED` = 1, then "Opening" (Crawl-through). | Main; Strat; client-contract §5 |
-| TFA3 | Group Ironmen lose prestige entering with a non-member; HCIM lose status and HCGIM a life on death inside. UIMs with items at Pete Kayer cannot enter; world 345 (permanent Deadman) had no access at release. | Main; OutToday |
+| TFA2 | Reached from the Tears of Guthix cave with a lit sapphire lantern (a light creature carries the player), then crawling through the opening to the south-west; also by running from the Lumbridge Swamp Caves with a sapphire lantern (Strat); a Guthixian temple teleport lands nearby; the charged archivist's folio teleports to the lobby, just south-west of the banker. Cache: the only outside entrance loc is at (4050, 4567, 0), "Blocked cavity" until varbit `WGS_TFA_SHORTCUT_UNLOCKED` = 1, then "Opening" (Crawl-through). | Main; Strat; client-contract §5 |
+| TFA3 | Group Ironmen lose prestige entering with a non-member; HCIM lose status and HCGIM a life on death inside. UIMs with items at Pete Kayer cannot enter; world 345 (permanent Deadman) had no access at release; limited accounts cannot enter (Everything). Ironmen are reward-eligible when completing alongside others. Since 28 Oct items stored at Pete Kayer are returned automatically. | Main; OutToday; Everything; Halloween |
 
 ## Party and structure
 
@@ -43,8 +43,8 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 | Id | Rule | Source |
 |---|---|---|
 | TFA9 | Boss HP scales with the players present; a solo raid uses two-player scaling. Per-boss HP tables are on each boss page (tfa/*.md). Strat's "+43.63% per player after the second" fits the tables only roughly; the tables win. | Main; Raids; boss pages |
-| TFA10 | Defence drain is capped at 60% of normal (floor = 40% drained) for the Archive Guardian, Bork, Ezekiel, Moia, Xarth and Ocellus (P1, P3); no cap for Dreadnoth, the Smorks and the Blade (Ocellus P2). The Dagon'hai trio were meant to be uncapped but have a 60% cap in error until a fix announced for 11 Nov, so on 3 Nov they **are** capped. | 21 Oct hotfix (Main, boss pages); OutToday; Dagon'hai Elder page |
-| TFA11 | Since 28 Oct offensive stat reduction is capped at 50% for Ocellus, Xarth and Dreadnoth. Ocellus no longer restores Defence when moving quadrant in phase 3. | Halloween |
+| TFA10 | Defence drain is capped at 60% of normal (floor = 40% drained) for the Archive Guardian, Bork, Ezekiel, Moia, Xarth and Ocellus (P1, P3); no cap for Dreadnoth, the Smorks and the Blade (Ocellus P2). The Dagon'hai trio are meant to be uncapped (OutToday). **OPEN-TFA14:** the Elder page says they have a 60% cap in error with a fix "expected on 11 November", citing a 5 November comment; no source dated by 3 Nov confirms the bug, so the flag `tfa.dagonhai.defenceCap` (default: the bug, 60%) decides. | 21 Oct hotfix (Main, boss pages); OutToday; Dagon'hai Elder page |
+| TFA11 | Since 28 Oct offensive stat reduction is capped at 50% for Ocellus, Xarth and Dreadnoth. Since the 21 Oct hotfix Ocellus no longer restores Defence when moving quadrant in phase 3. | Halloween; Ocellus page; OutToday |
 
 ## Contribution
 
@@ -58,7 +58,8 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 | Id | Rule | Source |
 |---|---|---|
 | TFA14 | Every death is **dangerous**: HCIM lose status, HCGIM lose a life, the Item Retrieval Service's contents are lost. While teammates live, a dead player waits (spectates) until the room ends (**OPEN-TFA6**: the wiki only describes the wipe). On a **team wipe** the party is ejected to the lobby and unprotected items are in gravestones outside the entrance; reclaiming costs up to 500,000 coins, 75% less until the player's fifth completion. | Main; OutToday; Everything |
-| TFA15 | Since 22 Oct food and potions are not lost on disconnect (inv `TFA_SUPPLIES_SNAPSHOT_INV`). Since 28 Oct a player who logs out in the loot room can still loot their chest. | Main changelog; OutToday; Halloween |
+| TFA15 | Since 22 Oct food and potions are not lost on disconnect (inv `TFA_SUPPLIES_SNAPSHOT_INV`). Since 28 Oct a player who logs out in the loot room can still loot their chest. On 3 Nov a known issue said "Players currently can't loot from or leave the TFA room" (investigating); we implement the intended behaviour. | Main changelog; OutToday; Halloween; QM3Nov |
+| TFA15a | Since 3 Nov the player's Prayer is turned off at the end of each room. | QM3Nov |
 
 ## Supplies
 
@@ -82,17 +83,24 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 | TFA21 | Without a unique the standard table is rolled **three times**; each roll has a 1/51 chance of 5× quantity. Rates per roll (/330): 11 each — battlestaff 34-37, dragon platelegs 1, dragon plateskirt 1, rune kiteshield 5-7, nature 301-385, astral 301-385, blood 301-385, soul 301-380, earth rune 3009-3662, sapphire 24-27, emerald 24-26, ruby 23-27, diamond 24-26, onyx bolt tips 50-58, earth orb 68-75; 7 each — grimy harralander 60-66, grimy ranarr 18-20, grimy toadflax 24-28, snapdragon seed 3-4, kwuarm seed 7-8, snape grass seed 7-8, yew seed 4-5, wine of Zamorak 32-36; 6 each — iron ore 851-915, adamantite ore 60-72, runite ore 25-26, desiccated page 30-36, aether catalyst 180-191, pure essence 1404-1632, mahogany logs 140-152, dragon arrowtips 350-369, raw shark 80-92; 55 — ascension shards 75-82. Cache row names list the same 33 items. **OPEN-TFA8:** whether quantity scales with contribution (cache column `COL_SCALING_MODE` exists, empty). | Chest; gamevals |
 | TFA22 | Tertiaries: archivist's folio 1/15 if none owned; elemental fragments 1/20 with duplicate protection until all four are owned (varbits `TFA_MOTE_*_UNLOCKED`); elite clue 1/10 (better with the elite Combat Achievement tier: 1/9 per the brief, **OPEN-TFA9**); Orion 1/750 (**OPEN-TFA10**: QM3Nov "not dependent on anything" as long as no cabbage). | Chest; QM3Nov; Orion page |
 | TFA23 | Poor performance gives only a **cabbage**; each death raises the chance; a cabbage blocks the other tertiaries. **OPEN-TFA11:** the cabbage rate. Common drops do not trigger valuable-drop broadcasts (fixed 28 Oct, except cabbages). | Chest; Halloween |
-| TFA24 | **Void reward room**: after Ocellus, the Blade teleports the party to an island with eight chests, one per player; the player's own chest sparkles (vault chest NPCs 16736-16751 morph on varbit `TFA_VAULT_OWN_CHEST` = 1-based own index). Since 3 Nov chests appear only after the braziers are lit. With a unique the two braziers burn purple and a special chest appears on the northern platform. Opening a chest shatters it into a rift; the loot interface (`TFA_CHESTS`) offers bank, take and destroy; other players' rifts have no search option (3 Nov). Unclaimed loot waits in the lobby's loot wheelbarrow (`TFA_HAS_CLAIMABLE_LOOT`). | Chest; QM3Nov; client-contract §2.6 |
+| TFA24 | **Void reward room**: after Ocellus, the Blade teleports the party to an island with eight chests, one per player; the player's own chest sparkles (vault chest NPCs 16736-16751 morph on varbit `TFA_VAULT_OWN_CHEST` = 1-based own index). Since 3 Nov chests appear only after the braziers are lit. With a unique the two braziers burn purple and a special chest appears on the northern platform. Opening a standard chest shatters it into a rift (the unique chest opens and shows its contents above it); the loot interface (`TFA_CHESTS`) offers bank, take and destroy; other players' rifts have no search option (3 Nov). Unclaimed loot waits in the lobby's loot wheelbarrow (`TFA_HAS_CLAIMABLE_LOOT`). | Chest; QM3Nov; client-contract §2.6 |
 
 ## Records
 
 | Id | Rule | Source |
 |---|---|---|
 | TFA25 | KC in `TOTAL_COMPLETED_THEFRACTUREDARCHIVE`: `Your completed Fractured Archive count is: <col=ff0000>1</col>.` Time: `The Fractured Archive: Total completion time: <col=ef1020>2:25.80</col> (new personal best)` or `... <col=ef1020>2:54.60</col>. Personal best: 0:00.60`. **OPEN-TFA12:** these strings are from the brief; not yet seen in game or in RuneLite's captured fixtures. | brief §1.5 |
-| TFA26 | Living record capes at 100, 500, 1,000, 1,500 and 2,000 completions (`TFA_CAPE_T1..5`), claimed in the records room behind the archive key door (the key drops from the Archive Guardian after 100 completions; **OPEN-TFA13**: repeat drops). | Main; Living record (tier 1); Archive key |
+| TFA26 | Living record capes at 100, 500, 1,000, 1,500 and 2,000 completions (`TFA_CAPE_T1..5`), claimed in the records room behind the archive key door (the key drops from the first Archive Guardian kill after 100 completions; "You can gain another by defeating the Archive Guardian" — **OPEN-TFA13**: whether only when lost). | Main; Living record (tier 1); Archive key |
 | TFA27 | Stats interface `TFA_STATS` (979): categories Overall + eight bosses (Ocellus hidden until `TFA_OCELLUS_MET`), rows attempts, completions, completions (practice), deaths, wipes, failures, time (one row per party size), from dbtables 264/265. Global and world stats reset daily. | client-contract §2.5; Alliance records |
 
 ## Not now
 
 Practice Mode (announced, not live on 3 Nov; the stats table already has a practice row and the party mode enum has
-`Practice = 1` — kept hidden), and the balancing planned for 9-11 November (Dagon'hai cap fix, unique-rate changes).
+`Practice = 1` — kept hidden), and the "next week" balancing named on 3 Nov (Archive Guardian and Xarth passes,
+Ascension shard availability, loot numbers) plus the Dagon'hai cap fix expected on 11 November.
+
+## Related item rules (from the TFA updates)
+
+- Rondache flat armour / magic resistance applies after other mitigation, including protection prayers (28 Oct).
+- Zorya's tome special can no longer be pre-stacked (22 Oct).
+- Ascension rocks in the lobby; a Rock Golem from them at 1/68,120 (3 Nov).

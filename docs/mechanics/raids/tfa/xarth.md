@@ -15,10 +15,10 @@ below list only what a source states; everything else is `OPEN` and gets a named
 ## Fight
 
 - **XA1 phase 1 (magic):** targets the closest player; hits stack burn. After 5 magic attacks: binds everyone, two
-  searing projectiles, then a charged explosion; hide behind a pillar (pillar tank ~45 damage, others ~7). The shield
+  searing projectiles, then a charged explosion; hide behind a pillar; a player acting as the pillar takes ~45 and those behind ~7. The shield
   goes after the first explosion.
-- **XA2 phase 2 (pillars gone):** flames spread from the edges; ranged (damage on impact, Protect from Missiles) and
+- **XA2 phase 2 (pillars gone):** he launches flames into the arena that periodically spread to adjacent tiles; ranged (damage on impact, Protect from Missiles) and
   melee, static. Corpses spawn at the edges, walk to him and heal him for their remaining HP; freezes, water spells and
-  Undead Grasp (24 ticks) stop them; fire spells make more. Two corpses healing him in a short window trigger an
+  Undead Grasp (24 ticks under Mark of Darkness) stop them; fire spells make more. Two corpses healing him in a short window trigger an
   arena-wide blast (**OPEN-XA2**: window and damage).
 - 3 Nov: faster navigators; ranged sound quieter. **OPEN-XA3:** tick timings.

@@ -13,14 +13,17 @@ below list only what a source states; everything else is `OPEN` and gets a named
 
 ## Fight
 
-- **MO1 undead binders:** spread evenly at the start; reshuffle every 15 ticks; melee anyone within 2 tiles (Protect
+- **MO0** Moia starts outside the arena, so a ranged or magic weapon is needed.
+- **MO1 undead binders:** 8 spawn spread evenly at the start and cycle clockwise; reshuffle every 15 ticks; melee anyone within 2 tiles (Protect
   from Melee blocks fully); a player underneath after a shuffle is pushed out with minor damage; respawned during the
   fight; Crumble Undead does not work.
 - **MO2 rotation:** 3-4 ranged attacks, then she teleports to another side and fires a slow magic projectile; her
   ranged damage is decided 2 ticks before the magic lands. After 2 magic attacks, a smoke cough: poison ramping 2 → 5 →
-  13 → up to 20 and prayer drain; at most 4 coughs; serpentine helm mitigates.
-- **MO3 enrage (33% HP):** heals all binders, they form a diamond, 10 ticks later she consumes the middle skeleton to
-  heal. A countdown starts at about 40 ticks and drops 5 per charge; each surviving binder deals about 25 damage to
+  13 → up to 20 and prayer drain; at most 4 coughs; serpentine helm mitigates. The first cough's impact does not spread if the
+  targeted player leaves the group within 8 ticks before the next cough; contact with players or binders spreads the
+  poison.
+- **MO3 enrage (33% HP):** heals all binders, they form a diamond, 10 ticks later she consumes the middle skeleton,
+  healing an additional 80 HP if one was consumed (amount depends on raid scale, **OPEN-MO5**). A countdown starts at about 40 ticks and drops 5 per charge; each surviving binder deals about 25 damage to
   everyone (**OPEN-MO3**: exact).
 - Varbit `TFA_MOIA_SHADOW_SHIELD_AMOUNT` exists but no client script reads it (**OPEN-MO4**).
 - 28 Oct: binder stacking damage fixed. 3 Nov: magic sound fix.

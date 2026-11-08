@@ -8,7 +8,8 @@ below list only what a source states; everything else is `OPEN` and gets a named
 
 - Hooded Figure 16672. P1 16673/16674, P2 (the Blade) 16675/16676, P3 16677 (16682 is a debug copy without the 3 Nov
   clickbox). Size 3; max hit 24 (infobox); immune to cannon; poison immune.
-- **P1** combat 1121, HP 2,500, magic and ranged, speed 5; def 215, magic 350, ranged 250, magic att +150, ranged att
+- Defence is restored to full at each phase transition (only the P3 quadrant restore was removed, 21 Oct).
+- **P1** combat 1121, demon (demonbane resistance 20%), HP 2,500, magic and ranged, speed 5; def 215, magic 350, ranged 250, magic att +150, ranged att
   +150; defence stab 150, slash 95, crush 60, magic 100, light 50, standard 135, heavy 50. Drain floor 129.
 - **P2 (Blade)** HP 1,000, def 250 (+35 levels during P2, weakest to crush); defence stab 150, slash 120, crush 10,
   magic 100, light 100, standard 110, heavy 80. No drain cap.
@@ -20,27 +21,33 @@ below list only what a source states; everything else is `OPEN` and gets a named
 
 ## Fight
 
-- **OC1 P1:** moves between corners firing ranged (orange) and magic (blue); at each corner seven tendrils charge the
-  player (they heal on charge); a slam within 2 tiles up to 35. At 66% and 25% shield he teleports to the centre,
+- **OC1 P1:** moves between corners firing ranged (orange) and magic (blue); at each corner seven tendrils channel energy into Ocellus; a player standing on one mitigates it, takes some damage
+  and gains "healing charges"; a slam within 2 tiles up to 35. At 66% and 25% shield he teleports to the centre,
   fires two tendrils four times, then "Embrace... annihilation..." (80+ total) or "Death... awaits..." (17-18) by how
   many tendrils were mitigated. Ranged barrage patterns: dbtable 141 `TFA_OCELLUS_BARRAGE_1..3` (phase, speed,
   column, row) — **stripped**, **OPEN-OC3**.
 - **OC2 P2 (the Blade):** shield 0 → centre; four quadrants bounded by orange and purple portals; purple portals
   damage, two orange portals form a safe intersection; after five sets, purple pools and an orange portal to a new
   quadrant. The Blade stores damage and releases it each quadrant; half transfers to P3's HP. Longer immunity after an
-  orange portal (3 Nov). **OPEN-OC4:** the P2 → P3 trigger.
-- **OC3 P3:** four diagonal quadrants with floating rocks; each has a tank by orb order (28 Oct); +10% damage taken
-  from players in line behind him; each quadrant ends with a destruction charge (leave or die). Cycle: two melee, a
-  directional wave; every two cycles a special in the order Prayer → Untether → Prayer → Insolence (Untether skipped
-  if the quadrant is phased early). Prayer: up to 3 sawblade explosions, overheads disabled for 3 ticks, purple pulse,
-  1-tick re-enable window. Untether: void eruption 40+ unless inside the purple lines. Insolence: waves at three
-  players. Secondary: Void Vine (root, 50+ unless broken); void spawns (Siphon, Augmenter, Rift). Censers: Bandosian
+  orange portal and a portal double-hit fix (3 Nov); damage per quadrant has diminishing returns, made more forgiving
+  on 28 Oct (**OPEN-OC5**: the curve). **OPEN-OC4:** the P2 → P3 trigger.
+- **OC3 P3:** four diagonal quadrants with floating rocks; each has a tank (28 Oct: the leader first, then orb order skipping dead players, with a tank-only sound and chat
+  message); +10% damage from attacks made from directly opposite the tank; void pools under non-tanks; a spread void
+  shot (20+) when the tank is unreachable; each quadrant ends with a destruction charge (leave or die). Cycle: two melee, a
+  directional wave; every two cycles a special in the order Prayer → Untether → Prayer → Insolence (**OPEN-OC6**: the wiki's
+  "Untether is skipped if the quadrant is phased early" is {{fact}}-tagged). Prayer: up to 3 sawblade explosions; the
+  player has a 3-tick window to turn the overhead off (a purple pulse marks the last chance), then a 1-tick window to
+  turn it back on; failing, Ocellus disables it and briefly blocks reactivation (**OPEN-OC7**: how long). Untether: void eruption 40+ unless inside the purple lines. Insolence: waves at three
+  players. Secondary (also {{fact}}-tagged): Void Vine (root, 50+ unless broken); void spawns (Siphon, Augmenter, Rift). Censers: Bandosian
   (melee), Armadylean (ranged), Zarosian (+50% spec), Saradomin (+40 HP, +40 prayer). 3 Nov: Void Spin delay;
-  Untether no longer pushes; P3 start tile fix; circular clickbox.
-- **OC4 P4 (one quadrant left):** rises, Deflect Melee, floor turns to void; a half-health orb heal; void explosions
-  every 2 ticks for six cycles; soul-split void blast 40+ unprayed, 6-7 prayed; floor patterns rotate melee / ranged /
-  magic.
+  Untether no longer pushes; P3 start tile fix; censer proc fix; circular clickbox.
+  21 Oct: Protect from Melee icon in P3; wrong-location attack pattern fix.
+- **OC4 P4 (one quadrant left):** rises, Deflect Melee (Deflect Range later in the cycle), floor turns to void; the
+  blue-wind orb takes half his current HP (rounded down); void explosions every 2 ticks for six cycles; a perfect
+  dodge cuts the next attack's cooldown by 3 ticks; soul-split void blast 40+ unprayed, 6-7 prayed, its style shown by
+  the pattern under the boss (**OPEN-OC8**: order); he takes less damage from weapons slower than 2 ticks (33% less
+  for 3t, 50% for 4t, 60% for 5t).
 
 ## Tick timeline (stated parts)
 
-- P3 Prayer special: overheads off for 3 ticks, 1-tick re-enable window. P4: explosions every 2 ticks × 6.
+- P3 Prayer special: 3-tick window to deactivate, then a 1-tick window to reactivate. P4: explosions every 2 ticks × 6.
