@@ -460,7 +460,7 @@ class Osrs242Network(
                 LoginResponse.Ok(
                     authenticatorResponse = AuthenticatorResponse.NoAuthenticator,
                     staffModLevel = details.staffModLevel,
-                    playerMod = false,
+                    playerMod = details.playerMod,
                     index = slot,
                     member = details.member,
                     accountHash = slot.toLong(),

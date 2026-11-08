@@ -11,6 +11,7 @@ import tp.services.Broadcast
 import tp.services.HubServices
 import tp.services.SocialEvent
 import tp.services.WorldInfo
+import tp.util.Rank
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -61,7 +62,7 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
         val player = world.playerByAccount(e.toAccount) ?: return
         when (e) {
             is SocialEvent.PrivateMessage -> {
-                val crown = e.fromRights.ordinal // 0 none, 1 moderator crown, 2 administrator crown
+                val crown = e.fromRights.crown // 0 none, 1 moderator crown, 2 administrator crown
                 player.session.send(ServerMessage.PrivateMessage(e.from, world.config.id, ++pmCounter, crown, e.text))
             }
 
@@ -90,7 +91,7 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
 
             is SocialEvent.ChannelMessage -> {
                 player.session.send(
-                    ServerMessage.ChannelMessage(e.from, e.channelName, e.worldId, ++pmCounter, e.fromRights.ordinal, e.text),
+                    ServerMessage.ChannelMessage(e.from, e.channelName, e.worldId, ++pmCounter, e.fromRights.crown, e.text),
                 )
             }
 

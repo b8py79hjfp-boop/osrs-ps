@@ -38,6 +38,7 @@ import tp.services.grpc.SocialGrpcKt
 import tp.services.grpc.SystemUpdateRequest
 import tp.services.grpc.WorldRef
 import tp.services.grpc.WorldsGrpcKt
+import tp.util.Rank
 import java.util.concurrent.TimeUnit
 import tp.services.grpc.ChannelMember as PbMember
 import tp.services.grpc.ChannelSettings as PbSettings
@@ -94,7 +95,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                     LoginResult.valueOf(r.result),
                     r.accountId,
                     r.displayName,
-                    Rights.valueOf(r.rights.ifEmpty { Rights.PLAYER.name }),
+                    Rank.parseOrPlayer(r.rights.ifEmpty { Rank.PLAYER.name }),
                     if (r.hasSave) r.save else null,
                     r.mutedUntil,
                 )
@@ -344,7 +345,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                                 SocialEvent.PrivateMessage(
                                     e.toAccount,
                                     e.privateMessage.from,
-                                    Rights.valueOf(e.privateMessage.fromRights),
+                                    Rank.parseOrPlayer(e.privateMessage.fromRights),
                                     e.privateMessage.text,
                                 ),
                             )
@@ -397,7 +398,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                                 SocialEvent.ChannelMessage(
                                     e.toAccount,
                                     m.from,
-                                    Rights.valueOf(m.fromRights),
+                                    Rank.parseOrPlayer(m.fromRights),
                                     m.channelName,
                                     m.worldId,
                                     m.text,

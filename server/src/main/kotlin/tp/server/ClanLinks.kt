@@ -9,6 +9,7 @@ import tp.services.ClanRules
 import tp.services.SocialEvent
 import tp.services.SocialService
 import tp.symbols.Varbits
+import tp.util.Rank
 
 /** Hub call for a world clan request (docs/mechanics/clans.md); null = done, else the message to show. */
 internal suspend fun SocialService.clan(account: Long, r: ClanRequest): String? =
@@ -39,7 +40,7 @@ internal class ClanLinks(private val worldId: Int, private val nextCounter: () -
             }
 
             is SocialEvent.ClanMessage -> {
-                player.session.send(ServerMessage.ClanMessage(e.guest, e.from, e.worldId, nextCounter(), e.fromRights.ordinal, e.text))
+                player.session.send(ServerMessage.ClanMessage(e.guest, e.from, e.worldId, nextCounter(), e.fromRights.crown, e.text))
             }
 
             is SocialEvent.ClanInvite -> {

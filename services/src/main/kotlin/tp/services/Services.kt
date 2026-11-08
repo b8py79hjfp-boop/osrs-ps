@@ -1,5 +1,7 @@
 package tp.services
 
+import tp.util.Rank
+
 /**
  * The hub's services as seen by world-nodes (brief §7). Kotlin interfaces first; the in-process implementation lives
  * in `hub`, and the gRPC adapters (services.proto) implement the same interfaces across processes. All calls are
@@ -22,14 +24,11 @@ interface HubServices {
 
 enum class LoginResult { OK, INVALID_CREDENTIALS, ALREADY_ONLINE, BANNED, THROTTLED, SAVE_PENDING, SERVER_ERROR }
 
-/** Staff rights (permissions as data: brief §12). */
-enum class Rights { PLAYER, MODERATOR, ADMIN }
-
 class LoginGrant(
     val result: LoginResult,
     val accountId: Long = 0,
     val displayName: String = "",
-    val rights: Rights = Rights.PLAYER,
+    val rights: Rank = Rank.PLAYER,
     /** Latest durable save (JSON, versioned), or null for a new character. */
     val save: String? = null,
     /** Muted until (epoch ms), 0 = not muted. */
@@ -76,7 +75,7 @@ class FriendEntry(val name: String, val worldId: Int, val rank: Int = 0)
 sealed interface SocialEvent {
     val toAccount: Long
 
-    class PrivateMessage(override val toAccount: Long, val from: String, val fromRights: Rights, val text: String) : SocialEvent
+    class PrivateMessage(override val toAccount: Long, val from: String, val fromRights: Rank, val text: String) : SocialEvent
 
     /** A friend logged in/out or hopped ([worldId] 0 = offline). */
     class FriendStatus(override val toAccount: Long, val name: String, val worldId: Int) : SocialEvent
@@ -112,7 +111,7 @@ sealed interface SocialEvent {
         val guest: Boolean,
         val clanName: String,
         val from: String,
-        val fromRights: Rights,
+        val fromRights: Rank,
         val rank: Int,
         val worldId: Int,
         val text: String,
@@ -124,7 +123,7 @@ sealed interface SocialEvent {
     class ChannelMessage(
         override val toAccount: Long,
         val from: String,
-        val fromRights: Rights,
+        val fromRights: Rank,
         val channelName: String,
         val worldId: Int,
         val text: String,

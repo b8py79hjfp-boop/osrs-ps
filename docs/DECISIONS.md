@@ -1264,3 +1264,32 @@ means is not known.
 - **Dev command `::raid <id> | next | leave`** (raids-core) drives the botswarm `raids` load profile. Like the other
   dev commands it is ungated on this server; gating commands is the moderation system's job.
 
+## D-087 Command system: TOML config and five ranks (2026-11-08)
+
+- **Config is TOML** (the user chose option 1, as the commands brief §9 says), in `config/server.toml` or the file
+  given by `--config`.
+  - ktoml decodes it into `@Serializable` classes in `server`; the kotlinx-serialization compiler plugin is applied
+    there only.
+  - Unknown keys and bad values fail the boot with the line named.
+  - Every key is optional, and a missing file means a dev world.
+  - `[worlds.N]` overrides the shared `[commands]` for world N.
+  - Flat `server.properties` was rejected: half the settings are lists or maps.
+- **Ranks.** `tp.util.Rank` (PLAYER < MODERATOR < ADMINISTRATOR < OWNER < DEVELOPER) replaces `services.Rights`.
+  - It is stored by name; ADMINISTRATOR keeps the existing `ADMIN` value, so no account row changes.
+  - The chat crown, login `staffModLevel` and `playerMod` are explicit properties, not `ordinal`.
+  - The §1 targeting and rank-setting rules live on the enum.
+  - "Administrator" checks are now "administrator and above", so owners and developers pass them.
+- **Login and crowns.** The login response now sends `playerMod` (moderator and above; it was hardcoded false) and
+  `staffModLevel` 2 for administrator and above. Public chat sends the crown (it was 0).
+  - OPEN-CM1: which client scripts read `staffmodlevel` and `playermod`, and what each value unlocks, is unverified
+    (the cs2 dumps could not be read). It is checked in RuneLite.
+  - OPEN-CM2: the crown values (1 player-moderator, 2 J-Mod) follow the existing PM, friends-chat and clan code;
+    public chat is to be checked in RuneLite.
+- **Bootstrap.**
+  - `[ranks.bootstrap]`: developers, owners, administrators and moderators lists, applied at the account's next
+    successful login. It is once per account, tracked by an audit entry `bootstrap-rank` on `account:<id>`, so a later
+    demotion sticks. It used to run before the password check.
+  - `--admins` still works and means ADMINISTRATOR.
+  - `./gradlew admin --setRank=<account>:<RANK> --db=<jdbc url>` (`tp.hub.AdminKt`) sets a rank in the database
+    and audits it as actor `cli`.
+

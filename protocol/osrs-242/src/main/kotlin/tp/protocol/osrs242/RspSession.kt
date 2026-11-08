@@ -220,9 +220,9 @@ internal class RspSession(
     private fun wornSecondary(appearance: Appearance, pos: Int, which: Int): Int =
         appearance.hidden.getOrNull(pos * 2 + which) ?: -1
 
-    override fun publicChat(text: String, colour: Int, effects: Int) {
+    override fun publicChat(text: String, colour: Int, effects: Int, modIcon: Int) {
         infos.playerInfo.avatar.extendedInfo
-            .setChat(colour, effects, 0, false, text, null)
+            .setChat(colour, effects, modIcon, false, text, null)
     }
 
     /** Obj ops are only accepted inside UPDATE_ZONE_PARTIAL_ENCLOSED (RSProt `Session.validateMessage`). */

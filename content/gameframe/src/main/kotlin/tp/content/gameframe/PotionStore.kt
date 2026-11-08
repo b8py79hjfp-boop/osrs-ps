@@ -29,7 +29,7 @@ internal class PotionStore {
         onButton(Components.Bankmain.POPUP_TAB_FORGETPOS) { toggle(Varbits.BANK_SETTING_FORGET_POPUP) }
         // Stands in for buying the unlock from the Mixology Rewards shop (OPEN-B5d): administrators only.
         onCommand("potionstore") {
-            if (staffLevel < ADMIN) {
+            if (!rank.atLeast(ADMIN)) {
                 message("You do not have permission to use that command.")
             } else {
                 setVarbit(Varbits.MM_POTION_STORAGE_UNLOCKED, 1 - varbit(Varbits.MM_POTION_STORAGE_UNLOCKED))
@@ -282,7 +282,7 @@ internal class PotionStore {
 
     private companion object {
         /** Administrator staff level (StaffCommands). */
-        const val ADMIN = 2
+        val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** `bank_currenttab` value of the potion store tab (client script 504: valid targets are 0..9 and 15). */
         const val TAB_STORE = 15

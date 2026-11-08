@@ -20,7 +20,6 @@ import tp.services.HubServices
 import tp.services.LoginGrant
 import tp.services.LoginResult
 import tp.services.ModerationService
-import tp.services.Rights
 import tp.services.Sanction
 import tp.services.SaveService
 import tp.services.SocialEvent
@@ -32,6 +31,7 @@ import tp.services.TpTrade
 import tp.services.TradingPostService
 import tp.services.WorldDirectory
 import tp.services.WorldInfo
+import tp.util.Rank
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
@@ -48,8 +48,13 @@ class HubConfig(
     val failureWindowMs: Long = 60_000,
     /** How long a login waits for the previous world's logout save before answering SAVE_PENDING. */
     val pendingSaveWaitMs: Long = 10_000,
-    /** Account names given administrator rights at login (bootstrap; permissions are data in the accounts table). */
+    /** Account names given administrator rights at login (`--admins`; deprecated: [bootstrap] supersedes it). */
     val admins: Set<String> = emptySet(),
+    /**
+     * Commands brief §1: account name (normalised: lower case, spaces for underscores) to its first rank, from
+     * `[ranks.bootstrap]`. Applied once per account at its next login and audited.
+     */
+    val bootstrap: Map<String, Rank> = emptyMap(),
 )
 
 /**
@@ -61,6 +66,28 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     private val io: CoroutineDispatcher = Executors.newVirtualThreadPerTaskExecutor().asCoroutineDispatcher()
 
     private suspend fun <T> db(block: () -> T): T = withContext(io) { block() }
+
+    /** [account] with its bootstrap rank applied (set and audited) when one is due; else unchanged. */
+    private suspend fun withBootstrap(account: AccountRow, name: String): AccountRow {
+        val boot = bootstrapRank(name) ?: return account
+        if (!bootstrapDue(account, boot)) return account
+        return db {
+            store.setRights(account.id, boot)
+            store.audit("hub", BOOTSTRAP, "account:${account.id}", "${account.displayName} ${account.rights.stored} -> ${boot.stored}")
+            store.account(account.id)
+        } ?: account
+    }
+
+    /** Once per account: a later demotion is not undone by the next boot (commands brief §1). */
+    private suspend fun bootstrapDue(account: AccountRow, rank: Rank): Boolean =
+        account.rights != rank && !db { store.audited(BOOTSTRAP, "account:${account.id}") }
+
+    /** [name]'s bootstrap rank: `[ranks.bootstrap]`, else ADMINISTRATOR for a `--admins` name. */
+    private fun bootstrapRank(name: String): Rank? {
+        val key = name.trim().replace('_', ' ').lowercase()
+        return config.bootstrap[key]
+            ?: Rank.ADMINISTRATOR.takeIf { config.admins.any { it.replace('_', ' ').equals(key, ignoreCase = true) } }
+    }
 
     /** Session locks: account → world holding it. */
     private val online = ConcurrentHashMap<Long, Int>()
@@ -109,16 +136,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 if (row == null &&
                     config.autoRegister
                 ) {
-                    row = db { store.createAccount(name, hashing { Passwords.hash(password) }, Rights.PLAYER) }
-                }
-                val found = row
-                if (found != null && found.rights != Rights.ADMIN && config.admins.any { it.equals(name, ignoreCase = true) }) {
-                    row =
-                        db {
-                            store.setRights(found.id, Rights.ADMIN)
-                            store.audit("hub", "grant-admin", found.displayName, "config")
-                            store.account(found.id)
-                        }
+                    row = db { store.createAccount(name, hashing { Passwords.hash(password) }, Rank.PLAYER) }
                 }
                 if (row == null || !db { hashing { Passwords.verify(password, row.passwordHash) } }) {
                     failures.add("ip:$ip")
@@ -139,7 +157,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 }
                 notifyFriendStatus(row.displayName, worldId)
                 db { clans.presenceChanged(row.id) }
-                return LoginGrant(LoginResult.OK, row.id, row.displayName, row.rights, save, row.mutedUntil)
+                // Commands brief §1: the configured first ranks, once per account, after every login check passed.
+                val rank = withBootstrap(row, name).rights
+                return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, row.mutedUntil)
             }
 
             override suspend fun logout(accountId: Long, worldId: Int, save: String) {
@@ -168,7 +188,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 if (password.length !in MIN_PASSWORD..MAX_PASSWORD) return "Passwords are $MIN_PASSWORD-$MAX_PASSWORD characters."
                 if (db { store.ipBanned(ip) }) return "Registration is not available."
                 val row =
-                    db { store.createAccount(username, hashing { Passwords.hash(password) }, Rights.PLAYER) }
+                    db { store.createAccount(username, hashing { Passwords.hash(password) }, Rank.PLAYER) }
                         ?: return "That name is taken."
                 db { store.audit(username, "register", row.id.toString(), ip) }
                 return null
@@ -340,8 +360,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         object : ModerationService {
             override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String? {
                 val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
-                if (staff.rights == Rights.PLAYER) return "You don't have permission to do that."
-                if (sanction in ADMIN_ONLY && staff.rights != Rights.ADMIN) return "Only administrators can do that."
+                if (staff.rights == Rank.PLAYER) return "You don't have permission to do that."
+                if (sanction in ADMIN_ONLY && !staff.rights.atLeast(Rank.ADMINISTRATOR)) return "Only administrators can do that."
                 val row = db { store.account(target) } ?: return "Unknown player."
                 val until = if (minutes <= 0) -1L else System.currentTimeMillis() + minutes * MS_PER_MINUTE
                 when (sanction) {
@@ -680,3 +700,6 @@ internal class TradingPost(private val store: HubStore, private val db: suspend 
     private fun TpListing.copy(sold: Int = this.sold, closed: Boolean = this.closed) =
         TpListing(id, accountId, seller, obj, quantity, sold, price, listedAtMs, closed)
 }
+
+/** Audit action of a rank bootstrap (one per account: the commands brief's "applied once"). */
+private const val BOOTSTRAP = "bootstrap-rank"

@@ -45,6 +45,7 @@ import tp.services.grpc.SystemUpdateRequest
 import tp.services.grpc.WorldList
 import tp.services.grpc.WorldRef
 import tp.services.grpc.WorldsGrpcKt
+import tp.util.Rank
 import tp.services.grpc.Empty as PbEmpty
 import tp.services.grpc.GeOffer as PbOffer
 import tp.services.grpc.LoginRequest as PbLogin
@@ -126,7 +127,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 .setResult(g.result.name)
                 .setAccountId(g.accountId)
                 .setDisplayName(g.displayName)
-                .setRights(g.rights.name)
+                .setRights(g.rights.stored)
                 .setSave(g.save.orEmpty())
                 .setHasSave(g.save != null)
                 .setMutedUntil(g.mutedUntil)
@@ -297,7 +298,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                         .newBuilder()
                                         .setFrom(
                                             e.from,
-                                        ).setFromRights(e.fromRights.name)
+                                        ).setFromRights(e.fromRights.stored)
                                         .setText(e.text),
                                 )
                             }
@@ -344,7 +345,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                     tp.services.grpc.ChannelMessage
                                         .newBuilder()
                                         .setFrom(e.from)
-                                        .setFromRights(e.fromRights.name)
+                                        .setFromRights(e.fromRights.stored)
                                         .setChannelName(e.channelName)
                                         .setWorldId(e.worldId)
                                         .setText(e.text),

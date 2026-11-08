@@ -70,7 +70,8 @@ interface LoginRequest {
     fun reject(reason: LoginRejection)
 }
 
-data class LoginDetails(val staffModLevel: Int = 0, val member: Boolean = true)
+/** [staffModLevel] and [playerMod] are the login response's staff fields (tp.util.Rank, commands brief §1). */
+data class LoginDetails(val staffModLevel: Int = 0, val member: Boolean = true, val playerMod: Boolean = false)
 
 enum class LoginRejection {
     INVALID_CREDENTIALS,
@@ -114,8 +115,8 @@ interface ClientSession {
      */
     fun syncAvatar(coord: AvatarState)
 
-    /** Public chat from this player's avatar this tick (player info extended info). */
-    fun publicChat(text: String, colour: Int, effects: Int) {}
+    /** Public chat from this player's avatar this tick (player info extended info); [modIcon] 0 none (tp.util.Rank.crown). */
+    fun publicChat(text: String, colour: Int, effects: Int, modIcon: Int = 0) {}
 
     /** A visual on this player's avatar this tick (seen by everyone who sees the avatar). */
     fun visual(visual: Visual) {}

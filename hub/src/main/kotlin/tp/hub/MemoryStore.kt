@@ -3,10 +3,10 @@ package tp.hub
 import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
-import tp.services.Rights
 import tp.services.TpCollect
 import tp.services.TpListing
 import tp.services.TpTrade
+import tp.util.Rank
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -30,7 +30,7 @@ class MemoryStore : HubStore {
     override fun account(id: Long): AccountRow? = byId[id]
 
     @Synchronized
-    override fun createAccount(username: String, passwordHash: String, rights: Rights): AccountRow? {
+    override fun createAccount(username: String, passwordHash: String, rights: Rank): AccountRow? {
         val key = username.lowercase()
         if (byName.containsKey(key)) return null
         val row = AccountRow(ids.incrementAndGet(), key, username, passwordHash, rights, 0, 0)
@@ -46,7 +46,7 @@ class MemoryStore : HubStore {
         byName[next.username] = next
     }
 
-    override fun setRights(id: Long, rights: Rights) =
+    override fun setRights(id: Long, rights: Rank) =
         update(id) {
             AccountRow(it.id, it.username, it.displayName, it.passwordHash, rights, it.mutedUntil, it.bannedUntil)
         }
@@ -216,7 +216,12 @@ class MemoryStore : HubStore {
 
     override fun topHiscores(stat: Int, count: Int): List<HiscoreEntry> = Hiscores.rank(hiscores.values.toList(), stat, count)
 
+    private val auditKeys: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
+
+    override fun audited(action: String, target: String): Boolean = "$action\u0000$target" in auditKeys
+
     override fun audit(actor: String, action: String, target: String, detail: String) {
+        auditKeys += "$action\u0000$target"
         auditLog += "${System.currentTimeMillis()} $actor $action $target $detail"
     }
 

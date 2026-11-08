@@ -4,17 +4,17 @@ import tp.services.ChannelSettings
 import tp.services.ClanRecord
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
-import tp.services.Rights
 import tp.services.TpCollect
 import tp.services.TpListing
 import tp.services.TpTrade
+import tp.util.Rank
 
 class AccountRow(
     val id: Long,
     val username: String,
     val displayName: String,
     val passwordHash: String,
-    val rights: Rights,
+    val rights: Rank,
     val mutedUntil: Long,
     val bannedUntil: Long,
 )
@@ -29,9 +29,9 @@ interface HubStore : AutoCloseable {
     fun account(id: Long): AccountRow?
 
     /** Creates an account; null if the name is taken. */
-    fun createAccount(username: String, passwordHash: String, rights: Rights): AccountRow?
+    fun createAccount(username: String, passwordHash: String, rights: Rank): AccountRow?
 
-    fun setRights(id: Long, rights: Rights)
+    fun setRights(id: Long, rights: Rank)
 
     fun setMuted(id: Long, until: Long)
 
@@ -118,6 +118,9 @@ interface HubStore : AutoCloseable {
 
     /** Append-only audit log (staff actions, logins): who, what, when. */
     fun audit(actor: String, action: String, target: String, detail: String)
+
+    /** Whether the audit log already holds [action] on [target] (one-time actions such as the rank bootstrap). */
+    fun audited(action: String, target: String): Boolean
 }
 
 /** GE history length: "now extends to 40 previous listings" (OSRS Wiki "Grand Exchange" changes). */

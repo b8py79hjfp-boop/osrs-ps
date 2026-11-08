@@ -54,8 +54,8 @@ class Player internal constructor(
     var accountId: Long = 0
         internal set
 
-    /** Staff level (0 player, 1 moderator, 2 admin): permissions as data (brief §12). */
-    var staffLevel: Int = 0
+    /** Staff rank (commands brief §1), set at login and changed live through the hub. */
+    var rank: tp.util.Rank = tp.util.Rank.PLAYER
         internal set
 
     /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */

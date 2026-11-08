@@ -181,7 +181,7 @@ internal class Pandemonium(
 
     /** `::pandemonium <stage>` (administrators): sets the quest stage, for testing the later steps. */
     private fun stageCommand(p: PlayerRef, args: List<String>) {
-        if (p.staffLevel < ADMIN) return
+        if (!p.rank.atLeast(ADMIN)) return
         val value = args.firstOrNull()?.toIntOrNull() ?: return p.message("Pandemonium stage: ${stage(p)}")
         setStage(p, value)
         p.message("Pandemonium stage set to $value.")
@@ -214,7 +214,7 @@ internal class Pandemonium(
         /** Talk-to is op 1 of these NPCs. */
         private const val OP_TALK = 1
         private const val OP_HOOK = 1
-        private const val ADMIN = 2
+        private val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** Dock ids (db 194): Port Sarim and The Pandemonium. */
         private const val PORT_SARIM_DOCK = 0

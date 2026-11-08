@@ -1,5 +1,6 @@
 package tp.services
 
+import tp.util.Rank
 import tp.services.grpc.ChannelMember as PbMember
 import tp.services.grpc.ClanInvite as PbClanInvite
 import tp.services.grpc.ClanMemberRow as PbClanMemberRow
@@ -80,14 +81,14 @@ object ClanPb {
             .setGuest(e.guest)
             .setClanName(e.clanName)
             .setFrom(e.from)
-            .setFromRights(e.fromRights.name)
+            .setFromRights(e.fromRights.stored)
             .setRank(e.rank)
             .setWorldId(e.worldId)
             .setText(e.text)
             .build()
 
     fun message(to: Long, m: PbClanMessage): SocialEvent.ClanMessage =
-        SocialEvent.ClanMessage(to, m.guest, m.clanName, m.from, Rights.valueOf(m.fromRights), m.rank, m.worldId, m.text)
+        SocialEvent.ClanMessage(to, m.guest, m.clanName, m.from, Rank.parseOrPlayer(m.fromRights), m.rank, m.worldId, m.text)
 
     fun invite(e: SocialEvent.ClanInvite): PbClanInvite =
         PbClanInvite

@@ -1,5 +1,7 @@
 plugins {
     id("tp.kotlin-app")
+    // Typed config (config/world.toml, D-087): ktoml decodes into @Serializable classes.
+    kotlin("plugin.serialization")
 }
 
 application {
@@ -38,5 +40,6 @@ dependencies {
     implementation(project(":content:pvp"))
     implementation(project(":content:world"))
     implementation(libs.kotlin.logging)
+    implementation(libs.ktoml.core)
     runtimeOnly(libs.logback.classic)
 }

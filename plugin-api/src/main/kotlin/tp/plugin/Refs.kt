@@ -29,8 +29,8 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Hub account id: stable across display-name changes (0 without an account authority). */
     public val accountId: Long get() = p.accountId
 
-    /** Staff level from the account: 0 player, 1 moderator, 2 administrator. */
-    public val staffLevel: Int get() = p.staffLevel
+    /** Staff rank (commands brief §1). */
+    public val rank: tp.util.Rank get() = p.rank
 
     /**
      * Grand Exchange call through the hub. [reply] runs later on the world thread (only if the player is still online)

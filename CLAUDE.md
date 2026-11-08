@@ -13,6 +13,8 @@ Non-obvious choices go in `docs/DECISIONS.md`; phase plans in `docs/plans/phase-
 | Format | `./gradlew spotlessApply` |
 | Download + verify cache 2757 into `.data/cache/242/` | `./gradlew setup` |
 | Login RSA keypair into `.data/rsa/` (prints modulus) | `./gradlew generateRsa` (`-Pforce` to regenerate) |
+| Set an account's rank (first developer; accounts DB) | `./gradlew admin --setRank=<account>:DEVELOPER --db=<jdbc url>` |
+| World config (commands policy, rank bootstrap; D-087) | `config/server.toml` (`--config <file>` to override) |
 | Boot the world node (game+JS5 :43594, HTTP :8080) | `./gradlew :server:run` |
 | Bots | `./gradlew :tools:botswarm:run --args="20"` |
 | Test 2 (protocol round trip) | `./gradlew :tools:botswarm:test` |

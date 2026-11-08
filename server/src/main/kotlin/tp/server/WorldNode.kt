@@ -132,11 +132,12 @@ object WorldNode {
         hub: HubServices? = null,
         bindHost: String? = null,
         proxyTrust: List<String>? = null,
+        commands: tp.engine.commands.CommandsConfig = tp.engine.commands.CommandsConfig(),
     ): World {
         val network = Osrs242Network(data.net, rsa, gamePort, maxPerIp, bindHost, proxyTrust != null, proxyTrust.orEmpty())
         val content = PluginContent.load()
         logger.info { "content: ${content.summary}" }
-        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed), data.world, network, content)
+        val world = World(WorldConfig(id = worldId, spawn = DEFAULT_SPAWN, seed = seed, commands = commands), data.world, network, content)
         val inspector = TickInspector(traceOut)
         world.tracer = if (recordOut == null) inspector else Tracers(inspector, ReplayRecorder(world, recordOut))
         if (hub != null) world.accounts = HubAccountBridge(hub, worldId, world)

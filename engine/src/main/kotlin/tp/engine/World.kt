@@ -60,6 +60,8 @@ data class WorldConfig(
     val pvpWorld: Boolean = false,
     /** Ground obj lifetimes (ground-items.md; OPEN-G1 is this flag). */
     val groundTiming: GroundTiming = GroundTiming(),
+    /** Commands policy (commands brief §3, §9; config/server.toml): live flag, enabled impacts, overrides. */
+    val commands: tp.engine.commands.CommandsConfig = tp.engine.commands.CommandsConfig(),
 )
 
 /**
@@ -611,7 +613,7 @@ class World(
                     val bridge = accounts ?: return player.session.send(ServerMessage.GameMessage(NO_HUB_MESSAGE))
                     return bridge.social(player, SocialAction.CHANNEL_MESSAGE, "", command.text)
                 }
-                player.session.publicChat(command.text, command.colour, command.effect)
+                player.session.publicChat(command.text, command.colour, command.effect, player.rank.crown)
             }
 
             is ClientCommand.ClanFullRequest -> {
@@ -672,7 +674,7 @@ class World(
             is ClientCommand.ReportAbuse -> {
                 // G7: names are at most 12 characters; rules are the client's list (ids < 64); only staff may mute.
                 if (command.name.length > MAX_NAME_LENGTH || command.rule !in 0 until MAX_REPORT_RULE) return invalid(player, command)
-                val mute = command.mute && player.staffLevel > 0
+                val mute = command.mute && player.rank.isStaff
                 logger.info { "report: ${player.username} reported '${command.name}' rule ${command.rule} mute=$mute" }
                 accounts?.reported(player, command.name, command.rule, mute)
             }
@@ -1276,7 +1278,8 @@ class World(
         val slot = (1 until MAX_PLAYERS).firstOrNull { players[it] == null } ?: return request.reject(LoginRejection.WORLD_FULL)
         val session =
             try {
-                request.accept(slot, LoginDetails(staffModLevel = profile?.staffLevel ?: 0))
+                val rank = profile?.rank ?: tp.util.Rank.PLAYER
+                request.accept(slot, LoginDetails(staffModLevel = rank.staffModLevel, playerMod = rank.playerMod))
             } catch (
                 @Suppress("TooGenericExceptionCaught") e: RuntimeException,
             ) {
@@ -1291,7 +1294,7 @@ class World(
         player.loginResizable = request.resizable
         if (profile != null) {
             player.accountId = profile.accountId
-            player.staffLevel = profile.staffLevel
+            player.rank = profile.rank
             player.mutedUntil = profile.mutedUntil
             profile.save?.let { PlayerSave.apply(player, it) }
         }

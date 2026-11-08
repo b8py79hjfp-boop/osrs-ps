@@ -1,0 +1,36 @@
+# World-node configuration (D-087; docs/plans/commands-brief.md §9). Every key is optional; unknown keys fail the boot.
+# This file is a dev world: every impact class enabled. A live 1:1 world sets `live = true` (CONVENIENCE and ECONOMY
+# then default off) under [commands] or per world under [worlds.N].
+
+[commands]
+live = false
+# enabled_impacts = ["INFO", "SOCIAL", "ACCOUNT", "MODERATION", "OPERATIONS", "DEBUG_VISUAL"]
+# ECONOMY on a live world needs this as well, and only takes effect after a restart.
+allow_economy_on_live = false
+rate_limit_per_second = 5
+rate_limit_per_minute = 30
+confirm_timeout_seconds = 30
+yell_cooldown_seconds = { PLAYER = 30, MODERATOR = 5 }
+reason_presets = ["Spam", "Offensive language", "Scamming", "Botting", "Rule breaking"]
+
+[commands.urls]
+discord = ""
+forums = ""
+vote = ""
+store = ""
+hiscores = ""
+
+[commands.overrides]
+# teleto = "ADMINISTRATOR"
+# skull = "disabled"
+
+[ranks.bootstrap]
+# Applied once per account at its next login and written to the audit log. There is no in-game path to the first
+# developer; `./gradlew admin --setRank=<account>:DEVELOPER` is the other way in.
+developers = []
+owners = []
+administrators = []
+moderators = []
+
+# [worlds.2]
+# live = true

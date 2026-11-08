@@ -12,7 +12,7 @@ how the custom interface works, the modules touched, and the risks. The facts co
 | Moderation module | hub `ModerationService.apply` (Hub.kt:341-363), `Sanction` (Services.kt:348) | Extended with yell-mute, jail, warn, note and device ban, plus expiry and lift records (§7). |
 | Audit log | `audit_log(id, at, actor, action, target, detail)` (PostgresStore.kt:602) | Extended to the §4 fields: rank, world, tick, outcome, source. |
 | Custom interface | `spawn_menu.if3` + OpenRune cs2 (content/dev pack); the only custom interface | A new `commands.if3` built the same way (see below). |
-| Config | CLI flags only (Main.kt; `--admins`) | Typed config file. Format is an **open question for the user**: TOML (brief §9), or `server.properties` plus `commands.toml`. |
+| Config | CLI flags only (Main.kt; `--admins`) | `config/server.toml` (TOML, the user's choice; D-087). |
 
 ## What exists
 
@@ -156,3 +156,18 @@ how the custom interface works, the modules touched, and the risks. The facts co
 7. Tests, then the RuneLite check (needs the user).
 
 The work is committed at each green milestone.
+
+## Status
+
+- **Milestone 2, ranks:** done (D-087). Five ranks, the login `playerMod` / `staffModLevel`, crowns in all four chats,
+  the TOML config with per-world policy, and the bootstrap (config list plus `./gradlew admin`). The rest comes with
+  the commands that use them:
+  - live rank pushes, with `::setrank`;
+  - hidden staff, with `::invisible`;
+  - demotion closing the staff views, with the interface.
+- **Client facts:**
+  - OPEN-CM1 and OPEN-CM2 stay open for the RuneLite check.
+  - Device bans use RSProt's 24-byte login `uuid` (LoginBlockDecoder.kt:135-138).
+  - Output stays on game messages (type 0); the console type (99) is not confirmed to render in RuneLite.
+  - RuneLite's developer-tools plugin acts locally on 19 command names (`DevToolsPlugin`, lines 336-568).
+

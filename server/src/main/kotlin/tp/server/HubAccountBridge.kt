@@ -25,8 +25,8 @@ import tp.services.CollectPart
 import tp.services.GeOffer
 import tp.services.HubServices
 import tp.services.LoginResult
-import tp.services.Rights
 import tp.services.Sanction
+import tp.util.Rank
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -52,7 +52,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 LoginResult.OK -> {
                     world.admitAuthorized(
                         request,
-                        AccountProfile(grant.accountId, grant.displayName, staffLevel(grant.rights), grant.save, grant.mutedUntil),
+                        AccountProfile(grant.accountId, grant.displayName, grant.rights, grant.save, grant.mutedUntil),
                     )
                 }
 
@@ -101,7 +101,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
             chains[account]?.whenComplete { _, _ -> chains.remove(account) }
             val xp = IntArray(PlayerStats.COUNT) { player.stats.xpTenths(it) }
             val name = player.username
-            if (player.staffLevel < ADMIN_LEVEL) io.execute { call("hiscores") { hub.hiscores.submit(account, name, xp) } }
+            if (!player.rank.atLeast(Rank.ADMINISTRATOR)) io.execute { call("hiscores") { hub.hiscores.submit(account, name, xp) } }
         }
     }
 
@@ -257,7 +257,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
      */
     override fun reported(player: Player, name: String, rule: Int, mute: Boolean) {
         val account = player.accountId
-        if (!mute || account == 0L || player.staffLevel == 0) return
+        if (!mute || account == 0L || !player.rank.isStaff) return
         io.execute {
             val error =
                 call("report mute") {
@@ -432,7 +432,6 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         /** OSRS report window: "Mute for 48 hours" (staff option). */
         const val REPORT_MUTE_MINUTES = 48 * 60
 
-        const val ADMIN_LEVEL = 2
         val SANCTIONS =
             mapOf(
                 "kick" to Sanction.KICK,
@@ -443,13 +442,6 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                 "unban" to Sanction.UNBAN,
             )
     }
-
-    private fun staffLevel(rights: Rights): Int =
-        when (rights) {
-            Rights.PLAYER -> 0
-            Rights.MODERATOR -> 1
-            Rights.ADMIN -> 2
-        }
 }
 
 /** Save latency (brief §12: alert on save latency). */

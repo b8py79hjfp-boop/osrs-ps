@@ -8,8 +8,8 @@ import tp.protocol.api.SocialAction
 class AccountProfile(
     val accountId: Long,
     val displayName: String,
-    /** Staff level for the login response and permission checks (0 player, 1 moderator, 2 admin). */
-    val staffLevel: Int,
+    /** Staff rank (docs/plans/commands-brief.md §1): the login response's staff fields and every permission check. */
+    val rank: tp.util.Rank,
     /** Versioned save JSON (engine `PlayerSave`), null for a new character. */
     val save: String?,
     /** Muted until (epoch ms); 0 = not muted, negative = permanently. */

@@ -33,7 +33,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  * (embedded hub's PostgreSQL; default in-memory), `--trace <file>` (tick inspector JSONL, first world),
  * `--proxy-protocol [cidrs]` (PROXY v2 from trusted proxies; default loopback), `--ops-port` (health + Prometheus
  * metrics, default 9090), `--admins a,b` (embedded hub: these accounts get administrator rights),
- * `--record <file>` (replay log, first world), `--max-per-ip <n>` (default 10; raise for local bot swarms).
+ * `--record <file>` (replay log, first world), `--max-per-ip <n>` (default 10; raise for local bot swarms),
+ * `--config <file>` (default `config/server.toml`, D-087: commands policy per world, rank bootstrap).
  */
 fun main(args: Array<String>) {
     val options = parseArgs(args)
@@ -51,6 +52,8 @@ fun main(args: Array<String>) {
         logger.error { "Cache verification failed; refusing to start." }
         exitProcess(1)
     }
+    // D-087: a bad config fails here, before anything binds a port (boot check included).
+    val config = ServerConfig.load(options["--config"]?.let(Path::of) ?: ServerConfig.DEFAULT_PATH)
     if ("--boot-check" in options) {
         // Registers every content plugin too, so duplicate handlers fail CI here rather than at world start.
         tp.plugin.PluginContent.load()
@@ -65,7 +68,7 @@ fun main(args: Array<String>) {
     val recordOut = options["--record"]?.let { Files.newBufferedWriter(Path.of(it)) }
 
     val remoteHub = options["--hub"]?.let { GrpcHubClient(it.substringBefore(':'), it.substringAfter(':').toInt()) }
-    val embeddedHub = if (remoteHub != null) null else embeddedHub(options)
+    val embeddedHub = if (remoteHub != null) null else embeddedHub(options, config)
     val hub: HubServices = remoteHub ?: embeddedHub ?: error("no hub")
     val worlds =
         (0 until node.worldCount).map { i ->
@@ -81,6 +84,7 @@ fun main(args: Array<String>) {
                 hub,
                 bindHost = node.hostOf(i).takeIf { node.loopback },
                 proxyTrust = node.proxyTrust,
+                commands = config.commands(node.firstWorld + i),
             )
         }
     val links = worlds.mapIndexed { i, w -> WorldLinks(w, hub, node.hostOf(i), node.portOf(i)).start() }
@@ -126,13 +130,13 @@ private class NodeOptions(options: Map<String, String?>) {
     fun portOf(i: Int): Int = if (loopback) gamePort else gamePort + i
 }
 
-private fun embeddedHub(options: Map<String, String?>): Hub {
+private fun embeddedHub(options: Map<String, String?>, config: ServerConfig): Hub {
     val store =
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") }
             ?: MemoryStore()
     // Dev: the first login with a new name creates the account with that password.
     val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
-    return Hub(store, HubConfig(autoRegister = true, admins = admins))
+    return Hub(store, HubConfig(autoRegister = true, admins = admins, bootstrap = config.bootstrap()))
 }
 
 private fun worldListServer(

@@ -5,10 +5,10 @@ import com.zaxxer.hikari.HikariDataSource
 import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
-import tp.services.Rights
 import tp.services.TpCollect
 import tp.services.TpListing
 import tp.services.TpTrade
+import tp.util.Rank
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -40,7 +40,7 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             getString("username"),
             getString("display_name"),
             getString("password_hash"),
-            Rights.valueOf(getString("rights")),
+            Rank.parseOrPlayer(getString("rights")),
             getLong("muted_until"),
             getLong("banned_until"),
         )
@@ -74,17 +74,17 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
 
     override fun account(id: Long): AccountRow? = one("SELECT * FROM accounts WHERE id = ?", id)
 
-    override fun createAccount(username: String, passwordHash: String, rights: Rights): AccountRow? =
+    override fun createAccount(username: String, passwordHash: String, rights: Rank): AccountRow? =
         one(
             "INSERT INTO accounts (username, display_name, password_hash, rights) VALUES (?, ?, ?, ?) " +
                 "ON CONFLICT (username) DO NOTHING RETURNING *",
             username.lowercase(),
             username,
             passwordHash,
-            rights.name,
+            rights.stored,
         )
 
-    override fun setRights(id: Long, rights: Rights) = exec("UPDATE accounts SET rights = ? WHERE id = ?", rights.name, id)
+    override fun setRights(id: Long, rights: Rank) = exec("UPDATE accounts SET rights = ? WHERE id = ?", rights.stored, id)
 
     override fun setMuted(id: Long, until: Long) = exec("UPDATE accounts SET muted_until = ? WHERE id = ?", until, id)
 
@@ -443,6 +443,9 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
             }
         return Hiscores.rank(rows, stat, count)
     }
+
+    override fun audited(action: String, target: String): Boolean =
+        strings("SELECT action FROM audit_log WHERE action = ? AND target = ? LIMIT 1", action, target).isNotEmpty()
 
     override fun audit(actor: String, action: String, target: String, detail: String) =
         exec("INSERT INTO audit_log (actor, action, target, detail) VALUES (?, ?, ?, ?)", actor, action, target, detail)

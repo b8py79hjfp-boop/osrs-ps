@@ -2,8 +2,8 @@ package tp.hub
 
 import tp.services.ChannelMember
 import tp.services.ChannelSettings
-import tp.services.Rights
 import tp.services.SocialEvent
+import tp.util.Rank
 
 /**
  * Friends chat channels (docs/mechanics/friends-chat.md). Every account owns one channel, named after its display name.
@@ -137,7 +137,7 @@ internal class FriendChats(
                 OWNER
             }
 
-            account.rights == Rights.ADMIN -> {
+            account.rights.atLeast(Rank.ADMINISTRATOR) -> {
                 JMOD
             }
 

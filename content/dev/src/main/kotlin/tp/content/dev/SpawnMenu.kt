@@ -24,7 +24,7 @@ import tp.symbols.Varbits
  */
 public class SpawnMenu : ContentPlugin {
     override fun ContentScope.register() {
-        onCommand("spawn") { if (staffLevel >= ADMIN) open() else message("Only administrators can use ::spawn.") }
+        onCommand("spawn") { if (rank.atLeast(ADMIN)) open() else message("Only administrators can use ::spawn.") }
         onModalClosed(Interfaces.SPAWN_MENU) {
             this[STATE] = null
             showInv(Invs.SPAWN_RESULTS, IntArray(0), IntArray(0))
@@ -54,7 +54,7 @@ public class SpawnMenu : ContentPlugin {
 
     /** OpenRune `isAdmin`: a non-admin with the menu open (rights removed meanwhile) has it closed. */
     private fun PlayerRef.admin(): Boolean {
-        if (staffLevel >= ADMIN && this[STATE] != null) return true
+        if (rank.atLeast(ADMIN) && this[STATE] != null) return true
         closeModal()
         return false
     }
@@ -190,8 +190,8 @@ public class SpawnMenu : ContentPlugin {
         val STATE = AttrKey<State>("spawn_menu")
         val INDEX = AttrKey<Index>("spawn_menu_index")
 
-        /** `Rights.ADMIN` as a staff level (HubAccountBridge.staffLevel). */
-        const val ADMIN = 2
+        /** Administrators and above may use the menu. */
+        val ADMIN = tp.util.Rank.ADMINISTRATOR
 
         /** OpenRune constants: the result inv size and the components each card creates (frame, fill, icon, name, label). */
         const val MAX_RESULTS = 60

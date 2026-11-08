@@ -15,9 +15,9 @@ public class StaffCommands : ContentPlugin {
         for (command in ADMIN_COMMANDS) staff(command, ADMIN)
     }
 
-    private fun ContentScope.staff(command: String, level: Int) {
+    private fun ContentScope.staff(command: String, level: tp.util.Rank) {
         onCommand(command) { args ->
-            if (staffLevel < level) {
+            if (!rank.atLeast(level)) {
                 message("You do not have permission to use that command.")
             } else if (args.isEmpty()) {
                 message("Usage: ::$command <${if (command == "update") "seconds" else "name"}> ...")
@@ -28,8 +28,8 @@ public class StaffCommands : ContentPlugin {
     }
 
     private companion object {
-        const val MODERATOR = 1
-        const val ADMIN = 2
+        val MODERATOR = tp.util.Rank.MODERATOR
+        val ADMIN = tp.util.Rank.ADMINISTRATOR
         val MODERATOR_COMMANDS = listOf("kick", "mute", "unmute")
         val ADMIN_COMMANDS = listOf("ban", "ipban", "unban", "broadcast", "update")
     }
