@@ -309,6 +309,9 @@ sealed interface ServerMessage {
     /** System update countdown in ticks (0 clears it): the client shows "System update in: m:ss". */
     data class SystemUpdate(val ticks: Int) : ServerMessage
 
+    /** Opens [url] in the player's browser (URL_OPEN; commands brief §6 `::discord` and friends). */
+    data class UrlOpen(val url: String) : ServerMessage
+
     data object Logout : ServerMessage
 
     /** IF_SETTEXT on packed [component] (`iface << 16 | comp`). */

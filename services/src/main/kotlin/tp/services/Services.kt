@@ -47,6 +47,12 @@ interface AccountService {
 
     /** Sign-up (hub HTTP endpoint). Returns null on success, else a reason. */
     suspend fun register(username: String, password: String, ip: String): String?
+
+    /**
+     * Commands brief §8 `::changepassword`: needs the current password, is throttled like a login and audited without
+     * its arguments. Returns null on success, else a reason.
+     */
+    suspend fun changePassword(accountId: Long, current: String, new: String): String? = "Not available."
 }
 
 interface SaveService {
@@ -366,11 +372,26 @@ interface BroadcastService {
     /** System update in [seconds] (client countdown; worlds save and stop). */
     suspend fun systemUpdate(seconds: Int)
 
+    /** Commands brief §6 `::yell`: a line to every world, tagged with [rank]. */
+    suspend fun yell(from: String, rank: Rank, worldId: Int, text: String)
+
+    /** Commands brief §1 hidden staff (`::invisible`): updates the account's presence on every world. */
+    suspend fun setInvisible(accountId: Long, invisible: Boolean)
+
+    /** Every event to every world; a new subscriber first gets a [Broadcast.Presence] snapshot. */
     fun subscribe(sink: (Broadcast) -> Unit): AutoCloseable
 }
+
+/** One online account as every world sees it (commands brief §5: pushed presence, cached per world). */
+class PresenceEntry(val accountId: Long, val name: String, val worldId: Int, val rank: Rank, val invisible: Boolean)
 
 sealed interface Broadcast {
     class Message(val text: String) : Broadcast
 
     class SystemUpdate(val seconds: Int) : Broadcast
+
+    /** [online] entries are added or replaced, [offline] account ids removed; [snapshot] replaces everything. */
+    class Presence(val online: List<PresenceEntry>, val offline: List<Long>, val snapshot: Boolean) : Broadcast
+
+    class Yell(val from: String, val rank: Rank, val worldId: Int, val text: String) : Broadcast
 }

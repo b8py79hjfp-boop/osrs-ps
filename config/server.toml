@@ -12,6 +12,8 @@ rate_limit_per_minute = 30
 confirm_timeout_seconds = 30
 yell_cooldown_seconds = { PLAYER = 30, MODERATOR = 5 }
 reason_presets = ["Spam", "Offensive language", "Scamming", "Botting", "Rule breaking"]
+# `::rules` shows these lines.
+rules = []
 
 [commands.urls]
 discord = ""
@@ -26,7 +28,8 @@ hiscores = ""
 
 [ranks.bootstrap]
 # Applied once per account at its next login and written to the audit log. There is no in-game path to the first
-# developer; `./gradlew admin --setRank=<account>:DEVELOPER` is the other way in.
+# developer; `./gradlew admin --setRank=<account>:DEVELOPER` is the other way in. A trailing `*` matches a name
+# prefix (D-088), e.g. developers = ["bot*"] for botswarm accounts on a dev world.
 developers = []
 owners = []
 administrators = []

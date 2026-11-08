@@ -50,8 +50,15 @@ message SaveRequest {
   string save = 3;
 }
 
+message ChangePasswordRequest {
+  int64 account_id = 1;
+  string current = 2;
+  string new_password = 3;
+}
+
 service Accounts {
   rpc Login(LoginRequest) returns (LoginReply);
+  rpc ChangePassword(ChangePasswordRequest) returns (ErrorReply);
   rpc Logout(LogoutRequest) returns (Empty);
   rpc Register(RegisterRequest) returns (ErrorReply);
   rpc Save(SaveRequest) returns (Empty);
@@ -498,15 +505,46 @@ message SystemUpdateRequest {
   int32 seconds = 1;
 }
 
+message PresencePb {
+  int64 account_id = 1;
+  string name = 2;
+  int32 world_id = 3;
+  string rank = 4; // tp.util.Rank stored value
+  bool invisible = 5;
+}
+
+message PresenceUpdate {
+  repeated PresencePb online = 1;
+  repeated int64 offline = 2;
+  bool snapshot = 3;
+}
+
+message YellRequest {
+  string from = 1;
+  string rank = 2;
+  int32 world_id = 3;
+  string text = 4;
+}
+
+message InvisibleRequest {
+  int64 account_id = 1;
+  bool invisible = 2;
+}
+
 message BroadcastEvent {
   oneof event {
     string message = 1;
     int32 system_update_seconds = 2;
+    PresenceUpdate presence = 3;
+    YellRequest yell = 4;
   }
 }
 
 service Broadcasts {
   rpc Broadcast(BroadcastRequest) returns (Empty);
   rpc SystemUpdate(SystemUpdateRequest) returns (Empty);
+  // Commands brief §6 ::yell and §1 hidden staff.
+  rpc Yell(YellRequest) returns (Empty);
+  rpc SetInvisible(InvisibleRequest) returns (Empty);
   rpc Subscribe(Empty) returns (stream BroadcastEvent);
 }

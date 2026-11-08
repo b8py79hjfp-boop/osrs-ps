@@ -31,6 +31,9 @@ interface HubStore : AutoCloseable {
     /** Creates an account; null if the name is taken. */
     fun createAccount(username: String, passwordHash: String, rights: Rank): AccountRow?
 
+    /** Replaces the password hash (`::changepassword`; the row is otherwise unchanged). */
+    fun setPasswordHash(id: Long, hash: String)
+
     fun setRights(id: Long, rights: Rank)
 
     fun setMuted(id: Long, until: Long)

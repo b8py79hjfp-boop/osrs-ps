@@ -140,6 +140,14 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.registry.add(builder.build())
     }
 
+    /**
+     * Official behaviour for names that are not commands (commands brief §2: typing an emote's name performs it).
+     * Runs only when no registered command matched; return true when [handler] took the name.
+     */
+    public fun commandFallback(handler: PlayerRef.(String) -> Boolean) {
+        handlers.commandFallbacks += handler
+    }
+
     /** The plugin class registering now (registry messages name it). */
     private fun ownerName(): String = handlers.owner
 
@@ -302,6 +310,7 @@ internal class Handlers {
     var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
     val registry = tp.plugin.commands.CommandRegistry()
+    val commandFallbacks = ArrayList<PlayerRef.(String) -> Boolean>()
 
     /** The plugin whose `register()` is running (registry messages). */
     var owner: String = ""

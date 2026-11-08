@@ -51,10 +51,30 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                     when (b) {
                         is Broadcast.Message -> world.forEachPlayer { it.session.send(ServerMessage.GameMessage(b.text)) }
                         is Broadcast.SystemUpdate -> world.systemUpdate(b.seconds)
+                        is Broadcast.Presence -> presence(b)
+                        is Broadcast.Yell -> yell(b)
                     }
                 }
             }
         return this
+    }
+
+    /** World thread: the hub's presence snapshot or delta into the world's cache (commands brief §5). */
+    private fun presence(b: Broadcast.Presence) {
+        if (b.snapshot) world.presence.clear()
+        for (id in b.offline) world.presence.remove(id)
+        for (e in b.online) world.presence[e.accountId] = tp.engine.OnlineAccount(e.accountId, e.name, e.worldId, e.rank, e.invisible)
+    }
+
+    /**
+     * World thread: a `::yell` line to every player here who has not turned yells off. The text was escaped by the
+     * sender; the crown is the rank's chat icon (OPEN-CM2: `<img=0>` player-moderator, `<img=1>` J-Mod).
+     */
+    private fun yell(b: Broadcast.Yell) {
+        val crown = b.rank.crown
+        val icon = if (crown > 0) "<img=${crown - 1}>" else ""
+        val line = "[Yell] $icon${b.from}: ${b.text}"
+        world.forEachPlayer { p -> if ((p.saved[YELL_OFF_KEY] ?: 0L) == 0L) p.session.send(ServerMessage.GameMessage(line)) }
     }
 
     /** World thread: delivers a hub social event to its player. */
@@ -119,6 +139,8 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
     }
 
     private companion object {
+        /** Saved flag: 1 = this player stopped receiving yells (`::yell off`, commands brief §6). */
+        const val YELL_OFF_KEY = tp.plugin.commands.YELL_OFF_KEY
         const val MEMBERS = 1
         const val HEARTBEAT_SECONDS = 5L
 

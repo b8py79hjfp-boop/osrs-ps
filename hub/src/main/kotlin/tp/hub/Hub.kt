@@ -20,6 +20,7 @@ import tp.services.HubServices
 import tp.services.LoginGrant
 import tp.services.LoginResult
 import tp.services.ModerationService
+import tp.services.PresenceEntry
 import tp.services.Sanction
 import tp.services.SaveService
 import tp.services.SocialEvent
@@ -85,12 +86,26 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     /** [name]'s bootstrap rank: `[ranks.bootstrap]`, else ADMINISTRATOR for a `--admins` name. */
     private fun bootstrapRank(name: String): Rank? {
         val key = name.trim().replace('_', ' ').lowercase()
-        return config.bootstrap[key]
-            ?: Rank.ADMINISTRATOR.takeIf { config.admins.any { it.replace('_', ' ').equals(key, ignoreCase = true) } }
+        config.bootstrap[key]?.let { return it }
+        // D-088: a trailing `*` is a name prefix (bot accounts on dev worlds); the longest prefix wins.
+        val pattern =
+            config.bootstrap.entries
+                .filter { (k, _) -> k.endsWith('*') && key.startsWith(k.dropLast(1)) }
+                .maxByOrNull { it.key.length }
+        if (pattern != null) return pattern.value
+        return Rank.ADMINISTRATOR.takeIf { config.admins.any { it.replace('_', ' ').equals(key, ignoreCase = true) } }
     }
 
     /** Session locks: account → world holding it. */
     private val online = ConcurrentHashMap<Long, Int>()
+
+    /** Every online account with its world, rank and hidden flag (pushed to every world, commands brief §5). */
+    private val presence = ConcurrentHashMap<Long, PresenceEntry>()
+
+    private fun presenceChanged(online: List<PresenceEntry> = emptyList(), offline: List<Long> = emptyList()) {
+        val event = Broadcast.Presence(online, offline, snapshot = false)
+        broadcastSinks.forEach { runCatching { it(event) } }
+    }
 
     /**
      * Argon2id needs 19 MiB and ~50 ms of CPU per hash. A login storm (world restart, botswarm) would otherwise run
@@ -159,6 +174,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 db { clans.presenceChanged(row.id) }
                 // Commands brief §1: the configured first ranks, once per account, after every login check passed.
                 val rank = withBootstrap(row, name).rights
+                val entry = PresenceEntry(row.id, row.displayName, worldId, rank, invisible = false)
+                presence[row.id] = entry
+                presenceChanged(online = listOf(entry))
                 return LoginGrant(LoginResult.OK, row.id, row.displayName, rank, save, row.mutedUntil)
             }
 
@@ -171,6 +189,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 } finally {
                     friendChats.leave(accountId)
                     if (online.remove(accountId, worldId)) {
+                        if (presence.remove(accountId) != null) presenceChanged(offline = listOf(accountId))
                         val row = db { store.account(accountId) }
                         if (row != null) {
                             onlineNames.remove(row.username)
@@ -191,6 +210,25 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     db { store.createAccount(username, hashing { Passwords.hash(password) }, Rank.PLAYER) }
                         ?: return "That name is taken."
                 db { store.audit(username, "register", row.id.toString(), ip) }
+                return null
+            }
+
+            @Suppress("ReturnCount") // one guard per refusal reason
+            override suspend fun changePassword(accountId: Long, current: String, new: String): String? {
+                val row = db { store.account(accountId) } ?: return "Unknown account."
+                val key = "acct:${row.username}"
+                // Throttled with the login failures: guessing the current password here is no cheaper than at login.
+                if (failures.count(key) >= config.maxFailuresPerAccount) return "Too many attempts. Try again later."
+                if (new.length !in MIN_PASSWORD..MAX_PASSWORD) return "Passwords are $MIN_PASSWORD-$MAX_PASSWORD characters."
+                if (!hashing { Passwords.verify(current, row.passwordHash) }) {
+                    failures.add(key)
+                    return "That is not your current password."
+                }
+                val hash = hashing { Passwords.hash(new) }
+                db {
+                    store.setPasswordHash(row.id, hash)
+                    store.audit(row.displayName, "change-password", "account:${row.id}", "")
+                }
                 return null
             }
         }
@@ -403,7 +441,20 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 broadcastSinks.forEach { runCatching { it(Broadcast.SystemUpdate(seconds)) } }
             }
 
+            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String) {
+                broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text)) } }
+            }
+
+            override suspend fun setInvisible(accountId: Long, invisible: Boolean) {
+                val entry = presence[accountId] ?: return
+                val updated = PresenceEntry(entry.accountId, entry.name, entry.worldId, entry.rank, invisible)
+                presence[accountId] = updated
+                presenceChanged(online = listOf(updated))
+            }
+
             override fun subscribe(sink: (Broadcast) -> Unit): AutoCloseable {
+                // A new world first learns who is online everywhere (commands brief §5: presence is pushed, not fetched).
+                runCatching { sink(Broadcast.Presence(presence.values.toList(), emptyList(), snapshot = true)) }
                 broadcastSinks += sink
                 return AutoCloseable { broadcastSinks -= sink }
             }

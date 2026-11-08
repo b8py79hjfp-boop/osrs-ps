@@ -59,7 +59,6 @@ class Player internal constructor(
 
     /** Hidden staff (`::invisible`, commands brief §1): left out of player lists for lower ranks. */
     var invisible: Boolean = false
-        internal set
 
     /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
     var mutedUntil: Long = 0

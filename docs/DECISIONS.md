@@ -1293,3 +1293,15 @@ means is not known.
   - `./gradlew admin --setRank=<account>:<RANK> --db=<jdbc url>` (`tp.hub.AdminKt`) sets a rank in the database
     and audits it as actor `cli`.
 
+## D-088 Command system: moderation storage, bot ranks, suite order (2026-11-08, the user's answers)
+
+- **Moderation records:** a new `moderation_records` table, additive.
+  - Each record holds type, actor, reason, start, expiry, scope, and who lifted it and when.
+  - Device bans are keyed on the login block's 24-byte `uuid`.
+  - The existing `accounts.muted_until` / `banned_until` and `ip_bans` stay as the fast login-time checks, written
+    alongside the records. Nothing existing is rewritten or dropped.
+- **Bots on dev worlds:** `[ranks.bootstrap]` accepts a trailing-`*` name prefix (`developers = ["bot*"]`). It is
+  applied once per account and audited like any bootstrap entry, and only where the config lists it.
+- **Suite order:** rank by rank, as commands brief §11 lists: player, moderator, administrator, owner, developer.
+  The raid tables come last.
+

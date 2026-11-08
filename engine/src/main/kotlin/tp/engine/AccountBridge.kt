@@ -133,6 +133,17 @@ interface AccountBridge {
     /** Commands brief §4: one command execution for the hub's append-only audit log (off the world thread). */
     fun audit(actor: String, action: String, target: String, detail: String) {}
 
+    /** `::yell` (commands brief §6): [text] (already escaped) to every world. */
+    fun yell(player: Player, text: String) {}
+
+    /** `::invisible` (commands brief §1): the account's hidden flag on every world's presence. */
+    fun setInvisible(player: Player, invisible: Boolean) {}
+
+    /** `::changepassword` (commands brief §8); [reply] runs on the world thread with null on success, else the reason. */
+    fun changePassword(player: Player, current: String, new: String, reply: (String?) -> Unit) {
+        reply("Passwords can't be changed without an account server.")
+    }
+
     /**
      * Reads [player]'s own friends chat settings, or stores [update] first if given; [reply] runs on the world thread
      * with the current settings (null: hub unavailable).

@@ -124,6 +124,19 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                                 .build(),
                         ).error,
                 )
+
+            override suspend fun changePassword(accountId: Long, current: String, new: String): String? =
+                err(
+                    accountsStub
+                        .changePassword(
+                            tp.services.grpc.ChangePasswordRequest
+                                .newBuilder()
+                                .setAccountId(accountId)
+                                .setCurrent(current)
+                                .setNewPassword(new)
+                                .build(),
+                        ).error,
+                )
         }
 
     override val saves: SaveService =
@@ -634,12 +647,65 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                 broadcastsStub.systemUpdate(SystemUpdateRequest.newBuilder().setSeconds(seconds).build())
             }
 
+            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String) {
+                broadcastsStub.yell(
+                    tp.services.grpc.YellRequest
+                        .newBuilder()
+                        .setFrom(from)
+                        .setRank(rank.stored)
+                        .setWorldId(worldId)
+                        .setText(text)
+                        .build(),
+                )
+            }
+
+            override suspend fun setInvisible(accountId: Long, invisible: Boolean) {
+                broadcastsStub.setInvisible(
+                    tp.services.grpc.InvisibleRequest
+                        .newBuilder()
+                        .setAccountId(accountId)
+                        .setInvisible(invisible)
+                        .build(),
+                )
+            }
+
             override fun subscribe(sink: (Broadcast) -> Unit): AutoCloseable =
                 stream({ broadcastsStub.subscribe(PbEmpty.getDefaultInstance()) }) { e: BroadcastEvent ->
                     when (e.eventCase) {
-                        BroadcastEvent.EventCase.MESSAGE -> sink(Broadcast.Message(e.message))
-                        BroadcastEvent.EventCase.SYSTEM_UPDATE_SECONDS -> sink(Broadcast.SystemUpdate(e.systemUpdateSeconds))
-                        else -> Unit
+                        BroadcastEvent.EventCase.MESSAGE -> {
+                            sink(Broadcast.Message(e.message))
+                        }
+
+                        BroadcastEvent.EventCase.SYSTEM_UPDATE_SECONDS -> {
+                            sink(Broadcast.SystemUpdate(e.systemUpdateSeconds))
+                        }
+
+                        BroadcastEvent.EventCase.PRESENCE -> {
+                            val p = e.presence
+                            sink(
+                                Broadcast.Presence(
+                                    p.onlineList.map {
+                                        PresenceEntry(
+                                            it.accountId,
+                                            it.name,
+                                            it.worldId,
+                                            Rank.parseOrPlayer(it.rank),
+                                            it.invisible,
+                                        )
+                                    },
+                                    p.offlineList,
+                                    p.snapshot,
+                                ),
+                            )
+                        }
+
+                        BroadcastEvent.EventCase.YELL -> {
+                            sink(Broadcast.Yell(e.yell.from, Rank.parseOrPlayer(e.yell.rank), e.yell.worldId, e.yell.text))
+                        }
+
+                        else -> {
+                            Unit
+                        }
                     }
                 }
         }

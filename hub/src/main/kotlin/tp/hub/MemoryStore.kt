@@ -46,6 +46,11 @@ class MemoryStore : HubStore {
         byName[next.username] = next
     }
 
+    override fun setPasswordHash(id: Long, hash: String) =
+        update(id) {
+            AccountRow(it.id, it.username, it.displayName, hash, it.rights, it.mutedUntil, it.bannedUntil)
+        }
+
     override fun setRights(id: Long, rights: Rank) =
         update(id) {
             AccountRow(it.id, it.username, it.displayName, it.passwordHash, rights, it.mutedUntil, it.bannedUntil)

@@ -64,7 +64,7 @@ public class CommandRegistry {
     /** Whether [viewer] may see and run [def] on this world: rank, override and the world's impact policy (§3). */
     public fun usable(def: CommandDef, viewer: Rank, config: CommandsConfig): Boolean {
         val needed = effectiveRank(def, config) ?: return false
-        return viewer.atLeast(needed) && config.allows(def.impact)
+        return viewer.atLeast(needed) && config.allows(def.impact) && def.available(config)
     }
 
     /** The commands [viewer] may use here, by name. */

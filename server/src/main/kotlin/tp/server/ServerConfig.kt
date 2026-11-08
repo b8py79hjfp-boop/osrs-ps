@@ -37,6 +37,7 @@ internal class CommandsToml(
     @SerialName("yell_cooldown_seconds") val yellCooldownSeconds: Map<String, Int>? = null,
     @SerialName("reason_presets") val reasonPresets: List<String>? = null,
     val urls: Map<String, String> = emptyMap(),
+    val rules: List<String> = emptyList(),
     /** Command name to a rank name, or `disabled`. */
     val overrides: Map<String, String> = emptyMap(),
 )
@@ -86,6 +87,7 @@ internal class ServerConfig(private val toml: ServerToml) {
                 c.yellCooldownSeconds?.mapKeys { (k, _) -> rank(k) } ?: CommandsConfig.DEFAULT_YELL_COOLDOWNS,
             reasonPresets = c.reasonPresets ?: CommandsConfig.DEFAULT_REASONS,
             urls = c.urls.filterValues { it.isNotBlank() },
+            rules = c.rules,
             overrides = overrides,
         )
     }

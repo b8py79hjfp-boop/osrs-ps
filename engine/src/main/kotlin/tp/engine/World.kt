@@ -241,6 +241,12 @@ class World(
         for (slot in pidOrder) players[slot]?.let(action)
     }
 
+    /**
+     * Every online account on every world, from the hub's pushed presence (commands brief §5: cached here, not
+     * fetched per use). World thread; empty without a hub.
+     */
+    val presence: HashMap<Long, OnlineAccount> = HashMap()
+
     private val playerIndex = SquareIndex<Player>()
     private val npcIndex = SquareIndex<Npc>()
     private val playersByName = HashMap<String, Player>()
@@ -1580,3 +1586,6 @@ private fun ClientCommand.isWorldAction(): Boolean =
         this is ClientCommand.OpPlayer || this is ClientCommand.OpObj || this is ClientCommand.OpLocT ||
         this is ClientCommand.OpObjT || this is ClientCommand.OpNpcT || this is ClientCommand.OpPlayerT ||
         this is ClientCommand.OpWorldEntity
+
+/** One online account as the hub reports it: world, rank and hidden flag (commands brief §1, §5). */
+data class OnlineAccount(val accountId: Long, val name: String, val worldId: Int, val rank: tp.util.Rank, val invisible: Boolean)

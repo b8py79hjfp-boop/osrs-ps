@@ -514,6 +514,11 @@ internal class RspSession(
                     UpdateRebootTimerV2(message.ticks, UpdateRebootTimerV2.IgnoreUpdateMessage)
                 }
 
+                is ServerMessage.UrlOpen -> {
+                    net.rsprot.protocol.game.outgoing.misc.client
+                        .UrlOpen(message.url)
+                }
+
                 ServerMessage.Logout -> {
                     Logout
                 }

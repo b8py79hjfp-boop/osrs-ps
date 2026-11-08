@@ -144,6 +144,9 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 hub.accounts.register(request.username, request.password, request.ip),
             )
 
+        override suspend fun changePassword(request: tp.services.grpc.ChangePasswordRequest): ErrorReply =
+            error(hub.accounts.changePassword(request.accountId, request.current, request.newPassword))
+
         override suspend fun save(request: SaveRequest): PbEmpty {
             hub.saves.save(request.accountId, request.worldId, request.save)
             return EMPTY
@@ -504,14 +507,60 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             return EMPTY
         }
 
+        override suspend fun yell(request: tp.services.grpc.YellRequest): PbEmpty {
+            hub.broadcasts.yell(request.from, Rank.parseOrPlayer(request.rank), request.worldId, request.text)
+            return EMPTY
+        }
+
+        override suspend fun setInvisible(request: tp.services.grpc.InvisibleRequest): PbEmpty {
+            hub.broadcasts.setInvisible(request.accountId, request.invisible)
+            return EMPTY
+        }
+
         override fun subscribe(request: PbEmpty): Flow<BroadcastEvent> =
             callbackFlow {
                 val handle =
                     hub.broadcasts.subscribe { b ->
                         val e =
                             when (b) {
-                                is Broadcast.Message -> BroadcastEvent.newBuilder().setMessage(b.text)
-                                is Broadcast.SystemUpdate -> BroadcastEvent.newBuilder().setSystemUpdateSeconds(b.seconds)
+                                is Broadcast.Message -> {
+                                    BroadcastEvent.newBuilder().setMessage(b.text)
+                                }
+
+                                is Broadcast.SystemUpdate -> {
+                                    BroadcastEvent.newBuilder().setSystemUpdateSeconds(b.seconds)
+                                }
+
+                                is Broadcast.Presence -> {
+                                    val u =
+                                        tp.services.grpc.PresenceUpdate
+                                            .newBuilder()
+                                            .setSnapshot(b.snapshot)
+                                    for (p in b.online) {
+                                        u.addOnline(
+                                            tp.services.grpc.PresencePb
+                                                .newBuilder()
+                                                .setAccountId(p.accountId)
+                                                .setName(p.name)
+                                                .setWorldId(p.worldId)
+                                                .setRank(p.rank.stored)
+                                                .setInvisible(p.invisible),
+                                        )
+                                    }
+                                    u.addAllOffline(b.offline)
+                                    BroadcastEvent.newBuilder().setPresence(u)
+                                }
+
+                                is Broadcast.Yell -> {
+                                    BroadcastEvent.newBuilder().setYell(
+                                        tp.services.grpc.YellRequest
+                                            .newBuilder()
+                                            .setFrom(b.from)
+                                            .setRank(b.rank.stored)
+                                            .setWorldId(b.worldId)
+                                            .setText(b.text),
+                                    )
+                                }
                             }
                         trySend(e.build())
                     }

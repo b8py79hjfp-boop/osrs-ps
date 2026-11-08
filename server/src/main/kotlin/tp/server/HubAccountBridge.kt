@@ -239,6 +239,30 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute { call("audit") { hub.moderation.audit(actor, action, target, detail) } }
     }
 
+    override fun yell(player: Player, text: String) {
+        val from = player.username
+        val rank = player.rank
+        io.execute { call("yell") { hub.broadcasts.yell(from, rank, worldId, text) } }
+    }
+
+    override fun setInvisible(player: Player, invisible: Boolean) {
+        val account = player.accountId
+        if (account == 0L) return
+        io.execute { call("invisible") { hub.broadcasts.setInvisible(account, invisible) } }
+    }
+
+    override fun changePassword(player: Player, current: String, new: String, reply: (String?) -> Unit) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.")
+        io.execute {
+            // A one-element list keeps "no answer" (null) apart from "done" (a null reason).
+            val answer = call("password") { listOf(hub.accounts.changePassword(account, current, new)) }
+            val result = if (answer == null) "The hub did not answer." else answer[0]
+            // Back on the world thread through the pre-tick inbox (commands brief §4).
+            world.execute { if (world.playerByAccount(account) != null) reply(result) }
+        }
+    }
+
     override fun staff(player: Player, command: String, args: List<String>) {
         val account = player.accountId
         if (account == 0L) return

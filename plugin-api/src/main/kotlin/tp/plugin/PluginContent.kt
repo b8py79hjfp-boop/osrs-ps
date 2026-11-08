@@ -130,7 +130,11 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     public val dispatcher: tp.plugin.commands.CommandDispatcher =
         tp.plugin.commands.CommandDispatcher(h.registry) { p, name, args ->
             val handler = h.commands[name]
-            if (handler == null) false else true.also { p.handler(args) }
+            when {
+                handler != null -> true.also { p.handler(args) }
+                args.isEmpty() -> h.commandFallbacks.any { fallback -> p.fallback(name) }
+                else -> false
+            }
         }
 
     override fun onCommandLine(player: Player, line: String): Boolean {

@@ -29,6 +29,8 @@ data class CommandsConfig(
     val yellCooldownSeconds: Map<Rank, Int> = DEFAULT_YELL_COOLDOWNS,
     val reasonPresets: List<String> = DEFAULT_REASONS,
     val urls: Map<String, String> = emptyMap(),
+    /** `::rules`: the lines shown (commands brief §6); none configured shows a default line. */
+    val rules: List<String> = emptyList(),
     val overrides: Map<String, CommandOverride> = emptyMap(),
 ) {
     /**
