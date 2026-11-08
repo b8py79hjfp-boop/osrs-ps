@@ -117,6 +117,106 @@ wiki; anything it does not state is `OPEN`.
 | TB34 | Personal bests are kept per **mode and team-size bucket** (3 Jun 2021: split by group size; the old PB moved to the 5-player bucket). Buckets per Score: 1, 2, 3, 4, 5 players. **Challenge time** = time spent fighting bosses; **overall time** = from entering the raid to the finishing blow on Verzik. | U (3 Jun 2021, Main changes); Score |
 | TB35 | Scoreboard in the eastern hall of Ver Sinhaza (scenery 32987, "Read"; interface `TOB_SCOREBOARD` 363, tab varbit `TOB_SCOREBOARD_TAB`) shows personal and global attempts, completions, deaths and best times per mode. The strategy table (33014, participants) and war table (33011, spectators) in the vault show per-player deaths, time per room, the MVP, challenge and overall time. | Score; Strategy table; War table |
 
+## As implemented (content/raids-tob)
+
+Structure: D-081. Definition `TobRaid` (raid-core `RaidDefinition`, id `tob`, 1-5 players, modes normal / entry / hard, nine map squares,
+slots maiden, bloat, nylocas, sotetseg, xarpus, verzik, treasure; `autoAdvance` off). Fights are `content/combat` boss scripts; this module
+spawns, scores and moves the party. Room docs have a matching `As implemented (content/combat ...)` section.
+
+- **Entry and mode (TB1-TB4):** the notice board `TobBoard` (364 list, 50 details) holds forming parties (oldest first, at most 45 rows).
+  Party setting `mode` 0 Normal, 1 Entry, 2 Hard (saved preferred mode asked on first use; a Hard preference falls back to Normal if the
+  leader has no Normal or Hard completion). Hard needs `TOTAL_COMPLETED_THEATREOFBLOOD + _HARD > 0` for every member (OPEN-TB2: Hard counts),
+  checked on setting the mode, on apply/accept and on the leader entering. The raid itself has no requirement (Priest in Peril is not
+  checked). Leader: preferred size 0..5 and level 0..126, mode, kick (blocks re-apply, flag `tp.tob.board.kickBlocksReapply`), accept /
+  reject (reject blocks, flag `rejectBlocksReapply`), unblock, move up/down (rows 1.. only, flag `reorderMovesLeader`), disband; members
+  leave; applicants withdraw. The friends/clan filter button only toggles `TOB_LOBBY_FRIENDS_FILTER` and refreshes: the server does not
+  filter the list. The leader enters at the theatre entrance (others get "Your party leader must enter the Theatre first." until the run
+  starts, then follow); with no party the entrance offers spectating.
+- **Rooms and barriers (TB7, TB8):** per room an antechamber entry and a wait tile (`TobRaid`). Barrier `TOB_ARENA_BARRIER` "Pass" moves the
+  player two tiles across; the first crossing into the arena sets `engaged` and the fight start tick and records the player in
+  `entered[room]` (3 points each room, TobLoot). While engaged no one can pass back out ("You can't leave while the fight is in
+  progress."; OPEN-TB7 text). A room is left through an exit box at the end of its corridor (template boxes maiden `3213-3225 x
+  4456-4460`, bloat `3320-3322 x 4433-4462`, nylocas L1 `3292-3306 x 4281-4286`, sotetseg `3273-3286 x 4332-4334`, xarpus L1 `3164-3176
+  x 4374-4377`): the first member inside it advances the whole party. Verzik's room is left by the throne door (see Treasure room).
+  Spawns (`TobBosses`): Maiden SW tile (3162, 4444), Bloat (3288, 4440), four supports L1 at (3289|3298, 4242|4251), Sotetseg (3277, 4325),
+  Xarpus (3169, 4386, L1), Verzik (3166, 4312) (OPEN-TB7, chosen in free tiles). A room is won when every NPC of its "required" set is dead:
+  Maiden the dying-b form or 30% form, Bloat, Vasilias' three forms, Sotetseg's combat form, Xarpus' combat form, Verzik's P3 form.
+- **Boss death (TB9, TB27):** `roomWon`: room time added to the challenge time; MVP points to the top damage dealer of the room (Verzik:
+  separately for each of her three forms by per-phase hit damage, MVP table in `TobRewards`); every present member gets HP to full, prayer
+  to at least base and, outside Entry, run energy 10,000 and special energy 1,000 (Entry: HP and prayer only). Bloat and Sotetseg open a
+  supply chest. After Verzik: overall time ends at her death, each member's points (3 x rooms entered + MVP) are credited, the target-time
+  flag is set when `tick - run.startedTick <= TobLoot.targetTicks(partySize)` (7,000 / 3,500 / 3,000 / 2,700 / 2,500 ticks) and the throne
+  door appears (loc `TOB_DUNGEON_VERZIK_THRONE_DOOR_OPENED` at (3166, 4323), 5 x 4); using it moves the party to the treasure room.
+- **Scaling (TB10, TB11):** `TobScaling`: HP = floor(cache HP x permille / 1000), Normal / Hard 750, 750, 750, 875, 1000; Entry 1000, 1900, 2700,
+  3400, 4000 for 1-5 players (minimum 1). Not scaled: blood spawns, webs, Nylocas supports (OPEN-NY4). Combat scripts apply the same table
+  (`TobModes.scale`) to NPCs they spawn.
+- **Deaths (TB14-TB17):** policy `WaitUntilRoomEnds`; Normal / Hard wipe = `FailRaid` with unprotected items stored in inventory `tob_reclaim`;
+  Entry wipe = retry the room (flag `tp.tob.entry.wipeRestartsRoom`, default on, OPEN-TB5): once all present members are alive, the room's
+  NPCs in the instance are despawned, every present member gets **3** Bandages and the room is entered afresh. An Entry death also owes the
+  dead member 3 Bandages, paid when they are alive again (OPEN-TB6: no "used supplies" measure). Reclaim chest `TOB_SURFACE_GRAVESTONE_CHEST`
+  "Claim": one transaction paying `tp.tob.reclaimFee` (100,000) and moving everything stored to the inventory; refused as a whole if it does not
+  fit or the coins are missing. Disconnect = `DEATH_IN_ENCOUNTER`; a logout holding an escape crystal is a safe logout. Raid-only items (Bandages,
+  Dawnbringer) are set in the definition; their removal is raid-core's.
+- **Dawnbringer (XA6):** loc `TOB_DUNGEON_XARPUS_DEAD_MERC_MULTI` op1, once a run, only after Xarpus' room time is recorded; added to the
+  taker's inventory with the quoted message. Crumbling is in TobVerzik (P1 shield break).
+- **Supplies (TB22, TB23):** chests at Bloat (3269, 4449) and Sotetseg (3279, 4308) (OPEN-LR15). Normal / Hard: when the chest opens each present
+  member is credited points from their score (MVP so far minus 4 per death) against the team average: above 10-13, average 8-11, below 6-9; within
+  the tier the top value minus their deaths, not below the tier's bottom (model `tiers`; `flat` = 8, flag `tp.tob.supplyPointsModel`); points carry,
+  capped at 31 (5-bit varbit). Interface 405: stock and prices from enums 1952 / 1953; Value, Buy 1 / last X / All / X; limited by points and space;
+  Stamina potion(4) one per member per chest; the note slot gives the Message once. Entry: no points; the note slot is **10** Bandages per member per
+  chest, taken by "Take" (leftovers are not carried).
+- **Escape crystal (TB18-TB20):** "Teleport" removes one crystal and `Raids.leave`; used on a party member who holds one, both are consumed and both
+  leave; antispam stamp in `TOB_CRYSTAL_ANTISPAM` (OPEN-TB20: stamps the tick of the last use so a repeat in the same tick does nothing; the varbit's
+  real purpose is undocumented); logging out inside with one in the backpack or the ring slot consumes it and the next login leaves the raid. A
+  crystal in a fight is a plain leave (OPEN-TB9). Not implemented: Auto-AFK, "Configure", the ring-of-life substitute.
+- **Treasure room, loot (TB25-TB31):** entering it runs `Raids.complete(endedAt = Verzik's death)`: the reward roll is `TobLoot` and pays into the
+  claim inventory `TOB_CHESTS` (612). Per member `own = max(0, points - 4 x deaths)`; team score `raw` = sum of (points - 4 x deaths), maximum
+  `18 x members + 14`; ratio = team / maximum; the unique chance is `1/9.1` Normal, `1/7.7` Hard, none in Entry, times the ratio, rolled once and
+  assigned to member i with probability `chance x own_i / team`; a member with 0 points gets a cabbage and the Message; the unique recipient gets one
+  unique by weight (8 or 7, 2, 2, 2, 2, 2, 1; staff and scythe as uncharged) plus tertiaries; the others get 3 rolls on the 30-slot common table with
+  quantity `floor(min x q x ratio)` up to +20% (q: Entry 0.20, Normal 1, Hard 1.15 or 1.30 in the target time; zero quantities drop out) plus
+  tertiaries. Tertiaries: elite clue 1/25 x 1 / 3 / 3.5 (Entry / Normal / Hard) not scaled by performance; Lil' Zik (not Entry) linear between the
+  worst (1/6,500 or 1/5,000) at 0 points and the best (1/650 or 1/500) at 10 points (`tp.tob.petFullRatePoints`); Hard: Sanguine dust 1/275,
+  Sanguine kit 1/150, Holy kit 1/100, only inside the target time (flag `hardTertiariesNeedTargetTime`, default on). One chest per party slot (up to
+  5) at the five anchors (OPEN-LR16 order), each on the viewer's own varbit (own and rare bits); only the owner opens it ("This is not your chest.").
+  Interface 23: Take, Bank (refused for `no bank` items, placeholder not handled), Discard, Take-all, Bank-all, Discard-all, all through the item
+  transaction API. `TOB_SHOULD_HAVE_LOOT` is 1 while 612 holds items; unclaimed loot waits at the lobby chest unless `unclaimedLootExpiresOnLogout`
+  (default off, OPEN-TB15). Teleport crystal 32996 leaves.
+- **Spectating (TB21):** Abigaila's "Scry" or the entrance without a party lists the 4 most recent open runs ("<leader>'s party") and Cancel.
+  Refused when the player's party is locked in a raid, when anything but the oculus orb is carried (backpack or worn), or when poisoned or
+  diseased. An observer is placed on the room's spectator tile once per room (Maiden (3176, 4431, L1), Bloat (3281, 4436, L1), Sotetseg (3276,
+  4301, L1), Verzik (3168, 4326, L1), treasure room (3231, 4326); Nylocas and Xarpus use the wait tile); teleports are denied ("You can't teleport
+  while spectating."); ends on the HUD Exit button, logout, or a failed / abandoned / closed run, returning to the origin tile. Not enforced: the
+  Friends-only private chat rule, choosing by typed name, a cap (OPEN-TB10).
+- **HUD (28) and board text:** `TobHud` every tick for each live run: overlay 28 opened, `PARTYSTATUS` 2, own `PARTYSLOT` (1-based; 0 spectator),
+  orbs P0-P4 = 0 vacant, 30 dead / offline / not inside, else `1 + round(26 x HP / max)`, names through client script 2301 only when they change;
+  `WAVEPROGRESS_TYPE` stays 0, so the Nylocas wave bar and the combined pillar bar are not driven (OPEN-TB-UI8). The lobby text: `PARTYSTATUS` 0 none,
+  1 party, 2 run started and this member not yet inside, refreshed every 5 ticks in the lobby box.
+- **Records, scoreboard, tables (TB32-TB35):** `RecordsDef` KC varps per mode (Normal 1748, Entry 3058, Hard 3057); messages: KC line (Hard / Entry
+  wording assumed, OPEN-TB17) and one total-time line with the personal best (`raids.tob.pb`). `TobStatsLedger` keeps saved personal counters
+  `tob.stats.<mode>.attempts / completions / deaths` and the best challenge and overall ticks per party size; the "Global" column is this world's
+  in-memory counters (OPEN-LR11), reset on restart. Scoreboard 363 (tab varbit 12270), strategy / war table 459 (deaths, total deaths, MVP name, room
+  times, challenge time = sum of room times, overall time).
+
+### Gaps between this doc and the code
+
+- TB2: the flag `tob.partyFormationQuota` does not exist (no formation limit of any kind).
+- TB3: Priest in Peril is not checked (`TobConfig.requirement` returns null).
+- TB5, TB14, TB17 (purgatory placement, HCIM / Group Ironman handling, hallway logout), TB18 (blocked teleports): not in this module; raid-core.
+- TB9: the special-energy "remembered and restored on exit" and the raid timer starting at the Maiden fight are not visible here (the timer uses
+  `run.startedTick`; the Maiden's fight start tick is held in `TobState` but not used for the overall time).
+- TB19: `TobConfig.escapeCrystalPrice` is defined but nothing reads it; the Mysterious Stranger's `shops.tsv` row sets the price.
+- TB20: Auto-AFK and "Configure" are not implemented.
+- TB21: Friends-only chat rule and typed-name selection are not implemented.
+- TB1: the friends/clan filter is not applied to the list; no board texts are captured (OPEN-TB-UI1).
+- TB33: only one time line is produced (overall); the challenge-time line is not.
+- TB29: target times are 7,000 / 3,500 / 3,000 / 2,700 / 2,500 ticks (docs' times without the 4 Jun 2021 +2 minutes).
+- TB8 / TB34: a room's fight time and "rooms entered" come from the barrier crossing; if Verzik's room has no `TOB_ARENA_BARRIER` crossing, her room
+  time would be 0 and her room would not count for the 3 points. Not checked against the map.
+- Code-only OPEN ids with no entry in any doc: OPEN-TB20, OPEN-TB-UI1..UI8 (UI1 board texts, UI2 maximum preferred level 126, UI3 kick / reject block
+  re-apply, UI4 list-row op flag, UI5 reorder may move the leader, UI7 orb 30 for dead / offline, UI8 wave bar hidden); OPEN-LR15..LR23 appear in code
+  but lobby-rewards.md lists OPEN-LR1..LR14.
+
 ## Open list (raid-wide)
 
 OPEN-TB1 board rules; OPEN-TB2 Hard requirement details; OPEN-TB3 HP rounding; OPEN-TB4 wipe landing and storage; OPEN-TB5
@@ -124,7 +224,7 @@ Entry wipe scope; OPEN-TB6 Entry bandage count; OPEN-TB7 hallway tile and "encou
 OPEN-TB9 crystal in a fight; OPEN-TB10 spectator cap; OPEN-TB11 quick-start eligibility; OPEN-TB12 reward formula;
 OPEN-TB13 tertiary performance curve; OPEN-TB14 Hard tertiary time requirement; OPEN-TB15 unclaimed loot expiry;
 OPEN-TB16 Entry and shrouds; OPEN-TB17 message strings; OPEN-TB18 3 Mar 2021 party quota; OPEN-TB19 bandages taken out of the
-raid. **19 open items.**
+raid; OPEN-TB20 the antispam varbit's purpose (working assumption: it stamps the tick of the last crystal use). **20 open items.**
 
 ## Conflicts between sources (raid-wide)
 

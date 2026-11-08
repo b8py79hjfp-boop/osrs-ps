@@ -302,7 +302,7 @@ internal object TobSotetseg : Boss(
         npc.setAttackClock(npc.tick + ATTACK_SPEED)
     }
 
-    /** No damage reaches it while it is asleep or the maze is on. */
+    /** No damage reaches it while it is asleep (SO5: during the maze only its own attacks are harmless). */
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
         return if (!s.awake) 0 else damage

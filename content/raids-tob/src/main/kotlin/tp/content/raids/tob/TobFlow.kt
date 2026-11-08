@@ -229,6 +229,7 @@ public class TobFlow : ContentPlugin {
     private fun worldTick(world: WorldRef) {
         for (run in Raids.of(world).activeRuns) {
             if (run.raid.id != TobRaid.ID) continue
+            verzikStarted(world, run)
             val between = run.state as? RunState.BetweenRooms ?: continue
             val next =
                 run.raid.slots
@@ -244,6 +245,27 @@ public class TobFlow : ContentPlugin {
                     ?: continue
             Raids.advance(any, run, next)
         }
+    }
+
+    /**
+     * VZ1: Verzik's room has no barrier: her fight starts when she leaves her sitting form (Talk-to / Quick-start), and
+     * every member then inside her room takes part in it (LR16 rooms entered).
+     */
+    private fun verzikStarted(world: WorldRef, run: RaidRun) {
+        val room = (run.state as? RunState.InRoom)?.room?.id ?: return
+        val state = state(run)
+        if (room != "verzik" || state.engaged) return
+        val present =
+            run.members.values
+                .filter { it.inside && it.online }
+                .mapNotNull { world.onlinePlayer(it.name) }
+        val any = present.firstOrNull() ?: return
+        val inst = run.instance ?: return
+        val awake = any.npcsWithin(run.at(TobBosses.VERZIK), VERZIK_SCAN).any { it.coord in inst && TobBosses.verzikPhase(it.type) >= 0 }
+        if (!awake) return
+        state.engaged = true
+        state.fightStartTick = world.tick
+        state.entered.getOrPut(room) { LinkedHashSet() } += present.map { it.username }
     }
 
     /** The throne door (32738 "Treasure room") after Verzik (LR14). */
@@ -296,6 +318,7 @@ public class TobFlow : ContentPlugin {
 
         private const val OP1 = 1
         private const val ROOM_SCAN = 40
+        private const val VERZIK_SCAN = 20
         private const val FULL_RUN = 10_000
         private const val FULL_SPEC = 1000
         private const val LEADER_FIRST = "Your party leader must enter the Theatre first."

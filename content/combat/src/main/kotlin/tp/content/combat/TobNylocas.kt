@@ -99,7 +99,11 @@ internal object TobNylocasRoom : Boss(Npcs.TOB_NYLOCAS_SUPPORT, TobNylo.ENTRY_PI
             }
             return
         }
-        if (alive(npc) > 0) return
+        if (alive(npc) > 0) {
+            // A large one's splits keep the room going: the delay counts from the very last Nylocas.
+            r.lastWaveDone = -1
+            return
+        }
         if (r.lastWaveDone < 0) r.lastWaveDone = npc.tick
         if (clock && npc.tick - r.lastWaveDone >= BOSS_DELAY) {
             r.vasilias = true

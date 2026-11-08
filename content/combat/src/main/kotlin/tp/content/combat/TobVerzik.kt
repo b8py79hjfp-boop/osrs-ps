@@ -347,7 +347,7 @@ internal object TobVerzik : Boss(*VERZIK_IDS) {
             if (!npc.isInWorld) return@queueHit
             victim.spotAnim(SpotAnims.VERZIK_PHASE2_LIGHTNING)
             val boots = victim.worn(Wear.FEET) == INSULATED_BOOTS
-            val max = if (boots) BOOTS_MAX else TobModes.damage(s.mode, LIGHTNING_MAX)
+            val max = TobModes.damage(s.mode, LIGHTNING_MAX).let { if (boots) minOf(it, BOOTS_MAX) else it }
             CombatSystem.applyHit(victim, npc, BossCombat.roll(npc, 0, max), HitStyle.TYPELESS)
         }
         val resummon = !s.reds && s.lightnings % RESUMMON_EVERY == 0
@@ -518,6 +518,8 @@ internal object TobVerzik : Boss(*VERZIK_IDS) {
 
     private fun startP3(npc: NpcRef, s: State) {
         s.phase = P3_PHASE
+        // VZ4: the first P3 special comes after four P3 attacks.
+        s.attacks = 0
         Bosses.dismissMinions(npc)
         npc.transform(id(s.mode, P2_TO_P3), restoreStats = false)
         s.nextAttack = npc.tick + P3_FIRST_FROM_P2
