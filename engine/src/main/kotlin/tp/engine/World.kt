@@ -259,17 +259,37 @@ class World(
      * level. A box too wide for the index visits every player.
      */
     fun forPlayersNear(centre: CoordGrid, radius: Int, action: (Player) -> Unit) {
-        val out = ArrayList<Player>()
-        if (!playerIndex.collect(centre.x, centre.z, radius, out)) return forEachPlayer(action)
-        if (out.size > 1) out.sortBy { pidRank[it.slot] }
+        val out = playersNear(centre, radius, ArrayList())
         for (p in out) action(p)
     }
+
+    /**
+     * [out], cleared and filled with the players whose square is near [centre] (box of [radius]) in [forEachPlayer]'s
+     * order; every player when the box is too wide. Allocation-free with a reused [out] (the caller checks distance).
+     */
+    fun playersNear(centre: CoordGrid, radius: Int, out: ArrayList<Player>): ArrayList<Player> {
+        out.clear()
+        if (!playerIndex.collect(centre.x, centre.z, radius, out)) {
+            out.clear()
+            for (slot in pidOrder) players[slot]?.let { out += it }
+            return out
+        }
+        if (out.size > 1) out.sortWith(pidComparator)
+        return out
+    }
+
+    private val pidComparator = Comparator<Player> { a, b -> pidRank[a.slot] - pidRank[b.slot] }
+    private val npcComparator = Comparator<Npc> { a, b -> a.index - b.index }
+
+    /** Scratch lists for content's allocation-free queries (plugin-api `playersWithinScratch`); world thread only. */
+    val scratchPlayers: ArrayList<Player> = ArrayList()
+    val scratchRefs: ArrayList<Any> = ArrayList()
 
     /** NPCs whose square is near [centre] (box of [radius]), in [forEachNpc]'s order (index); the caller checks the rest. */
     fun forNpcsNear(centre: CoordGrid, radius: Int, action: (Npc) -> Unit) {
         val out = ArrayList<Npc>()
         if (!npcIndex.collect(centre.x, centre.z, radius, out)) return forEachNpc(action)
-        if (out.size > 1) out.sortBy { it.index }
+        if (out.size > 1) out.sortWith(npcComparator)
         for (n in out) action(n)
     }
 

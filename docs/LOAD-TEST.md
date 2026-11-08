@@ -93,3 +93,103 @@ Command: 3 worlds, one `mixed` swarm of 300 bots per world, 175 s, with JFR.
 **Acceptance:** the user ran the full test (about 4,000 players) on 2026-11-06 and reported it complete. The
 detailed numbers listed under "Record for the acceptance report" (tick percentiles per world, missed deadlines, GC
 p99.9, allocation sites) haven't been recorded here yet.
+
+## Raids (raids brief section 7, 2026-11-08)
+
+Manual or nightly runs; nothing here is a test. All of them were run on this 4-core sandbox.
+
+### Soak and memory: `tools/raid-soak`
+
+These run in process on the headless engine (no sockets).
+
+```bash
+./gradlew :tools:raid-soak:run --args="soak 10000"
+```
+
+```bash
+./gradlew :tools:raid-soak:run --args="memory 25"
+```
+
+```bash
+./gradlew :tools:raid-soak:run --args="load 75 500"
+```
+
+**Soak (10,000 create-run-destroy cycles, the four raids in turn; G1, 4 GB heap):**
+- **Leaks:** none in NPCs, pending respawns, instances, instance-space loc changes or base locs, ground objs or
+  runs. The tool prints the counts against the baseline every 1,000 cycles.
+- **Heap and RSS:** heap after full GC was 541 MB at cycle 1,000 and still 541 MB at cycle 10,000. RSS was flat
+  (2,010–2,011 MB) after the heap reached its working size.
+- **Instance build (off the world thread):** p50 3.4 ms, p99 12.1 ms against a 50 ms budget. The maximum, 308 ms, is
+  each raid's first, cold build, which fills the shared template cache.
+- **Attach (world thread):** p50 0.17 ms, p99 0.41 ms against a 1 ms budget. The maximum was 3.5 ms: a single
+  outlier in 10,004 attaches, most likely a GC pause landing on it.
+
+**Memory per instance (25 live instances of one raid, heap after GC):**
+
+| Raid | Per instance | Budget |
+|---|---|---|
+| ToB | 0.61 MB | 2 MB |
+| CoX | 0.57 MB | 4 MB |
+| ToA | 1.02 MB | 2 MB |
+| TFA | 0.66 MB | — |
+
+**Headless load:** 300 live instances, 75 of each raid, every run changing rooms every 50 ticks, 4,119 NPCs. Logic
+p50 7 ms, p99 14 ms. This run encodes no info packets; the networked run below does.
+
+### Networked load: botswarm `raids` mode
+
+300 real-protocol bots each run a solo raid (75 instances of each raid) through `::raid <id>` and `::raid next`,
+taking a room step every 30 s.
+
+```bash
+JAVA_OPTS="-Xms4g -Xmx4g -XX:+UseZGC -XX:StartFlightRecording=filename=raids.jfr,settings=profile" server/build/install/world-node/bin/world-node --max-per-ip 5000
+```
+
+```bash
+JAVA_OPTS="-Xmx1g -Dbotswarm.powThreads=2 -Dbotswarm.rampMs=150" tools/botswarm/build/install/botswarm/bin/botswarm 300 127.0.0.1 43594 3222 3218 raids R
+```
+
+After all 300 instances are live, call `curl localhost:9090/reset` and measure a five-minute window (this resets the
+tick and instance histograms and the alert baseline).
+
+| Run | Logic p50 / p99 / max | Info p99 | Missed deadlines | Alerts |
+|---|---|---|---|---|
+| Before the fixes | 57 / 100 / 128 ms | 30 ms | 0 | 1 window at 129 ms |
+| After the square index | 18 / 33 / 45 ms | 31 ms | 0 | 0 |
+| After the allocation fixes | 18 / 32 / 41 ms | 39 ms | 0 | 0 (2 during the login and start-up burst, before the window) |
+
+**What the runs found and fixed:**
+- **Attach over budget.** Attach took 3.5 ms at p50 and 35 ms at p99 (ToA 12 ms on average). Fixes:
+  - The build now computes each zone's final collision and base-loc table off the world thread; attach just swaps
+    them in.
+  - Loc keys go through fmix64, because the old packing folded x into z and filled HashMap bins.
+  - Zone ownership is a BitSet instead of boxed integers.
+- **Leaks.** Turned base locs that start outside the instance were registered in a foreign zone and never removed.
+  Emptied zone lists also stayed in their maps.
+- **Memory.** ToA used 5.6 MB per instance. Base locs are now packed at about 8 bytes each (`ZoneBases`), and empty
+  zones share one copy-on-write tile array.
+- **Tick time.** 43% of the world thread was NPC aggression: every NPC scanned every player, ToB's tick scanned every
+  NPC once per run, and name lookups were linear. Players and NPCs are now indexed by map square, and results keep
+  PID and index order, so the golden scenarios and replays are unchanged.
+- **Allocation.** The world thread allocated about 4.5 GB in a 10-minute profile, 223 MB of it from raid systems.
+  Fixes:
+  - one cached `PlayerRef` / `NpcRef` per entity;
+  - raid world ticks rewritten without per-tick lists;
+  - aggression uses `playersWithinScratch`.
+
+  What remains in raid code is lists built when a boss attacks (every few ticks), not every tick. The JFR
+  attribution is in the table below.
+- **Budgets now:** logic p99 32 ms (budget 120 ms), info p99 39 ms (80 ms), attach p99 0.41 ms (1 ms), build p99
+  12 ms (50 ms). Every raid's memory is within its aim.
+- **Allocation still open:** raid code still allocates at attack time (lists of raiders, tiles), about 5% of the world
+  thread's sampled allocation. The engine and protocol allocate the rest: NPC info, the info pass, timers.
+  Steady-state zero from raid systems needs the boss scripts moved to the scratch query style (raids brief section
+  7).
+- **Alert after reset.** `/reset` used to raise a false 2,000 ms alert, because the window diff went negative.
+
+| Profile | World-thread allocation (sampled) | From raid systems |
+|---|---|---|
+| Before | 4,565 MB | 223 MB |
+| After cached refs and list-free ticks | 4,106 MB | 151 MB |
+| After the aggression scratch list | 2,906 MB | 146 MB |
+

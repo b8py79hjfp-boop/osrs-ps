@@ -25,7 +25,10 @@ public class Aggression : ContentPlugin {
         if (npc.isDying || !npc.isInWorld) return
         var target: PlayerRef? = null
         var count = 0
-        for (player in npc.playersWithin(npc.huntRange)) {
+        // Runs for every hunting NPC every tick: the scratch list (eligible() makes no other scratch query).
+        val near = npc.playersWithinScratch(npc.huntRange)
+        for (i in near.indices) {
+            val player = near[i]
             if (!eligible(npc, player)) continue
             count++
             if (npc.random(count) == 0) target = player

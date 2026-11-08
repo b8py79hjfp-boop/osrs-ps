@@ -55,6 +55,22 @@ Archive (TFA)** instead of the brief's ToB-first order (§10); DECISIONS D-079 r
 | R6 | ToA ([plan](raids-toa.md)) | as brief |
 | R7 | Load and soak, RuneLite end-to-end, docs | brief §7 budgets |
 
+### R7 status (2026-11-08)
+
+- **Load and soak:** done; numbers in docs/LOAD-TEST.md "Raids" and D-086. Every section 7 budget holds except
+  steady-state zero allocation from raid code: boss attacks still build lists, about 5% of the world thread's sampled
+  allocation.
+- **RuneLite end-to-end (needs the user):** run each raid with stock RuneLite through RSProx (docs/CLIENT.md), then
+  with the release client. Check:
+  - **Raids plugin (CoX):** scouts the layout, including the rotation, and shows the party's points.
+  - **Loot Tracker:** records the chest loot of ToB, CoX, ToA and TFA.
+  - **Chat commands:** `!kc` / `!pb` pick up our completion and personal-best messages for every raid and mode.
+  - **Collection log:** shows the raid KCs and items.
+  - **ToA and ToB plugins:** recognise the rooms (template region ids, client-contract docs).
+
+  The server side of each check is already built against RuneLite's source: the CoX layout codes and rotations
+  (`LayoutSolver`), the chat strings and the collection-log ids. What remains is to watch a real client.
+
 ### R4 (ToB) sources
 
 Fact sheets (written in R4 research, date anchor 2026-11-03, wiki read 2026-11-08, wiki copies for the verifier in

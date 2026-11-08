@@ -178,7 +178,14 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 - R6 Tombs of Amascut: done (docs/plans/raids-toa.md status; D-084, D-085). All 12 rooms are playable, with every boss
   and puzzle mechanic in docs/mechanics/raids/toa/*.md, scaling, invocations, supplies, tomb loot and records.
   `ToaSmokeScenario` walks every path, the Wardens and the tomb.
-- R7 load and soak, RuneLite end-to-end: next.
+- R7 load and soak: done on this 4-core sandbox (docs/LOAD-TEST.md "Raids", D-086).
+  - **Soak:** 10,000 instance cycles with no leaks and flat heap and RSS.
+  - **Instances:** build p99 12 ms, attach p99 0.41 ms.
+  - **Memory per instance:** ToB 0.6, CoX 0.6, ToA 1.0, TFA 0.7 MB.
+  - **Load:** 300 bots in 300 live instances, logic p99 32 ms, info p99 39 ms, no missed deadlines.
+  - **Allocation:** raid code still allocates when bosses attack (about 5% of the world thread's sampled allocation),
+    so the zero-allocation aim is not met yet.
+  - **Needs the user:** the RuneLite end-to-end checks with a real client (docs/plans/raids.md, R7 checklist).
 - Not now (brief §13): new custom raids; the 2023 CoX custom-layout / paid-scaling proposal (only the shipped scaled
   party size, Reload and full-layout toggle); TFA Practice Mode and the 9-11 November 2026 TFA balancing; Leagues and
   Deadman variants; raid Combat Achievements (events only); cross-world parties.

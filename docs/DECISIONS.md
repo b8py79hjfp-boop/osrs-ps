@@ -1246,3 +1246,21 @@ means is not known.
   transient zone event's viewer, the rule ground items already use). They are look only and change no world state. Used
   for the Apmeken Sight's hints and the sarcophagus reveal. A new `ZoneOp.LocAnim` maps to RSProt's LOC_ANIM.
 
+## D-086 Raid scale: instance attach, spatial index, cached refs (2026-11-08)
+
+- **Instances build off-thread, attach is a swap.** The build computes each target zone's final tile array and
+  packed base-loc table (`ZoneBases`). Attach installs the arrays and hands the instance its zone and base tables.
+  Base-loc lookups read the owning instance's table. Re-attaching over live zones still goes zone by zone. Empty zones
+  share one tile array, which `ownZones` copies on the first write.
+- **A turned base loc starting outside its instance** keeps its collision but is not registered. Its origin zone
+  belongs to the map or a neighbouring instance, and registering it there leaked and could overwrite that zone.
+- **Square index.** Players and NPCs are indexed by map square through `Entity.coord`'s setter. Radius queries keep
+  `forEachPlayer`'s PID order and `forEachNpc`'s index order, so random picks, golden scenarios and replays are
+  unchanged. Boxes wider than 8 x 8 squares fall back to the full scan. `onlinePlayer` is a name map lookup.
+- **Cached refs.** plugin-api keeps one `PlayerRef` / `NpcRef` per entity (`Entity.contentRef`). Refs already
+  compared by entity, so nothing observes the change.
+- **Scratch queries.** `playersWithinScratch` returns the world's reused list, valid until the next scratch call,
+  for per-tick loops (NPC aggression).
+- **Dev command `::raid <id> | next | leave`** (raids-core) drives the botswarm `raids` load profile. Like the other
+  dev commands it is ungated on this server; gating commands is the moderation system's job.
+

@@ -138,6 +138,26 @@ public sealed class EntityRef {
         return out
     }
 
+    /**
+     * [playersWithin] without allocating: the result is the world's scratch list, valid until the next scratch call
+     * (iterate it at once; do not keep it or query again while iterating). For per-tick loops such as NPC aggression.
+     */
+    public fun playersWithinScratch(radius: Int): List<PlayerRef> {
+        val world = e.world
+        val near = world.playersNear(coord, radius, world.scratchPlayers)
+
+        @Suppress("UNCHECKED_CAST")
+        val out = world.scratchRefs as ArrayList<PlayerRef>
+        out.clear()
+        val c = coord
+        for (i in near.indices) {
+            val p = near[i]
+            val inRange = p.coord.level == c.level && maxOf(kotlin.math.abs(p.coord.x - c.x), kotlin.math.abs(p.coord.z - c.z)) <= radius
+            if (inRange && p !== e && !p.observer) out += refOf(p)
+        }
+        return out
+    }
+
     /** NPCs in the world within [radius] tiles of [centre] (Chebyshev from their south-west tile, same level). */
     public fun npcsWithin(centre: CoordGrid, radius: Int): List<NpcRef> {
         val out = ArrayList<NpcRef>()
