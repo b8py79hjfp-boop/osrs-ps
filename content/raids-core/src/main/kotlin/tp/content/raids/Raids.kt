@@ -89,7 +89,16 @@ public class Raids internal constructor() {
             val players = party.members.map { leader.onlinePlayer(it) ?: return "$it is not online." }
             for (p in players) def.requirements(p)?.let { return "${p.username}: $it" }
             val highest = IntArray(COMBAT_STATS) { stat -> players.maxOf { it.baseLevel(stat) } }
-            val scaling = ScalingContext(party.members.size, maxOf(scaledSize, party.members.size), mode, highest, party.settings.toMap())
+            val scaling =
+                ScalingContext(
+                    party.members.size,
+                    maxOf(scaledSize, party.members.size),
+                    mode,
+                    highest,
+                    party.settings.toMap(),
+                    players.maxOf { it.combatLevel },
+                    IntArray(SKILLS) { skill -> players.sumOf { it.baseLevel(skill) } },
+                )
             val run =
                 RaidRun(raids.newRunId(), def, party, scaling, RaidRng(leader.random(Int.MAX_VALUE).toLong() shl 1 or 1L), leader.tick)
             party.state = PartyState.Locked(run)
@@ -432,6 +441,8 @@ public class Raids internal constructor() {
             npc[RaidRun.NPC_RUN] = run.id.value
             npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
             npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
+            npc[tp.plugin.SharedAttrs.RAID_SCALER] = { n -> run.raid.scaling(run.scaling, n) }
+            npc[tp.plugin.SharedAttrs.RAID_MODE] = run.scaling.mode
             run.raid.scaling(run.scaling, npc)
             return npc
         }
@@ -449,6 +460,8 @@ public class Raids internal constructor() {
             npc[RaidRun.NPC_RUN] = run.id.value
             npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
             npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
+            npc[tp.plugin.SharedAttrs.RAID_SCALER] = { n -> run.raid.scaling(run.scaling, n) }
+            npc[tp.plugin.SharedAttrs.RAID_MODE] = run.scaling.mode
             run.raid.scaling(run.scaling, npc)
             return npc
         }
@@ -458,6 +471,7 @@ public class Raids internal constructor() {
         }
 
         private const val COMBAT_STATS = 6
+        private const val SKILLS = tp.plugin.Stats.SAILING + 1
 
         /** OPEN: no captured line for a reward that did not fit the raid's reward chest. */
         private const val REWARD_BANKED = "Your reward chest is full, so your reward has been sent to your bank."

@@ -52,6 +52,9 @@ internal abstract class Boss(vararg ids: Int) {
     /** Whether a player's melee on the NPC always hits right now (a dazed Bork). */
     open fun meleeAlwaysHits(npc: NpcRef): Boolean = false
 
+    /** Whether the special attack [special] (its table name) aimed at the NPC is sure to hit (Tekton's first Smash). */
+    open fun specialLands(npc: NpcRef, special: String): Boolean = false
+
     /** Callisto/Artio: a freeze on them while unfrozen always lands (bosses.md CA6). */
     open val firstFreezeLands: Boolean = false
 }
@@ -104,6 +107,17 @@ internal object Bosses {
             TobXarpus,
             TobVerzik,
             TobVerzikAthanatos,
+            CoxTekton,
+            CoxVasa,
+            CoxVasaCrystal,
+            CoxVanguards,
+            CoxGuardians,
+            CoxVespula,
+            CoxVespulaPortal,
+            CoxVespineSoldier,
+            CoxMuttadiles,
+            CoxShamans,
+            CoxMystics,
         )
         ) {
             for (id in boss.ids) byType[id] = boss
@@ -120,14 +134,32 @@ internal object Bosses {
     private val MINIONS = AttrKey<MutableList<NpcRef>>("boss_minions")
     private val DAMAGE = AttrKey<HashMap<PlayerRef, Int>>("boss_damage")
 
-    /** Spawns minion [type] for [owner] at [at]; it hunts the owner's arena and dies with the owner. */
-    fun summon(owner: NpcRef, type: Int, at: CoordGrid, huntRange: Int = MINION_HUNT_RANGE, inheritRun: Boolean = false): NpcRef {
+    /**
+     * Spawns minion [type] for [owner] at [at]; it hunts the owner's arena and dies with the owner. [scale]: the raid's
+     * own scaling applies to it as well (CoX; needs [inheritRun]).
+     */
+    fun summon(
+        owner: NpcRef,
+        type: Int,
+        at: CoordGrid,
+        huntRange: Int = MINION_HUNT_RANGE,
+        inheritRun: Boolean = false,
+        scale: Boolean = false,
+    ): NpcRef {
         val minion = owner.spawnNpc(type, at, wanderRange = 0)
         if (inheritRun) {
             // A raid minion that counts as the run's NPC (ToB: Vasilias, Matomenos damage counts for the MVP).
             owner[SharedAttrs.RAID_RUN]?.let { minion[SharedAttrs.RAID_RUN] = it }
             owner[SharedAttrs.RAID_SCALE]?.let { minion[SharedAttrs.RAID_SCALE] = it }
             owner[SharedAttrs.RAID_ORDER]?.let { minion[SharedAttrs.RAID_ORDER] = it }
+            owner[SharedAttrs.RAID_MODE]?.let { minion[SharedAttrs.RAID_MODE] = it }
+            owner[SharedAttrs.RAID_ROOM]?.let { minion[SharedAttrs.RAID_ROOM] = it }
+            if (scale) {
+                owner[SharedAttrs.RAID_SCALER]?.let {
+                    minion[SharedAttrs.RAID_SCALER] = it
+                    it(minion)
+                }
+            }
         }
         minion[MINION] = true
         minion[OWNER] = owner

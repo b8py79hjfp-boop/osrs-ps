@@ -170,6 +170,8 @@ public class Prayers : ContentPlugin {
     }
 
     private fun PlayerRef.toggle(prayer: PrayerDef) {
+        // vasa.md VA2: a raider stunned by Vasa's teleport cannot change prayers.
+        if ((this[PRAYER_LOCK_KEY] ?: 0L) > tick) return
         val bits = varbit(Varbits.PRAYER_ALLACTIVE)
         val mask = 1 shl prayer.bit
         if (bits and mask == 0 && duelRule(tp.plugin.DuelRules.NO_PRAYER)) {

@@ -224,9 +224,18 @@ internal object SpecialEffects {
     /** SP9: the accuracy multiplier (permille), with the formula specials. */
     private fun accuracyPermille(target: EntityRef, row: SpecialRow, energyUsed: Int): Int =
         when (row.name) {
-            "Unleash" -> PERMILLE + UNLEASH_ACC_STEP * (energyUsed / UNLEASH_STEP)
-            "Backstab", "Snipe" -> if (target[Attr.LAST_HIT_BY] == null) GUARANTEED else PERMILLE
-            else -> if (row.guaranteed) GUARANTEED else row.accuracyPermille
+            "Unleash" -> {
+                PERMILLE + UNLEASH_ACC_STEP * (energyUsed / UNLEASH_STEP)
+            }
+
+            "Backstab", "Snipe" -> {
+                if (target[Attr.LAST_HIT_BY] == null) GUARANTEED else PERMILLE
+            }
+
+            else -> {
+                val bossSure = (target as? NpcRef)?.let { Bosses.of(it.type)?.specialLands(it, row.name) } == true
+                if (row.guaranteed || bossSure) GUARANTEED else row.accuracyPermille
+            }
         }
 
     /** SP11: the max hit before protection prayers, with the specials whose numbers are formulas. */

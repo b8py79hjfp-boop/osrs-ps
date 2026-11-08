@@ -122,6 +122,18 @@ public object SharedAttrs {
     /** NPC attr: the raid run an NPC belongs to (raids-core's run id); boss minions may inherit it from their owner. */
     public val RAID_RUN: AttrKey<Long> = AttrKey("raid_run")
 
+    /**
+     * NPC attr: the raid's scaling for its run (set by raids-core on a run's NPC); boss minions that inherit the run are
+     * scaled through it too (CoX scales every raid NPC by party size and the party's levels).
+     */
+    public val RAID_SCALER: AttrKey<(NpcRef) -> Unit> = AttrKey("raid_scaler")
+
+    /** NPC attr: the raid run's mode (raids-core's mode name, e.g. CoX "challenge"). */
+    public val RAID_MODE: AttrKey<String> = AttrKey("raid_mode")
+
+    /** NPC attr: the raid room an NPC was spawned for (CoX cells: template positions per rotation). */
+    public val RAID_ROOM: AttrKey<RaidRoomFrame> = AttrKey("raid_room")
+
     /** NPC attr: the raid party's member names in orb order (leader first), for tank rules. Set with [RAID_SCALE]. */
     public val RAID_ORDER: AttrKey<List<String>> = AttrKey("raid_order")
 

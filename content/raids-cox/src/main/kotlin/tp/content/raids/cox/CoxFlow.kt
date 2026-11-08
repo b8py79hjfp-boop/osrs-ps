@@ -29,6 +29,12 @@ internal class CoxState(val plan: CoxLayoutPlan) {
     /** Passages spawned where a template has none (OPEN-CX31): tile -> the cell side they stand on. */
     val spawnedPassages = HashMap<CoordGrid, Int>()
 
+    /** The mystics' portals per cell: (start, end) arrival tiles (CoxRoomActions). */
+    val mysticPortals = HashMap<Int, Pair<CoordGrid, CoordGrid>>()
+
+    /** Combat rooms: per cell, the required NPCs still alive (CoxRooms). */
+    val roomAlive = HashMap<Int, MutableSet<tp.plugin.NpcRef>>()
+
     /** Team-only point changes (CX30's 5% case, CX32's Challenge Mode bonus). */
     var teamAdjust = 0.0
 
@@ -69,7 +75,20 @@ public class CoxFlow : ContentPlugin {
         onOpLoc(Locs.RAIDS_BOSSENTRANCE, OP1) { toOlm(player) }
         onOpLoc(Locs.RAIDS_BOSSEXIT, OP1) { fromOlm(player) }
         onOpLoc(Locs.RAIDS_OLM_BARRIER, OP1) { loc -> passBarrier(player, loc) }
-        onWorldTick { CoxHud.tick(this) }
+        onWorldTick {
+            CoxHud.tick(this)
+            watchCells(this)
+        }
+        CoxRooms.register()
+        CoxRoomActions.register(this)
+        events.on<tp.plugin.DeathEvent> { e ->
+            val npc = e.entity as? tp.plugin.NpcRef ?: return@on
+            val id =
+                tp.content.raids.RaidRun
+                    .npcRun(npc) ?: return@on
+            val run = Raids.of(npc).run(id)?.takeIf { it.raid.id == CoxRaid.ID } ?: return@on
+            CoxRooms.npcDied(run, npc, npc)
+        }
         events.on<RaidEvent.Left> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let(CoxHud::leave) }
     }
 
@@ -240,6 +259,21 @@ public class CoxFlow : ContentPlugin {
 
         /** Content registers a room's script here (combat rooms, puzzles); a room without one is done at once. */
         val scripts: MutableMap<CoxKind, CoxRoomScript> = HashMap()
+
+        /** A member first seen inside a cell starts it, however they got there (walking, a respawn, a teleport). */
+        fun watchCells(world: tp.plugin.WorldRef) {
+            for (run in Raids.of(world).activeRuns) {
+                if (run.raid.id != CoxRaid.ID) continue
+                val st = state(run) ?: continue
+                if (!st.begun || run.instance == null) continue
+                for (m in run.members.values) {
+                    if (!m.inside || !m.online) continue
+                    val p = world.onlinePlayer(m.name) ?: continue
+                    val cell = CoxMap.cellAt(st.plan, run, p.coord) ?: continue
+                    if (!st.started[cell.index]) enterCell(run, st, cell, p)
+                }
+            }
+        }
 
         /** The first player into a room starts it; rooms that hold the party back wait for [roomDone]. */
         fun enterCell(run: RaidRun, st: CoxState, cell: CoxCell, any: EntityRef) {

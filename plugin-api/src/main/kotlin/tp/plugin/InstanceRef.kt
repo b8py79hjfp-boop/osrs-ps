@@ -95,3 +95,49 @@ public class InstanceSquare(
  * outside instance space is an offset from the instance's south-west corner (a layout built before the instance is).
  */
 public class InstanceZone(public val from: CoordGrid, public val to: CoordGrid, public val rotation: Int = 0)
+
+/**
+ * A raid room copied into an instance as a block of zones (CoX cells): template-local tiles (0 until [size], as in the
+ * template cell at [template]) map to instance tiles of the block whose south-west tile is [origin], turned [rotation]
+ * quarter turns clockwise. Boss scripts read it from [SharedAttrs.RAID_ROOM] to place things by template positions.
+ */
+public class RaidRoomFrame(
+    public val origin: CoordGrid,
+    public val rotation: Int,
+    public val size: Int,
+    public val template: CoordGrid,
+) {
+    /** The instance tile of template-local tile ([tx], [tz]). */
+    public fun tile(tx: Int, tz: Int): CoordGrid {
+        val m = size - 1
+        val (x, z) =
+            when (rotation and ROTATION_MASK) {
+                0 -> tx to tz
+                1 -> tz to m - tx
+                2 -> m - tx to m - tz
+                else -> m - tz to tx
+            }
+        return CoordGrid(origin.x + x, origin.z + z, origin.level)
+    }
+
+    /** The template-local tile shown at instance tile [c] (inverse of [tile]). */
+    public fun local(c: CoordGrid): Pair<Int, Int> {
+        val m = size - 1
+        val x = c.x - origin.x
+        val z = c.z - origin.z
+        return when (rotation and ROTATION_MASK) {
+            0 -> x to z
+            1 -> m - z to x
+            2 -> m - x to m - z
+            else -> z to m - x
+        }
+    }
+
+    /** Whether instance tile [c] lies in the room's block. */
+    public operator fun contains(c: CoordGrid): Boolean =
+        c.level == origin.level && c.x - origin.x in 0 until size && c.z - origin.z in 0 until size
+
+    private companion object {
+        const val ROTATION_MASK = 3
+    }
+}

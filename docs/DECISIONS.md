@@ -1165,3 +1165,10 @@ means is not known.
   membership and scaling are fixed then, earlier than CX4's "at the start"); members follow while the run is in the
   lobby; the leader's lobby passage starts the raid (`The raid has begun!`), after which nobody joins (OPEN-CX3).
 - **Rooms in raids-core:** `lobby`, `chambers` (both floors, one encounter; content tracks the cells), `olm`, `rewards`.
+- **Combat rooms:** the fights are boss scripts in content/combat (`Cox*.kt`); raids-cox spawns each room when a member is
+  first seen in its cell, tags its NPCs with the room frame (`SharedAttrs.RAID_ROOM`, template tiles per rotation) and the
+  run's mode, spawns the room-lock blocker the RuneLite timer plugins watch and removes it once the room's required NPCs
+  are dead. Spawn tiles are OPEN-CX32 (Tekton at his anvil, Vespula's portal at its template tile, the Guardians beside
+  the exit doorway, the rest spread over the cell's floor). NPC stats follow the wiki calculator's CoX scaling (cox.md
+  CX17a), applied through `SharedAttrs.RAID_SCALER` to summoned minions as well (`Bosses.summon(scale = true)`).
+

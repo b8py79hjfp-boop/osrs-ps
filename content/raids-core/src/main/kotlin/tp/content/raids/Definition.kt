@@ -119,6 +119,10 @@ public class ScalingContext(
     /** Highest of each combat level among the members at start (attack, defence, strength, hitpoints, ranged, magic). */
     public val highestLevels: IntArray,
     public val settings: Map<String, Int>,
+    /** Highest combat level among the members at start (CoX scales by it). */
+    public val highestCombatLevel: Int = 3,
+    /** Sum over the members of each skill's base level at start, by skill id (CoX: Guardians' HP from Mining). */
+    public val skillSums: IntArray = IntArray(0),
 )
 
 /**
