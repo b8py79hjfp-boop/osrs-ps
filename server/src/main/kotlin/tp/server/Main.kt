@@ -56,7 +56,15 @@ fun main(args: Array<String>) {
     val config = ServerConfig.load(options["--config"]?.let(Path::of) ?: ServerConfig.DEFAULT_PATH)
     if ("--boot-check" in options) {
         // Registers every content plugin too, so duplicate handlers fail CI here rather than at world start.
-        tp.plugin.PluginContent.load()
+        val content = tp.plugin.PluginContent.load()
+        // Commands brief §3: docs/commands.md is generated from the registry (`./gradlew :server:commandsDoc`).
+        options["--commands-doc"]?.let {
+            Files.writeString(
+                Path.of(it),
+                tp.plugin.commands.CommandDocs
+                    .markdown(content.registry),
+            )
+        }
         data.cache.close()
         logger.info { "Boot check passed." }
         return

@@ -17,6 +17,11 @@ public interface ParseContext {
 
     /** The noted form of obj [id], or null when it has none. */
     public fun notedOf(id: Int): Int?
+
+    public companion object {
+        /** The live context of [viewer]'s world: its players (as [viewer] may see them) and the cache names. */
+        public fun of(viewer: PlayerRef): ParseContext = WorldParseContext(viewer)
+    }
 }
 
 public enum class NameKind { OBJ, NPC, LOC }
@@ -64,6 +69,9 @@ public sealed class Arg<T>(public val name: String, public val optional: Boolean
     public open val usage: String get() = if (optional) "[$name]" else "<$name>"
 
     internal abstract fun parse(tokens: List<String>, at: Int, ctx: ParseContext): ParseResult<T>
+
+    /** Parses this argument from the start of [tokens] (the interface's dialogs, CommandParserTest). */
+    public fun parseAt(tokens: List<String>, ctx: ParseContext): ParseResult<T> = parse(tokens, 0, ctx)
 
     /** A target argument marks a command as one that shows up under a selected player in the interface (§3). */
     public open val isPlayer: Boolean get() = false

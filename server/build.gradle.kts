@@ -43,3 +43,13 @@ dependencies {
     implementation(libs.ktoml.core)
     runtimeOnly(libs.logback.classic)
 }
+
+// Commands brief §3: regenerates docs/commands.md from the command registry (a boot check that also writes the file).
+tasks.register<JavaExec>("commandsDoc") {
+    group = "tickperfect"
+    description = "Writes docs/commands.md from the command registry."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "tp.server.MainKt"
+    workingDir = rootDir
+    args("--boot-check", "--commands-doc", "docs/commands.md")
+}
