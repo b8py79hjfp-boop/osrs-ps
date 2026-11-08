@@ -667,8 +667,17 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 broadcastSinks.forEach { runCatching { it(Broadcast.SystemUpdate(seconds)) } }
             }
 
-            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String, donator: tp.util.DonatorTier) {
-                broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text, donator)) } }
+            override suspend fun yell(
+                from: String,
+                rank: Rank,
+                worldId: Int,
+                text: String,
+                donator: tp.util.DonatorTier,
+                staff: Boolean,
+            ) {
+                // D-096: staff chat only from staff; a forged flag from a world is dropped here too.
+                if (staff && !rank.isStaff) return
+                broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text, donator, staff)) } }
             }
 
             override suspend fun setInvisible(accountId: Long, invisible: Boolean) {

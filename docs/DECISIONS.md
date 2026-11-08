@@ -1399,3 +1399,28 @@ means is not known.
 - **Player-sent chat.** Public, private, friends and clan messages carry a "chat crown" byte, and the client maps it
   to an icon with a table I have no source for. So icons and colours for those are drawn by the patched chat-line
   script from a server-kept roster (D-096), not by inventing crown values.
+
+## D-096 Chatbox tabs: interface patches, tab state, roster and staff chat (2026-11-08)
+
+- **The capability.** `tools/cache-pack` can patch an existing interface: `pack/interface-patches/<name>.toml`. Each
+  file has one `[[patch]]` (interface, name, `base_components`), `[[set]]` edits to existing components (x, y, width,
+  height, hidden, text, sprite) and `[[component]]`s appended after the last one. Every original component must
+  re-encode byte-identically first (interface 162: 569 of 569), so untouched components never change. New
+  components get `component.<name>:<component>` symbols for scripts. `pack.properties` lists `patchedInterfaces`.
+- **Tabs.** Interface 162 gets Mentions, Yell and Staff tabs; Staff is hidden until the server shows it. The ten tabs
+  are 41 px wide and 43 apart, which fits left of Report. Script 178 sets the tab graphic sizes at runtime, so it is
+  patched to the same width.
+- **Tab state is a hidden text component (162:578), not a new CHAT_VIEW value.** Varc 41 is read by 21 cache scripts,
+  including the key handler 73, and a value they don't know would misbehave. A custom tab sets CHAT_VIEW to 0 (All),
+  writes its name into 162:578, and repeats script 2823's switch sequence. Patched 193 filters the All view by that
+  name, patched 178 draws the tab art from it, and patched 2823 clears it when an official tab is clicked. Without
+  the 2823 patch, clicking All from a custom tab would collapse the chatbox.
+- **Roster (162:579).** Public-chat icons and colours come from a per-world roster the server writes. Its format is
+  `;name=<img=N><col=rrggbb>;`, with names lowercased and also listed with no-break spaces. Patched script 84 draws
+  a listed sender as prefix + name + `</col>`, on public lines only. The name variable itself is not changed, because
+  the line's menu ops use it later. Public chat only comes from the same world, so per world is enough. The text is
+  capped at 20,000 characters, and `ChatSkin` re-sends it every 5 ticks when its fingerprint changes.
+- **Staff chat.** `::sc` uses the yell route with a `staff` flag (`YellRequest.staff`). The hub drops the flag from
+  non-staff ranks, and worlds deliver `[Staff] ...` to staff only, whatever their yell setting.
+- **Legacy procs** called by our scripts are named by id (`script553` and so on) in `legacy.sym`, because their roles
+  are not documented.

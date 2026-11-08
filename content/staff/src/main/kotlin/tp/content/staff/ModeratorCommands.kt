@@ -16,6 +16,7 @@ import tp.plugin.commands.moderate
 import tp.plugin.commands.moderationHistory
 import tp.plugin.commands.onlineEverywhere
 import tp.plugin.commands.showList
+import tp.plugin.commands.staffChat
 import tp.plugin.commands.worldId
 import tp.symbols.Invs
 import tp.util.CoordGrid
@@ -35,6 +36,21 @@ public class ModeratorCommands : ContentPlugin {
         records()
         movement()
         views()
+        staffChat()
+    }
+
+    /** D-096: `::sc` staff chat, to staff on every world through the hub; the chatbox Staff tab shows only these lines. */
+    private fun ContentScope.staffChat() {
+        command("sc", Rank.MODERATOR, Category.MODERATION, Impact.SOCIAL) {
+            aliases("staffchat")
+            description("Sends a line to every member of staff online, on every world (shown in the chatbox Staff tab).")
+            example("::sc can someone check world 2?")
+            val message = text("message")
+            signature(message) { ctx ->
+                ctx.player.staffChat(ctx[message])
+                CommandResult.Done()
+            }
+        }
     }
 
     private fun ContentScope.sanctions() {

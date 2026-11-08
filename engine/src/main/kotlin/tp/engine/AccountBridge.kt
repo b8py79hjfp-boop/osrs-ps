@@ -178,8 +178,8 @@ interface AccountBridge {
     /** Commands brief §4: one command execution for the hub's append-only audit log (off the world thread). */
     fun audit(actor: String, action: String, target: String, detail: String) {}
 
-    /** `::yell` (commands brief §6): [text] (already escaped) to every world. */
-    fun yell(player: Player, text: String) {}
+    /** `::yell` (commands brief §6): [text] (already escaped) to every world; [staff] = `::sc` staff chat (D-096). */
+    fun yell(player: Player, text: String, staff: Boolean = false) {}
 
     /** `::invisible` (commands brief §1): the account's hidden flag on every world's presence. */
     fun setInvisible(player: Player, invisible: Boolean) {}

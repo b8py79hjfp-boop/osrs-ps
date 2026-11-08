@@ -414,8 +414,15 @@ interface BroadcastService {
     /** System update in [seconds] (client countdown; worlds save and stop). */
     suspend fun systemUpdate(seconds: Int)
 
-    /** Commands brief §6 `::yell`: a line to every world, tagged with [rank]. */
-    suspend fun yell(from: String, rank: Rank, worldId: Int, text: String, donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE)
+    /** Commands brief §6 `::yell`: a line to every world, tagged with [rank]; [staff] = `::sc` staff chat (staff only, D-096). */
+    suspend fun yell(
+        from: String,
+        rank: Rank,
+        worldId: Int,
+        text: String,
+        donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE,
+        staff: Boolean = false,
+    )
 
     /** Commands brief §1 hidden staff (`::invisible`): updates the account's presence on every world. */
     suspend fun setInvisible(accountId: Long, invisible: Boolean)
@@ -441,5 +448,6 @@ sealed interface Broadcast {
         val worldId: Int,
         val text: String,
         val donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE,
+        val staff: Boolean = false,
     ) : Broadcast
 }

@@ -922,6 +922,11 @@ public class WorldRef internal constructor(internal val w: World) {
 
     public val tick: Long get() = w.tick
 
+    /** Every player in this world, in index order (no list is built). */
+    public fun forEachPlayer(action: (PlayerRef) -> Unit) {
+        w.forEachPlayer { action(refOf(it)) }
+    }
+
     /** The online player called [username] (case-insensitive), or null. */
     public fun onlinePlayer(username: String): PlayerRef? = w.playerNamed(username)?.let { refOf(it) }
 

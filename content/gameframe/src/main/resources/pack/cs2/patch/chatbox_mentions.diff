@@ -4,6 +4,10 @@
 # message is read from the chat history, a message that contains the viewer's own name (tags removed, any case) and
 # was not sent by the viewer is wrapped in the mention colour. Game messages (type 0) are left alone.
 # Locals (RuneLite's ChatBuilder overlay comments): o0 own name, i11 type, o19 sender, o21 text, o24 timestamp.
+# Second hunk (D-096): public chat lines (types 1 and 2, LABEL452) look the sender up in the roster the server writes to
+# tp_chat_roster (162:579) as ";name=<prefix>;" (lowercase, tags removed); a listed sender is drawn as prefix + name +
+# "</col>", the prefix being the rank or donator icon and name colour. The client's own crown tag is removed with the other
+# tags. Only the drawn line changes: o19 itself (used later for the name's menu ops) is untouched; new locals i25, o26.
 @@ mention highlight
    chat_gethistoryex_byuid
    istore                 21
@@ -46,3 +50,51 @@
 +TP_MENTION_DONE:
    iload                  11
    oload                  19
+@@ roster names (D-096)
+LABEL452:
++   iconst                 10617411
++   if_gettext
++   sconst                 ";"
++   oload                  19
++   removetags
++   lowercase
++   sconst                 "="
++   join_string            3
++   iconst                 0
++   string_indexof_string
++   istore                 25
++   oload                  19
++   ostore                 26
++   iload                  25
++   iconst                 -1
++   if_icmpeq              TP_ROSTER_DONE
++   iconst                 10617411
++   if_gettext
++   sconst                 "="
++   iload                  25
++   string_indexof_string
++   iconst                 1
++   add
++   istore                 25
++   iconst                 10617411
++   if_gettext
++   iload                  25
++   iconst                 10617411
++   if_gettext
++   sconst                 ";"
++   iload                  25
++   string_indexof_string
++   substring
++   oload                  19
++   removetags
++   sconst                 "</col>"
++   join_string            3
++   ostore                 26
++TP_ROSTER_DONE:
+   oload                  24
+-   oload                  19
++   oload                  26
+   sconst                 ":"
+   join_string            2
+   sconst                 "null"
+   invoke                 4742

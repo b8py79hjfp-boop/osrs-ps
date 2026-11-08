@@ -62,6 +62,11 @@ public fun PlayerRef.yell(text: String) {
     p.world.accounts?.yell(p, Tags.escape(text))
 }
 
+/** D-096 `::sc`: [text] (escaped here) to staff on every world, through the hub. */
+public fun PlayerRef.staffChat(text: String) {
+    p.world.accounts?.yell(p, Tags.escape(text), staff = true)
+}
+
 /** Hidden mode on or off, here and in every world's presence (§1). */
 public fun PlayerRef.setInvisible(invisible: Boolean) {
     p.invisible = invisible

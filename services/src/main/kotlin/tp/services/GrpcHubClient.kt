@@ -742,7 +742,14 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                 broadcastsStub.systemUpdate(SystemUpdateRequest.newBuilder().setSeconds(seconds).build())
             }
 
-            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String, donator: tp.util.DonatorTier) {
+            override suspend fun yell(
+                from: String,
+                rank: Rank,
+                worldId: Int,
+                text: String,
+                donator: tp.util.DonatorTier,
+                staff: Boolean,
+            ) {
                 broadcastsStub.yell(
                     tp.services.grpc.YellRequest
                         .newBuilder()
@@ -751,6 +758,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         .setWorldId(worldId)
                         .setText(text)
                         .setDonator(donator.name)
+                        .setStaff(staff)
                         .build(),
                 )
             }
@@ -797,7 +805,16 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
 
                         BroadcastEvent.EventCase.YELL -> {
                             val donator = tp.util.DonatorTier.parse(e.yell.donator) ?: tp.util.DonatorTier.NONE
-                            sink(Broadcast.Yell(e.yell.from, Rank.parseOrPlayer(e.yell.rank), e.yell.worldId, e.yell.text, donator))
+                            sink(
+                                Broadcast.Yell(
+                                    e.yell.from,
+                                    Rank.parseOrPlayer(e.yell.rank),
+                                    e.yell.worldId,
+                                    e.yell.text,
+                                    donator,
+                                    e.yell.staff,
+                                ),
+                            )
                         }
 
                         else -> {

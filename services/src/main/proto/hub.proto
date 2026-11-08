@@ -625,6 +625,7 @@ message YellRequest {
   int32 world_id = 3;
   string text = 4;
   string donator = 5; // tp.util.DonatorTier name (D-095: yell icon and name colour)
+  bool staff = 6; // D-096 ::sc staff chat: delivered to staff only
 }
 
 message InvisibleRequest {

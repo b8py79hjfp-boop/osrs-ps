@@ -80,6 +80,12 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
             tp.util.ChatIcons
                 .nameColour(b.donator)
                 ?.let { "<col=$it>${b.from}</col>" } ?: b.from
+        if (b.staff) {
+            // D-096 `::sc`: staff only, whatever their yell setting; the chatbox Staff tab filters on the "[Staff]" prefix.
+            val line = "[Staff] $icon$name: ${b.text}"
+            world.forEachPlayer { p -> if (p.rank.isStaff) p.session.send(ServerMessage.GameMessage(line)) }
+            return
+        }
         val line = "[Yell] $icon$name: ${b.text}"
         world.forEachPlayer { p -> if ((p.saved[YELL_OFF_KEY] ?: 0L) == 0L) p.session.send(ServerMessage.GameMessage(line)) }
     }
