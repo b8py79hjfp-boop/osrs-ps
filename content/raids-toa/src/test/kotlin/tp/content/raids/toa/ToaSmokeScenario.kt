@@ -90,7 +90,8 @@ class ToaSmokeScenario {
             s.tick(WATER_TICKS)
             ra.teleport(run.at(PALM_STAND))
             s.tick(2)
-            val palm = ra.npcsWithin(run.at(PALM_AT), PALM_RADIUS).firstOrNull { it.displayName.startsWith("Palm") } ?: break
+            val palm =
+                ra.npcsWithin(run.at(PALM_AT), PALM_RADIUS).firstOrNull { it.displayName.contains("Palm of Resourcefulness") } ?: break
             a.input(ClientCommand.OpNpc(1, palm.index, false))
             s.tick(WATER_TICKS)
         }
@@ -125,7 +126,15 @@ class ToaSmokeScenario {
                 return@repeat
             }
             a.input(ClientCommand.OpLoc(1, barrier.id, barrier.coord.x, barrier.coord.z, false))
-            s.tick(WALK)
+            walk()
+        }
+    }
+
+    /** Lets a walk finish; the raider is kept alive (the room's NPCs fight back; the fights are not under test here). */
+    private fun walk() {
+        repeat(WALK) {
+            ra.hitpoints = maxOf(ra.hitpoints, KEEP_ALIVE)
+            s.tick()
         }
     }
 
@@ -134,12 +143,13 @@ class ToaSmokeScenario {
         val run = Raids.of(ra).runOf("a")
         val at = if (run?.instance != null && template.z < LOBBY_Z) run.at(template) else template
         a.input(ClientCommand.OpLoc(1, id, at.x, at.z, false))
-        s.tick(WALK)
+        walk()
     }
 
     private companion object {
         const val SEED = 1L
         const val WALK = 40
+        const val KEEP_ALIVE = 99
         const val WATER_TICKS = 6
         const val PALM_RADIUS = 4
         val WATERFALLS = listOf(CoordGrid(3926, 5250), CoordGrid(3940, 5250))

@@ -98,7 +98,7 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
         npc.setLevel(NpcStat.DEFENCE, npc.baseLevel(NpcStat.DEFENCE))
         npc.anim(Seqs.NPC_KEPHRI_STUNNED_WAKEUP)
         // KP3: as the swarm around her dissipates, one Dung Strike on everyone.
-        dungStrike(npc, s, ToaKit.raiders(npc))
+        dungStrike(npc, ToaKit.raiders(npc))
     }
 
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
@@ -112,7 +112,7 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
             if ((s.attacks / SPECIAL_EVERY) % 2 == 0 || scarabs >= MAX_SCARABS) {
                 val n = if (ToaKit.has(npc, BLOWING_MUD)) 2 else 1
                 val order = ToaKit.raiders(npc)
-                if (order.isNotEmpty()) dungStrike(npc, s, List(minOf(n, order.size)) { order[(s.dungRobin++) % order.size] })
+                if (order.isNotEmpty()) dungStrike(npc, List(minOf(n, order.size)) { order[(s.dungRobin++) % order.size] })
             } else {
                 incubate(npc, s)
             }
@@ -158,7 +158,7 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
     }
 
     /** KP3: flies warn, the target is thrown to the rear (stun 3 ticks), dung falls along the way (light damage, shoved). */
-    private fun dungStrike(npc: NpcRef, s: State, targets: List<PlayerRef>) {
+    private fun dungStrike(npc: NpcRef, targets: List<PlayerRef>) {
         for (p in targets) {
             p.spotAnim(SpotAnims.KEPHRI_INDICATE_PLAYER_FOR_DUNG)
             npc.queueHit(DUNG_WARN, strong = false) {
@@ -189,7 +189,20 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
         val dark = if (ToaKit.has(npc, LIVELY_LARVAE)) DARK_EGGS_LIVELY else DARK_EGGS
         repeat(LIGHT_EGGS + dark) { i ->
             val at = BossCombat.randomTile(npc, ToaKit.at(npc, CENTRE), ARENA_RADIUS)
-            val egg = Bosses.summon(npc, if (i < dark) Npcs.KEPHRI_EGG_HATCH else Npcs.KEPHRI_EGG_EXPLODE, at, huntRange = 0, inheritRun = true)
+            val egg =
+                Bosses.summon(
+                    npc,
+                    if (i <
+                        dark
+                    ) {
+                        Npcs.KEPHRI_EGG_HATCH
+                    } else {
+                        Npcs.KEPHRI_EGG_EXPLODE
+                    },
+                    at,
+                    huntRange = 0,
+                    inheritRun = true,
+                )
             s.eggs[egg] = EGG_FUSE
         }
     }
@@ -201,16 +214,28 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
             if (depletion == 1) {
                 listOfNotNull(Npcs.TOA_KEPHRI_GUARDIAN_RANGED, Npcs.TOA_KEPHRI_GUARDIAN_MELEE.takeIf { more })
             } else {
-                listOfNotNull(Npcs.TOA_KEPHRI_GUARDIAN_MELEE, Npcs.TOA_KEPHRI_GUARDIAN_MAGE, Npcs.TOA_KEPHRI_GUARDIAN_RANGED.takeIf { more })
+                listOfNotNull(
+                    Npcs.TOA_KEPHRI_GUARDIAN_MELEE,
+                    Npcs.TOA_KEPHRI_GUARDIAN_MAGE,
+                    Npcs.TOA_KEPHRI_GUARDIAN_RANGED.takeIf { more },
+                )
             }
         for (type in list) {
             // KP5: Spitting north-east of her, Soldier east, Arcane south-east.
-            val off = when (type) {
-                Npcs.TOA_KEPHRI_GUARDIAN_RANGED -> NE
-                Npcs.TOA_KEPHRI_GUARDIAN_MELEE -> E
-                else -> SE
-            }
-            Bosses.summon(npc, type, CoordGrid(npc.coord.x + off.first, npc.coord.z + off.second, npc.coord.level), huntRange = HUNT, inheritRun = true, scale = true)
+            val off =
+                when (type) {
+                    Npcs.TOA_KEPHRI_GUARDIAN_RANGED -> NE
+                    Npcs.TOA_KEPHRI_GUARDIAN_MELEE -> E
+                    else -> SE
+                }
+            Bosses.summon(
+                npc,
+                type,
+                CoordGrid(npc.coord.x + off.first, npc.coord.z + off.second, npc.coord.level),
+                huntRange = HUNT,
+                inheritRun = true,
+                scale = true,
+            )
         }
     }
 
@@ -225,12 +250,13 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
         moveSwarms(npc, s)
         if (!s.down) return
         if (s.swarmsLeft > 0) {
-            val pace = when {
-                s.swarmIndex < PACE_STEP -> 4
-                s.swarmIndex < 2 * PACE_STEP -> 3
-                s.swarmIndex < 3 * PACE_STEP -> 2
-                else -> 1
-            }
+            val pace =
+                when {
+                    s.swarmIndex < PACE_STEP -> 4
+                    s.swarmIndex < 2 * PACE_STEP -> 3
+                    s.swarmIndex < 3 * PACE_STEP -> 2
+                    else -> 1
+                }
             if (++s.swarmTimer >= pace) {
                 s.swarmTimer = 0
                 val group = if (ToaKit.pathLevel(npc) >= 2 && npc.random(GROUP_ODDS) == 0) GROUP_SIZE else 1
@@ -310,7 +336,7 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
             s.eggs.remove(egg)
             if (egg.type == Npcs.KEPHRI_EGG_EXPLODE) {
                 npc.spotAnimAt(egg.coord, IMPACT)
-                for (p in ToaKit.on(npc, egg.coord, 1)) ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, EGG_MAX)))
+                for (p in ToaKit.on(npc, egg.coord, 1)) ToaKit.hitRolled(npc, p, EGG_MAX)
             } else {
                 Bosses.summon(npc, Npcs.TOA_KEPHRI_SCARAB_RANGEKITE, egg.coord, huntRange = HUNT, inheritRun = true)
             }
@@ -323,7 +349,14 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
         if (s.down || !ToaKit.has(npc, MEDIC)) return
         if (++s.medicTimer < MEDIC_EVERY) return
         s.medicTimer = 0
-        val sw = Bosses.summon(npc, Npcs.TOA_KEPHRI_SHIELD_SCARAB, ToaKit.at(npc, EDGES[npc.random(EDGES.size)]), huntRange = 0, inheritRun = true)
+        val sw =
+            Bosses.summon(
+                npc,
+                Npcs.TOA_KEPHRI_SHIELD_SCARAB,
+                ToaKit.at(npc, EDGES[npc.random(EDGES.size)]),
+                huntRange = 0,
+                inheritRun = true,
+            )
         sw[HEALS] = true
     }
 
@@ -345,7 +378,14 @@ internal object ToaKephri : Boss(Npcs.TOA_KEPHRI_BOSS_SHIELDED, Npcs.TOA_KEPHRI_
 
     /** KP6: six edge points NE, SE, S, SW, NW, N (clockwise order). */
     private val EDGES =
-        listOf(CoordGrid(3559, 5415), CoordGrid(3559, 5401), CoordGrid(3551, 5401), CoordGrid(3544, 5401), CoordGrid(3544, 5415), CoordGrid(3551, 5415))
+        listOf(
+            CoordGrid(3559, 5415),
+            CoordGrid(3559, 5401),
+            CoordGrid(3551, 5401),
+            CoordGrid(3544, 5401),
+            CoordGrid(3544, 5415),
+            CoordGrid(3551, 5415),
+        )
     private val NE = 5 to 4
     private val E = 6 to 1
     private val SE = 5 to -2
@@ -441,7 +481,9 @@ internal object ToaKephriChildren : Boss(Npcs.TOA_KEPHRI_GUARDIAN_MELEE, Npcs.TO
                 ToaKit.strike(npc, victim, AttackType.SLASH, ToaKit.dmg(npc, SOLDIER_MAX), 0)
             }
 
-            else -> Unit
+            else -> {
+                Unit
+            }
         }
     }
 
@@ -472,7 +514,9 @@ internal object ToaKephriChildren : Boss(Npcs.TOA_KEPHRI_GUARDIAN_MELEE, Npcs.TO
                 relocate(npc)
             }
 
-            else -> Unit
+            else -> {
+                Unit
+            }
         }
     }
 
@@ -527,7 +571,7 @@ internal object ToaKephriChildren : Boss(Npcs.TOA_KEPHRI_GUARDIAN_MELEE, Npcs.TO
 
 /** The Agile Scarab (KP4) and the shield swarms (KP6): the swarm never attacks; the agile one is the generic ranged NPC. */
 internal object ToaKephriSwarm : Boss(Npcs.TOA_KEPHRI_SHIELD_SCARAB) {
-    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {}
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) = Unit
 
     override fun retaliates(npc: NpcRef): Boolean = false
 }

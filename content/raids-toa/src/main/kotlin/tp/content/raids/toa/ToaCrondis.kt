@@ -127,6 +127,9 @@ internal object ToaCrondis {
         s.container[name] = (have - lost).coerceAtLeast(MIN_WATER).coerceAtMost(have)
     }
 
+    /** CR6: whether [name] carries a non-empty container (the crocodiles' first target). */
+    fun carrying(run: RaidRun, any: EntityRef, name: String): Boolean = (store[any, run]?.container?.get(name.lowercase()) ?: 0) > 0
+
     /** CR7: the trap hits [name] took in the last 50 ticks (the crocodile's bite adds 3 each, up to 36). */
     fun recentTrapHits(run: RaidRun, any: EntityRef, name: String): Int {
         val s = store[any, run] ?: return 0

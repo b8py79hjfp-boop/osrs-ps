@@ -134,6 +134,7 @@ internal object Bosses {
             ToaKephriSwarm,
             ToaWardens,
             ToaWardensParts,
+            ToaPuzzleFoes,
         )
         ) {
             for (id in boss.ids) byType[id] = boss

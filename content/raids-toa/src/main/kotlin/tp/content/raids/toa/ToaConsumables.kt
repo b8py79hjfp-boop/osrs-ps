@@ -29,9 +29,10 @@ internal object ToaConsumables {
 
     // ---- nectar (TA57)
 
-    /** TA57: heals `floor(base x 15/100) + 3` Hitpoints and lowers the five combat stats by `floor(current/20 + 5)`. */
     /** OPEN-TA42: the nectar's "small attack delay" (U-Rev), assumed 1 tick. */
     private const val NECTAR_ATTACK_DELAY = 1
+
+    /** TA57: heals `floor(base x 15/100) + 3` Hitpoints and lowers the five combat stats by `floor(current/20 + 5)`. */
 
     private const val NECTAR_HEAL_PERCENT = 15
     private const val NECTAR_HEAL_FLAT = 3

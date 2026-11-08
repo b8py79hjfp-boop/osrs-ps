@@ -67,6 +67,11 @@ internal object ToaKit {
         CombatSystem.queueHit(p, npc, damage, tp.plugin.HitStyle.TYPELESS, delay)
     }
 
+    /** Typeless area damage of 1..[base] scaled ([dmg]) on [p]. */
+    fun hitRolled(npc: NpcRef, p: EntityRef, base: Int, pathScaled: Boolean = true) {
+        areaHit(npc, p, BossCombat.roll(npc, 1, dmg(npc, base, pathScaled)))
+    }
+
     /** The raiders standing on [tile] (or within [radius]) now. */
     fun on(npc: NpcRef, tile: CoordGrid, radius: Int = 0): List<PlayerRef> = BossCombat.playersOn(npc, tile, radius)
 

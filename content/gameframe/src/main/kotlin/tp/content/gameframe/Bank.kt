@@ -379,9 +379,12 @@ public class Bank : ContentPlugin {
      * bank slot (placeholder rules as for any withdrawal). [t].onMoved then changes the storage by the amount moved.
      */
     private fun PlayerRef.transfer(t: BankTransfer) {
-        if (!bankOpen() || t.requested <= 0) return
+        // The deposit box (docs/mechanics/deposit-box.md) deposits through the same path without the bank being open.
+        val open = bankOpen() || (t.deposit && isOpen(Interfaces.BANK_DEPOSITBOX))
+        if (!open || t.requested <= 0) return
         if (t.deposit) {
             val out = deposit(if (t.source >= 0) t.source else SOURCE_EXTERNAL, listOf(t.obj to t.requested))
+            if (out.noBank > 0) message(NO_BANK_MESSAGE)
             if (out.full > 0) message("You don't have enough space in your bank account.")
             t.moved = out.deposited
         } else {

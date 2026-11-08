@@ -50,7 +50,10 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
         val s = state(npc)
         npc.huntRange = HUNT
         // BB7: the sarcophagi's health bars (NPC 11788 on each of the eight coffins; cache HP 60, `toa.baba.sarcophagusHp`).
-        for (t in SARCOPHAGI) s.sarcophagi += Bosses.summon(npc, Npcs.TOA_BABA_SARC_NPC, ToaKit.at(npc, t), huntRange = 0, inheritRun = true)
+        for (t in SARCOPHAGI) {
+            s.sarcophagi +=
+                Bosses.summon(npc, Npcs.TOA_BABA_SARC_NPC, ToaKit.at(npc, t), huntRange = 0, inheritRun = true)
+        }
         ToaKit.loop(npc) { tick(npc, s) }
     }
 
@@ -106,7 +109,7 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
             0 -> shockwave(npc, victim)
             1 -> rockfall(npc)
             2 -> rockThrow(npc, s)
-            else -> discharge(npc, s)
+            else -> discharge(npc)
         }
     }
 
@@ -123,7 +126,7 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
             if (!npc.isInWorld || npc.isDying) return@queueHit
             for (t in tiles) {
                 npc.spotAnimAt(t, SLAM_IMPACT)
-                for (p in ToaKit.on(npc, t)) ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, SHOCKWAVE_MAX)))
+                for (p in ToaKit.on(npc, t)) ToaKit.hitRolled(npc, p, SHOCKWAVE_MAX)
             }
         }
     }
@@ -139,7 +142,7 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
             npc.spotAnimAt(tile, gfx)
             npc.queueHit(delay, strong = false) {
                 if (!npc.isInWorld) return@queueHit
-                for (v in ToaKit.on(npc, tile)) ToaKit.areaHit(npc, v, BossCombat.roll(npc, 1, ToaKit.dmg(npc, ROCK_MAX)))
+                for (v in ToaKit.on(npc, tile)) ToaKit.hitRolled(npc, v, ROCK_MAX)
             }
         }
         repeat(DEBRIS_PER_FALL) {
@@ -150,12 +153,21 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
                 // BB5: players right under it are hit, the rest of its 3x3 pushed aside.
                 for (v in ToaKit.on(npc, at, 1)) {
                     if (v.coord == at) {
-                        ToaKit.areaHit(npc, v, BossCombat.roll(npc, 1, ToaKit.dmg(npc, ROCK_MAX)))
+                        ToaKit.hitRolled(npc, v, ROCK_MAX)
                     } else {
-                        v.teleport(CoordGrid(at.x + 2 * Integer.signum(v.coord.x - at.x), at.z + 2 * Integer.signum(v.coord.z - at.z), at.level))
+                        v.teleport(
+                            CoordGrid(at.x + 2 * Integer.signum(v.coord.x - at.x), at.z + 2 * Integer.signum(v.coord.z - at.z), at.level),
+                        )
                     }
                 }
-                val debris = Bosses.summon(npc, RUBBLE[npc.random(RUBBLE.size)], CoordGrid(at.x - 1, at.z - 1, at.level), huntRange = 0, inheritRun = true)
+                val debris =
+                    Bosses.summon(
+                        npc,
+                        RUBBLE[npc.random(RUBBLE.size)],
+                        CoordGrid(at.x - 1, at.z - 1, at.level),
+                        huntRange = 0,
+                        inheritRun = true,
+                    )
                 // OPEN-BB6 / conflict 3: 10 HP plus 10 per player (Strat), flag `toa.baba.rubbleHpPerPlayer`.
                 val hp = RUBBLE_HP_PER_PLAYER * maxOf(1, ToaKit.raiders(npc).size) + RUBBLE_HP_BASE
                 debris.overrideStats(IntArray(STATS) { i -> if (i == HITPOINTS) hp else debris.baseLevel(i) })
@@ -179,11 +191,12 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
                     return@queueHit
                 }
                 npc.spotAnimAt(shield.coord, RUBBLE_ABSORB)
-                val absorbed = when (shield.type) {
-                    Npcs.TOA_BABA_SARC_NPC -> SARCO_TAKES
-                    Npcs.TOA_BABA_BABOON -> BABOON_TAKES
-                    else -> DEBRIS_TAKES
-                }
+                val absorbed =
+                    when (shield.type) {
+                        Npcs.TOA_BABA_SARC_NPC -> SARCO_TAKES
+                        Npcs.TOA_BABA_BABOON -> BABOON_TAKES
+                        else -> DEBRIS_TAKES
+                    }
                 CombatSystem.queueHit(shield, npc, minOf(absorbed, shield.hitpoints), HitStyle.TYPELESS, 0)
                 if (shield.type in RUBBLE && absorbed >= shield.hitpoints) s.rockfallNext = true
             }
@@ -192,19 +205,20 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
 
     /** BB6: the object that nulls a throw at [p]: debris (5x5 around its 3x3), an unopened sarcophagus or a baboon next to them. */
     private fun shieldFor(npc: NpcRef, s: State, p: PlayerRef): NpcRef? {
-        val near = Bosses.minions(npc).filter { m ->
-            when (m.type) {
-                in RUBBLE -> p.coord.x in m.coord.x - 1..m.coord.x + DEBRIS_SIZE && p.coord.z in m.coord.z - 1..m.coord.z + DEBRIS_SIZE
-                Npcs.TOA_BABA_SARC_NPC -> m.coord !in s.opened && p.distanceTo(m) <= 1
-                Npcs.TOA_BABA_BABOON -> p.distanceTo(m) <= 1
-                else -> false
+        val near =
+            Bosses.minions(npc).filter { m ->
+                when (m.type) {
+                    in RUBBLE -> p.coord.x in m.coord.x - 1..m.coord.x + DEBRIS_SIZE && p.coord.z in m.coord.z - 1..m.coord.z + DEBRIS_SIZE
+                    Npcs.TOA_BABA_SARC_NPC -> m.coord !in s.opened && p.distanceTo(m) <= 1
+                    Npcs.TOA_BABA_BABOON -> p.distanceTo(m) <= 1
+                    else -> false
+                }
             }
-        }
         return near.firstOrNull()
     }
 
     /** BB7: 1-4 baboons by party size (OPEN-BB8); "periodically" one breaks a sarcophagus open (20 a hit). */
-    private fun discharge(npc: NpcRef, s: State) {
+    private fun discharge(npc: NpcRef) {
         npc.anim(Seqs.NPC_MANDRILL_ATTACK_SPECIAL_JUMP01)
         val n = ToaKit.raiders(npc).size.coerceIn(1, MAX_BABOONS)
         repeat(n) {
@@ -345,17 +359,20 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
     /** Scaling: base 25, the party at half effect, then +10% (path 2-3) or +25% (4+), floored after each step (derived). */
     fun boulderHp(party: Int, pathLevel: Int): Int {
         val n = party.coerceIn(1, MAX_PARTY)
-        val tenths = PER_TEN + when {
-            n >= 3 -> HALF_EARLY * 2 + HALF_LATE * (n - 3)
-            n == 2 -> HALF_EARLY
-            else -> 0
-        }
+        val tenths =
+            PER_TEN +
+                when {
+                    n >= 3 -> HALF_EARLY * 2 + HALF_LATE * (n - 3)
+                    n == 2 -> HALF_EARLY
+                    else -> 0
+                }
         var hp = BOULDER_BASE * tenths / PER_TEN_HUNDRED
-        hp = when {
-            pathLevel >= PATH_HIGH -> hp * BOULDER_HIGH / PERCENT
-            pathLevel >= PATH_LOW -> hp * BOULDER_LOW / PERCENT
-            else -> hp
-        }
+        hp =
+            when {
+                pathLevel >= PATH_HIGH -> hp * BOULDER_HIGH / PERCENT
+                pathLevel >= PATH_LOW -> hp * BOULDER_LOW / PERCENT
+                else -> hp
+            }
         return hp
     }
 
@@ -370,14 +387,13 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
             }
             b.teleport(next)
             for (m in Bosses.minions(npc)) {
-                if ((m.type in RUBBLE || m.type == Npcs.TOA_BABA_BABOON) && kotlin.math.abs(m.coord.x - next.x) <= 2 && m.coord.z in next.z - 2..next.z + 2) {
-                    m.despawn()
-                }
+                val crushable = m.type in RUBBLE || m.type == Npcs.TOA_BABA_BABOON
+                if (crushable && m.distanceTo(b) <= 1) m.despawn()
             }
             for (p in ToaKit.raiders(npc)) {
                 if (p.coord.x !in next.x..next.x + 2 || p.coord.z !in next.z..next.z + 2) continue
                 p.anim(Seqs.HUMAN_KNOCKDOWN)
-                ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, BOULDER_HIT)))
+                ToaKit.hitRolled(npc, p, BOULDER_HIT)
                 knock(npc, p, CoordGrid(p.coord.x - KNOCKBACK, p.coord.z, p.coord.level))
             }
         }
@@ -411,10 +427,11 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
     override fun died(npc: NpcRef, killer: EntityRef?) {
         Bosses.dismissMinions(npc)
         val top = Bosses.topDamager(npc) ?: return
-        val drops = buildList {
-            add(Objs.TOA_BABA_BANANA)
-            if (top.varbit(Varbits.TOA_BOOK_BABA) == 0) add(Objs.TOA_BOOK_BABA)
-        }
+        val drops =
+            buildList {
+                add(Objs.TOA_BABA_BANANA)
+                if (top.varbit(Varbits.TOA_BOOK_BABA) == 0) add(Objs.TOA_BOOK_BABA)
+            }
         for (obj in drops) ToaKit.giveOrDrop(top, obj, "ba-ba drop")
     }
 
@@ -460,7 +477,12 @@ internal object ToaBaba : Boss(Npcs.TOA_BABA, Npcs.TOA_BABA_COFFIN, Npcs.TOA_BAB
     private const val SHOCKWAVE_MAX = 24
 
     /** BB5 (MT): 2250 / 2251 hit 6 / 4 ticks after they appear; 2252 inferred 2 (OPEN-BB6); "heavy" (OPEN-BB6: 40). */
-    private val ROCK_GFX = intArrayOf(tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL, tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL_FASTER, tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL_FASTEST)
+    private val ROCK_GFX =
+        intArrayOf(
+            tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL,
+            tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL_FASTER,
+            tp.symbols.SpotAnims.TOA_BABA_ROCK_FALL_FASTEST,
+        )
     private val ROCK_DELAY = intArrayOf(6, 4, 2)
     private const val ROCK_MAX = 40
     private const val DEBRIS_PER_FALL = 2
@@ -547,7 +569,12 @@ internal object ToaBabaBaboon : Boss(Npcs.TOA_BABA_BABOON) {
     }
 
     /** BB7: "players are guaranteed to land max hits on them" (10 HP): any landing hit kills. */
-    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int = if (source is PlayerRef) npc.hitpoints else damage
+    override fun incoming(
+        npc: NpcRef,
+        source: EntityRef?,
+        damage: Int,
+        style: HitStyle,
+    ): Int = if (source is PlayerRef) npc.hitpoints else damage
 
     override fun died(npc: NpcRef, killer: EntityRef?) {
         npc[Bosses.OWNER]?.let { ToaBaba.baboonDied(it, npc) }

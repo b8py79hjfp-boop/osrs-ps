@@ -28,7 +28,10 @@ internal object SpecialEffects {
 
     /** A special's energy after listeners (ToA Overly Draining / liquid adrenaline) had their say. */
     fun energy(player: PlayerRef, row: SpecialRow): Int =
-        tp.plugin.SpecialCostQuery(player, row.name, row.energy).also { player.events.publish(it) }.tenths
+        tp.plugin
+            .SpecialCostQuery(player, row.name, row.energy)
+            .also { player.events.publish(it) }
+            .tenths
 
     /** SP5: an instant attack special fires now at the current target, ignoring the attack clock. */
     fun instantAttack(player: PlayerRef) {

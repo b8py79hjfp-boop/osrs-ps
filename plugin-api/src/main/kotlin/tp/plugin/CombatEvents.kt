@@ -143,11 +143,12 @@ public object SharedAttrs {
     /** NPC attr: damage on this raid NPC earns no points while set (CoX: an Olm hand it has regained control of). */
     public val RAID_NO_POINTS: AttrKey<Boolean> = AttrKey("raid_no_points")
 
-    /**
-     * NPC attr: per-mille multipliers raid scaling puts on the NPC's rolls and damage (ToA toa.md TA31: the defence and
-     * attack rolls x (250 + RL) / 250, damage up to +150%), applied by the combat formulas: [RAID_DEFENCE_PERMILLE] on
-     * the defence roll against it, [RAID_ACCURACY_PERMILLE] on its attack roll, [RAID_DAMAGE_PERMILLE] on its max hit.
-     */
+    /** Player attr kept by a raid room: the player carries something a room NPC hunts (ToA Crondis: a non-empty water container). */
+    public val RAID_CARRYING: AttrKey<Boolean> = AttrKey("raid_carrying")
+
+    /** Player attr kept by a raid room: the room's recent trap hits on the player (ToA Crondis, CR7). */
+    public val RAID_TRAP_HITS: AttrKey<Int> = AttrKey("raid_trap_hits")
+
     /** NPC attr: the run's raid level (ToA TA10), for fights whose mechanics read it. */
     public val RAID_LEVEL: AttrKey<Int> = AttrKey("raid_level")
 
@@ -157,6 +158,11 @@ public object SharedAttrs {
     /** NPC attr: the names of the run's active modifiers (ToA invocations, cache names such as "Overclocked"). */
     public val RAID_MODIFIERS: AttrKey<Set<String>> = AttrKey("raid_modifiers")
 
+    /**
+     * NPC attr: per-mille multipliers raid scaling puts on the NPC's rolls and damage (ToA toa.md TA31: the defence and
+     * attack rolls x (250 + RL) / 250, damage up to +150%), applied by the combat formulas: [RAID_DEFENCE_PERMILLE] on
+     * the defence roll against it, [RAID_ACCURACY_PERMILLE] on its attack roll, [RAID_DAMAGE_PERMILLE] on its max hit.
+     */
     public val RAID_DEFENCE_PERMILLE: AttrKey<Int> = AttrKey("raid_defence_permille")
     public val RAID_ACCURACY_PERMILLE: AttrKey<Int> = AttrKey("raid_accuracy_permille")
     public val RAID_DAMAGE_PERMILLE: AttrKey<Int> = AttrKey("raid_damage_permille")

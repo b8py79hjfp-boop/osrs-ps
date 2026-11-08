@@ -31,6 +31,7 @@ import tp.util.CoordGrid
  *   / 20% (melee only, HP by players alive); phantoms in batches 2-3; below 5% the enrage: 20% heal, Defence 180,
  *   lightning, the floor rows torn away.
  */
+@Suppress("LargeClass") // one fight in three phases sharing one state; split by phase would scatter the shared transitions
 internal object ToaWardens : Boss(
     Npcs.TOA_WARDENS_P1_OBELISK_NPC,
     Npcs.TOA_WARDENS_P2_OBELISK_NPC,
@@ -128,14 +129,16 @@ internal object ToaWardens : Boss(
             npc.type == Npcs.TOA_WARDENS_P2_OBELISK_NPC -> 0
             npc.type in EXPOSED -> 0
             else -> damage
-        }
-            .also { if (s.phase == Phase.ONE && npc != s.obelisk) return 0 }
+        }.also { if (s.phase == Phase.ONE && npc != s.obelisk) return 0 }
     }
 
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc) ?: return
         when {
-            npc == s.obelisk && s.phase == Phase.ONE -> floorDefence(npc, OBELISK_DRAIN)
+            npc == s.obelisk && s.phase == Phase.ONE -> {
+                floorDefence(npc, OBELISK_DRAIN)
+            }
+
             npc.type in P3_FORMS -> {
                 floorDefence(npc, if (s.enraged) P3_DRAIN_ENRAGED else P3_DRAIN)
                 p3Thresholds(npc, s)
@@ -168,7 +171,9 @@ internal object ToaWardens : Boss(
                 true
             }
 
-            else -> false
+            else -> {
+                false
+            }
         }
     }
 
@@ -222,7 +227,7 @@ internal object ToaWardens : Boss(
             npc.addLoc(if (it % 2 == 0) Locs.TOA_WARDENS_PYRAMID01 else Locs.TOA_WARDENS_PYRAMID02, at, CENTREPIECE, 0, UFO_LIFE)
             npc.queueHit(UFO_DELAY, strong = false) {
                 if (!npc.isInWorld) return@queueHit
-                for (p in ToaKit.on(npc, at, 1)) ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, UFO_MAX, pathScaled = false)))
+                for (p in ToaKit.on(npc, at, 1)) ToaKit.hitRolled(npc, p, UFO_MAX, pathScaled = false)
             }
         }
     }
@@ -263,9 +268,10 @@ internal object ToaWardens : Boss(
         s.foughtElidinis = tumekenFalls
         val falling = if (tumekenFalls) s.tumeken else s.elidinis
         val rising = if (tumekenFalls) s.elidinis else s.tumeken
-        falling?.transform(if (tumekenFalls) Npcs.TOA_WARDEN_TUMEKEN_PHASE3_INACTIVE else Npcs.TOA_WARDEN_ELIDINIS_PHASE3_INACTIVE, restoreStats = false)
+        val fallen = if (tumekenFalls) Npcs.TOA_WARDEN_TUMEKEN_PHASE3_INACTIVE else Npcs.TOA_WARDEN_ELIDINIS_PHASE3_INACTIVE
+        falling?.transform(fallen, restoreStats = false)
         for (p in ToaKit.raiders(npc)) {
-            p.message(if (tumekenFalls) "As Tumeken's Warden falls, Elidinis' Warden powers up!" else "As Elidinis' Warden falls, Tumeken's Warden powers up!")
+            p.message(if (tumekenFalls) TUMEKEN_FALLS else ELIDINIS_FALLS)
         }
         npc.transform(Npcs.TOA_WARDENS_P2_OBELISK_NPC, restoreStats = false)
         npc.hitpoints = npc.maxHitpoints
@@ -330,14 +336,20 @@ internal object ToaWardens : Boss(
 
     /** WD19 (OPEN-WD8): overheads off, a melee / ranged / magic projectile at everyone; the matching prayer at arrival blocks it. */
     private fun divine(npc: NpcRef) {
-        val styles = listOf(CombatStyle.MELEE to (SpotAnims.TOA_WARDENS_PRAYER_MELEE_TRAVEL), CombatStyle.RANGED to SpotAnims.TOA_WARDENS_PRAYER_RANGED_TRAVEL, CombatStyle.MAGIC to SpotAnims.TOA_WARDENS_PRAYER_MAGIC_TRAVEL)
+        val styles =
+            listOf(
+                CombatStyle.MELEE to SpotAnims.TOA_WARDENS_PRAYER_MELEE_TRAVEL,
+                CombatStyle.RANGED to SpotAnims.TOA_WARDENS_PRAYER_RANGED_TRAVEL,
+                CombatStyle.MAGIC to SpotAnims.TOA_WARDENS_PRAYER_MAGIC_TRAVEL,
+            )
         val (style, gfx) = styles[npc.random(styles.size)]
         for (p in ToaKit.raiders(npc)) {
             p.disableProtection(DIVINE_DISABLE)
             BossCombat.projectile(npc, p, gfx, DIVINE_DELAY)
             npc.queueHit(DIVINE_DELAY, strong = false) {
                 if (state(npc)?.core != null) return@queueHit
-                CombatSystem.queueHit(p, npc, if (p.protects(style)) 0 else BossCombat.roll(npc, 1, ToaKit.dmg(npc, DIVINE_MAX, pathScaled = false)), HitStyle.TYPELESS, 0)
+                val dmg = if (p.protects(style)) 0 else BossCombat.roll(npc, 1, ToaKit.dmg(npc, DIVINE_MAX, pathScaled = false))
+                CombatSystem.queueHit(p, npc, dmg, HitStyle.TYPELESS, 0)
             }
         }
     }
@@ -355,7 +367,7 @@ internal object ToaWardens : Boss(
             p.anim(Seqs.TOA_WARDENS_ENTOMB_LOOP)
             ToaKit.stun(p, ENTOMB_TICKS)
             p.stopInteraction()
-            ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, ENTOMB_MAX, pathScaled = false)))
+            ToaKit.hitRolled(npc, p, ENTOMB_MAX, pathScaled = false)
         }
     }
 
@@ -365,16 +377,19 @@ internal object ToaWardens : Boss(
         // WD26: a "down" (the points stop after the third).
         ToaKit.signal(npc, null, "toa.wardens.down")
         npc.stopInteraction()
-        npc.transform(if (s.foughtElidinis) Npcs.TOA_WARDEN_ELIDINIS_PHASE2_EXPOSED else Npcs.TOA_WARDEN_TUMEKEN_PHASE2_EXPOSED, restoreStats = false)
+        val exposed = if (s.foughtElidinis) Npcs.TOA_WARDEN_ELIDINIS_PHASE2_EXPOSED else Npcs.TOA_WARDEN_TUMEKEN_PHASE2_EXPOSED
+        npc.transform(exposed, restoreStats = false)
         npc.hitpoints = 1
         val pct = s.realHp * PERCENT / maxOf(1, s.realMax)
-        s.exposedFor = when {
-            pct >= EXPOSE_HIGH -> EXPOSE_LONG_HIGH
-            pct >= EXPOSE_MID -> EXPOSE_LONG_MID
-            else -> EXPOSE_LONG_LOW
-        }
+        s.exposedFor =
+            when {
+                pct >= EXPOSE_HIGH -> EXPOSE_LONG_HIGH
+                pct >= EXPOSE_MID -> EXPOSE_LONG_MID
+                else -> EXPOSE_LONG_LOW
+            }
         val coreType = if (s.foughtElidinis) Npcs.TOA_WARDEN_ELIDINIS_CORE else Npcs.TOA_WARDEN_TUMEKEN_CORE
-        s.core = Bosses.summon(npc, coreType, CoordGrid(npc.coord.x + 2, npc.coord.z - 2, npc.coord.level), huntRange = 0, inheritRun = true)
+        val coreAt = CoordGrid(npc.coord.x + 2, npc.coord.z - 2, npc.coord.level)
+        s.core = Bosses.summon(npc, coreType, coreAt, huntRange = 0, inheritRun = true)
         s.core?.let { it[STATE] = s }
     }
 
@@ -418,7 +433,8 @@ internal object ToaWardens : Boss(
 
     private fun obeliskHit(npc: NpcRef, p: PlayerRef) {
         val pen = ToaKit.has(npc, PENETRATION)
-        val dmg = BossCombat.roll(npc, 1, ToaKit.dmg(npc, if (pen) OBELISK_MAX * PEN_PERCENT / PERCENT else OBELISK_MAX, pathScaled = false))
+        val base = if (pen) OBELISK_MAX * PEN_PERCENT / PERCENT else OBELISK_MAX
+        val dmg = BossCombat.roll(npc, 1, ToaKit.dmg(npc, base, pathScaled = false))
         ToaKit.areaHit(npc, p, dmg)
         if (pen) p.disableProtection(PEN_DISABLE)
     }
@@ -499,7 +515,8 @@ internal object ToaWardens : Boss(
         s.obelisk.spotAnim(SpotAnims.OBELISK_EXPLODE_ENERGY)
         // WD32: the warped room (region 15696, two squares east): its frame is the obelisk's shifted by 128 tiles.
         val f0 = CoxKit.frame(s.obelisk) ?: return
-        val f3 = RaidRoomFrame(CoordGrid(f0.origin.x + P3_SHIFT, f0.origin.z, 0), 0, f0.size, CoordGrid(f0.template.x + P3_SHIFT, f0.template.z, 0))
+        val origin = CoordGrid(f0.origin.x + P3_SHIFT, f0.origin.z, 0)
+        val f3 = RaidRoomFrame(origin, 0, f0.size, CoordGrid(f0.template.x + P3_SHIFT, f0.template.z, 0))
         s.p3Frame = f3
         val type = if (s.foughtElidinis) Npcs.TOA_WARDEN_TUMEKEN_PHASE3 else Npcs.TOA_WARDEN_ELIDINIS_PHASE3
         val p3 = Bosses.summon(s.obelisk, type, tile(f3, P3_WARDEN), huntRange = 0, inheritRun = true, scale = true)
@@ -513,7 +530,8 @@ internal object ToaWardens : Boss(
         for (m in Bosses.minions(s.obelisk)) if (m != p3) m.despawn()
     }
 
-    private fun tile(f: RaidRoomFrame, t: CoordGrid): CoordGrid = CoordGrid(f.origin.x + t.x - f.template.x, f.origin.z + t.z - f.template.z, t.level)
+    private fun tile(f: RaidRoomFrame, t: CoordGrid): CoordGrid =
+        CoordGrid(f.origin.x + t.x - f.template.x, f.origin.z + t.z - f.template.z, t.level)
 
     // ---- phase 3
 
@@ -531,12 +549,13 @@ internal object ToaWardens : Boss(
 
     /** WD33 / WD34 (Main's reading, base 6): right (east), left (west), both; Overclocked 5, Overclocked 2 4, Insanity 3. */
     private fun slamTick(w: NpcRef, s: State) {
-        val interval = when {
-            ToaKit.has(w, INSANITY) -> SLAM_INSANITY
-            ToaKit.has(w, OVERCLOCKED_2) -> SLAM_OC2
-            ToaKit.has(w, OVERCLOCKED) -> SLAM_OC
-            else -> SLAM_BASE
-        }
+        val interval =
+            when {
+                ToaKit.has(w, INSANITY) -> SLAM_INSANITY
+                ToaKit.has(w, OVERCLOCKED_2) -> SLAM_OC2
+                ToaKit.has(w, OVERCLOCKED) -> SLAM_OC
+                else -> SLAM_BASE
+            }
         if (++s.slamTimer < interval) return
         s.slamTimer = 0
         val kind = s.slam++ % SLAM_KINDS
@@ -550,11 +569,12 @@ internal object ToaWardens : Boss(
         val centreX = w.coord.x + WARDEN_SIZE / 2
         for (p in ToaKit.raiders(w)) {
             val dx = p.coord.x - centreX
-            val hit = when (kind) {
-                0 -> dx >= 0
-                1 -> dx <= 0
-                else -> kotlin.math.abs(dx) > 1
-            }
+            val hit =
+                when (kind) {
+                    0 -> dx >= 0
+                    1 -> dx <= 0
+                    else -> kotlin.math.abs(dx) > 1
+                }
             if (!hit) continue
             w.spotAnimAt(p.coord, UNDERTILE[npcRandom(w)])
             ToaKit.areaHit(w, p, BossCombat.roll(w, 1, ToaKit.dmg(w, P3_MAX, pathScaled = false)))
@@ -580,16 +600,19 @@ internal object ToaWardens : Boss(
     private val SIPHON_DEADLINE = AttrKey<Long>("toa_wardens_siphon_deadline")
 
     /** WD37 / WD40 (OPEN-WD11): siphons (HP 1 / 2 / 3 / 4 by players alive), a window of 20 ticks (+3 in groups, Insanity -5). */
+    @Suppress("CyclomaticComplexMethod") // the siphon HP bands, layout, window and the phantom pairing in one place
     private fun siphons(w: NpcRef, s: State) {
-        w.transform(if (s.foughtElidinis) Npcs.TOA_WARDEN_TUMEKEN_PHASE3_CHARGING else Npcs.TOA_WARDEN_ELIDINIS_PHASE3_CHARGING, restoreStats = false)
+        val charging = if (s.foughtElidinis) Npcs.TOA_WARDEN_TUMEKEN_PHASE3_CHARGING else Npcs.TOA_WARDEN_ELIDINIS_PHASE3_CHARGING
+        w.transform(charging, restoreStats = false)
         w.anim(Seqs.NPC_WARDENS_CHARGE01)
         val alive = ToaKit.raiders(w).size
-        val hp = when {
-            alive >= 8 -> 4
-            alive >= 6 -> 3
-            alive >= 4 -> 2
-            else -> 1
-        }
+        val hp =
+            when {
+                alive >= 8 -> 4
+                alive >= 6 -> 3
+                alive >= 4 -> 2
+                else -> 1
+            }
         val layout = if (alive <= 1) SIPHONS_SOLO else SIPHONS_GROUP
         for (t in layout) {
             val at = tile(s.p3Frame ?: return, t)
@@ -606,13 +629,15 @@ internal object ToaWardens : Boss(
         // WD41: phantoms in the 2nd and 3rd batches (Elidinis: Akkha then Kephri; Tumeken: Zebak then Ba-Ba).
         if (s.siphonBatch in 2..3) {
             s.phantom?.despawn()
-            val type = when {
-                !s.foughtElidinis && s.siphonBatch == 2 -> Npcs.TOA_WARDENS_AKKHA
-                !s.foughtElidinis -> Npcs.TOA_WARDENS_KEPHRI
-                s.siphonBatch == 2 -> Npcs.TOA_WARDENS_ZEBAK
-                else -> Npcs.TOA_WARDENS_BABA
-            }
-            s.phantom = Bosses.summon(s.obelisk, type, tile(s.p3Frame ?: return, PHANTOM_SPOT), huntRange = 0, inheritRun = true).also { it.frozenUntil = Long.MAX_VALUE }
+            val type =
+                when {
+                    !s.foughtElidinis && s.siphonBatch == 2 -> Npcs.TOA_WARDENS_AKKHA
+                    !s.foughtElidinis -> Npcs.TOA_WARDENS_KEPHRI
+                    s.siphonBatch == 2 -> Npcs.TOA_WARDENS_ZEBAK
+                    else -> Npcs.TOA_WARDENS_BABA
+                }
+            val spot = tile(s.p3Frame ?: return, PHANTOM_SPOT)
+            s.phantom = Bosses.summon(s.obelisk, type, spot, huntRange = 0, inheritRun = true).also { it.frozenUntil = Long.MAX_VALUE }
         }
     }
 
@@ -627,10 +652,11 @@ internal object ToaWardens : Boss(
         val deadline = w[SIPHON_DEADLINE] ?: return
         val left = Bosses.minions(s.obelisk, Npcs.TOA_WARDENS_ENERGY)
         if (left.isEmpty()) {
-            val n = when (ToaKit.raiders(w).size) {
-                1 -> SIPHONS_SOLO.size
-                else -> SIPHONS_GROUP.size
-            }
+            val n =
+                when (ToaKit.raiders(w).size) {
+                    1 -> SIPHONS_SOLO.size
+                    else -> SIPHONS_GROUP.size
+                }
             CombatSystem.queueHit(w, null, minOf(w.hitpoints - 1, w.maxHitpoints * SIPHON_HIT_PERCENT * n / PERCENT), HitStyle.TYPELESS, 0)
             endSiphons(w, s, reset = !ToaKit.has(w, INSANITY))
             return
@@ -658,7 +684,8 @@ internal object ToaWardens : Boss(
         w.anim(Seqs.NPC_WARDENS_ENRAGING01)
         w.hitpoints = minOf(w.maxHitpoints, w.hitpoints + w.maxHitpoints * ENRAGE_HEAL / PERCENT)
         w.setLevel(NpcStat.DEFENCE, ENRAGE_DEFENCE)
-        Bosses.summon(s.obelisk, Npcs.TOA_AMASCUT_P3_ENRAGE, tile(s.p3Frame ?: return, AMASCUT_SPOT), huntRange = 0, inheritRun = true).frozenUntil = Long.MAX_VALUE
+        val spot = tile(s.p3Frame ?: return, AMASCUT_SPOT)
+        Bosses.summon(s.obelisk, Npcs.TOA_AMASCUT_P3_ENRAGE, spot, huntRange = 0, inheritRun = true).frozenUntil = Long.MAX_VALUE
     }
 
     /** WD43 / WD44 (OPEN-WD13): a strike every 2 ticks (Insanity 1), a row torn away every 10 ticks (Insanity 6) up to the Warden's row. */
@@ -672,7 +699,7 @@ internal object ToaWardens : Boss(
                 val tile = target.coord
                 w.spotAnimAt(tile, SpotAnims.WARDENS_LIGHTNING)
                 w.queueHit(LIGHTNING_DELAY, strong = false) {
-                    for (p in ToaKit.on(w, tile)) ToaKit.areaHit(w, p, BossCombat.roll(w, 1, ToaKit.dmg(w, LIGHTNING_MAX, pathScaled = false)))
+                    for (p in ToaKit.on(w, tile)) ToaKit.hitRolled(w, p, LIGHTNING_MAX, pathScaled = false)
                 }
             }
         }
@@ -711,14 +738,16 @@ internal object ToaWardens : Boss(
                 BossCombat.projectile(ph, p, if (magic) ZEBAK_MAGIC else ZEBAK_RANGED, PHANTOM_DELAY)
                 val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
                 val raw = BossCombat.roll(ph, 1, ToaKit.dmg(ph, PHANTOM_MAX, pathScaled = false))
-                ph.queueHit(PHANTOM_DELAY, strong = false) { CombatSystem.queueHit(p, ph, ToaKit.afterPrayer(ph, p, style, raw), CombatSystem.hitStyle(style), 0) }
+                ph.queueHit(PHANTOM_DELAY, strong = false) {
+                    CombatSystem.queueHit(p, ph, ToaKit.afterPrayer(ph, p, style, raw), CombatSystem.hitStyle(style), 0)
+                }
             }
 
             Npcs.TOA_WARDENS_BABA -> {
                 val tile = p.coord
                 ph.spotAnimAt(tile, SpotAnims.TOA_BABA_ROCK_FALL)
                 ph.queueHit(BABA_ROCK_DELAY, strong = false) {
-                    for (v in ToaKit.on(ph, tile)) ToaKit.areaHit(ph, v, BossCombat.roll(ph, 1, ToaKit.dmg(ph, PHANTOM_MAX, pathScaled = false)))
+                    for (v in ToaKit.on(ph, tile)) ToaKit.hitRolled(ph, v, PHANTOM_MAX, pathScaled = false)
                 }
             }
 
@@ -727,7 +756,7 @@ internal object ToaWardens : Boss(
                 val r = if (ToaKit.has(ph, AERIAL_ASSAULT)) 1 else 0
                 ph.queueHit(KEPHRI_DELAY, strong = false) {
                     ph.spotAnimAt(tile, KEPHRI_IMPACT)
-                    for (v in ToaKit.on(ph, tile, r)) ToaKit.areaHit(ph, v, BossCombat.roll(ph, 1, ToaKit.dmg(ph, PHANTOM_MAX, pathScaled = false)))
+                    for (v in ToaKit.on(ph, tile, r)) ToaKit.hitRolled(ph, v, PHANTOM_MAX, pathScaled = false)
                 }
             }
         }
@@ -919,6 +948,8 @@ internal object ToaWardens : Boss(
     private val P3_FORMS = setOf(Npcs.TOA_WARDEN_ELIDINIS_PHASE3, Npcs.TOA_WARDEN_TUMEKEN_PHASE3)
     private val P3_CHARGING = setOf(Npcs.TOA_WARDEN_ELIDINIS_PHASE3_CHARGING, Npcs.TOA_WARDEN_TUMEKEN_PHASE3_CHARGING)
 
+    private const val TUMEKEN_FALLS = "As Tumeken's Warden falls, Elidinis' Warden powers up!"
+    private const val ELIDINIS_FALLS = "As Elidinis' Warden falls, Tumeken's Warden powers up!"
     private const val ANCIENT_HASTE = "Ancient Haste"
     private const val ACCELERATION = "Acceleration"
     private const val PENETRATION = "Penetration"
@@ -930,7 +961,7 @@ internal object ToaWardens : Boss(
 
 /** The Wardens' cores (WD24: hits count five times on the Warden; the core itself takes nothing) and the siphons (WD37). */
 internal object ToaWardensParts : Boss(Npcs.TOA_WARDEN_TUMEKEN_CORE, Npcs.TOA_WARDEN_ELIDINIS_CORE, Npcs.TOA_WARDENS_ENERGY) {
-    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {}
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) = Unit
 
     override fun retaliates(npc: NpcRef): Boolean = false
 

@@ -97,7 +97,13 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
             melee(npc, enraged)
             return
         }
-        if (npc.random(2) == 0) projectile(npc, victim, magic = true, enraged = enraged) else projectile(npc, victim, magic = false, enraged = enraged)
+        if (npc.random(2) ==
+            0
+        ) {
+            projectile(npc, victim, magic = true, enraged = enraged)
+        } else {
+            projectile(npc, victim, magic = false, enraged = enraged)
+        }
     }
 
     /** ZB2 / ZB16 / OPEN-ZB4: 7 / 4; path level 2-3: 6 / 3; 4+: 5 / 2. */
@@ -205,8 +211,10 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
                         continue
                     }
                     p.spotAnim(ROAR_DUST)
-                    ToaKit.areaHit(npc, p, BossCombat.roll(npc, 1, ToaKit.dmg(npc, ROAR_MAX)))
-                    p.teleport(CoordGrid(minOf(p.coord.x + ROAR_KNOCK, ToaKit.at(npc, CoordGrid(ARENA_MAX_X, 0)).x), p.coord.z, p.coord.level))
+                    ToaKit.hitRolled(npc, p, ROAR_MAX)
+                    p.teleport(
+                        CoordGrid(minOf(p.coord.x + ROAR_KNOCK, ToaKit.at(npc, CoordGrid(ARENA_MAX_X, 0)).x), p.coord.z, p.coord.level),
+                    )
                 }
             }
         }
@@ -253,7 +261,11 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
             val raw = BossCombat.roll(npc, BLITZ_MIN, ToaKit.dmg(npc, BLITZ_MAX)) + near * BLITZ_PER_NEIGHBOUR
             val damage = ToaKit.afterPrayer(npc, p, CombatStyle.MAGIC, raw)
             CombatSystem.queueHit(p, npc, damage, HitStyle.MAGIC, BLITZ_DELAY) {
-                if (damage > 0) npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + damage * (if (spray) SPRAY_HEAL else BLITZ_HEAL) / PERCENT)
+                if (damage >
+                    0
+                ) {
+                    npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + damage * (if (spray) SPRAY_HEAL else BLITZ_HEAL) / PERCENT)
+                }
             }
         }
     }
@@ -263,7 +275,13 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
         val thin = ToaKit.has(npc, BLOOD_THINNERS)
         repeat(if (thin) THIN_CLOUDS else 1) { i ->
             val ramp = RAMPS[(i + npc.random(2)) % RAMPS.size]
-            Bosses.summon(npc, if (thin) Npcs.TOA_ZEBAK_BLOOD_CLOUD_SMALL else Npcs.TOA_ZEBAK_BLOOD_CLOUD, ToaKit.at(npc, ramp), huntRange = HUNT, inheritRun = true)
+            Bosses.summon(
+                npc,
+                if (thin) Npcs.TOA_ZEBAK_BLOOD_CLOUD_SMALL else Npcs.TOA_ZEBAK_BLOOD_CLOUD,
+                ToaKit.at(npc, ramp),
+                huntRange = HUNT,
+                inheritRun = true,
+            )
         }
     }
 
@@ -373,7 +391,11 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
     }
 
     private fun arenaTile(npc: NpcRef): CoordGrid =
-        BossCombat.randomTile(npc, ToaKit.at(npc, CoordGrid((ARENA_MIN_X + ARENA_MAX_X) / 2, (ARENA_MIN_Z + ARENA_MAX_Z) / 2, ARENA_LEVEL)), ARENA_RADIUS)
+        BossCombat.randomTile(
+            npc,
+            ToaKit.at(npc, CoordGrid((ARENA_MIN_X + ARENA_MAX_X) / 2, (ARENA_MIN_Z + ARENA_MAX_Z) / 2, ARENA_LEVEL)),
+            ARENA_RADIUS,
+        )
 
     /** ZB18: Crondis' capture (if not read) and the Fang to the top damage dealer. */
     override fun died(npc: NpcRef, killer: EntityRef?) {
@@ -489,7 +511,7 @@ internal object ToaZebak : Boss(Npcs.TOA_ZEBAK, Npcs.TOA_ZEBAK_ENRAGED) {
 
 /** Zebak's jugs: Push / Pull / Hit (ZB8). */
 internal object ToaZebakJug : Boss(Npcs.TOA_ZEBAK_JUG, Npcs.TOA_ZEBAK_JUG_ROLLING) {
-    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {}
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) = Unit
 
     override fun retaliates(npc: NpcRef): Boolean = false
 

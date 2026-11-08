@@ -313,6 +313,9 @@ internal object ToaHet {
         show(run, player, x, y, cell)
     }
 
+    /** HE7: whether the Seal is in its weakened window (the beam and the orbs pause). */
+    fun sealWeakened(run: RaidRun, any: EntityRef): Boolean = (store[any, run]?.weakUntil ?: -1L) >= 0
+
     /** HE3 / OPEN-PZ25: a mirror hit by an orb turns dirty (hook for the orb AI). */
     fun dirtyMirrorAt(run: RaidRun, any: EntityRef, at: CoordGrid) {
         val s = store[any, run] ?: return

@@ -160,7 +160,10 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
         }
     }
 
-    /** AK6: everyone in the arena; damage fixed at launch, prayer read at launch (~15% through). Keep Back: a melee hit on players next to him. */
+    /**
+     * AK6: everyone in the arena; damage fixed at launch, prayer read at launch (~15% through). Keep Back: a melee hit on
+     * players next to him.
+     */
     private fun ranged(npc: NpcRef, s: State, style: Style) {
         npc.anim(if (style == Style.MAGIC) Seqs.NPC_AKKHA_ATTACK_MAGIC_SWORD else Seqs.NPC_AKKHA_ATTACK_RANGED_SWORD)
         val max = ToaKit.dmg(npc, MAX_HIT)
@@ -186,13 +189,23 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
 
     /** AK4 / OPEN-AK9: specials in turn (Detonate only in groups); Double Trouble uses two at once. */
     private fun special(npc: NpcRef, s: State) {
-        val pool = buildList {
-            add(0)
-            add(1)
-            if (ToaKit.raiders(npc).size > 1) add(2)
-        }
+        val pool =
+            buildList {
+                add(0)
+                add(1)
+                if (ToaKit.raiders(npc).size > 1) add(2)
+            }
         val first = pool[(s.attacks / SPECIAL_CYCLE) % pool.size]
-        val picks = if (ToaKit.has(npc, DOUBLE_TROUBLE)) listOf(first, pool[(pool.indexOf(first) + 1) % pool.size]).distinct() else listOf(first)
+        val picks =
+            if (ToaKit.has(
+                    npc,
+                    DOUBLE_TROUBLE,
+                )
+            ) {
+                listOf(first, pool[(pool.indexOf(first) + 1) % pool.size]).distinct()
+            } else {
+                listOf(first)
+            }
         for (k in picks) {
             when (k) {
                 0 -> memoryBlast(npc, s)
@@ -254,18 +267,25 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
         }
     }
 
-    /** AK7 (OPEN-AK12 durations): burn 5 a hit every 4 ticks x5; darkness -3 combat stats; lightning protection off 8 ticks; ice +1 tick for 10. */
+    /**
+     * AK7 (OPEN-AK12 durations): burn 5 a hit every 4 ticks x5; darkness -3 combat stats; lightning protection off 8
+     * ticks; ice +1 tick for 10.
+     */
     private fun effect(npc: NpcRef, p: PlayerRef, q: Quadrant) {
         val s = state(npc)
         when (q) {
-            Quadrant.BURN -> s.burns[p] = BURN_HITS
+            Quadrant.BURN -> {
+                s.burns[p] = BURN_HITS
+            }
 
             Quadrant.DARKNESS -> {
                 for (stat in COMBAT_STATS) p.setLevel(stat, maxOf(1, p.level(stat) - DARK_DRAIN))
                 s.dark[p] = DARK_TICKS
             }
 
-            Quadrant.LIGHTNING -> p.disableProtection(LIGHTNING_TICKS)
+            Quadrant.LIGHTNING -> {
+                p.disableProtection(LIGHTNING_TICKS)
+            }
 
             Quadrant.ICE -> {
                 p[ToaKit.ICE_UNTIL] = p.tick + ICE_TICKS
@@ -283,6 +303,7 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
     private val LAST_TILE = AttrKey<CoordGrid>("toa_akkha_last_tile")
     private val ORB_LIFE = AttrKey<Int>("toa_akkha_orb_life")
 
+    @Suppress("CyclomaticComplexMethod") // spawning and detonating the trailing orbs in one pass
     private fun orbsTick(npc: NpcRef, s: State) {
         if (s.orbTicks > 0) {
             s.orbTicks--
@@ -311,7 +332,25 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
             if (victim != null) {
                 npc.spotAnimAt(orb.coord, q.gfx)
                 // OrbD: darkness orbs deal low rapid damage; the rest a heavy hit.
-                ToaKit.areaHit(npc, victim, BossCombat.roll(npc, 1, ToaKit.dmg(npc, if (q == Quadrant.DARKNESS) DARK_ORB_MAX else ORB_MAX)), ORB_DELAY)
+                ToaKit.areaHit(
+                    npc,
+                    victim,
+                    BossCombat.roll(
+                        npc,
+                        1,
+                        ToaKit.dmg(
+                            npc,
+                            if (q ==
+                                Quadrant.DARKNESS
+                            ) {
+                                DARK_ORB_MAX
+                            } else {
+                                ORB_MAX
+                            },
+                        ),
+                    ),
+                    ORB_DELAY,
+                )
                 effect(npc, victim, q)
             }
             orb.despawn()
@@ -331,7 +370,11 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
     private fun detonateTick(npc: NpcRef, s: State) {
         if (s.detonateIn < 0) return
         if (s.detonateIn-- > 0) return
-        val stacked = s.marked.map { it.coord }.distinct().size == 1
+        val stacked =
+            s.marked
+                .map { it.coord }
+                .distinct()
+                .size == 1
         if (stacked) return
         val cross = ToaKit.has(npc, FEELING_SPECIAL) && s.marked.size > 1
         for (bomb in s.marked) {
@@ -342,8 +385,8 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
                 val plus = dx == 0 || dz == 0
                 val x = cross && kotlin.math.abs(dx) == kotlin.math.abs(dz)
                 if (plus || x) {
-                    ToaKit.areaHit(npc, other, BossCombat.roll(npc, 1, ToaKit.dmg(npc, DETONATE_MAX)))
-                    ToaKit.areaHit(npc, bomb, BossCombat.roll(npc, 1, ToaKit.dmg(npc, DETONATE_MAX)))
+                    ToaKit.hitRolled(npc, other, DETONATE_MAX)
+                    ToaKit.hitRolled(npc, bomb, DETONATE_MAX)
                 }
             }
         }
@@ -392,7 +435,10 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
         }
     }
 
-    /** AK12: unstable orbs from his corner in a straight line; the first player in the way takes min(25, scaled), Protect from Magic -25% first. */
+    /**
+     * AK12: unstable orbs from his corner in a straight line; the first player in the way takes min(25, scaled), Protect
+     * from Magic -25% first.
+     */
     private fun finalTick(npc: NpcRef, s: State) {
         if (!s.final) return
         if (++s.orbEvery >= UNSTABLE_EVERY) {
@@ -554,7 +600,7 @@ internal object ToaAkkha : Boss(*(Npcs.AKKHA_SPAWN..Npcs.AKKHA_ENRAGE_DUMMY).toL
 
 /** Akkha's shadows (AK11): no attacks of their own; a death opens its quadrant. */
 internal object ToaAkkhaShadow : Boss(Npcs.AKKHA_SHADOW) {
-    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {}
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) = Unit
 
     override fun retaliates(npc: NpcRef): Boolean = false
 
