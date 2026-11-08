@@ -28,3 +28,13 @@ below list only what a source states; everything else is `OPEN` and gets a named
   Stomp covers the arena: hide behind the Smorks' cart.
 - **BK3 enrage:** Bork dies first → the Smorks attack much faster, hit everyone and their auto-attacks hit harder; the Smorks die first → Bork stomps
   the whole arena for heavy melee damage. **OPEN-BK3:** every tick timing and max hit.
+
+## As implemented (content/combat TfaBork.kt)
+
+- Bork: shockwave on everyone within 2 tiles of his 4x4 plus his target (OPEN-BK1: max 40, the first attack x1.5 when
+  the target is out of melee range); "Bork smash <name> now" re-targets every 5th attack (OPEN-BK4); flat armour
+  8 + 2 per 25% of Smorks damage (max 14), 0 while stunned; with the Smorks dead he stomps the arena (OPEN-BK3: 50).
+- Smorks: volleys at everyone Bork is not focused on (OPEN-BK5: max 25, alternating ranged/magic; x1.5 and speed 3
+  once Bork is dead); oil every 4th attack, 3x3 for 8 ticks at 6-7 per tick (OPEN-BK6); a heavy cannonball every 6th
+  at a player, 20 within 1 tile, stunning Bork for 8 ticks when it lands next to or on him (OPEN-BK7).
+- Both attack from every 7 ticks down to 4 as the Smorks' HP falls (OPEN-BK3). The room ends when both are dead.

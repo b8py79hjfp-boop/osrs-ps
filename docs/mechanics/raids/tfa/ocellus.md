@@ -51,3 +51,20 @@ below list only what a source states; everything else is `OPEN` and gets a named
 ## Tick timeline (stated parts)
 
 - P3 Prayer special: 3-tick window to deactivate, then a 1-tick window to reactivate. P4: explosions every 2 ticks × 6.
+
+## As implemented (content/combat TfaOcellus.kt)
+
+- P1 (16674, scaled P1 HP): alternating ranged/magic (24), a slam (35) on players within 2 tiles, every eighth attack a
+  corner channel of seven tendrils (unmitigated: +20 HP each; a mitigating player takes 5; OPEN-OC10); at 66% and 25%
+  a centre blast: "Embrace... annihilation..." 80 if fewer than half the players stand on its eight tendrils, else
+  "Death... awaits..." 17 (OPEN-OC11).
+- P2 (16675, 1,000 HP, OPEN-OC2): purple portals, four per player, 20 damage after 2 ticks (OPEN-OC5); quadrants and
+  orange portals are not modelled. P3 starts when the Blade's pool is gone (OPEN-OC4) with the "remainder" HP minus
+  half the damage the Blade took.
+- P3 (16677): cycles of two melee (30; a 20 void shot at everyone when the target is out of reach) and a wave (25 at the
+  target and players next to them); every second cycle a special: Prayer (overheads still on after 3 ticks are turned
+  off, 20 damage; OPEN-OC7), Untether (40 beyond 2 tiles of him; OPEN-OC13), Prayer, Insolence (waves at three
+  players). Quadrants, tanks, rocks, censers and the vine are not modelled (OPEN-OC9).
+- P4 below 25% of P3's pool: melee halved (Deflect Melee), slow weapons 33/50/60% less, six void explosion cycles every
+  2 ticks then soul-split blasts (40-45 unprayed, 6-7 prayed, healing him a quarter; OPEN-OC8: style alternates).
+- His first action sets `TFA_OCELLUS_MET` for the players in the arena.

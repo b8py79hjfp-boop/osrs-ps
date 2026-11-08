@@ -436,6 +436,11 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
         n.transform(newType, restoreStats)
     }
 
+    /** Moves the NPC to [to] at once (boss teleports and jumps), dropping its route. */
+    public fun teleport(to: CoordGrid) {
+        n.world.teleport(n, to)
+    }
+
     /** Walks toward [to] (naive NPC stepping), replacing any route; the interaction, if any, keeps steering. */
     public fun walkTo(to: CoordGrid) {
         n.walkTo(to.x, to.z)

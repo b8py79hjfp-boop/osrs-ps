@@ -35,3 +35,13 @@ below list only what a source states; everything else is `OPEN` and gets a named
 ## Tick timeline (stated parts)
 
 - Lightning bursts at T and T+2. Enrage lightning: three patterns in a row; 11-tick cycle (scope OPEN-EZ4).
+
+## As implemented (content/combat TfaEzekiel.kt)
+
+- Cleave: every player adjacent to his 3x3 except the tile directly behind him (opposite the tank); magic at everyone
+  when the target is out of reach. Lightning (2 bursts, 2 ticks apart, a cross on every player) after each second
+  melee, then 3-4 swords on random players' rows or columns; the finale below 35% casts three lightning patterns per
+  11-tick cycle.
+- **OPEN-EZ6:** magic max 40 per player. **OPEN-EZ7:** lightning cross arm 2, 0-30 typeless per burst.
+  **OPEN-EZ8:** sword telegraph 4 ticks, line reach 10, stun 5 ticks; heal 50 (OPEN-EZ1). OPEN-EZ5 model: finale
+  damage x(0.5 + HP fraction). Perfect-dodge special energy is not modelled.

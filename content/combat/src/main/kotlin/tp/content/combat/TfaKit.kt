@@ -60,7 +60,7 @@ internal object TfaKit {
         t.level == npc.coord.level && t.x - npc.coord.x in 0 until npc.size && t.z - npc.coord.z in 0 until npc.size
 
     /** Chebyshev distance from [p] to the nearest tile of [npc]'s footprint (0 = underneath). */
-    fun gap(npc: NpcRef, p: PlayerRef): Int {
+    fun gap(npc: NpcRef, p: tp.plugin.EntityRef): Int {
         val dx = maxOf(npc.coord.x - p.coord.x, 0, p.coord.x - (npc.coord.x + npc.size - 1))
         val dz = maxOf(npc.coord.z - p.coord.z, 0, p.coord.z - (npc.coord.z + npc.size - 1))
         return maxOf(dx, dz)

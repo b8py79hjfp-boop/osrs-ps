@@ -22,3 +22,12 @@ below list only what a source states; everything else is `OPEN` and gets a named
   Undead Grasp (24 ticks under Mark of Darkness) stop them; fire spells make more. Two corpses healing him in a short window trigger an
   arena-wide blast (**OPEN-XA2**: window and damage).
 - 3 Nov: faster navigators; ranged sound quieter. **OPEN-XA3:** tick timings.
+
+## As implemented (content/combat TfaXarth.kt)
+
+- Phase 1: magic at the closest player (max 35, OPEN-XA1); every sixth attack binds everyone for 5 ticks and 4 ticks
+  later explodes: 45 with line of sight to him, 7 behind a pillar (OPEN-XA3). The shield halves damage until the first
+  explosion (OPEN-XA6). Burn stacks are not modelled.
+- Phase 2 at 50% HP (OPEN-XA7): melee (35) when adjacent, else ranged (30) rolled on impact; flames every third attack
+  on a player's tile spreading by one tile every 4 ticks three times (8 per tick, OPEN-XA4); a corpse every 15 ticks
+  from 12 tiles out walks to him and heals him for its HP; two heals within 10 ticks blast everyone for 30 (OPEN-XA2).

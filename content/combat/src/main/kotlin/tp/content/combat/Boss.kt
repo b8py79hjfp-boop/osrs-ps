@@ -72,6 +72,13 @@ internal object Bosses {
             TfaEzekiel,
             TfaBork,
             TfaSmorks,
+            TfaMoia,
+            TfaMoiaBinder,
+            TfaDreadnoth,
+            TfaDagonhai,
+            TfaXarth,
+            TfaXarthCorpse,
+            TfaOcellus,
         )
         ) {
             for (id in boss.ids) byType[id] = boss

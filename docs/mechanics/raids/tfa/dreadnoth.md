@@ -24,3 +24,11 @@ below list only what a source states; everything else is `OPEN` and gets a named
 - **DR3 enrage (25%):** "*glub glub*" — jumps and slams a random player, heals ~30-40 if they are underneath, then one
   ranged and one jelly-splatter projectile; no normal melee during the enrage.
 - **DR4 death:** explodes into jellies: **OPEN-DR2** (Strat: about ten at 50% HP; jelly page: always 7).
+
+## As implemented (content/combat TfaDreadnoth.kt)
+
+- Melee on everyone adjacent (max 45); at 85/65/45% one, two, three arena slams (max 45) each followed by three ranged
+  attacks; each slam leaves a 3x3 jelly puddle under every player for 10 ticks (6-8 per tick, OPEN-DR3) and spawns one
+  jelly per two players (OPEN-DR1); jellies under him are absorbed for their HP (OPEN-DR5). Below 25% he only jumps
+  on random players (heal 35 if they are underneath, OPEN-DR4) and follows with a ranged attack. Death: seven jellies
+  (OPEN-DR2).

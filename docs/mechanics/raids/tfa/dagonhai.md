@@ -30,3 +30,13 @@ below list only what a source states; everything else is `OPEN` and gets a named
   also "a single portal" at team size ≤ 4 and two corners for larger teams, "dropping three or two imps each"); players always max-hit imps. The fifth break
   explodes the cauldron: one monk dies, the rest are stunned at 7 HP.
 - 3 Nov: faster navigators; cauldron explosion bug fixed. **OPEN-DH3:** all tick timings.
+
+## As implemented (content/combat TfaDagonhai.kt)
+
+- One shield pool (640 at 1-2 players, other sizes by Ezekiel's ratios, OPEN-DH2) mirrored on all three; five breaks,
+  each restoring the shield (ritual -20%); the fifth turns them into the 7-HP unshielded types, kills a monk and stuns
+  the rest for 20 ticks. Members take turns: a 6-tick channel (one of the four DH4 chants; any magic hit interrupts it
+  and stuns the channeller for 5 ticks, +15% damage taken; OPEN-DH5: the element is not checked) or a tome (Zamorak
+  25 + 10 around the target, Bandos up to 55, Saradomin heals 10-20). An uninterrupted channel adds 25% to the ritual;
+  a full bar empowers all three (x1.5 for 30 ticks). Normal attacks: Elder 30, Monks 25 (OPEN-DH1); the Elder's hit
+  the target and players within 3 tiles. The cauldron (DH1) and the imp portals (OPEN-DH4) are not modelled.
