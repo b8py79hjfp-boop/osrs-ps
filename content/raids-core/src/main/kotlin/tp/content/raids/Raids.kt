@@ -274,6 +274,7 @@ public class Raids internal constructor() {
             // Members offline inside are out too: the failed run must close (they come back outside it).
             for (m in run.members.values) if (m.inside && !m.online) m.inside = false
             cleanup(dying, run)
+            run.raidEvent(dying, RaidEvent.Left(run, dying.username))
         }
 
         /** [player] leaves [run] (exit, escape, ejection): raid-only items removed, moved to the exit when [toExit]. */

@@ -44,7 +44,9 @@ internal object TfaHud {
             for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], orbs[k])
             if (state.hudSentTo.add(p.username) || state.hudDirty) {
                 p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
-                p.clientScript(SCRIPT_TIMER, (world.tick - run.startedTick).toInt(), 0)
+                val ended = run.state == RunState.Completed
+                val elapsed = (if (ended) run.endedTick else world.tick) - run.startedTick
+                p.clientScript(SCRIPT_TIMER, elapsed.toInt(), if (ended) 1 else 0)
             }
         }
         state.hudDirty = false
@@ -105,6 +107,9 @@ internal class TfaState {
     var nexusLevel: Int = 0
     var hudDirty: Boolean = true
     val hudSentTo: MutableSet<String> = HashSet()
+
+    /** Members whose own-chest slot (`TFA_VAULT_OWN_CHEST`) was set in this run's vault (the varbit outlives runs). */
+    val ownChestSet: MutableSet<String> = HashSet()
 
     /** Tick the vault chests appear (braziers lit), -1 = not due. */
     var chestsAt: Long = -1

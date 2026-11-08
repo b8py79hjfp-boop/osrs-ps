@@ -26,6 +26,7 @@ internal object TfaVault {
 
     /** The player's own chest slot (1-based party slot); also for a member who reconnects in the vault. */
     fun ownChest(p: tp.plugin.PlayerRef, run: RaidRun) {
+        TfaFlow.state(run).ownChestSet += p.username
         p.setVarbit(Varbits.TFA_VAULT_OWN_CHEST, run.party.members.indexOfFirst { it.equals(p.username, ignoreCase = true) } + 1)
         TfaChestUi.sync(p)
     }

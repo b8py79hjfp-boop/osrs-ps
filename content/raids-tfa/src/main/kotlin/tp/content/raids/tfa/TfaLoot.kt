@@ -30,7 +30,9 @@ internal object TfaLoot {
     /** TFA18 / TFA19: one roll for the team, then the recipient by contribution share. Null = no unique. */
     private fun uniqueRecipient(snap: RunSnapshot, points: Map<String, Double>, rng: RaidRng): String? {
         if (rng.nextDouble("unique") >= TfaRewards.uniqueChance(snap.partySize)) return null
-        val chances = TfaRewards.recipientChances(points)
+        val shares = TfaRewards.recipientChances(points)
+        // OPEN-TFA33: with no contribution at all (every member at 0) the unique goes to one of them evenly.
+        val chances = if (shares.values.sum() <= 0.0) shares.mapValues { 1.0 / shares.size } else shares
         var pick = rng.nextDouble("unique recipient")
         for ((name, share) in chances) {
             pick -= share

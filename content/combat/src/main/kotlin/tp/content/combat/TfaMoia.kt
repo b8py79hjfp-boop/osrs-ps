@@ -309,7 +309,10 @@ internal object TfaMoiaBinder : Boss(Npcs.TFA_MOIA_MINION) {
         npc.anim(Seqs.MOIA_MINION_ATTACK)
         if (p.coord == npc.coord) {
             npc.say("Grah!")
-            p.teleport(CoordGrid(p.coord.x + 1, p.coord.z, p.coord.level))
+            // Pushed to the first free neighbouring tile (never into a wall).
+            PUSH.firstOrNull { (dx, dz) -> npc.canStep(p.coord, dx, dz) }?.let { (dx, dz) ->
+                p.teleport(CoordGrid(p.coord.x + dx, p.coord.z + dz, p.coord.level))
+            }
         }
         val dmg = if (p.protects(CombatStyle.MELEE)) 0 else BossCombat.roll(npc, MIN_HIT, MAX_HIT)
         CombatSystem.queueHit(p, npc, dmg, HitStyle.MELEE, 0)
@@ -319,6 +322,8 @@ internal object TfaMoiaBinder : Boss(Npcs.TFA_MOIA_MINION) {
         npc.huntRange = REACH
     }
 
+    /** OPEN-MO10: the push direction is not captured; east first, then the other three. */
+    private val PUSH = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
     private const val REACH = 2
     private const val MIN_HIT = 4
     private const val MAX_HIT = 22

@@ -99,3 +99,9 @@ OPEN items:
 - **NX-F8** (QM3Nov "navigators to take you out of rooms"): once a side room is done an Alliance Navigator 16700 stands
   next to its entry; "Follow" / "Quick-follow" return the player to the nexus like the passageway and transporter.
   OPEN-NX9: arrival delay (it appears at once) and whether it walks the player (it teleports).
+
+## Leaving mid-raid (OPEN-TFA34)
+
+No source says how a player leaves the Archive before the vault. A side room's "Exit" passageway (62765), once its room
+is won, offers "Back to the nexus." / "Leave the Archive." / "Stay here."; leaving removes the raid-only items and ends
+the player's part in the run. During a fight the passage keeps refusing ("The transporter will not work...").

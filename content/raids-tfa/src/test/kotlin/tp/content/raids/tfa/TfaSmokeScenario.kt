@@ -87,6 +87,9 @@ class TfaSmokeScenario {
         assertTrue(a.messages.last().startsWith("The transporter will not work"), "exit refused during the fight")
         clear()
         loc(Locs.TFA_EXIT, CoordGrid(4085, 5533))
+        // OPEN-TFA34: the passage asks where to go; "Back to the nexus."
+        a.input(ClientCommand.ResumePause(tp.symbols.Components.Chatmenu.OPTIONS, 1))
+        tick(2)
         assertEquals(run.at(TfaRaid.NEXUS_RETURN), a.coord, "back in the nexus")
 
         // Section 2 east (Dreadnoth) by Quick-enter, back by its transporter; the Quartermaster arrives after room 3.

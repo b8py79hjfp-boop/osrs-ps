@@ -68,3 +68,5 @@ to 10; 6-8 follow the same step, **OPEN-MO2** settled). Hunt range 20. All coord
   no binder is left.
 - MO0: she appears at her start tile (W point), outside melee reach. Death: says "Hmph", removes the binders.
 - **OPEN-MO4** (shadow shield): not implemented.
+- **OPEN-MO10:** the "Grah!" push direction is not captured: the raider goes to the first free tile east, west, north or
+  south of them (never into a wall).

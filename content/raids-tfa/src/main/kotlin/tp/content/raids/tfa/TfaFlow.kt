@@ -12,6 +12,7 @@ import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
 import tp.plugin.PrayersOffRequest
 import tp.plugin.WorldRef
+import tp.plugin.choice
 import tp.plugin.mesbox
 import tp.symbols.Jingles
 import tp.symbols.Locs
@@ -53,7 +54,7 @@ public class TfaFlow : ContentPlugin {
             }
         }
         // ---- side rooms back to the nexus
-        onOpLoc(Locs.TFA_EXIT, OP1) { backToNexus(player) }
+        onOpLoc(Locs.TFA_EXIT, OP1) { exitPassage() }
         onOpNpc(Npcs.TFA_ROOM_NAVIGATOR, OP1) { backToNexus(player) }
         onOpNpc(Npcs.TFA_ROOM_NAVIGATOR, OP3) { backToNexus(player) }
         for (t in intArrayOf(Locs.TFA_BOSS_TELEPORTER, Locs.TFA_TELEPORTER_MOIA, Locs.TFA_TELEPORTER_JELLY)) {
@@ -83,7 +84,7 @@ public class TfaFlow : ContentPlugin {
                 for (m in run.members.values) {
                     if (!m.inside || !m.online) continue
                     val p = world.onlinePlayer(m.name) ?: continue
-                    if (p.varbit(Varbits.TFA_VAULT_OWN_CHEST) == 0) TfaVault.ownChest(p, run)
+                    if (m.name !in state.ownChestSet) TfaVault.ownChest(p, run)
                 }
             }
             if (state.chestsAt >= 0 && world.tick >= state.chestsAt && !state.chestsSpawned) {
@@ -137,6 +138,30 @@ public class TfaFlow : ContentPlugin {
         if (!Raids.advance(player, run, room)) player.message(SEALED)
     }
 
+    /**
+     * A side room's "Exit" passageway once the room is won: back to the nexus, or (OPEN-TFA34: no source says how a
+     * player leaves the Archive mid-raid) out of the raid altogether, with the raid-only items removed.
+     */
+    private suspend fun tp.plugin.PlayerScript.exitPassage() {
+        val run = runOf(player) ?: return
+        // During the fight the passage stays shut (the captured refusal).
+        if (run.state !is RunState.BetweenRooms) {
+            player.message(TRANSPORTER_INACTIVE)
+            return
+        }
+        val pick = choice("Where would you like to go?", "Back to the nexus.", "Leave the Archive.", "Stay here.")
+        when (pick) {
+            1 -> {
+                backToNexus(player)
+            }
+
+            2 -> {
+                TfaHud.close(player)
+                Raids.leave(player, run)
+            }
+        }
+    }
+
     /** A side room's passageway or transporter, once the room is done. */
     private fun backToNexus(player: PlayerRef) {
         val run = runOf(player) ?: return
@@ -150,6 +175,8 @@ public class TfaFlow : ContentPlugin {
     private fun leaveVault(player: PlayerRef) {
         val run = runOf(player) ?: return
         TfaHud.close(player)
+        // The own-chest slot is this run's; the lobby wheelbarrow holds any unclaimed loot.
+        player.setVarbit(Varbits.TFA_VAULT_OWN_CHEST, 0)
         Raids.leave(player, run)
     }
 

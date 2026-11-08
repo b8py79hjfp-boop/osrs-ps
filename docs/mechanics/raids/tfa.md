@@ -95,6 +95,9 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 
 ## Loot implementation notes (TfaLoot.kt)
 
+- **OPEN-TFA33:** when every member has 0 contribution the unique (if rolled) goes to one of them with equal odds (no
+  source covers it; before, the last member always got it).
+
 - **TFA21 (standard table)**: `TfaStandardTable` holds the 33 rows, weights asserted to sum to 330 at class init
   (15 x 11 + 8 x 7 + 9 x 6 + 55). Per roll: weight pick `next(330)`, quantity `min + next(max - min + 1)`, bonus
   `next(51) == 0` multiplies by 5; equal items from the three rolls are merged. Objs (by cache name): battlestaff 1391,
