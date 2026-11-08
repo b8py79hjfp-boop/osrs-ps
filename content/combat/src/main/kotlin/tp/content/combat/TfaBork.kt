@@ -304,7 +304,7 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
         val magic = npc.random(2) == 0
         val style = if (magic) CombatStyle.MAGIC else CombatStyle.RANGED
         npc.anim(Seqs.NPC_SMORK_CANNON_ATTACK01)
-        val end = if (enraged) END_FAST else END_BY_RATE[(TfaBork.rate(npc) - ENRAGED_RATE).coerceIn(0, END_BY_RATE.size - 1)]
+        val end = if (enraged) END_FAST else END_BY_RATE[(SLOWEST_RATE - TfaBork.rate(npc)).coerceIn(0, END_BY_RATE.size - 1)]
         val delay = (end + CYCLE_PAD) / CYCLES_PER_TICK
         for (p in targets) {
             BossCombat.projectile(
@@ -422,7 +422,11 @@ internal object TfaSmorks : Boss(Npcs.TFA_SMORK) {
 
     /** Capture: the Smorks' 7-slot cycle: S shot, N napalm, - nothing, B big bomb. */
     private const val CYCLE = "SSN-SSB"
-    private val END_BY_RATE = intArrayOf(90, 90, 120, 150)
+    /** Capture: the shot's end cycle at rates 7 / 6 / 5 / 4: 150 / 120 / 90 / 90. */
+    private val END_BY_RATE = intArrayOf(150, 120, 90, 90)
+
+    /** The slowest Smork rate (7 ticks), the first entry of [END_BY_RATE]. */
+    private const val SLOWEST_RATE = 7
     private val DIRS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
 
     /** bork.md data: Smorks HP for 2..8 players. */

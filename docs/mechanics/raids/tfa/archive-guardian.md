@@ -22,18 +22,18 @@ below list only what a source states; everything else is `OPEN` and gets a named
   prevents melee except halberds. If defence-reducing specials were used, the lower defence value is kept when it
   updates.
 - **AG1 phase 1 (flying):** ranged rock throws; tendrils behind it deal typeless damage; melee on a player standing
-  underneath. Mushrooms about every four attacks (**OPEN-AG2**: count). The shield must be broken before it crashes.
+  underneath. Mushrooms about every four attacks (**OPEN-AG2**: count) (settled by captures, see capture-values.md). The shield must be broken before it crashes.
 - **AG2 inert guardians (4):** two reachable in melee, one ranged/magic only, one hit only by the laser; charging one
-  removes about 40% of the shield (**OPEN-AG3**). In phase 2 shield breaks transfer to HP.
+  removes about 40% of the shield (**OPEN-AG3**) (settled by captures, see capture-values.md). In phase 2 shield breaks transfer to HP.
 - **AG3 grounded:** after a 6-tick delay tendrils target players every 3 ticks; each tendril hits 3 times in a 3×3
   (moderate melee; Protect from Melee caps it at 11); tendrils spawn on the player's side opposite the boss. Grounded
-  ends after 34 ticks or at 33% HP (**OPEN-AG5**: whether the 34 counts from the crash or after the 6-tick delay).
+  ends after 34 ticks or at 33% HP (**OPEN-AG5**: whether the 34 counts from the crash or after the 6-tick delay) (settled by captures, see capture-values.md).
 - **AG4 phase 2 (33% HP, flying):** alternates mushrooms and a magic laser at a random player, fatal with more than 2
-  players alive unless reduced; Protect from Magic reduces it slightly (**OPEN-AG4**: numbers). Vengeance reflects
+  players alive unless reduced; Protect from Magic reduces it slightly (**OPEN-AG4**: numbers) (settled by captures, see capture-values.md). Vengeance reflects
   step-under melee, rocks, tendrils and the laser.
 - **AG5 mushrooms:** two near every player; 5 ticks after spawning, a mushroom within 1 tile of a player explodes:
   10 damage, poison and run disabled (re-enable at once) within 1 tile, plus
-  the drowsy/forced-walk and prayer effects on a non-immune player (**OPEN-AG6**: exact); 3-4 damage within 2 tiles. Serpentine helm stops the poison and run
+  the drowsy/forced-walk and prayer effects on a non-immune player (**OPEN-AG6**: exact; partly settled by captures, see capture-values.md); 3-4 damage within 2 tiles. Serpentine helm stops the poison and run
   loss.
 - **AG6 archive key:** "A small object falls out of the defeated Archive Guardian." after 100 completions (Archive key).
 - 3 Nov: circular clickbox under the Guardian (cache models 51447/51448, tfa.md TFA-D1).
@@ -46,18 +46,53 @@ below list only what a source states; everything else is `OPEN` and gets a named
 
 ## As implemented (content/combat TfaArchiveGuardian.kt, raids-tfa TfaBosses.kt)
 
+Numbers and rotations come from the live captures (capture-values.md), timings from RuneLite (runelite-timings.md),
+precedence per D-080.
+
 - "Touch" on the Inert Guardian 16657 turns it into 16659 and it hunts the nexus. The HP bar shows the current pool:
-  the flying shield (550 ... 1,950 by scale), then the grounded HP (1,100 ... 3,910) kept across phases.
-- Shield at 0 → grounded (16660) for 34 ticks from the crash (OPEN-AG5), tendrils at +6 then every 3 ticks; back to
-  a fresh shield if the time runs out, or phase 2 (flying, grounded HP) at 33% of grounded HP. Phase 2 alternates
-  laser and mushrooms. Death of 16659 / 16660 ends the room.
-- Defence/Magic drift by Strat's formula from damage taken, never above the lowest value reached, floored at 156.
-- **OPEN-AG7:** tendril damage ("moderate"): 0-20 per hit, capped at 11 under Protect from Melee.
-- **OPEN-AG8:** the four batteries (16662, Attack) stand at the cache battery bases and are active whenever a shield is
-  up; destroying one takes 40% of the shield (phase 2: 40% of grounded HP as damage). The north-east battery is the
-  laser-only one: players' hits do nothing to it; a laser target within 2 tiles of it lures the beam into it (the
-  battery is charged, the player takes 10).
-- **OPEN-AG4 model:** laser = 35 x players alive (fatal above two players at 99 HP), Protect from Magic -20%.
-- AG0: the woken Guardian engages the first party member in orb order. AG1: each phase-1 attack lashes players within
-  2 tiles on the far side of its body from its target (OPEN-AG9: 0-10 typeless). AG5 / OPEN-AG6: an inner mushroom
-  burst also drains 10 prayer and binds the player 2 ticks (drowsy), unless they wear a serpentine helm.
+  the flying shield (550 at 1-2 raiders, 800, 1,030, 1,260, 1,490, 1,720, 1,950 at 8), then the grounded HP (1,100 ...
+  3,910) kept across phases. State is created on first use (attack, hit or incoming damage); scale = raid scale, min 2.
+- AG0: the woken Guardian engages the first party member in orb order.
+- **Shielded (flying), AG1:** one 5-tick attack clock. Each slot is the special (mushrooms) when it is every 5th slot
+  (four ranged between), else a slam if any raider is under its 5x5, else a rock throw.
+  - Rock (projectile 4201, seq ranged attack): lands 4 ticks after the throw, accuracy-rolled ranged, 0..41 solo;
+    **OPEN-AG11:** +5 max per raider in the room beyond three (capture 44..54 at 4-5 raiders, a party scaling not
+    fitted). Protect from Missiles: 25% of the roll kept, capped at 10.
+  - Slam (seq 14752): lands 1 tick later on whoever is still under its 5x5, 0..48 melee. **OPEN-AG9** (low-confidence
+    damage; stepping out on the swing tick avoids it).
+- **Mushrooms, AG5:** the special (seq 14754) puts, 1 tick later, two mushrooms by every raider in the arena (radius
+  16): one on a random neighbour tile (8 directions) of the raider's current tile, one 3 tiles out in a random
+  direction; skipped on a non-walkable tile or a live mushroom; at most 39 alive; they stay all fight until they burst.
+  Loc 62578 appears, becomes the active loc 3 ticks later. A mushroom is checked every tick from active+1: the first
+  tick a raider stands within 1 tile arms it, the next tick it bursts (despawn loc, 2-tick fade). Raiders within 1
+  tile at the burst without a serpentine helm are poisoned 10 and told "You're too drowsy to run!"; run mode is forced
+  off every tick for 17 ticks. No prayer drain and no bind (capture; replaces the old drain 10 + 2-tick bind).
+- **Batteries, AG2:** four batteries at offsets (14,-5), (14,8), (-11,-5), (-11,8) from the Guardian's south-west tile
+  (4125, 5597), i.e. (4139,5592), (4139,5605), (4114,5592), (4114,5605). The **south-east** one (4139,5592) is the
+  inactive NPC type and inert all fight; the other three are active (Attack op, never attack), 180 HP solo
+  (**OPEN-AG8:** +55 HP per raider beyond two for the "180..400 by party"). Destroying an active one: 3 ticks later the
+  shield loses 40% of its max (e.g. 220 solo), capped at what is left. Only during the shielded phase. Batteries are
+  re-summoned each time a fresh shield is raised.
+- **Shield at 0 (grounded), AG3:** the shield reaching 0 does not kill it (HP set to 1); 3 ticks later it crashes
+  (idle-to-ground seq, form 16660, grounded pool restored to the kept grounded HP). A raider exactly 1 tile from its
+  5x5 as it lands takes a smash of 24..28 (melee). Vines start 5 ticks after landing, then one wave every 3 ticks.
+  - Grounded lasts 35 ticks from the crash the first time, 40 on every later landing (RuneLite LU value; the
+    captures give 35, then 41, then 47, +6 each: not yet applied). Counted from the crash (**OPEN-AG5**).
+  - At the first slot with real HP under 34% of the grounded max there is no wave: it lifts 3 ticks later (clock
+    +4) and enrages. Time running out lifts it 3 ticks later back to a fresh shield (batteries again). Death while
+    grounded (HP to 1) goes straight to the enrage.
+  - Vine wave: one vine (Npcs.ARCHIVE_GUARDIAN_TENTACLE) per living raider, on the tile one step past the raider away from the
+    Guardian's middle, else toward it, else the raider's tile. It attacks 3, 6 and 9 ticks after it appears and
+    despawns at +12. Each beat hits every living raider exactly 1 tile from the vine, once per tick however many
+    vines reach: melee, never misses, 17..19, or flat 10 under Protect from Melee (**OPEN-AG7**, capture: 11 in 6 of
+    33 prayed hits).
+- **Enrage (phase 2, flying, grounded HP kept), AG4:** starts when it lifts under 34% (or dies grounded). While
+  enraged it keeps attacking on the 5-tick clock: slam if a raider is under it, else rock (**OPEN-AG10:** the capture
+  records only the 20-tick cycle, not the filler attacks); no mushrooms. Every 20 ticks from S: at S+5 the blast
+  animation (seq 14754) and a blast roll of 42..49 divided by the raiders in the room, queued to land 5 ticks later
+  (S+10, the RuneLite value), x1.5 for anyone not on Protect from Magic. At S+10 the next battery overloads (typeless
+  hit equal to its HP), in the order (4139,5592), (4139,5605), (4114,5592), (4114,5605), at offsets from its spawn
+  tile; once all four are gone the overload does nothing.
+- Defence/Magic drift by Strat's formula from damage taken (Defence = 260 - 130 x damage / grounded base HP; Magic =
+  250 + 125 x damage / grounded base HP), never above the lowest value reached, floored at 156.
+- Death (phase 2 reaching 0) removes batteries and vines and clears mushrooms.
