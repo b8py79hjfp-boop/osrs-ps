@@ -192,6 +192,58 @@ ball damage); 23 Jun 2021 (incorrect transition on wave 20 fixed); 18 Jun 2020 d
 2 Aug 2018 no instant attack after switch; 21 Jun 2018 room shortened (waves removed), boss HP 2,000 -> 2,500 and max hit 58 ->
 70, reflect 50% -> 100%; 24 Jul 2024 burn; 25 Jun 2025 fire weakness.
 
+## As implemented (content/combat TobNylocas.kt)
+
+Objects: `TobNylocasRoom` (the four supports; the south-west one, smallest x then z, is the controller and runs the room),
+`TobNylo` (wave Nylocas), `TobVasilias` (Vasilias and Hard's Prinkipas). Mode from the NPC id. Arena radius 20 (room), 24 (default).
+
+- **Supports (NY7):** ids 8358 / Entry 10790 / Hard 10811. Players' damage to them is 0 (`incoming`); only Nylocas bites hurt.
+  HP is the cache value (raids-tob `TobNpcs`, **OPEN-NY4**).
+- **Start (NY1/TB8):** the waves start on the first tick a raider is within 6 tiles (both axes) of the platform centre (SW support
+  + 6, +6). Wave 1 spawns that tick; waves only spawn on ticks `(tick - start) % 4 == 0`.
+- **Waves (NY1/NY2/OPEN-NY5):** the 31 wave strings in the code are identical to the chart above (checked by script). Delay from
+  wave w to w + 1 (w = 1..30): `4,4,4,4,16,4,12,4,12,8, 8,8,8,8,8,4,12,8,12,16, 8,12,8,8,8,4,8,4,4,4` (RuneLite BL). Cap on live
+  Nylocas (a Prinkipas counts **3**, everything else with a wave id **1**, splits included): **12** while the next wave is 1-19,
+  **24** from wave 20; Hard **15** before wave 20. At the cap the wave slips by **4** ticks and is checked again. Cap is the same in
+  Entry (**OPEN-NY6**: no Entry value used).
+- **Lanes (OPEN-NY5):** offsets from the SW support (3289, 4242): East small `(21,6) (21,7)`, big `(20,6)`; South small `(6,-9) (7,-9)`,
+  big `(7,-8)`; West small `(-8,6) (-8,7)`, big `(-7,7)`. Smalls in a lane use the two tiles in order.
+- **Hard Prinkipas:** with waves 10, 20, 30 a Prinkipas (10803) is summoned at SW + (5,5), scaled; the next wave is **16** ticks later
+  instead of the table delay.
+- **Boss:** after wave 31, once no Nylocas is alive, the tick is recorded (`lastWaveDone`, set once and never reset), and on the first
+  clock tick `>= 16` later Vasilias (spawning form) is summoned at SW + (5,4). Defect to be aware of: if a big Nylocas dies last, the
+  count of live Nylocas is 0 for the 7 ticks before its splits appear, so `lastWaveDone` is recorded early and the 16-tick delay can
+  be skipped after the splits die.
+- **Wave Nylocas (NY3-NY6, OPEN-NY3/NY7/NY12):** id = base (Normal 8342, Entry 10774, Hard 10791) + 3 if big + style (melee 0,
+  ranged 1, magic 2) + 6 if aggressive ("fighting" ids). Flickering ones start in the first style of their `~abc` and become `b` at
+  age **4** and `c` at age **8** (keeping HP). Lifetime **52** (small) / **55** (big) ticks, then it explodes (`DETONATE` anim) on every
+  raider within **2**: `1..18` small, `1..21` big, Entry `1..8`, typeless, then despawns (the doc's NY6 says 50 ticks; capture 52/55).
+  - Non-aggressive: seeks the nearest living support of its room within 30; walks to it; when its gap is <= 1 and it is not frozen,
+    every **3** ticks it takes **1** (small) or **2** (big) HP off the support (**OPEN-NY12**); at 0 HP the support collapses.
+  - Aggressive: targets the nearest raider (by gap); melee needs gap 1, ranged and magic gap <= 2, otherwise it walks toward them;
+    attacks every **3** ticks with the current style (anim by style), `BossCombat.strike` (accuracy roll, prayer blocks fully,
+    damage `1..max`): max 17 small / 24 big, Entry 5 / 10; ranged and magic have a projectile and a delay of `gap x 10 / 30 + 1` (min 1).
+  - **Style rule:** a player's hit of the wrong style is zeroed and that player is **immune to that Nylocas** from then on; in Hard
+    (`damage > 0`) the damage is also dealt back to the player, capped at the Nylocas' HP. Matching style: full damage.
+  - **Split (NY5):** a dead big Nylocas, 7 ticks later, makes two small ones (random style each, non-aggressive, not flickering) at its
+    tile and the tile east of it, scaled, if the controller is still in the world.
+- **Collapse (NY7, OPEN-NY12):** a support reaching 0 HP: collapse anim and dead-support scenery; **3** ticks later every raider in range
+  (radius 20) takes `0..50` (Entry `0..25`) typeless; the 4th collapse deals the target's current HP instead (the party dies); then
+  the support despawns.
+- **Vasilias / Prinkipas (NY10-NY12, OPEN-NY8/NY9/NY15):** ids spawning/melee/magic/ranged per mode (Normal 8354-8357, Entry 10786-10789,
+  Hard 10807-10810; Prinkipas 10803-10806). On spawn: summon anim; first attack at spawn + **3** (landing, OPEN-NY15) + **1** (50%) or
+  **4**; at +3 it takes the melee form (spawning-form id + 1). Every **10** ticks (Entry **15**, OPEN-NY8 value from RuneLite) it
+  switches to a uniformly random one of the other two forms, resetting the attack count. Attack: only if in a form (not the dropping
+  form), at most **2** per form, every **4** ticks, melee form only when adjacent. Roll `0..max` (no accuracy): max 70, Entry 24,
+  Hard 105, Prinkipas 38. Against the right prayer: melee 0, magic/ranged `min(raw, 17)`.
+  - **Hard Vasilias only (not the Prinkipas) (OPEN-NY9, NY10):** ranged: every other raider within **2** of the target takes the same raw
+    damage (ignores their prayers); magic: unless every other raider is on the target's tile, each other raider takes typeless
+    `min(75, raw / 2)` within 2 of the target and `min(75, raw)` beyond, +1 tick later, ignoring prayer. (Hard's bounce numbers are not
+    sourced beyond the 75 cap of 9 Jun 2021.)
+  - **Wrong style (NY11):** in the dropping form 0 damage; a wrong-style hit is zeroed, dealt to the attacker (typeless, same amount) and
+    heals the boss by that amount; matching style normal. All modes.
+- Not modelled: Entry live cap and delay (OPEN-NY6), Hard prevent-attack beyond immunity, pillar HP scaling.
+
 ## Open list
 
 OPEN-NY1 relevance of the magic bonus lines; OPEN-NY2 Entry Nylocas HP above one player; OPEN-NY3 incoming vs fighting ids;

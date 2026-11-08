@@ -160,6 +160,97 @@ HP and tweaks, Hard lightning damage and range, Nylocas detonation fix, bounce c
 damage up, no tick-eating the yellow in Hard); 3 Jun 2021 modes added; 16 May 2019 / 2 May 2019 / 2 Aug 2018
 fixes (web damage one cycle earlier, correct movement, damage computed on hit in P3, re-target non-caged players).
 
+## As implemented (content/combat TobVerzik.kt)
+
+One script (`TobVerzik`) over her forms; `TobVerzikAthanatos` for the Athanatos. Mode from the NPC id; form id = mode base (Normal
+8369, Entry 10830, Hard 10847) + kind (1 P1, 2 P1->P2, 3 P2, 4 P2->P3, 5 P3, 7 web, 8 collapsing pillar, 10 pillar, 11-13 combat
+Nylocas, 14 Athanatos, 15 Matomenos, 16 tornado), plus 1 for Normal's kinds above 10. Entry damage = Normal / 2 (floor) via
+`TobModes.damage` where noted ("E/2"). `become` re-transforms with full stats and applies `TobModes.scale` HP. Arena radius 20.
+Per-tick loop from the start; each tick her Defence is reset to base in P2/P3; nothing happens before `nextAttack`.
+
+- **Start (VZ1, TB24, OPEN-TB11):** `start(npc, player, quick)` only in phase 0. Quick-start is refused in Entry or when the player's
+  `TOTAL_COMPLETED_THEATREOFBLOOD + _HARD` varps sum to 0 (so any Normal or Hard completion of that player counts, Entry does not).
+  Then throne anim, P1 form, six pillars at offsets from her spawn `(-4,-5) (8,-5) (-4,1) (8,1) (-4,7) (8,7)`, cache HP (not
+  scaled; **OPEN-VZ3**), first attack at tick + **18**.
+- **P1 shield (VZ2, OPEN-VZ15):** `incoming`: 0 before start; otherwise a hit is `min(damage, 10)` melee or `min(damage, 3)` other, in
+  every mode, unless the hitter has the Dawnbringer **worn** (full damage; the code does not test for the special attack).
+  - Attack every **14** ticks: magic anim, one bolt per raider: projectile 1580 (start 20, end `20 + 15 x d`), lands `end / 30 + 1`
+    ticks later, `0..137` (Entry `0..60`), Protect from Magic `/ 2`. If a pillar footprint lies on the line from her centre to the
+    raider, the bolt goes to that pillar instead (only the first raider per pillar per volley; others behind it skipped).
+  - **Pillar (OPEN-VZ4):** takes the raider's bolt roll as damage (the same `0..137` roll, before Protect from Magic). Hard: each pillar hit also drops **3** rubble
+    tiles within 3 of the pillar; a raider exactly on a tile takes `0..35` and is frozen **5** ticks. At 0 HP it collapses: raiders within 2
+    of its centre take `0..70` (Entry `0..50`, explicit, not halved), are teleported 1 tile away from it and frozen **5**; it becomes
+    the collapsing form and despawns 3 ticks later.
+  - **Shield break** (lethal hit in P1): death anim, the Dawnbringer is removed from every raider's inventory and worn slot ("The
+    weapon falls apart in your hand as Verzik's shield is destroyed."), every remaining pillar collapses, HP held at 1 (no damage while in
+    transition: `onLethal`), **4** ticks later P1->P2 form and `nextAttack = tick + 20` (counted from that tick, so **T+24** from the
+    break; capture-values has first P2 attack T+20), at **+17** from the break the P2 form (full HP) at spawn + (1,1) with the start
+    summon of combat Nylocas.
+- **P2 (VZ3):** attack every **4** ticks. Per attack, in this order: at HP <= 35% (checked at an attack time) or every **7** attacks after
+  that, the reds instead of an attack; with the reds active **75%** an attack is the blood spell; every **5th** attack (all P2 attacks
+  counted, from 0) is the lightning ball; every **21st** attack (not once the reds started, and only if no Athanatos lives) also
+  launches an Athanatos; otherwise urn bombs.
+  - **Urn bombs / slam / stomp:** per raider by gap to her footprint: under her (gap 0) "There's nothing for you there!" and `1..82`
+    (E/2) melee, immediate; beside her (gap 1) the melee anim, `0..45` (E/2) melee, thrown **3** tiles away from her centre
+    (teleport) and frozen **5** ticks; otherwise a bomb at their current tile: projectile (start 0, `30 x (2d / 3)` cycles, min 30),
+    lands `max(1, 2d / 3)` ticks later: a raider still on the tile takes `0..44` (E/2; Hard `0..53`, **OPEN-VZ12 code label**; this
+    doc's VZ12 is the Nylocas homing item, a clash), Protect from Missiles `/ 2`, ranged. Hard leaves an acid pool on the tile for **14**
+    ticks (docs say 16): `9..10` typeless per tick to a raider on it (the pool is Hard-only).
+  - **Lightning:** counter +1; 4 hops: first from her centre to a random raider, then to a random raider other than the previous (one
+    raider = the same, one hop); each hop's flight `max(1, 2 x max(1, d) / 3)` ticks (d from the previous point), the delays cumulate; a
+    hop after the first whose line crosses her footprint hurts her `15..20` typeless when it arrives. Only the last raider takes
+    damage: `0..48` (E/2), or `0..25` with insulated boots (item 7159) in every mode (so boots raise Entry's 24 cap to 25). Not
+    scripted: bounce chat, Hard range +50%, the OPEN-VZ16 cap (the code has no cap logic at all and the damage is the same).
+    After every 3rd lightning ball, outside the reds, 1/**4** chance (25%) of another Nylocas set unless an Athanatos is alive.
+  - **Combat Nylocas (OPEN-VZ12 homing; code label OPEN-VZ14, a clash with this doc's VZ14):** one per raider at a random tile within 4
+    of her centre, random style id (no script gives them a style rule or reflect, Hard included), scaled HP, each homing on a random
+    raider, one tile a tick, up to **25** ticks. At gap <= 1 from its target: every raider with gap <= 1 takes `0..46` and gap <= 3
+    `0..8` (E/2), typeless, then it despawns; at 25 ticks it despawns silently.
+  - **Athanatos (VZ3, OPEN-VZ5):** random raider's tile; lands in `3 x (2d / 3)` ticks (min 1): raiders within 1 of the tile take `0..78`
+    on the tile, `0..39` beside (E/2), typeless; then it spawns there (scaled HP) and heals her `9..10` every **4** ticks while both live.
+    A hit on it by a raider with the serpentine helm, a spell starting "Smoke", or a weapon in the code's set (`TOXIC_BLOWPIPE_LOADED` and its ornament form, `TOXIC_SOTD_CHARGED`, `TOXIC_TOTS_CHARGED`, `TOXIC_TOTS_I_CHARGED`,
+    Dragon / Abyssal dagger (p), (p+), (p++)) bursts it: `0..70` typeless to her and it despawns. Other
+    hits just damage it; no regeneration, reduction or respawn delay (OPEN-VZ5).
+  - **Reds (35%):** any live Matomenos is despawned first (her HP += its HP; Hard: raiders within 1 of it take its HP `/ 2`); then
+    **2** Matomenos (**1** if one raider or fewer) at her left (-2) and right (+2 + size - 1) edges, scaled HP; she plays the heal anim,
+    the next attack is in **12** ticks, and for **5** ticks every positive hit on her heals her instead (damage returned 0).
+  - **Blood spell:** random raider's tile; anim; projectile 60 cycles; lands **2** ticks later: everyone within 1 of the tile rolls
+    `0..45` (E/2); under Protect from Magic they take 0, others the roll; she heals `sum of the unprayed rolls / 2` (prayed targets
+    still count toward the heal).
+  - **P2 end** (lethal in P2): death anim, HP 1, **2** ticks later P2->P3 transition form, all minions dismissed; P3 form (full HP) **4**
+    ticks after that, "Behold my true nature!", `nextAttack = tick + 12` counted from the transition start (**T+14** from the lethal
+    hit; capture has T+12).
+- **P3 (VZ4, VZ5, OPEN-VZ14 selection):** one target kept in `target` (random first), re-rolled (may repeat) when it has been out of
+  melee reach (gap != 1) for **17** ticks; with no raiders she re-checks next tick. Attack every **7** ticks (**5** once enraged).
+  `attacks` is the same counter as P2 and is **not reset** on entering P3 (the first special comes when the running total reaches a
+  multiple of 5). Every 5th attack is a special in rotation (counter `specials`, order 0 Nylocas, 1 webs, 2 yellows, 3 green ball);
+  Hard picks a new random target at each special (used from the next attack). Special 0 also does a normal attack that tick.
+  - **Normal attack:** target at gap 1 -> melee anim, the target and every raider at gap 1 are hit `0..63` (E/2), melee, delay 1, no
+    prayer step. Otherwise 50/50 magic or ranged for the whole room: projectile `min((53 magic / 62 ranged) + 15 d, 179)` cycles,
+    every raider rolls `0..33` (`0..34` enraged; E/2), prayer for the style = `min(raw, 16)`, landing `end / 30` ticks. (Which attack she
+    picks is the code's 50/50 and melee-if-adjacent: this doc's OPEN-VZ14 meaning.)
+  - **Webs (OPEN-VZ10, code label OPEN-VZ11):** spin anim, she teleports to spawn + (-1,-1), invulnerable **12** ticks; 3 volleys at +1, +4, +7;
+    per volley and raider **3** webs (1 if all raiders, more than one, share a tile): the first on the raider's tile, the others at a random
+    walkable tile within 1; flight `gap / 2` ticks (min 1). A web NPC (cache HP) spawns; a raider on the tile is frozen **8** ticks; at 8 ticks if
+    the web still exists and the raider is still on it, `30` typeless (E/2), skipped once per 8 ticks with aranea boots; the web despawns.
+    A web killed earlier skips the damage but the freeze stays. Next attack in 12 + **10** ticks.
+  - **Yellows (OPEN-VZ11 real meaning):** anim, invulnerable until the last landing. One random tile per raider within 6 of spawn + (2,2),
+    safe-zone graphic. **14** ticks later (Hard 3 waves at 14, 17, 20, each with a new set) a raider standing exactly on a pool tile and
+    alone on it gets the protection graphic; every other raider takes `0..80` (E/2) typeless. Next attack **21** ticks after the cast
+    (Hard **27**).
+  - **Green ball (OPEN-VZ6):** target gets "Verzik Vitur fires a powerful projectile in your direction..." (colour 0a721f), projectile 1598
+    start 62 end 242, lands in **8** ticks. Holder: the first listed raider within 1 of the holder who has not yet held it gets "A powerful
+    projectile bounces into your direction..." and receives it **2** ticks later, up to **3** bounces. When it stops: Normal/Entry/Hard solo:
+    damage `baseHitpoints x 75 / 100` (74 at 99; E/2), or 0 if it had already bounced 3 times; Hard with 2+ raiders at the throw: kills the
+    holder when unbounced, else `89 / 74 / 49` after 1 / 2 / 3 bounces. Next attack **12** ticks after.
+  - **Enrage (VZ5, OPEN-VZ7):** `afterHit` at HP <= 20%: she says "I'm not finished with you just yet!" (every mode; the Entry text differs
+    per the Entry page), speed 5, and a pending longer wait is cut to 5. From then each raider without a tornado gets one at her centre
+    once its `tornadoDue` has passed: it walks to its raider; on contact `max(5, raider HP / 2)` typeless to the raider, she heals
+    **3 x** that, it despawns and the next is due **16** ticks later (also runs while she waits for `nextAttack`).
+  - **Hard second wind (VZ6):** at HP <= 5% once: "You think this is over?", +30% of max HP.
+- **Death:** `VERZIK_PHASE3_DEATH_A` anim, minions dismissed; chest/vault in raids-tob.
+- Not modelled: Hard combat-Nylocas style rotation, Hard lightning range/bounce, P1 Dawnbringer special detection, the OPEN-VZ16 flag.
+
 ## Open list
 
 OPEN-VZ1 the `TOB_VERZIK_CREEPER` NPC role; OPEN-VZ2 4- / 3-player HP rounding; OPEN-VZ3 pillar HP by party size and mode;

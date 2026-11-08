@@ -80,6 +80,39 @@ explanation (Mod Ash; not a change). The main ToB page changelog (not the Bloat 
 within the Theatre of Blood should now fall down in the correct position" (what "correct position" means is not stated).
 No Bloat page entry after 3 Jun 2021.
 
+## As implemented (content/combat TobBloat.kt)
+
+Mode from the NPC id (`TobModes.of`). Entry damage = Normal / 2 (floor) where noted. HP: raids-tob `TobScaling`. Arena = the 16 x 16
+square from its spawn tile (its SW corner); "raiders" = living players inside it. A per-tick script runs from spawn (`attack` is a
+no-op that re-arms +5).
+
+- **Start (BL1):** waits until a raider is in the arena (no walking before). Then direction clockwise/anticlockwise 50/50, first
+  sleep at tick + **38..47** (uniform), turn lock **32** (BL6).
+- **Awake tick order:** walk, flies, falling flesh, then sleep check: sleeps once `tick >= awakeUntil` and `tick >= noDownUntil`.
+  Later walks last **38..47** too (+**4** if nobody hit it while it was down, BL3), not the doc's 34-42 (capture).
+- **Walk (BL1/BL5/BL6):** ring of four corners `(0,0) (11,0) (11,11) (0,11)` from the arena SW; one tile a tick walking, two running,
+  turning at corners. HP% = `hp x 100 / maxHp` (floor): `>= 60` walks; `40..59` runs; `< 40` keeps its current gait and **every
+  incoming hit from a player** flips it (**OPEN-BL4**: so exactly 60% walks, exactly 40% runs). A change of gait to running sets
+  "no sleep" for **5** ticks. Direction turn: the cooldown (32, Hard 16) counts down on walking ticks; once 0 each walking tick has
+  1/**8** to reverse (**OPEN-BL1**, the odds are an assumption) and resets the cooldown and sets the 5-tick no-sleep window.
+- **Damage to it:** while walking every hit is `damage / 2` (floor); while down full damage (and marks "hit while down").
+- **Flies (BL2):** each walking tick, raiders with line of sight and not under it ("seen") plus any other raider that a seen raider
+  has line of sight to and who is on a different tile ("spread"). Each: graphic, `10..20` (Entry `5..8`, **OPEN-BL9**: the code
+  KDoc label for Entry flies; this doc's BL9 is the 3/4-player HP rounding, a clash), Protect from Missiles x 75 / 100, queued +1,
+  typeless. Not done while down. Hard same as Normal.
+- **Sleep (BL4):** `anim TOB_BLOAT_SLEEP`. At down tick **+30** the ready anim; **+31** the stomp: every raider with gap 1..**6** from
+  its footprint and line of sight takes `40..80` (Entry halved, 20-40), typeless, immediately (no delay), not those under it
+  (gap 0); then Defence restored to at least base. **+33** it rises (walk anim), next awake time set. Hard flesh keeps falling
+  while down; Normal/Entry not.
+- **Falling flesh (BL7, OPEN-BL2/BL3):** active: Normal walking and `hp% < 90`; Hard always (also down); Entry walking and after its
+  first stomp. A wave when `tick >= nextWave` and raiders exist; next wave in **4** ticks with 55/83 chance else **6**; **16** or **15**
+  (50/50) random tiles in the 16 x 16 arena (duplicates collapse), shadow graphics cycling flesh1-4; **3** ticks later splat graphic
+  and every raider standing on a tile takes `30..50` (Entry halved) typeless, stun graphic and frozen for **5** ticks (**OPEN-BL8
+  code label**, this doc's BL8 is the first-walk range: clash).
+- **Death:** plays the death anim only; book, chest and restores belong to raids-tob.
+- Not modelled: Hard-specific flies/stomp numbers (**OPEN-BL7**), the doc's "stomp can be tick-eaten" (it is instant), the exact
+  boundary rules beyond the above.
+
 ## Open list
 
 OPEN-BL1 turn probability when eligible and how the direction is chosen; OPEN-BL2 falling-flesh frequency, landing delay,
