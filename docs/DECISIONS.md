@@ -1122,3 +1122,19 @@ RuneLite plugins (docs/mechanics/raids/{tfa,tob}/runelite-timings.md) and RSProx
   changed keeps the patch note. ToB capture damage is from seasonal worlds (about 10% less damage taken), so only ToB
   timings and counts are taken from it.
 - No code is copied from either source (LU has no licence file; oldschool-clientc has none either): facts only.
+
+## D-081 Theatre of Blood structure on this server (2026-11-08)
+
+- **Hallways:** the cache has only the nine room squares (client-contract 5); the links between rooms are not in it. A
+  room is left through an exit box at the end of its own outbound corridor (`TobFlow.EXITS`) and the whole party moves to
+  the next room's antechamber, outside its barrier, where each player decides whether to cross (TB8). Verzik's room is
+  left through the throne door (32738), placed on the arena level at its north edge. OPEN-TB7.
+- **Levels:** the Nylocas room and Xarpus play on level 1 (their barriers and walkable floors are level 1 in the cache);
+  the other rooms on level 0.
+- **Raid NPCs never respawn:** any NPC tagged with a run (`SharedAttrs.RAID_RUN`) is removed after its death, like a
+  minion; boss minions can inherit the tag (`Bosses.summon(inheritRun = true)`) so their damage counts for the MVP.
+- **Wipes:** Normal / Hard wipes move unprotected items into the packed inventory `tob_reclaim` (death pipeline
+  `storeInv`), claimed at the Ver Sinhaza chest for 100,000 coins; Entry wipes restart the room (OPEN-TB5,
+  `tp.tob.entry.wipeRestartsRoom`).
+- **Run time** ends at Verzik's final blow (LR22) even though rewards are computed when the party enters the treasure
+  room (`Raids.complete(endedAt)`).
