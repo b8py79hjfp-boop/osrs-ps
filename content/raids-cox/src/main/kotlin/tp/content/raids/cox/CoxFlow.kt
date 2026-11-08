@@ -44,6 +44,9 @@ internal class CoxState(val plan: CoxLayoutPlan) {
     /** Team-only point changes (CX30's 5% case, CX32's Challenge Mode bonus). */
     var teamAdjust = 0.0
 
+    /** Whether the Olm fight has been started (the barrier). */
+    var olmStarted = false
+
     /** The tick the Great Olm died (the raid time ends there), or -1. */
     var olmDeadTick = -1L
 
@@ -87,13 +90,14 @@ public class CoxFlow : ContentPlugin {
         }
         CoxRooms.register(this)
         CoxRoomActions.register(this)
+        CoxOlmRoom.register(this)
         events.on<tp.plugin.DeathEvent> { e ->
             val npc = e.entity as? tp.plugin.NpcRef ?: return@on
             val id =
                 tp.content.raids.RaidRun
                     .npcRun(npc) ?: return@on
             val run = Raids.of(npc).run(id)?.takeIf { it.raid.id == CoxRaid.ID } ?: return@on
-            CoxRooms.npcDied(run, npc, npc)
+            if (npc.type == tp.symbols.Npcs.OLM_HEAD) CoxOlmRoom.olmDied(run, npc) else CoxRooms.npcDied(run, npc, npc)
         }
         events.on<RaidEvent.Left> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let(CoxHud::leave) }
     }
@@ -244,8 +248,10 @@ public class CoxFlow : ContentPlugin {
     /** The mystical barrier (29879 "Pass", 4 x 1, facing south): two tiles across. */
     private fun passBarrier(player: PlayerRef, loc: LocRef) {
         val from = player.coord
-        val to = CoordGrid(from.x, if (from.z < loc.coord.z) loc.coord.z + 1 else loc.coord.z - 1, from.level)
+        val inward = from.z < loc.coord.z
+        val to = CoordGrid(from.x, if (inward) loc.coord.z + 1 else loc.coord.z - 1, from.level)
         player.teleport(to)
+        if (inward) runOf(player)?.let { CoxOlmRoom.entered(it, player) }
     }
 
     internal companion object {
@@ -258,7 +264,8 @@ public class CoxFlow : ContentPlugin {
 
         /** RaidDefinition.layout: draws the run's layout (CX11-CX13) and describes its instance. */
         fun build(run: RaidRun): RaidLayout {
-            val plan = CoxLayout.generate(run.rng)
+            // CX15 / CX48: Challenge Mode always uses the fixed three-floor layout.
+            val plan = if (run.scaling.mode == CoxRaid.CHALLENGE) CoxLayout.challenge() else CoxLayout.generate(run.rng)
             run.content = CoxState(plan)
             return CoxLayout.instance(plan)
         }

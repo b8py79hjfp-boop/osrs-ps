@@ -32,11 +32,12 @@ class CoxSmokeScenario {
     private val trace = ArrayList<String>()
 
     @Test
-    fun `a solo raider walks generated layouts to the Olm`() {
-        for (seed in SEEDS) walk(seed)
+    fun `a solo raider clears generated layouts and Challenge Mode`() {
+        for (seed in SEEDS) walk(seed, cm = false)
+        walk(CM_SEED, cm = true)
     }
 
-    private fun walk(seed: Long) {
+    private fun walk(seed: Long, cm: Boolean) {
         s = Scenario(seed = seed)
         a = s.player("a", CoxRaid.OUTSIDE)
         s.tick()
@@ -49,6 +50,11 @@ class CoxSmokeScenario {
         // GU1: the Guardians take only pickaxe hits.
         assertTrue(ra.transaction("smoke") { setAt(Invs.WORN, WEAPON_SLOT, Objs.DRAGON_PICKAXE) }, "pickaxe worn")
         assertEquals(Objs.DRAGON_PICKAXE, ra.inv(Invs.WORN).obj(WEAPON_SLOT))
+        if (cm) {
+            val raids = Raids.of(ra)
+            val party = requireNotNull(raids.createParty(requireNotNull(raids.definition(CoxRaid.ID)), "a"))
+            party.settings[CoxFlow.CM_SETTING] = 1
+        }
         a.input(ClientCommand.OpLoc(1, Locs.RAIDS_ENTRANCE_STEPS, CoxRaid.ENTRANCE.x, CoxRaid.ENTRANCE.z, false))
         s.tick(WALK)
         val run = requireNotNull(Raids.of(ra).runOf("a")) { "seed $seed: no run; ${a.messages}" }
@@ -96,6 +102,9 @@ class CoxSmokeScenario {
         // CX34 (Strat): a death now respawns at the end of the last generated floor.
         val respawn = requireNotNull(CoxFlow.respawn(run, ra))
         assertEquals(plan.cells.last(), CoxMap.cellAt(plan, run, respawn), "seed $seed: respawn at the last floor's end")
+        if (cm) assertEquals(CoxRaid.CHALLENGE, run.scaling.mode, "Challenge Mode run")
+        if (cm) assertEquals(3, plan.floors, "CX15: the Challenge Mode layout has three floors")
+        olm(run, seed)
     }
 
     /** Walks up to the room's NPCs (they wake on a raider nearby) and lands heavy hits until the room is done. */
@@ -132,6 +141,44 @@ class CoxSmokeScenario {
         val left = ra.npcsWithin(a.coord, SCAN).filter { inCell(it.coord) }.map { "${it.type}:${it.hitpoints}" }
         val alive = st.roomAlive[cell.index]?.map { "${it.type}@${it.coord} in=${it.isInWorld} hp=${it.hitpoints}" }
         assertTrue(st.done[cell.index], "${cell.kind} cleared in $t ticks; left $left; required $alive; a ${a.coord}; ${trace.takeLast(3)}")
+    }
+
+    /** Passes the barrier and beats the Great Olm through every phase; the raid completes on its death. */
+    private fun olm(run: RaidRun, seed: Long) {
+        val st = requireNotNull(CoxFlow.state(run))
+        val barrier = run.instance!!.let { CoxMap.olm(run, tp.util.CoordGrid(BARRIER_X, BARRIER_Z)) }
+        ra.teleport(CoxMap.freeNear(ra, tp.util.CoordGrid(barrier.x + 1, barrier.z - 1, barrier.level)))
+        s.tick()
+        a.input(ClientCommand.OpLoc(1, Locs.RAIDS_OLM_BARRIER, barrier.x, barrier.z, false))
+        repeat(WALK) { keepAlive() }
+        assertTrue(st.olmStarted, "seed $seed: the barrier woke the Olm; ${a.messages.takeLast(3)}")
+        val parts = setOf(tp.symbols.Npcs.OLM_HEAD, tp.symbols.Npcs.OLM_HAND_LEFT, tp.symbols.Npcs.OLM_HAND_RIGHT)
+        var t = 0
+        while (run.state != RunState.Completed && t < OLM_LIMIT) {
+            for (n in ra.npcsWithin(a.coord, SCAN).filter { it.type in parts && it.hitpoints > 0 }) {
+                val style =
+                    when (n.type) {
+                        tp.symbols.Npcs.OLM_HAND_LEFT -> HitStyle.MELEE
+                        tp.symbols.Npcs.OLM_HAND_RIGHT -> HitStyle.MAGIC
+                        else -> HitStyle.RANGED
+                    }
+                ra.events.publish(DamageRequest(n, ra, HIT, style))
+            }
+            ra.setVarbit(Varbits.PRAYER_ALLACTIVE, 1 shl protectMagicBit)
+            keepAlive()
+            t++
+        }
+        assertEquals(RunState.Completed, run.state, "seed $seed: the Olm died and the raid completed in $t ticks")
+        assertTrue(a.messages.any { "Congratulations - your raid is complete!" in it }, "seed $seed: completion line")
+        val kc =
+            if (run.scaling.mode ==
+                CoxRaid.CHALLENGE
+            ) {
+                Varps.TOTAL_COMPLETED_XERICCHAMBERS_CHALLENGE
+            } else {
+                Varps.TOTAL_COMPLETED_XERICCHAMBERS
+            }
+        assertEquals(1, ra.varp(kc), "seed $seed: KC")
     }
 
     /** Solves a puzzle room through its real ops (the crab bounce geometry excepted: the orb is checked, then the room). */
@@ -257,6 +304,7 @@ class CoxSmokeScenario {
             when {
                 cell.kind != CoxKind.END -> Locs.RAIDS_DOORWAY
                 cell === plan.cells.last() -> Locs.RAIDS_BOSSENTRANCE
+                CoxMap.findLocs(ra, run, cell, Locs.RAIDS_DESCENTTO1).isNotEmpty() -> Locs.RAIDS_DESCENTTO1
                 else -> Locs.RAIDS_DESCENTTO2
             }
         val locs = CoxMap.findLocs(ra, run, cell, id)
@@ -338,12 +386,16 @@ class CoxSmokeScenario {
         const val WALK = 10
         const val WALK_LIMIT = 60
         const val MID = 16
-        const val FIGHT_LIMIT = 600
+        const val FIGHT_LIMIT = 1500
         const val APPROACH_EVERY = 10
         const val SCAN = 40
         const val HIT = 400
         const val KEEP_ALIVE = 255
         const val TRACE = 10
+        const val CM_SEED = 7L
+        const val OLM_LIMIT = 1500
+        const val BARRIER_X = 3231
+        const val BARRIER_Z = 5729
         const val ATTACK_OP = 2
         const val COMBAT_STANCE_VARP = 43
         const val CRUSH_STANCE = 2

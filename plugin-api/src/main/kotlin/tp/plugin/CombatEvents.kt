@@ -140,6 +140,9 @@ public object SharedAttrs {
     /** NPC attr: the tick a raid NPC's temporary state ends (CoX jewelled crabs: their colour). */
     public val RAID_UNTIL: AttrKey<Long> = AttrKey("raid_until")
 
+    /** NPC attr: damage on this raid NPC earns no points while set (CoX: an Olm hand it has regained control of). */
+    public val RAID_NO_POINTS: AttrKey<Boolean> = AttrKey("raid_no_points")
+
     /** NPC attr: the raid room an NPC was spawned for (CoX cells: template positions per rotation). */
     public val RAID_ROOM: AttrKey<RaidRoomFrame> = AttrKey("raid_room")
 

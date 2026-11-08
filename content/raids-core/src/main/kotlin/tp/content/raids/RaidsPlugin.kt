@@ -23,7 +23,8 @@ public class RaidsPlugin : ContentPlugin {
             val runId = RaidRun.npcRun(npc) ?: return@on
             val player = e.source as? PlayerRef ?: return@on
             val run = Raids.of(npc).run(runId) ?: return@on
-            Raids.damage(run, player.username, npc.type, e.damage)
+            // Some raid NPCs earn nothing for a while (CoX: a recovered Olm hand).
+            if (npc[tp.plugin.SharedAttrs.RAID_NO_POINTS] != true) Raids.damage(run, player.username, npc.type, e.damage)
         }
         events.on<DeathPolicyRequest> { req ->
             val run = runInside(req.player) ?: return@on

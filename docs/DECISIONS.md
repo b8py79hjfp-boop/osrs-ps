@@ -1179,4 +1179,11 @@ means is not known.
 - **Resource rooms** (`CoxResources` plugin: scavengers, shortcuts, farming, food, Herblore, kindling) follow
   resources.md; the raid-made items in `CoxItems.RAID_ONLY` never leave the Chambers. Food and potion points use per-run
   maker ledgers (the oldest maker of that item is credited first), since items carry no maker.
+- **Great Olm:** one fight script on the head (`CoxOlm`) drives the claws, the 12-step rotation, the three powers, the
+  specials, the clench and healing claw and the phase changes; the room (`CoxOlmRoom`) spawns the parts when the first
+  raider passes the barrier and completes the raid on the head's death (the time ends there; the exit crystal shatters).
+  The visible parts are the cave locs swapped on the side Olm rises on. Damage on a recovered claw earns no points
+  (`SharedAttrs.RAID_NO_POINTS`); the head takes no damage (so earns nothing) before the head phase.
+- **Challenge Mode** uses a fixed three-floor snake layout in the CM page's room order (OPEN-CX9); its middle floor ends in
+  FL_END1 and the bottom floor starts in FL_START2.
 

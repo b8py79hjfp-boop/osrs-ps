@@ -180,6 +180,8 @@ internal object CoxLayout {
     private const val X_CW = 3328
     private const val LOBBY_Z = 5184
     private const val START1_Z = 5696
+    private const val START2_Z = 5728
+    private const val END1_Z = 5120
     private const val END2_Z = 5152
     private const val WINDING_CCW = 3
     private const val WINDING_CW = 1
@@ -234,6 +236,50 @@ internal object CoxLayout {
             }
         }
         return null
+    }
+
+    /**
+     * CX15 / OPEN-CX9: the fixed Challenge Mode layout: three floors of six rooms in the CM page's order, each laid as a
+     * snake over its 4 x 2 grid (start, three rooms east, up, three rooms west, end); the next floor starts in the cell
+     * the floor above ended in.
+     */
+    fun challenge(): CoxLayoutPlan {
+        val floors =
+            listOf(
+                listOf(CoxKind.TEKTON, CoxKind.CRABS, CoxKind.SCAVENGERS, CoxKind.ICE_DEMON, CoxKind.SHAMANS, CoxKind.FARMING_FISH),
+                listOf(
+                    CoxKind.VANGUARDS,
+                    CoxKind.THIEVING,
+                    CoxKind.SCAVENGERS_LARGE,
+                    CoxKind.VESPULA,
+                    CoxKind.FARMING_BATS,
+                    CoxKind.TIGHTROPE,
+                ),
+                listOf(CoxKind.GUARDIANS, CoxKind.VASA, CoxKind.SCAVENGERS, CoxKind.MYSTICS, CoxKind.MUTTADILES, CoxKind.FARMING_FISH),
+            )
+        // The snake from the start cell's row: three east, one north (or south), three west.
+        val up = "EEENWWW"
+        val down = "EEESWWW"
+        val out = ArrayList<CoxCell>()
+        var at = 0 to 0
+        for ((floor, rooms) in floors.withIndex()) {
+            val moves = if (at.second == 0) up else down
+            val pos = path(at, moves) ?: error("cox challenge layout does not fit")
+            at = pos.last()
+            for ((k, p) in pos.withIndex()) {
+                val inMove = if (k == 0) -1 else side(moves[k - 1])
+                val outMove = if (k == pos.size - 1) -1 else side(moves[k])
+                val kind =
+                    when (k) {
+                        0 -> CoxKind.START
+                        pos.size - 1 -> CoxKind.END
+                        else -> rooms[k - 1]
+                    }
+                out += cell(out.size, floor, p.first, p.second, kind, inMove, outMove, floor == floors.size - 1, threeFloors = true)
+                    ?: error("cox challenge cell $kind")
+            }
+        }
+        return CoxLayoutPlan("challenge", out, floors.size)
     }
 
     /** Test fixture: [code] placed with cycle [cycleIndex] at [offset]. */
@@ -326,19 +372,36 @@ internal object CoxLayout {
         }
 
     @Suppress("LongParameterList")
-    private fun cell(index: Int, floor: Int, col: Int, row: Int, kind: CoxKind, inMove: Int, outMove: Int, lastFloor: Boolean): CoxCell? {
+    private fun cell(
+        index: Int,
+        floor: Int,
+        col: Int,
+        row: Int,
+        kind: CoxKind,
+        inMove: Int,
+        outMove: Int,
+        lastFloor: Boolean,
+        threeFloors: Boolean = false,
+    ): CoxCell? {
         val entrySide = if (inMove < 0) -1 else (inMove + 2) % SIDES
         return when (kind) {
             CoxKind.START -> {
                 // Start cells: the lobby (floor 1) or the rope cell; the THRU variant turned to face the way out.
-                val z0 = if (floor == 0) LOBBY_Z else START1_Z
+                val z0 =
+                    when (floor) {
+                        0 -> LOBBY_Z
+                        1 -> START1_Z
+                        else -> START2_Z
+                    }
                 CoxCell(index, floor, col, row, kind, CoordGrid(X_THRU, z0, 0), outMove, -1, outMove)
             }
 
             CoxKind.END -> {
                 // END2 (hole down) is the CCW cell, END3 (the Olm hole) the THRU cell of band 5152; entered from south.
+                // The middle floor of a three-floor (Challenge Mode) raid ends in END1 (5120), its hole DESCENTTO1.
                 val x0 = if (lastFloor) X_THRU else X_CCW
-                CoxCell(index, floor, col, row, kind, CoordGrid(x0, END2_Z, 0), inMove, entrySide, -1)
+                val z0 = if (!lastFloor && floor == 0 && threeFloors) END1_Z else END2_Z
+                CoxCell(index, floor, col, row, kind, CoordGrid(x0, z0, 0), inMove, entrySide, -1)
             }
 
             else -> {
