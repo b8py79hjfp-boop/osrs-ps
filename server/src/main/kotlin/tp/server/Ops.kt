@@ -37,7 +37,12 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
             worlds.forEach {
                 it.metrics.logic.reset()
                 it.metrics.info.reset()
+                synchronized(it.metrics.instanceBuild) { it.metrics.instanceBuild.reset() }
+                it.metrics.instanceAttach.reset()
             }
+            // The next alert window starts from the reset histograms (diffing against the old baseline went negative and
+            // read as the 2,000 ms bucket).
+            synchronized(previous) { previous.clear() }
             reply(ex, HTTP_OK, "reset\n")
         }
         http.start()
@@ -52,7 +57,7 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
         for (w in worlds) {
             val m = w.metrics
             val now = Window(m.logic.snapshot(), m.info.snapshot(), m.missedDeadlines)
-            val before = previous.put(w.config.id, now) ?: continue
+            val before = synchronized(previous) { previous.put(w.config.id, now) } ?: continue
             val logicP99 = percentile(diff(now.logic, before.logic), P99)
             val infoP99 = percentile(diff(now.info, before.info), P99)
             if (logicP99 > LOGIC_BUDGET_MS) problems += "world ${w.config.id}: logic p99 $logicP99 ms > $LOGIC_BUDGET_MS"
@@ -127,7 +132,7 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
         private const val HTTP_UNAVAILABLE = 503
         private val QUANTILES = listOf("0.5" to 0.5, "0.99" to P99, "0.999" to 0.999)
 
-        private fun diff(a: LongArray, b: LongArray) = LongArray(a.size) { a[it] - b[it] }
+        private fun diff(a: LongArray, b: LongArray) = LongArray(a.size) { maxOf(0L, a[it] - b[it]) }
 
         /** Bucket upper bound (ms) at quantile [q] of a histogram copy ([TickMetrics] buckets). */
         fun percentile(counts: LongArray, q: Double): Int {

@@ -68,7 +68,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
                 }
             }
         bridge.exchange(p, engineRequest) { player, offers ->
-            PlayerRef(player).reply(
+            refOf(player).reply(
                 offers?.map {
                     GeOffer(
                         it.slot,
@@ -110,7 +110,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         val bridge = p.world.accounts ?: return reply(null)
         val config = update?.let { ChannelConfig(it.name, it.enterRank, it.talkRank, it.kickRank) }
         bridge.channelConfig(p, config) { player, c ->
-            PlayerRef(player).reply(c?.let { FriendsChatSettings(it.name, it.enterRank, it.talkRank, it.kickRank) })
+            refOf(player).reply(c?.let { FriendsChatSettings(it.name, it.enterRank, it.talkRank, it.kickRank) })
         }
     }
 
@@ -122,7 +122,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** A clan action at the hub; [reply] runs later on the world thread with null on success, else the message. */
     public fun clan(action: ClanAction, reply: PlayerRef.(String?) -> Unit = { it?.let(::message) }) {
         val bridge = p.world.accounts ?: return reply(tp.engine.AccountBridge.NO_HUB)
-        bridge.clan(p, action.request()) { player, err -> PlayerRef(player).reply(err) }
+        bridge.clan(p, action.request()) { player, err -> refOf(player).reply(err) }
     }
 
     /** The NPC type this player sees [npc] as: a multi-NPC (Aubury, quest NPCs) resolves through the player's vars. */
@@ -272,8 +272,8 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public val interactionTarget: EntityRef?
         get() =
             when (val t = p.interactionTarget) {
-                is tp.engine.interact.InteractionTarget.OfNpc -> NpcRef(t.npc)
-                is tp.engine.interact.InteractionTarget.OfPlayer -> PlayerRef(t.player)
+                is tp.engine.interact.InteractionTarget.OfNpc -> refOf(t.npc)
+                is tp.engine.interact.InteractionTarget.OfPlayer -> refOf(t.player)
                 else -> null
             }
 
@@ -802,7 +802,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public companion object {
         /** A handle on engine player [player], for tools that drive the engine directly (tools/scenario, tools/replay). */
-        public fun of(player: Player): PlayerRef = PlayerRef(player)
+        public fun of(player: Player): PlayerRef = refOf(player)
 
         private const val XP_TENTHS = 10
 
@@ -923,7 +923,7 @@ public class WorldRef internal constructor(internal val w: World) {
     public val tick: Long get() = w.tick
 
     /** The online player called [username] (case-insensitive), or null. */
-    public fun onlinePlayer(username: String): PlayerRef? = w.playerNamed(username)?.let { PlayerRef(it) }
+    public fun onlinePlayer(username: String): PlayerRef? = w.playerNamed(username)?.let { refOf(it) }
 
     /** Whether a boat may occupy [tile]: sea with no blocking loc (sailing-movement.md SM1, SM5). */
     public fun isSailable(tile: CoordGrid): Boolean =
@@ -1100,3 +1100,9 @@ public class FriendsChatSettings(public val name: String?, public val enterRank:
 
 /** Wiki "Energy": run can be switched on from 1% = 100 units. */
 private const val MIN_RUN_ENERGY = 100
+
+/** The one [PlayerRef] of [p] (cached on the entity; refs compare by entity, so sharing one changes nothing). */
+internal fun refOf(p: Player): PlayerRef = p.contentRef as? PlayerRef ?: PlayerRef(p).also { p.contentRef = it }
+
+/** The one [NpcRef] of [n] (cached on the entity). */
+internal fun refOf(n: tp.engine.entity.Npc): NpcRef = n.contentRef as? NpcRef ?: NpcRef(n).also { n.contentRef = it }

@@ -81,6 +81,6 @@ public fun PlayerRef.tradingPost(request: TpRequest, reply: PlayerRef.(TpReply?)
                     it.trades.map { t -> TpTradeView(t.obj, t.quantity, t.price, t.bought, t.other, t.atMs) },
                 )
             }
-        PlayerRef(player).reply(view)
+        refOf(player).reply(view)
     }
 }

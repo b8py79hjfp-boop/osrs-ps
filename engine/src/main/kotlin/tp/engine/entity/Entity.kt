@@ -20,6 +20,9 @@ abstract class Entity internal constructor(
             if (indexed) world.entityMoved(this, old)
         }
 
+    /** The content API's handle for this entity (plugin-api caches one PlayerRef / NpcRef per entity: no allocation per access). */
+    var contentRef: Any? = null
+
     /** In the world's square index (raids brief section 7: radius queries), from add / spawn until removal. */
     internal var indexed: Boolean = false
 

@@ -78,7 +78,7 @@ public sealed class EntityRef {
     }
 
     /** The online player called [username] in this entity's world (case-insensitive), or null. */
-    public fun onlinePlayer(username: String): PlayerRef? = e.world.playerNamed(username)?.let { PlayerRef(it) }
+    public fun onlinePlayer(username: String): PlayerRef? = e.world.playerNamed(username)?.let { refOf(it) }
 
     public fun anim(seq: Int, delay: Int = 0) {
         e.visual(Visual.Animate(seq, delay))
@@ -122,7 +122,7 @@ public sealed class EntityRef {
     /** Every player in this world. */
     public fun playersInWorld(): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
-        e.world.forEachPlayer { out += PlayerRef(it) }
+        e.world.forEachPlayer { out += refOf(it) }
         return out
     }
 
@@ -133,7 +133,7 @@ public sealed class EntityRef {
             // IN11: observers (spectators) are never picked.
             val near =
                 p.coord.level == coord.level && maxOf(kotlin.math.abs(p.coord.x - coord.x), kotlin.math.abs(p.coord.z - coord.z)) <= radius
-            if (near && p !== e && !p.observer) out += PlayerRef(p)
+            if (near && p !== e && !p.observer) out += refOf(p)
         }
         return out
     }
@@ -145,7 +145,7 @@ public sealed class EntityRef {
             if (!n.hidden && n.coord.level == centre.level &&
                 maxOf(kotlin.math.abs(n.coord.x - centre.x), kotlin.math.abs(n.coord.z - centre.z)) <= radius
             ) {
-                out += NpcRef(n)
+                out += refOf(n)
             }
         }
         return out
@@ -158,7 +158,7 @@ public sealed class EntityRef {
             if (p.coord.level == centre.level &&
                 maxOf(kotlin.math.abs(p.coord.x - centre.x), kotlin.math.abs(p.coord.z - centre.z)) <= radius
             ) {
-                out += PlayerRef(p)
+                out += refOf(p)
             }
         }
         return out
@@ -193,11 +193,11 @@ public sealed class EntityRef {
     }
 
     /** Spawns NPC [type] at [at] (wandering [wanderRange]) and returns it; it respawns like any NPC unless removed. */
-    public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int = 0): NpcRef = NpcRef(e.world.spawnNpc(type, at, wanderRange))
+    public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int = 0): NpcRef = refOf(e.world.spawnNpc(type, at, wanderRange))
 
     /** [spawnNpc] with [init] run on the NPC before any spawn handler sees it (tag it first, then let its script start). */
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int, init: NpcRef.() -> Unit): NpcRef =
-        NpcRef(e.world.spawnNpc(type, at, wanderRange) { NpcRef(it).init() })
+        refOf(e.world.spawnNpc(type, at, wanderRange) { refOf(it).init() })
 
     /** Allocates an empty instanced area of [widthSquares] × [lengthSquares] map squares (64 tiles each) in this world. */
     public fun createInstance(widthSquares: Int = 1, lengthSquares: Int = 1): InstanceRef =
@@ -495,8 +495,8 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
     public val target: EntityRef?
         get() =
             when (val t = n.currentInteraction?.target) {
-                is InteractionTarget.OfPlayer -> PlayerRef(t.player)
-                is InteractionTarget.OfNpc -> NpcRef(t.npc)
+                is InteractionTarget.OfPlayer -> refOf(t.player)
+                is InteractionTarget.OfNpc -> refOf(t.npc)
                 else -> null
             }
 
@@ -510,7 +510,7 @@ public class NpcRef internal constructor(internal val n: Npc) : EntityRef() {
 /** Receiver of NPC scripts (attack scripts). Restricted like [PlayerScript]. */
 @RestrictsSuspension
 public class NpcScript internal constructor(private val scope: tp.engine.script.ScriptScope<Npc>) {
-    public val npc: NpcRef = NpcRef(scope.self)
+    public val npc: NpcRef = refOf(scope.self)
 
     public suspend fun delay(ticks: Int) {
         scope.delay(ticks)

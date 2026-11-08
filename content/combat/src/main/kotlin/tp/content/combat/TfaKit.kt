@@ -32,8 +32,12 @@ internal object TfaKit {
         npc.hitpoints = hp
     }
 
-    /** Living players within [radius] of [npc] (a room). */
-    fun arena(npc: NpcRef, radius: Int = ROOM_RADIUS): List<PlayerRef> = npc.playersWithin(radius).filter { !it.isDying }
+    /** Living players within [radius] of [npc] (a room); a second list only when someone in range is dying. */
+    fun arena(npc: NpcRef, radius: Int = ROOM_RADIUS): List<PlayerRef> {
+        val out = npc.playersWithin(radius)
+        if (out.any { it.isDying }) return out.filter { !it.isDying }
+        return out
+    }
 
     /** The tiles of a plus shape of arm length [arm] centred on [c]. */
     fun cross(c: CoordGrid, arm: Int): List<CoordGrid> {

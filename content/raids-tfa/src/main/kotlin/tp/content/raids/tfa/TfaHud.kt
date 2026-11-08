@@ -18,38 +18,36 @@ internal object TfaHud {
     fun tick(world: WorldRef, run: RaidRun, state: TfaState) {
         val names = run.party.members
         val inst = run.instance ?: return
-        val present = names.mapNotNull { n -> world.onlinePlayer(n)?.takeIf { p -> run.member(n)?.inside == true && p.coord in inst } }
-        val orbs = IntArray(SLOTS) { k -> orb(run, names.getOrNull(k), present) }
-        for (p in present) {
-            if (!p.isOpen(Interfaces.TFA_HUD)) {
-                p.openOverlay(Components.Toplevel.OVERLAY_HUD, Interfaces.TFA_HUD)
-                state.hudSentTo -= p.username
-            }
-            for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], orbs[k])
+        // Tick hot loop (raids brief section 7): no lists; the orbs go in the run state's array.
+        val orbs = state.orbs
+        for (k in 0 until SLOTS) orbs[k] = orb(world, run, names.getOrNull(k), inst)
+        for (n in names) {
+            val p = present(world, run, n, inst) ?: continue
+            show(world, run, state, p)
             setIfChanged(p, Varbits.TFA_CLIENT_PARTYSLOT, names.indexOfFirst { it.equals(p.username, ignoreCase = true) } + 1)
-            if (state.hudSentTo.add(p.username) || state.hudDirty) {
-                p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
-                val ended = run.state == RunState.Completed
-                val elapsed = (if (ended) run.endedTick else world.tick) - run.startedTick
-                p.clientScript(SCRIPT_TIMER, elapsed.toInt(), if (ended) 1 else 0)
-            }
         }
         // TFA17: spectators see the same orbs, names and timer (their own slot is none).
         for (name in run.spectators) {
             val p = world.onlinePlayer(name)?.takeIf { it.coord in inst } ?: continue
-            if (!p.isOpen(Interfaces.TFA_HUD)) {
-                p.openOverlay(Components.Toplevel.OVERLAY_HUD, Interfaces.TFA_HUD)
-                state.hudSentTo -= p.username
-            }
-            for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], orbs[k])
-            if (state.hudSentTo.add(p.username) || state.hudDirty) {
-                p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
-                val ended = run.state == RunState.Completed
-                val elapsed = (if (ended) run.endedTick else world.tick) - run.startedTick
-                p.clientScript(SCRIPT_TIMER, elapsed.toInt(), if (ended) 1 else 0)
-            }
+            show(world, run, state, p)
         }
         state.hudDirty = false
+    }
+
+    /** The HUD, this tick's orbs and (first time or when dirty) the names and timer, for a member or a spectator. */
+    private fun show(world: WorldRef, run: RaidRun, state: TfaState, p: PlayerRef) {
+        if (!p.isOpen(Interfaces.TFA_HUD)) {
+            p.openOverlay(Components.Toplevel.OVERLAY_HUD, Interfaces.TFA_HUD)
+            state.hudSentTo -= p.username
+        }
+        for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], state.orbs[k])
+        if (state.hudSentTo.add(p.username) || state.hudDirty) {
+            val names = run.party.members
+            p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
+            val ended = run.state == RunState.Completed
+            val elapsed = (if (ended) run.endedTick else world.tick) - run.startedTick
+            p.clientScript(SCRIPT_TIMER, elapsed.toInt(), if (ended) 1 else 0)
+        }
     }
 
     /** Closes the HUD and clears the orbs for a player leaving the raid. */
@@ -59,12 +57,16 @@ internal object TfaHud {
         setIfChanged(p, Varbits.TFA_CLIENT_PARTYSLOT, 0)
     }
 
-    private fun orb(run: RaidRun, name: String?, present: List<PlayerRef>): Int {
+    /** [name] online, inside the run and in its instance, or null. */
+    private fun present(world: WorldRef, run: RaidRun, name: String, inst: tp.plugin.InstanceRef): PlayerRef? =
+        world.onlinePlayer(name)?.takeIf { p -> run.member(name)?.inside == true && p.coord in inst }
+
+    private fun orb(world: WorldRef, run: RaidRun, name: String?, inst: tp.plugin.InstanceRef): Int {
         name ?: return 0
         val m = run.member(name) ?: return 0
         if (!m.inside) return 0
         if (!m.alive) return ORB_DEAD
-        val p = present.firstOrNull { it.username.equals(name, ignoreCase = true) } ?: return ORB_DEAD
+        val p = present(world, run, name, inst) ?: return ORB_DEAD
         val max = maxOf(1, p.maxHitpoints)
         // Overheal (brews) can exceed max: the orb shows full.
         return 1 + (ORB_HEIGHT * p.hitpoints.coerceIn(0, max) + max / 2) / max
@@ -106,6 +108,9 @@ internal class TfaState {
     /** Nexus level copy in use (OPEN-NX4: 0 start, 2 Guardian dead, 3 Ocellus passage open). */
     var nexusLevel: Int = 0
     var hudDirty: Boolean = true
+
+    /** The HUD's orb values of this tick (reused: no array per tick). */
+    val orbs: IntArray = IntArray(PARTY_SLOTS)
     val hudSentTo: MutableSet<String> = HashSet()
 
     /** Members whose own-chest slot (`TFA_VAULT_OWN_CHEST`) was set in this run's vault (the varbit outlives runs). */
@@ -130,3 +135,6 @@ internal class TfaState {
     /** The Archive Guardian's death already dropped the archive keys (TfaRecordsRoom.guardianDied runs once per run). */
     var keyHandled: Boolean = false
 }
+
+/** HUD 974's eight party slots. */
+private const val PARTY_SLOTS = 8

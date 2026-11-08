@@ -74,7 +74,8 @@ internal object TobHud {
         setIfChanged(p, Varbits.TOB_CLIENT_PARTYSTATUS, STATUS_IN_RAID)
         setIfChanged(p, Varbits.TOB_CLIENT_PARTYSLOT, slot)
         for (k in 0 until SLOTS) setIfChanged(p, ORB_VARBITS[k], orbs[k])
-        if (p[HUD_SENT] != signature) {
+        val sent = p[HUD_SENT]
+        if (sent == null || sent != signature) {
             p[HUD_SENT] = signature
             p.clientScript(SCRIPT_NAMES, *Array(SLOTS) { names.getOrElse(it) { "" } })
         }

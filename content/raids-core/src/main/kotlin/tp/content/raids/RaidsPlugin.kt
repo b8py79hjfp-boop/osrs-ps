@@ -51,7 +51,9 @@ public class RaidsPlugin : ContentPlugin {
 
     /** End of tick: drivers sync changed runs; empty or finished runs close after the grace period. */
     private fun worldTick(world: tp.plugin.WorldRef) {
-        for (run in Raids.of(world).activeRuns.toList()) {
+        // Tick hot loop (raids brief section 7): no copy of the runs; the few that close are collected and closed after.
+        var closing: ArrayList<RaidRun>? = null
+        for (run in Raids.of(world).activeRuns) {
             if (run.dirty) {
                 run.dirty = false
                 run.raid.driver.sync(run)
@@ -65,8 +67,11 @@ public class RaidsPlugin : ContentPlugin {
             val nobodyInside = run.members.values.none { it.inside }
             val ended = run.state == RunState.Completed || run.state is RunState.Failed || run.state == RunState.Abandoned
             if (!ended && nobodyInside) run.state = RunState.Abandoned
-            if (world.tick - run.emptySinceTick >= Raids.EMPTY_GRACE_TICKS || (ended && nobodyInside)) Raids.close(world, run)
+            if (world.tick - run.emptySinceTick >= Raids.EMPTY_GRACE_TICKS || (ended && nobodyInside)) {
+                (closing ?: ArrayList<RaidRun>().also { closing = it }) += run
+            }
         }
+        closing?.forEach { Raids.close(world, it) }
     }
 
     private fun runInside(player: PlayerRef): RaidRun? {

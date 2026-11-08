@@ -36,12 +36,10 @@ public class TobDeaths : ContentPlugin {
     private fun tick(world: WorldRef) {
         for (run in Raids.of(world).activeRuns) {
             if (run.raid.id != TobRaid.ID) continue
-            val present =
-                run.members.values
-                    .filter { it.inside && it.online }
-                    .mapNotNull { world.onlinePlayer(it.name) }
-            payBandages(world, TobFlow.state(run))
-            retry(run, present)
+            val state = TobFlow.state(run)
+            // Tick hot loop: lists only when there is something to do (raids brief section 7).
+            if (state.bandagesOwed.isNotEmpty()) payBandages(world, state)
+            if (state.retryRoom != null) retry(run, run.presentPlayers(world))
         }
     }
 

@@ -59,7 +59,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     /** Chatbox option menus waiting for an answer (world thread only), see [PlayerRef.choiceDialog]. */
     internal val pendingChoices = HashMap<Player, PendingChoice>()
 
-    private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { PlayerRef(player) }
+    private fun ref(player: Player): PlayerRef = refs.getOrPut(player) { refOf(player) }
 
     override fun onWorldStart(world: World) {
         this.world = world
@@ -309,7 +309,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onModalClosed(player: Player, interfaceId: Int) {
         val list = h.modalClosed[interfaceId] ?: return
-        val ref = PlayerRef(player)
+        val ref = refOf(player)
         for (handler in list) ref.handler()
     }
 
@@ -319,12 +319,12 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onNpcSpawn(npc: tp.engine.entity.Npc) {
         if (h.npcSpawn.isEmpty()) return
-        val ref = NpcRef(npc)
+        val ref = refOf(npc)
         for (handler in h.npcSpawn) ref.handler()
     }
 
     override fun npcHunt(npc: tp.engine.entity.Npc) {
-        h.npcHunt?.invoke(NpcRef(npc))
+        h.npcHunt?.invoke(refOf(npc))
     }
 
     override fun onScriptTrigger(player: Player, component: Int, sub: Int, obj: Int, crc: Int, payload: ByteArray) {
@@ -350,7 +350,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             val t = self.interactionTarget as? InteractionTarget.Loc
             if (t != null) {
                 val loc = LocRef(t.id, t.coord, t.shape, t.angle)
-                events.publish(LocInteraction(PlayerRef(self), loc, self.interactionOption))
+                events.publish(LocInteraction(refOf(self), loc, self.interactionOption))
                 run(PlayerScript(this), loc, s)
             }
         }
@@ -359,8 +359,8 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         {
             val t = self.interactionTarget as? InteractionTarget.OfNpc
             if (t != null) {
-                val npc = NpcRef(t.npc)
-                events.publish(NpcInteraction(PlayerRef(self), npc, self.interactionOption))
+                val npc = refOf(t.npc)
+                events.publish(NpcInteraction(refOf(self), npc, self.interactionOption))
                 run(PlayerScript(this), npc, s)
             }
         }

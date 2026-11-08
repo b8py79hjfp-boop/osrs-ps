@@ -13,7 +13,7 @@ import kotlin.coroutines.RestrictsSuspension
  */
 @RestrictsSuspension
 public class PlayerScript internal constructor(private val scope: ScriptScope<Player>) {
-    public val player: PlayerRef = PlayerRef(scope.self)
+    public val player: PlayerRef = refOf(scope.self)
 
     /** Normal delay: delays the player [ticks] and resumes this script when it ends (scripts.md D1, D3). */
     public suspend fun delay(ticks: Int) {
@@ -35,8 +35,8 @@ public class PlayerScript internal constructor(private val scope: ScriptScope<Pl
     public val target: EntityRef?
         get() =
             when (val t = scope.self.interactionTarget) {
-                is tp.engine.interact.InteractionTarget.OfPlayer -> PlayerRef(t.player)
-                is tp.engine.interact.InteractionTarget.OfNpc -> NpcRef(t.npc)
+                is tp.engine.interact.InteractionTarget.OfPlayer -> refOf(t.player)
+                is tp.engine.interact.InteractionTarget.OfNpc -> refOf(t.npc)
                 else -> null
             }
 

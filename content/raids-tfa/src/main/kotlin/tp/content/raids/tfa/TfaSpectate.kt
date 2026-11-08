@@ -142,8 +142,9 @@ public class TfaSpectate : ContentPlugin {
             // than standing up in the arena again.
             if (run.state is RunState.InRoom) watchWhileDead(world, run)
             // Every member is checked (not only the dead): one back alive stops watching on the next tick.
-            val watchers = run.spectators.toList() + run.members.keys
-            for (name in watchers) follow(world, run, inst, name)
+            // Tick hot loop: the spectator set is copied only when it has someone (follow can drop them).
+            if (run.spectators.isNotEmpty()) for (name in run.spectators.toList()) follow(world, run, inst, name)
+            for (name in run.members.keys) follow(world, run, inst, name)
             for (name in run.party.members) {
                 world.onlinePlayer(name)?.setVarbit(Varbits.TFA_CLIENT_NUM_EXTERNAL_SPECTATORS, minOf(run.spectators.size, MAX_COUNTER))
             }
