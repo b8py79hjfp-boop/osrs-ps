@@ -37,6 +37,8 @@ public class RaidDefinition internal constructor(
     public val autoAdvance: Boolean,
     /** Levels copied from level 0 for a square (default all four); TFA's nexus keeps its other levels as states. */
     public val squareLevels: Map<Pair<Int, Int>, Int>,
+    /** A logout that does not count as a death even in an encounter (ToB TB20: holding an escape crystal). */
+    public val safeLogout: (PlayerRef) -> Boolean,
 ) {
     internal val instanceWidth: Int = squares.maxOf { it.first } - squares.minOf { it.first } + 1
     internal val instanceLength: Int = squares.maxOf { it.second } - squares.minOf { it.second } + 1
@@ -158,6 +160,7 @@ public class RaidBuilder internal constructor(private val id: String) {
     public var driver: RaidDriver = RaidDriver { }
     public var autoAdvance: Boolean = true
     public var squareLevels: Map<Pair<Int, Int>, Int> = emptyMap()
+    public var safeLogout: (PlayerRef) -> Boolean = { false }
     private val rooms = LinkedHashMap<String, RoomDef>()
     private val slots = ArrayList<List<String>>()
 
@@ -197,6 +200,7 @@ public class RaidBuilder internal constructor(private val id: String) {
             driver,
             autoAdvance,
             squareLevels,
+            safeLogout,
         )
     }
 }

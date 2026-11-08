@@ -73,6 +73,8 @@ internal object TobRaid {
                     wipeByMode = if (TobConfig.entryWipeRestartsRoom) mapOf(ENTRY to WipePolicy.RetryRoom) else emptyMap(),
                 )
             disconnect = DisconnectPolicy.DEATH_IN_ENCOUNTER
+            // TB20 (26 Mar 2025): a logout holding an escape crystal is safe (it teleports the player out on login).
+            safeLogout = { p -> TobCrystal.holdsOrSpent(p) }
             raidOnlyItems = RAID_ONLY
             claimInv = Invs.TOB_CHESTS
             requirements = { p -> TobConfig.requirement(p) }

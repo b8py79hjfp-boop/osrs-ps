@@ -89,6 +89,10 @@ public class TobCrystal : ContentPlugin {
             return false
         }
 
+        /** Whether [p] holds a crystal or already spent one on this logout (raids-core safe-logout rule). */
+        fun holdsOrSpent(p: PlayerRef): Boolean =
+            p.saved(PENDING) != null || slotOf(p) >= 0 || p.inv(Invs.WORN).total(Objs.TOB_TELEPORT) > 0
+
         /** TB20: logging out inside while holding a crystal (backpack or ring slot) consumes it; the next login leaves. */
         private fun loggedOut(p: PlayerRef) {
             if (insideRun(p) == null) return

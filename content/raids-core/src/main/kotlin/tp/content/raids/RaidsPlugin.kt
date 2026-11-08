@@ -76,9 +76,8 @@ public class RaidsPlugin : ContentPlugin {
         val run = runInside(player) ?: return
         val m = run.member(player.username) ?: return
         m.online = false
-        if (run.raid.disconnect == DisconnectPolicy.DEATH_IN_ENCOUNTER &&
-            (run.state as? RunState.InRoom)?.room?.kind == RoomKind.ENCOUNTER
-        ) {
+        val encounter = (run.state as? RunState.InRoom)?.room?.kind == RoomKind.ENCOUNTER
+        if (run.raid.disconnect == DisconnectPolicy.DEATH_IN_ENCOUNTER && encounter && !run.raid.safeLogout(player)) {
             m.deaths++
             run.teamDeaths++
             m.alive = false
