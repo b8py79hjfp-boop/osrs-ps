@@ -153,7 +153,7 @@ pit (BB11).
   base, and whether the changes apply from the end of the second boulder phase or from the 33.3% threshold: **OPEN-BB11**.
 - **BB13 Defence:** she "does not reset" drained Defence and the drain is capped at **-20** (minimum 60) (Page, CA-Chomp's shared note); the bug that made it undrainable was fixed on 8 Sep 2022.
 - **BB14 Death and reset:** drops as in Data. The room restarts after a wipe (no Ba-Ba-specific rule is stated). Death animation and music: **OPEN-BB3**.
-- **BB15 Fixed bugs that stay fixed:** no walking inside the rubble (14 Sep 2022); no safespotting with the fallen rubble (26 Aug 2022 hotfix, and again before 8 Sep); boulders may no longer become invisible
+- **BB15 Fixed bugs that stay fixed:** no walking inside the rubble (14 Sep 2022); no safespotting with the fallen rubble (26 Aug 2022 hotfix); boulders may no longer become invisible
   (8 Sep 2022); no getting stuck inside a big rock (1 Sep 2022).
 
 ## Per-attack reference
