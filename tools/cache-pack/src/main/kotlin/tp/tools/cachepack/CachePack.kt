@@ -26,6 +26,7 @@ fun main(args: Array<String>) {
     exitProcess(run(args.toList()))
 }
 
+@Suppress("ReturnCount") // one early exit per subcommand
 private fun run(args: List<String>): Int {
     try {
         val command = args.firstOrNull()?.takeIf { !it.startsWith("--") } ?: "pack"
