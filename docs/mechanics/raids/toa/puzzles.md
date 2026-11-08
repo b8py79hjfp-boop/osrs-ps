@@ -8,7 +8,7 @@ potion" (Potion), "Banana peel" (Peel), "Crocodile (Tombs of Amascut)" (Croc), "
 container (Tombs of Amascut)" (Container), "Waterfall (Tombs of Amascut)" (Fall), "Het's Seal" (Seal), "Orb of Darkness"
 (Orb), "Mirror (Tombs of Amascut)" (Mirror), "Statue (Tombs of Amascut)" (Statue), "Caster statue" (Caster), "Shielded
 statue" (Shielded), "Scarab (Tombs of Amascut)" (Scarab), "Scarab Swarm (Tombs of Amascut)" (Swarm), "Soldier Scarab" /
-"Spitting Scarab" / "Arcane Scarab" / "Agile Scarab" (Soldier / Spitting / Arcane / Agile; Kephri's fight, see PC3), "Perfect
+"Spitting Scarab" / "Arcane Scarab" / "Agile Scarab" (Soldier / Spitting / Arcane / Agile; Kephri's fight, see SC11), "Perfect
 Apmeken" / "Perfect Crondis" / "Perfect Scabaras" / "Perfect Het" / "Insanity" (CA pages). RuneLite plugins, facts only, no
 code copied: `tombs-of-amascut` by LlemonDuck (LD), `toa-mistake-tracker` (MT), `toa-points-tracker` (PT), `toa-puzzle-helper`
 (PHp; only region ids, Ba-Ba wave and Kephri-light images), `toa-modern` and `toa-supplies` (read, no puzzle content), `tombs-of-
@@ -25,7 +25,7 @@ Zebak, Het -> Akkha, Scabaras -> Kephri (Main). The bosses are not covered here.
 Path of Scabaras has **five** puzzles, not four (Strat: "There are five puzzles to complete between two branched paths"); (2)
 "Insanity" is a **Wardens** invocation and a Grandmaster Combat Achievement (CA page, Strat), not a puzzle-room effect, and the
 spitting / arcane / soldier scarabs are **Kephri's fight** NPCs (Soldier / Spitting / Arcane pages: "summoned by Kephri");
-they are recorded in PC3 so nothing is lost but they never appear in the Scabaras puzzle room.
+they are recorded in the Data section and SC11 so nothing is lost, but they never appear in the Scabaras puzzle room.
 
 ## Data
 
@@ -87,7 +87,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 - Animations (symbols, names only; which one belongs to which baboon is not stated, **OPEN-PZ4**): `NPC_MANDRILL_ATTACK_MELEE`
   9742, `_RANGED_01` 9744, `_RANGED_02` 9745, `_MAGIC` 9746, `_MAGIC_02` 9747, `_SPECIAL_JUMP01` 9748, `_SPECIAL_RANGED01`
   9749, `_SPECIAL_IDLE01` 9750, `_SPECIAL_END01` 9751, `_SPAWN01` 9752, `_SPAWN02` 9753, `_DESPAWN01` 9754, `_DESPAWN02` 9755,
-  `NPC_MANDRILL_EXPLODE` 9756, `SPOTANIM_MANDRILL_EXPLODE` 9757 (a seq). Projectiles: `TOA_BABOON_RANGED_TRAVEL_1 / _2`
+  `NPC_MANDRILL_EXPLODE` 9756, seq 9757 (also named `SPOTANIM_MANDRILL_EXPLODE`); the spot anim of that name is **2249**
+  (baba.md lists it for the Volatile baboon). Projectiles: `TOA_BABOON_RANGED_TRAVEL_1 / _2`
   **2242 / 2243**, `TOA_BABOON_MAGIC_TRAVEL_1 / _2` **2247 / 2248**.
 - Locs: `TOA_PATH_APMEKEN_PILLAR` **45494** ("Roof support", 3x3, op1 "Repair", idle seq 9503 `TOA_PILLAR_IDLE`),
   `_PILLAR_SHAKING` **45495** (same name and op, seq 9502 `TOA_PILLAR_SHAKE`), `_PILLAR_NO_REPAIR` **45496** (name "Statue",
@@ -100,7 +101,7 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   `_SIGHT_WARNING` **2134**, `_SIGHT_WARNING02` **2135**, `_SIGHT_FLOOR` **2136**, `_GAIN_CURSED` **2137** (the corruption
   mark), `_GAS` **2138** (the vent-failure graphic; MT `VENT_GRAPHICS_ID`), `_RUBBLE` **2139** (the pillar-failure graphic; MT
   `PILLAR_GRAPHICS_ID`). The volatile explosion graphic MT matches is spot anim **131** (symbol `FIREBLAST_IMPACT`, reused), at
-  the centre of the 3x3. What 2134 / 2135 / 2136 mark exactly is not stated (**OPEN-PZ4**).
+  the centre of the 3x3, while the cache has the dedicated **2249** (conflict 13, **OPEN-PZ16**). What 2134 / 2135 / 2136 mark exactly is not stated (**OPEN-PZ4**).
 - Messages (MT / Strat): "You sense an issue somewhere in the room." (Sight prompt), "The fumes filling the room suddenly
   ignite!" (vent failure), "Damaged roof supports cause some debris to fall on you!" (pillar failure), "Your group is
   overwhelmed by Amascut's corruption!" (corruption failure).
@@ -116,8 +117,7 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   `CROC_ATTACK` 2039, parry 2035, death 2038, merge 9804): cache `stats` [150, 100, 60, 30, 1, 30] = attack 150, defence 100,
   strength 60, **HP 30**, ranged 1, magic 30; params 5-8 = 150 / 350 / 350 / 5, 10 (melee strength bonus) = 100, 14 = **7**
   (attack speed), 26 = 2 (crush); all agree with Croc. Crush, **max hit 18**, not aggressive in the usual sense (it picks
-  targets by CR4), poison and venom immune, elemental weakness **earth 40%** (25 Jun 2025), cannon immune. The cache has no
-  separate "enraged" or per-mode croc.
+  targets by CR4), poison and venom immune, elemental weakness **earth 40%** (25 Jun 2025), cannon immune.
 - Locs: waterfall `TOA_CRONDIS_WATER_SOURCE` **45398** (name "Waterfall", 7x5, op1 "Fill") and `_EMPTY` **45399** ("Waterfall
   (dry)", same op), floors `TOA_CRONDIS_WATERFALL_FLOOR_01/_01_MIRROR/_02` 45400 / 45401 / 45402; traps `TOA_CRONDIS_COLUMN_TRAP`
   **45414** ("Statue", 1x2, seq 9562 `CRONDIS_SPEAR_TRAP_IDLE`), `_ROW_TRAP` **45415** ("Statue", 2x1), `_ROW_TRAP_FIRE` **45416**
@@ -125,8 +125,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   **45418**, `_RECOL01` **45419**, `_RECOL02` **45420** (the dark and light clouds; which is which is not stated, **OPEN-PZ5**),
   `_INACTIVE` **45421** ("Vines"), edges 45422-45425; decor `_STATUE01_3X3` 45206, bushes 45404-45413, `_DIRTPATCH` 45430,
   patches 45437-45444.
-- Items: `TOA_CRONDIS_WATER_CONTAINER` **27295** (op Check, Empty, Destroy; value 100; weight 2 kg; cache stackable 2 = noted-less
-  non-stack; Container).
+- Items: `TOA_CRONDIS_WATER_CONTAINER` **27295** (wiki ops Check, Empty, Destroy; value 100; weight 2 kg; Container, cache agrees on
+  value and weight).
 - Player animation LD / MT match for "emptying a container": **827** (symbol `HUMAN_PICKUPFLOOR`; MT `PLAYER_WATER_ANIMATION_ID`).
   Hitsplat types on the palm: **11** (water up) and **15** (water down) (MT constants `WATER_HITSPLAT_UP_ID`, `_DOWN_ID`); a
   palm "up" hitsplat below 100 means the container was not full (MT).
@@ -139,8 +139,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 
 - NPCs: Het's Seal protected `TOA_HET_GOAL` **11706** and weakened `TOA_HET_GOAL_VULNERABLE` **11707** (size 3, op1 "Destroy",
   names "Het's Seal (protected)" / "(weakened)", examines "It looks to be glimmering slightly." / "The cracks are starting to
-  show."); cache hitpoints stat of 11706 = **119** (agrees with Seal, 20 May 2026) and 11707 = 1 (the HP is carried across the
-  change at runtime, derived). Orb of Darkness `TOA_HET_ORB` **11708** (size 1, stand `SPECTER_GOO_TRAVEL_LOOP` 8652, walk
+  show."); cache hitpoints stat of 11706 = **119** (agrees with Seal, 20 May 2026) and 11707 = 1 (presumably the HP carries over at
+  runtime; not stated). Orb of Darkness `TOA_HET_ORB` **11708** (size 1, stand `SPECTER_GOO_TRAVEL_LOOP` 8652, walk
   `TOA_HET_ORB_WALK01` **9542**; the Akkha variant 11801 is out of scope). Broken seal locs `TOA_HET_GOAL_DEAD` **45489**
   (3x3), `TOA_HET_GOAL_BOX` 45488, `TOA_HET_GOAL` 45490 (3x3), wiki "Broken seal" ids 45489 and 45491.
 - Statues: caster `TOA_HET_SOURCE` **45486** (3x3, "Caster statue"; LD `BeamTimerTracker` uses it as the beam origin), shielded
@@ -159,7 +159,7 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   45473, 4 mithril 45474, 5 adamant 45475, 6 rune 45476, 7 gilded 45477, 8 dragon 45478, 9 dragon (upgraded) 45480, 10 dragon (or)
   45479, 11-12 infernal 45482 (two values: charged / uncharged), 13 3rd age 45481, 14-15 crystal 45483, 16 `TOA_HET_STATUE_PICKAXE_
   LEAGUES` 55808 (Echo), 17-19 trailblazer 45484, 20-22 trailblazer reloaded 55809, 23 -> 45470 (derived from the cache multi-loc
-  order). Empty statue 45469. Lobby cavity (same op names, same varbit): parent 49566, 49567, pickaxes 49568-49582, 55810,
+  order). Empty statue 45469. Lobby cavity (same varbit): parent 49566, 49567, pickaxes 49568-49582, 55810,
   55811. Pickaxe items LD accepts as "a pickaxe" include bronze to rune, dragon, dragon (or), Zalcano, infernal (and empty),
   trailblazer variants, crystal (and inactive), 3rd age, gilded (LD `PickaxeUtil`).
 - Spot anims: beam graphics `FX_BEAM_ATTACK01` **2064** (vertical segment, LD), `FX_BEAM_ATTACK03` **2114** (horizontal
@@ -180,7 +180,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   param 4 = 150, params 5-8 = 0, 26 = 4 ranged; infobox: **HP 12**, attack speed **4**, max hit **6**, ranged, aggressive, fire
   weakness **40%** (25 Jun 2025), poison and venom immune, cannon immune). Obelisk `TOA_SCABARAS_GUESSER_OBELISK` **11698**
   (name "Obelisk", size 1, op2 "Hit", cache hitpoints 120) and `_HIT` **11699** (lit, no ops). Projectile / impact spot anims
-  `TOA_SCARAB_RANGED_PROJECTILE01 / IMPACT01` **2152 / 2153**, `..02` **2154 / 2155**.
+  `TOA_SCARAB_RANGED_PROJECTILE01 / IMPACT01` **2152 / 2153**, `..02` **2154 / 2155** (kephri.md KP7 gives the same four to the
+  Spitting Scarab; which scarab uses them is not stated, **OPEN-PZ31**).
 - Locs (all names from the cache): barrier `TOA_SCABARAS_BARRIER` 45335 (null name) and `_BARRIER_ACTIVE` **45336** ("Barrier"),
   `TOA_SCABARAS_CONTINUE` **45337**, `SIMONSAYS_BUTTON` **45338** ("Ancient button", op Push), `SIMONSAYS_TILE_UP` **45340**
   (pressure plate at rest), `_TILE_DOWN` **45341** (plate lit, seq 9496 `TOA_TILE_GLOW_IDLE`), `_TILE_DOWN_PLAYER` **45342** (plate
@@ -192,8 +193,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   button"), `SPAWN_HOLE` **45343** ("Passage", op "Crawl-through"), `STEPPING_STONE` **45396** ("Platform", op "Jump-to"),
   `SWARM` 45354, `DIVIDER` 45374, `HINTS01 / 02` **45139 / 45140** ("Strange panels", 1x3; probably the symbol-value panels the
   wiki puts "on the north and south wall near the entrance", inferred from names), `STATUE01_3X3` 45205, `FX02` 45385.
-  Symbols and their LD names: 1 line, 2 knives (addition) / crook (matching order), 3 triangle / hand, ... the two puzzles use
-  different orderings, listed in SC5 and SC6.
+  Symbol order (LD): matching tiles `MEMORYGAME_TILE1..9` = line, knives, crook, diamond, hand, star, bird, wiggle, boot; addition
+  plates `TOTALTILES_TILE1..9` = line, knives, triangle, diamond, hand, bird, crook, wiggle, foot (values 1-9, SC6).
 - Seqs: `TOA_FLIP_TILE` **9490**, `TOA_TILE_GLOW_IDLE` 9496, `TOA_DUST_FALLING` **9498** (the falling rocks), `TOA_OBELISK01_GLOW`
   9515. Spot anim `MM_ROOFCOLLAPSE` **302** (LD matches it on a plate to detect a sequence failure).
 - Layout facts LD assumes (scene tile coordinates, `SkipObeliskOverlay`, `LightPuzzleSolver`, `AdditionPuzzleSolver`): the four
@@ -240,12 +241,11 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   (banana peels, 3 s stun) is a Ba-Ba **fight** invocation (Peel, Baboon, Main): the Apmeken puzzle baboons drop nothing. The
   Kephri invocations (Lively Larvae, More Overlords, Blowing Mud, Medic!, Aerial Assault) are boss-only.
 - **PC4 Wipe, restart, disconnect:** after a wipe with attempts left the team **restarts the room it died in**, keeping earlier
-  progress (Main, Strat); a wipe on the very tick the challenge completes is not an attempt (Main). Players who die and are
-  not on a death invocation respawn in the room with honey locusts (Main death text). The **Het** puzzle is re-drafted: "If
+  progress (Main, Strat); a wipe on the very tick the challenge completes is not an attempt (Main). After a team wipe with
+  attempts left the players are given honey locusts unless On a Diet is active (Main). The **Het** puzzle is re-drafted: "If
   the team wipes during this room, the statue progress is reset, along with a new puzzle being drafted" (Strat). The Apmeken
-  wave counter and the Scabaras solvers reset on "Your party failed to complete the challenge" (LD). A disconnect inside the
-  Scabaras puzzle does not eject a player when no death invocation is on (Main); logging out in a challenge with a death
-  invocation counts as a wipe (Main). After each cleared challenge poison and venom are removed (Strat, "Nexus" section).
+  wave counter and the Scabaras solvers reset on "Your party failed to complete the challenge" (LD). Disconnect outcomes (rejoin, eject, wipe)
+  are raid-wide (Main); Main notes that disconnecting during the Kephri (Scabaras) puzzle does not eject a player. After each cleared challenge poison and venom are removed (Strat, "Nexus" section).
 - **PC5 Points (unverified; the wiki states none for the rooms):** plugin-side estimates only (LD `PointsTracker` comments,
   PT): each damage hitsplat on an NPC adds `damage x factor` to the personal and room totals; factors **1.2** for every
   Apmeken baboon incl. thralls and volatile (LD, PT), **2.5** for the weakened Het's Seal 11707 (LD, PT), **1.0** default;
@@ -274,8 +274,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 - **AP3 Apmeken's Sight:** the **first player who enters** the room gets the Sight (groups choose who enters first); in groups the
   Sight "will randomly cycle between players until the encounter is completed" (Strat). The cycle interval and the selection
   rule are **OPEN-PZ11**. Spot anims 2132 (gain) / 2133 (lose). "You sense an issue somewhere in the room." appears
-  throughout the encounter; only the holder sees the details: the vents and pillars that need work are marked for the holder, and
-  in groups corrupted players glow dark red (Strat).
+  throughout the encounter; the Sight lets the holder see the problem (the Strat caption: the Sight "can be seen by the vents,
+  indicating players to pour neutralising potions on it") and, in groups, see corrupted players glow dark red (Strat).
 - **AP4 Three danger types** (Strat; calls "P", "V" and "DD" are community convention):
   1. **Roof supports** (pillar 45495 shaking, spot anim 2139 on failure): a player clicks the support once ("Repair") with a
      hammer in the inventory.
@@ -295,8 +295,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   is received.
 - **AP7 Waves:** eight waves must be cleared (Strat; PA changelog: waves 2 and 3 were merged on 2 Sep 2022 and two waves were
   removed on 25 Jun 2025; the LD overlay also lists 8). The table is for a **solo** raid; in a group "an extra combat baboon is
-  added into the mix" (the type is **OPEN-PZ13**). "Special" is one of shaman, volatile or cursed (the page's
-  "specialist baboons"); how the Special slots are chosen is **OPEN-PZ13**.
+  added into the mix" (the type is **OPEN-PZ13**). "Special" stands for the "specialist baboons"
+  (shaman, volatile, cursed; inferred from the Strat table); how the Special slots are chosen is **OPEN-PZ13**.
 
   | Wave | Monsters (Strat, LD `Baboon.WAVES`) |
   |---|---|
@@ -319,8 +319,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   weak slot is -50 / -60, every other slot 900, thrall 0). A hit with the **weak** style **always deals the player's maximum
   hit regardless of accuracy**: Brawler by magic, Thrower by melee, Mage by ranged (29 May 2024); Shaman and Cursed by ranged
   (25 Jun 2025); Strat: "for the specialist baboons, using a ranged weapon will guarantee a maximum hit". Whether Volatile also
-  gets it, and whether the Thrall does, is **OPEN-PZ14**. Brawler (and Mage, Thrower by the cache pattern) magic accuracy uses the
-  **Defence level**, not the Magic level (Brawler, Mod Ash 10 Aug 2023); that sentence names only the brawler (**OPEN-PZ14**).
+  gets it, and whether the Thrall does, is **OPEN-PZ14**. Brawler magic accuracy uses the **Defence level**, not the Magic level (Brawler, Mod Ash 10 Aug 2023); that sentence names
+  only the brawler (the other baboons are **OPEN-PZ14**).
   Magic damage against a brawler "equal to the player's maximum hit" (Brawler).
 - **AP9 Baboon attacks:** Brawler melee, Thrower ranged, Mage magic; attack speed 4; max hit 5 (level 56) / 7 (level 68); "moderately
   high accuracy and damage" (Strat). Level 56 / 68 split: **OPEN-PZ3**. Accuracy / damage by raid level: **OPEN-PZ7**.
@@ -345,9 +345,10 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   inflicts venom unless immune (Strat; MT: a pool does not hurt on the tick it spawns, so a one-tick grace). It never walks over a
   vent tile or the tile in front of a pillar and usually does not walk under a player (Strat). It is immune to thralls.
   The pool interval, whether the 6-8 is the venom hit or the pool's own damage, and the venom ramp are **OPEN-PZ17**.
-- **AP14 Strategy-level effects the server must allow:** the Shaman is the only poison-vulnerable baboon (Shaman page, resistance 0);
-  freezing and binding work on baboons (Perfect Apmeken: "Freeze any Cursed Baboons") but their immunity values are **OPEN-PZ14**.
-- **AP15 Completion and reset:** all eight waves dead -> "Challenge complete: Path of Apmeken." (format from LD / MT), the hammer
+- **AP14 Status effects:** the Shaman is the only poison-vulnerable baboon (Shaman page, resistance 0; 30 Aug 2023). Perfect
+  Apmeken advises "Freeze any Cursed Baboons", so ice spells work on at least that baboon; freeze and bind values for the others
+  are **OPEN-PZ14**.
+- **AP15 Completion and reset:** all eight waves dead -> a "Challenge complete: Path of Apmeken." line (format from the LD / MT patterns; the Apmeken text itself is not shown), the hammer
   is removed, the continue loc 45500 opens and the room's fire is gone; on a wipe the room restarts at wave 1 (LD resets its
   counter on the failure message, PC4). Reward / Helpful Spirit after two cleared paths is raid-wide.
 - **AP16 Per-level differences:** none stated for waves (same eight in every mode); baboon HP identical at every raid level;
@@ -370,7 +371,7 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 - **CR3 Water containers:** one is picked up from the ground (item 27295; "Another will be nearby" if destroyed), filled
   with "Fill" on a waterfall (45398; the waterfall goes dry, 45399, and refills later; the refill time is shortened by the
   8 Sep 2022 change and "respawns accordingly to team size" but is **OPEN-PZ19**), and emptied with "Water" on the palm
-  (client animation 827 / player action). Humidify does nothing to it (Container).
+  (MT sees player animation 827 on those tiles). Humidify does nothing to it (Container).
 - **CR4 Traps:** statues around each waterfall fire **retracting spikes** from the sides (45414-45416) and the statue in front
   of the waterfall discharges **poison clouds** on the tiles in front of it which flow along the path (45418-45420); only the
   darker cloud damages, the lighter cloud is a warning (Strat); the traps run on a fixed sequence (Strat: "traps being on a
@@ -389,8 +390,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   attacks while holding an **empty** container is safe. Strat lists tree first, then carriers, then non-carriers (conflict 5).
   The NPC page is used (more specific, detailed enough to describe the empty-container exception); the order is **OPEN-PZ22**.
   Aggression range value: **OPEN-PZ22**.
-- **CR7 Crocodile attack:** crush, speed **7**, accuracy as the NPC; a successful hit deals a fixed, predetermined damage **18**
-  plus **3** for each distinct trap (spike or acid) that has hit that player in the last **30 s (50 ticks)**, up to **36**,
+- **CR7 Crocodile attack:** crush, speed **7**; a successful hit deals a fixed, predetermined damage **18**
+  plus **3** for each trap hit (acid pool or statue spear) the player has taken in the last **30 s (50 ticks)**, up to **36**,
   "regardless of raid level"; other players' trap hits do not count (Strat, Croc). With **Protect from Melee** on, a successful
   bite drains **12** Prayer and deals a guaranteed **one third** of that damage (18 -> 6, 36 -> 12; derived); with a non-empty
   container, every successful bite also costs water (CR4). Whether a missed attack drains anything, the Quiet Prayers
@@ -417,9 +418,9 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 - **HE2 Pickaxe statues:** there are three statues (entrance, within the room, exit; 14 Sep 2022 added the one near the exit)
   that each hold a pickaxe. The default is a free **bronze pickaxe**; a player can **deposit** a better pickaxe, which stays
   stored for later raids, and take it back at any statue or from the cavity in the lobby (Strat, Statue; varbit 14440
-  and varp 3635; both charged and uncharged infernal and the trailblazer ornamental are accepted). Pickaxe tier affects speed
-  (not damage; "Better pickaxes break the stone barriers faster and deal more damage to the Seal", so tier affects both:
-  speed for barriers, damage for the Seal, Strat). The exact rules of storage with several players and across wipes are
+  and varp 3635; both charged and uncharged infernal and the trailblazer ornamental are accepted). Strat: "Better pickaxes break the stone
+  barriers faster and deal more damage to the Seal". The Statue page pins five positions (3662 / 5275, 3662 / 5283, 3679 /
+  5267, 3679 / 5291, 3695 / 5284) against the three statues the text names (**OPEN-PZ24**). The exact rules of storage with several players and across wipes are
   **OPEN-PZ24**.
 - **HE3 Mirrors and walls:** three mirrors can be **picked up, placed, rotated and pushed** (item 27296, loc ops Pick-up /
   Rotate-clockwise / Rotate-anticlockwise / Push); the other mirrors in the room are fixed; "in group encounters, some of these
@@ -448,9 +449,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   statue fires the beam" (Strat, Seal, CA page). The Seal page gives **35 Mining XP every 3 ticks** while mining. These
   numbers do not fit together: 15 ticks at a 3-tick cadence is 5-6 hits, and the wiki's own one-cycle claims need 7 hits
   (7 x 17 = 119, "a Dragon pickaxe with 85 Mining ... only hitting 7 times") or 8 hits (8 x 15 = 120, rune 85 "tick-perfect
-  start"): conflict 6, **OPEN-PZ28**. The server must pick a cadence; the 7-8 hits per cycle constraint must hold for the
-  stated one-cycle cases (solo, 99+ Mining and Dragon pickaxe is documented as one-cycle **without** the early click, which
-  needs at least 6 hits of the stated damage, 6 x 19 = 114 < 119 so at least 7, derived).
+  start"): conflict 6, **OPEN-PZ28**. The server must pick a cadence. Seal also says 99+ Mining with a Dragon pickaxe "can one cycle the room without
+  needing the extra hit"; at minimum damage 19 that needs at least 7 hits (6 x 19 = 114 < 119 <= 7 x 19 = 133; derived).
 - **HE8 Damage to the Seal (Seal, Strat, Mod Ash 25 Mar 2023):** a roll per hit, **not** influenced by mining speed, scaled by the
   **visible** Mining level (invisible boosts such as the celestial ring do not count) and pickaxe tier:
   base **8 / 15 / 17** for visible level **< 85 / 85-98 / 99+** (Mod Ash gave the top bracket as 100+; the Seal page
@@ -483,36 +483,36 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
 - **SC1 Structure:** "five puzzles to complete between two branched paths"; the players "must complete the puzzles in both paths
   before moving forward" (Strat). Solo: after the first puzzle is cleared the player takes the shortcuts between the rooms, passes the opened door and does
   the next puzzle on the other side; "solo raiders should always avoid the pillar room" (the obelisk puzzle) because it is
-  random (Strat). Cache shortcuts: "Passage" (op Crawl-through, 45343), "Platform" (op Jump-to, 45396), flame barriers 45135 and
-  Scabaras barriers 45336. The room-to-room geometry and which puzzle is on which side is **OPEN-PZ30**; LD's skip rule: the
+  random (Strat). Cache locs that look like the shortcuts (roles inferred from names only): "Passage" (op Crawl-through, 45343), "Platform"
+  (op Jump-to, 45396), flame barriers 45135 and Scabaras barriers 45336. The room-to-room geometry and which puzzle is on which side is **OPEN-PZ30**; LD's skip rule: the
   obelisk puzzle is in one of the four slots, and the upper or lower flame barrier is the one to pass to avoid it
   (obelisk at top-left or bottom-right -> use the lower flame; top-right or bottom-left -> use the upper flame).
 - **SC2 Scarabs in the room:** "scarabs will appear from the first two puzzle rooms"; they "attack with ranged and serve little
   outside of being a nuisance" so Protect from Missiles blocks them; the **spawn point is the start of the first room**, and "in
   larger groups they may move up to the second room" (Strat). NPC 11697: level 56, **HP 12**, attack speed **4**, max hit **6**,
   aggressive, ranged, fire weakness 40% (Scarab). Spawn count, rate and any cap, and the damage formula by raid level are **OPEN-PZ31**.
-- **SC3 Puzzle 1, sequence ("Simon says"):** pressing the **Ancient button** (45338) lights a sequence of **5** pressure plates in order
-  (LD keeps the last 5); the players must then step on those plates **in the same order**; stepping on a wrong plate hurts the
-  player and collapses part of the roof (spot anim 302 on the plate; LD uses it to detect failure). The button can be pressed again
+- **SC3 Puzzle 1, sequence ("Simon says"):** pressing the **Ancient button** (45338) lights a sequence of pressure plates in order
+  (LD keeps the last 5 lit plates, so at most 5 is the plugin's assumption); the players must then step on those plates **in the
+  same order** without stepping on any other; a wrong plate "will inflict damage" (Strat); LD treats a roof-collapse graphic
+  (spot anim 302) on a plate as a failed attempt. The button can be pressed again
   for another order if the player forgot (Strat). Plate objects: 45340 (idle), 45341 (lit), 45342 (stepped on). The damage per wrong step, the
   lit time per plate, the delay before input, and whether the new order replaces the old are **OPEN-PZ32**.
 - **SC4 Puzzle 2, obelisks:** five obelisks (NPC 11698, op "Hit"); the players must hit them in a **specific order** with ranged or
   magic (a weapon with attack range **10** is needed to stand safely; Strat). A correct hit lights the obelisk (11699); a wrong
-  one resets the lit ones ("activeObelisks = 0" when the base NPC returns, LD) and drops **rocks from the ceiling** (dust anim
+  one makes the lit ones revert to the base NPC 11698 (LD relies on that) and drops **rocks from the ceiling** (dust anim
   9498), avoidable; at the **lower step of the stairs** no rocks target the player (Strat). The sequence is a random
   permutation of 5: 5P5 = 120 orders, 1/120 per first try (Strat). Spell XP on the obelisks was removed (4 Sep 2024). Rock
   damage, targeting and fall delay, and whether melee can hit are **OPEN-PZ33**.
 - **SC5 Puzzle 3, lights ("lights out"):** a 3x3 field of plates with the **middle plate absent**, eight plates in all; stepping
   on one plate **toggles it and its four orthogonal neighbours** (derived: the lights-out matrix that reproduces LD's eight XOR
   masks; the wiki says "stepping on one tile causes adjacent tiles to shut off"). A plate can also be flipped by the right-click "Flip" (op5 on
-  the unlit plate) for **20 unavoidable damage** (Strat). The goal is every plate lit; the start state is one of **nine** layouts
-  (Strat image). Whether the starting layouts are always solvable, their selection rule and any step damage are **OPEN-PZ34**.
+  the unlit plate) for **20 unavoidable damage** (Strat). The goal is every plate lit; Strat shows nine target configurations with their solutions. The start state
+  generation, whether it is always solvable, and any step damage are **OPEN-PZ34**.
 - **SC6 Puzzle 4, addition:** all earlier puzzles must be completed before the tablet (45339, "Inspect") can be read; the read
   gives a random number between **20 and 45** (chat "The number <n> has been hastily chipped into the stone."); the players step on
   plates whose symbols add to the number; **going over** the number damages the player. The symbols' values are 1-9 (Strat
   example: 24 = 7 + 8 + 9; LD maps the plates `TOTALTILES_TILE1..9` to 1 line, 2 knives, 3 triangle, 4 diamond, 5 hand, 6
-  bird, 7 crook, 8 wiggle, 9 foot/boot), shown on the north and south walls near the entrance; the grid is **5x5** with a fixed
-  layout (LD stores a minimal path per target 20-45 as plate indices). The grid contents, whether the target is uniform, the
+  bird, 7 crook, 8 wiggle, 9 foot/boot), shown on the north and south walls near the entrance; the grid is **5x5**, and LD stores one fixed plate-index solution per target 20-45, which implies a fixed layout (inferred). The grid contents, whether the target is uniform, the
   overshoot damage and whether stepping off removes a plate are **OPEN-PZ35**.
 - **SC7 Puzzle 5, matching:** two boards of nine symbol pairs; the players must step on **identical** symbols on both boards, so the
   layout must be memorised; **in a solo raid four of the nine sets are already solved** (LD: line, crook, hand, bird) and "the
@@ -520,8 +520,8 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   sets start unsolved (Strat). Tiles: buttons 45356-45364, symbols 45365-45373, matched marker FX objects. The last puzzle
   "is incapable of damaging players" (CA page, Perfect Scabaras). Points: 100 per matched tile to the second player (LD TODO).
   Flip animation 9490 (`TOA_FLIP_TILE`). The board shuffle, the reveal time and the mismatch rule are **OPEN-PZ36**.
-- **SC8 Completion:** when all five puzzles in both branches are done the final button (45355) / door opens and the room completes;
-  the exact trigger and the continue loc 45337 are **OPEN-PZ30**. Perfect Scabaras: under **100 ticks** and nobody takes puzzle
+- **SC8 Completion:** the room completes when the puzzles of both branches are done (Strat); a "Final" ancient button (45355) exists
+  but its role is not stated, and the exact trigger and the continue loc 45337 are **OPEN-PZ30**. Perfect Scabaras: under **100 ticks** and nobody takes puzzle
   damage.
 - **SC9 Per-level differences:** none stated for the puzzles; scarabs' scaling **OPEN-PZ31**; path level: PC2 lists only Kephri's
   mechanics (faster autos, swarms) for the boss.
@@ -530,7 +530,7 @@ they are recorded in PC3 so nothing is lost but they never appear in the Scabara
   scales to its health), Spitting (ranged, speed 3, poison from 6, hits through protection prayers), Arcane (magic, charges a red
   swarm, relocates after `2 + N` hits or one hit of 39+; Protect from Magic reduces the swarm), Agile (retreats at run speed),
   Swarm (restores shield, HP 10). Defence values no longer scale with raid level (25 Jun 2025); fire weakness 50% (Soldier,
-  Spitting, Arcane; 29 May 2024) and 40% (Scarab, Swarm; 25 Jun 2025). They belong to the Kephri doc.
+  Spitting, Arcane; 29 May 2024) and 40% (Scarab, Swarm; 25 Jun 2025). See kephri.md (KP7, KP8) for the fight rules.
 
 ## What RuneLite plugins assume (summary)
 
@@ -574,8 +574,7 @@ hits, summon rate); OPEN-PZ16 volatile damage, fuse and retarget; OPEN-PZ17 curs
 OPEN-PZ18 water needed per team size and the palm stage thresholds; OPEN-PZ19 waterfall refill time; OPEN-PZ20 trap damage, cycle
 timing, geometry and the 16% container-loss chance; OPEN-PZ21 crocodile spawn count, period, corners and despawn; OPEN-PZ22
 crocodile target priority order and aggression range; OPEN-PZ23 crocodile bite effect on the palm, miss and prayer interactions;
-OPEN-PZ24 pickaxe storage rules; OPEN-PZ25 Het layout generation, mirror push and carry rules; OPEN-PZ26 beam period (9 ticks) as a wiki
-fact; OPEN-PZ27 beam and orb damage, orb spawn pattern and speed; OPEN-PZ28 Seal hit cadence vs 15-tick window; OPEN-PZ29 pickaxe tier
+OPEN-PZ24 pickaxe storage rules; OPEN-PZ25 Het layout generation, mirror push and carry rules; OPEN-PZ26 beam period (only LD's 9 ticks; the wiki gives none); OPEN-PZ27 beam and orb damage, orb spawn pattern and speed; OPEN-PZ28 Seal hit cadence vs 15-tick window; OPEN-PZ29 pickaxe tier
 classes and Seal damage source; OPEN-PZ30 Scabaras room geometry and completion trigger; OPEN-PZ31 scarab count, rate, cap and
 scaling; OPEN-PZ32 sequence puzzle numbers; OPEN-PZ33 obelisk rock damage and targeting; OPEN-PZ34 lights start layouts and damage;
 OPEN-PZ35 addition grid, target roll and overshoot damage; OPEN-PZ36 matching board and mismatch rule. **36 open items.**
@@ -595,9 +594,11 @@ Suggested config flags: `toa.apmeken.waveThreshold`, `toa.crondis.waterPerPlayer
    (**OPEN-PZ28**).
 7. Seal damage table: adamant 85-98 prints 12-15 vs the Mod Ash formula 12-14; top bracket 100+ (Mod Ash 2023) vs 99+ (Seal, Strat).
    The formula and the 99 threshold are used.
-8. Soldier Scarab attack speed: cache 6 vs infobox 7 (Kephri's fight, out of scope).
+8. Soldier Scarab attack speed: cache 6 vs infobox 7 (Kephri's fight, out of scope). The cache is used, as in kephri.md.
 9. Equivalent pickaxes: Seal "Dragon and Crystal", Strat "Dragon, Crystal and 3rd Age". Strat used.
 10. Scabaras puzzle count: request says four, the wiki says five (SC1). The wiki is used.
 11. Arcane Scarab: "reduced by Protect from Magic" (Arcane) vs "attacks can hit through protection prayers" (Spitting). Kephri's
     fight; not resolved here.
 12. Banana peels: attributed to "baboons" (Baboon, Peel); the Peel page limits them to the Ba-Ba fight, so none in the Apmeken room.
+13. Volatile explosion graphic: MT matches spot anim 131, the cache has `SPOTANIM_MANDRILL_EXPLODE` 2249. Both listed; the
+    server should send 2249 (cache name) until a capture shows otherwise (**OPEN-PZ16**).
