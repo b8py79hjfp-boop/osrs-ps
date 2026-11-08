@@ -18,7 +18,7 @@ import tp.symbols.Varbits
  */
 internal object ToaRecords {
     /** TA12: missing the limit lowers the raid level by twice the invocation's own value (20 / 30 / 40 / 50). */
-    private const val TIME_PENALTY_FACTOR = 2
+    const val TIME_PENALTY_FACTOR = 2
 
     /** The boss rooms whose durations make the challenge time (TA63: "time spent actually fighting bosses"). */
     private val BOSS_ROOMS = ToaPath.entries.map { it.boss } + ToaRaid.WARDENS
@@ -49,6 +49,8 @@ internal object ToaRecords {
 
     /** TA12: the raid level after the time limit: lowered by twice the invocation's value when the timer ran out. */
     fun finalLevel(st: ToaState, any: PlayerRef?): Int {
+        // OPEN-TA6 (`toa.timeLimitPenaltyAtEndOnly=false`): the penalty already applied when the limit passed.
+        if (st.timePenalised) return st.raidLevel
         val start = st.raidLevel
         if (any == null || st.timerStart < 0 || st.endTick < 0) return start
         val limit = ToaInvocations.active(any, st.words).firstOrNull { it.category == ToaInvocations.CAT_TIME_LIMIT } ?: return start

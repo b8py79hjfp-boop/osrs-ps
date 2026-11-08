@@ -1237,4 +1237,12 @@ means is not known.
 - **One time formatter:** `Raids.formatTime` (m:ss, h:mm:ss, precise centiseconds) is shared by CoX and ToA.
 - **Deposit box:** Deposit inventory and Deposit worn go through the bank's own deposit-all (`DepositAllRequest`). One
   item-transaction path, one summary line. A single-item box deposit is accepted only from the backpack or worn slots.
+- **Spawn tagging before spawn handlers:** `spawnNpc(type, at, wanderRange, init)` runs `init` before content's spawn
+  hooks. Raids.spawn / spawnAt and Bosses.summon tag the run, scaling and room frame there, so a boss's `spawned` sees
+  them (before this, the Wardens' phase 1 Wardens spawned on the real map).
+- **Room frames are per level:** a ToA NPC's frame is on its spawn level, because `RaidRoomFrame.contains` checks the
+  level (Akkha and the Wardens' P1 / P2 are on level 1).
+- **Private views:** `privateSpotAnimAt`, `privateLocAnim` and `privateLocChange` send a zone op to one player (the
+  transient zone event's viewer, the rule ground items already use). They are look only and change no world state. Used
+  for the Apmeken Sight's hints and the sarcophagus reveal. A new `ZoneOp.LocAnim` maps to RSProt's LOC_ANIM.
 

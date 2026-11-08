@@ -13,12 +13,16 @@ import tp.plugin.InvView
 import tp.plugin.LocRef
 import tp.plugin.PlayerRef
 import tp.plugin.WorldRef
+import tp.plugin.privateLocAnim
+import tp.plugin.privateLocChange
+import tp.plugin.privateSpotAnimAt
 import tp.symbols.Components
 import tp.symbols.Interfaces
 import tp.symbols.Invs
 import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Objs
+import tp.symbols.Seqs
 import tp.symbols.Varbits
 import tp.symbols.Varps
 import tp.util.CoordGrid
@@ -332,8 +336,24 @@ internal object ToaTomb {
             p.message(NOT_YOURS)
             return
         }
+        // TR11: the first "Open" plays the reveal (seq 9505) on the purple sarcophagus, then it shows opened (44934).
+        if (loc.id != Locs.TOA_VAULT_SARCOPHAGUS_OPEN && p[REVEALED] != run.id.value) {
+            p[REVEALED] = run.id.value
+            p.privateLocAnim(loc, Seqs.TOA_OSMUMTEN_CHEST_REVEAL)
+            p.weakQueue(REVEAL_TICKS) {
+                player.privateLocChange(loc, Locs.TOA_VAULT_SARCOPHAGUS_OPEN)
+                if (ToaChestUi.isEmpty(player)) player.message(CHEST_EMPTY_MESSAGE) else ToaChestUi.open(player)
+            }
+            return
+        }
         if (ToaChestUi.isEmpty(p)) p.message(CHEST_EMPTY_MESSAGE) else ToaChestUi.open(p)
     }
+
+    /** The run whose sarcophagus [p] has already opened (the reveal plays once). */
+    private val REVEALED = tp.plugin.AttrKey<Long>("toa_sarcophagus_revealed")
+
+    /** Seq 9505 TOA_OSMUMTEN_CHEST_REVEAL lasts 223 client cycles (cache frame lengths): 7.4 ticks, rounded up. */
+    private const val REVEAL_TICKS = 8
 
     /** TA69: the bags hold The jackal's torch; one copy per player. */
     fun searchBags(p: PlayerRef) {

@@ -372,6 +372,11 @@ internal class RspSession(
                         .MapAnim(op.id, op.delay, op.height, op.x, op.z)
                 }
 
+                is ZoneOp.LocAnim -> {
+                    net.rsprot.protocol.game.outgoing.zone.payload
+                        .LocAnim(op.id, op.x, op.z, op.shape, op.angle)
+                }
+
                 is ZoneOp.LocDel -> {
                     net.rsprot.protocol.game.outgoing.zone.payload
                         .LocDel(op.x, op.z, op.shape, op.angle)

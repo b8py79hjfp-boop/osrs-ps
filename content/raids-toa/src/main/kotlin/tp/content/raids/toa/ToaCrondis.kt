@@ -15,8 +15,8 @@ import tp.util.CoordGrid
 /**
  * Path of Crondis (puzzles.md CR1-CR11): fill water containers at the four waterfalls (Fill) and water the Palm of
  * Resourcefulness (Water) until it is fully grown. Traps hurt, drain stats and halve the container; crocodiles spawn
- * periodically. TODO hooks for the main session (crocodile AI): [palmDamaged] (a bite shrinks the palm) and
- * [containerBitten] (a bite costs the carrier's water); the crocodiles' targeting (CR6) and bite damage (CR7) are not here.
+ * periodically. The crocodiles (targeting CR6, bites CR7) are content/combat ToaPuzzleFoes, which reports bites back:
+ * [palmDamaged] (a bite shrinks the palm) and [containerBitten] (a bite costs the carrier's water).
  */
 internal object ToaCrondis {
     private const val ROOM = "crondis"
@@ -32,12 +32,23 @@ internal object ToaCrondis {
         /** Units in each raider's container (lower case name). */
         val container = HashMap<String, Int>()
 
-        /** Instance tile -> trap phase, and the tiles that only warn (the lighter cloud). */
-        val traps = HashMap<Int, Int>()
+        /** The run's trap layout (read from the instance once: the cycle changes the trap locs). */
+        var layout = Layout()
 
         /** CR7: the ticks of each raider's last trap hits. */
         val trapHits = HashMap<String, ArrayList<Long>>()
     }
+
+    /** Instance tile -> trap phase, and the trap locs that show the cycle (spears extend; clouds warn, then darken). */
+    private class Layout {
+        val traps = HashMap<Int, Int>()
+        val visuals = ArrayList<TrapVisual>()
+    }
+
+    private val layouts = RunStore<Layout>("toa_crondis_traps")
+
+    /** A trap's visible part at [at]: a spear (object shape) or a cloud tile (ground shape), with its phase. */
+    private class TrapVisual(val at: CoordGrid, val spear: Boolean, val phase: Int, val angle: Int)
 
     private val store = RunStore<State>("toa_crondis")
 
@@ -61,7 +72,10 @@ internal object ToaCrondis {
         s.water = if (ToaConfig.crondisKeepGrowthOnWipe) saved[any, run]?.get(0) ?: 0 else 0
         s.nextCroc = any.tick + ToaConfig.crondisCrocSpawnTicks
         store[any, run] = s
-        scanTraps(run, any, s)
+        s.layout = layouts[any, run] ?: Layout().also {
+            scanTraps(run, any, it)
+            layouts[any, run] = it
+        }
         s.palm = ToaRooms.spawn(any, run, ROOM, stageType(s), PALM_AT)
         for (p in run.presentPlayers(any)) {
             // CR3: a container per raider (OPEN-PZ19: the ground pick-up tiles are not documented).
@@ -73,16 +87,20 @@ internal object ToaCrondis {
     }
 
     /** CR4: the spear rows (45416, 3 wide) and the damaging cloud tiles found in the instance, each with a phase. */
-    private fun scanTraps(run: RaidRun, any: EntityRef, s: State) {
+    private fun scanTraps(run: RaidRun, any: EntityRef, s: Layout) {
         for (x in AREA_X0..AREA_X1) {
             for (z in AREA_Z0..AREA_Z1) {
                 val at = run.at(CoordGrid(x, z))
                 val spear = any.locAt(at, SHAPE_OBJECT)
                 if (spear != null && spear.id == Locs.TOA_CRONDIS_ROW_TRAP_FIRE) {
                     for (dx in 0 until SPEAR_WIDTH) s.traps[ToaPuzzles.key(CoordGrid(at.x + dx, at.z, at.level))] = z / 2
+                    s.visuals += TrapVisual(at, true, z / 2, spear.angle)
                 }
                 val cloud = any.locAt(at, SHAPE_GROUND)
-                if (cloud != null && cloud.id == ToaConfig.crondisDarkCloudLoc) s.traps[ToaPuzzles.key(at)] = x + z
+                if (cloud != null && cloud.id == ToaConfig.crondisDarkCloudLoc) {
+                    s.traps[ToaPuzzles.key(at)] = x + z
+                    s.visuals += TrapVisual(at, false, x + z, cloud.angle)
+                }
             }
         }
     }
@@ -93,14 +111,39 @@ internal object ToaCrondis {
         val now = any.tick
         val players = ToaPuzzles.alive(run, any)
         val period = ToaConfig.crondisTrapPeriodTicks
+        showTraps(any, s, now, period)
         for (p in players) {
-            val phase = s.traps[ToaPuzzles.key(p.coord)] ?: continue
+            val phase = s.layout.traps[ToaPuzzles.key(p.coord)] ?: continue
             if ((now + phase).mod(period) < ToaConfig.crondisTrapActiveTicks) trapHit(s, p, now)
         }
         s.crocs.removeAll { !it.isInWorld }
         if (now >= s.nextCroc) {
             s.nextCroc = now + ToaConfig.crondisCrocSpawnTicks
             spawnCrocs(run, any, s)
+        }
+    }
+
+    /**
+     * CR4 visuals on the damage cycle: a spear is out while its tile is dangerous and retracted otherwise; a cloud tile
+     * shows the lighter cloud the tick before, the darker cloud while dangerous, then the inactive vines (OPEN-PZ5 which
+     * cloud is which).
+     */
+    private fun showTraps(any: EntityRef, s: State, now: Long, period: Int) {
+        val active = ToaConfig.crondisTrapActiveTicks
+        val visuals = s.layout.visuals
+        for (i in visuals.indices) {
+            val v = visuals[i]
+            val t = (now + v.phase).mod(period.toLong()).toInt()
+            if (v.spear) {
+                if (t == 0) any.addLoc(Locs.TOA_CRONDIS_ROW_TRAP_FIRE, v.at, SHAPE_OBJECT, v.angle)
+                if (t == active) any.deleteLoc(v.at, SHAPE_OBJECT)
+            } else {
+                when (t) {
+                    period - 1 -> any.addLoc(ToaConfig.crondisLightCloudLoc, v.at, SHAPE_GROUND, v.angle)
+                    0 -> any.addLoc(ToaConfig.crondisDarkCloudLoc, v.at, SHAPE_GROUND, v.angle)
+                    active -> any.addLoc(Locs.TOA_CRONDIS_POISON_TILE_INACTIVE, v.at, SHAPE_GROUND, v.angle)
+                }
+            }
         }
     }
 
@@ -176,6 +219,7 @@ internal object ToaCrondis {
         player.anim(FILL_ANIM)
         s.container[name] = 0
         palm.hitsplat(player, units, HITMARK_UP, HITMARK_UP, HITMARK_UP)
+        ToaPoints.puzzleAction(run, player.username, units * ToaPoints.CRONDIS_PER_WATER)
         grow(run, player, s, units)
     }
 
@@ -199,7 +243,7 @@ internal object ToaCrondis {
         if (palm.type != type) palm.transform(type, restoreStats = false)
     }
 
-    /** TODO hook (crocodile AI, CR7): a bite shrinks the palm by [amount] units; also reports the Perfect Crondis loss. */
+    /** CR7 (RaidSignal `toa.crondis.palm_bite`): a bite shrinks the palm by [amount] units; also reports the Perfect Crondis loss. */
     fun palmDamaged(run: RaidRun, any: EntityRef, amount: Int) {
         val s = store[any, run] ?: return
         if (s.done) return
@@ -208,7 +252,7 @@ internal object ToaCrondis {
         refreshPalm(s)
     }
 
-    /** TODO hook (crocodile AI, CR4 / CR7): a bite costs the carrier 50% of the container, 10% once it is under 15%. */
+    /** CR4 / CR7 (RaidSignal `toa.crondis.container_bite`): a bite costs the carrier 50% of the container, 10% once it is under 15%. */
     fun containerBitten(run: RaidRun, any: EntityRef, name: String) {
         val s = store[any, run] ?: return
         val have = s.container[name.lowercase()] ?: return

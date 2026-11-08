@@ -613,7 +613,9 @@ crocodile target priority order and aggression range; OPEN-PZ23 crocodile bite e
 OPEN-PZ24 pickaxe storage rules; OPEN-PZ25 Het layout generation, mirror push and carry rules; OPEN-PZ26 beam period (only LD's 9 ticks; the wiki gives none); OPEN-PZ27 beam and orb damage, orb spawn pattern and speed; OPEN-PZ28 Seal hit cadence vs 15-tick window; OPEN-PZ29 pickaxe tier
 classes and Seal damage source; OPEN-PZ30 Scabaras room geometry and completion trigger; OPEN-PZ31 scarab count, rate, cap and
 scaling; OPEN-PZ32 sequence puzzle numbers; OPEN-PZ33 obelisk rock damage and targeting; OPEN-PZ34 lights start layouts and damage;
-OPEN-PZ35 addition grid, target roll and overshoot damage; OPEN-PZ36 matching board and mismatch rule. **35 open items** (PZ2 withdrawn).
+OPEN-PZ35 addition grid, target roll and overshoot damage; OPEN-PZ36 matching board and mismatch rule; OPEN-PZ37 whether the palm's water survives a wipe (as-built: it does,
+`toa.crondis.keepGrowthOnWipe`); OPEN-PZ38 whether the lobby cavity hands out a spare bronze pickaxe (as-built: no). **37 open
+items** (PZ2 withdrawn).
 Suggested config flags: `toa.apmeken.waveThreshold`, `toa.crondis.waterPerPlayer`, `toa.het.beamPeriodTicks` (default 9),
 `toa.het.sealHitIntervalTicks`, `toa.scabaras.scarabRate`, `toa.puzzles.pathLevelAppliesToPuzzleNpcs`.
 
@@ -641,3 +643,24 @@ Suggested config flags: `toa.apmeken.waveThreshold`, `toa.crondis.waterPerPlayer
 12. Banana peels: attributed to "baboons" (Baboon, Peel); the Peel page limits them to the Ba-Ba fight, so none in the Apmeken room.
 13. Volatile explosion graphic: MT matches spot anim 131, the cache has `SPOTANIM_MANDRILL_EXPLODE` 2249. Both listed; the
     server should send 2249 (cache name) until a capture shows otherwise (**OPEN-PZ16**).
+
+## As built (2026-11-08)
+
+- **Points (PC5).**
+  - Default: the flat estimates.
+  - With `toa.puzzlePoints.flat=false`, the per-action points instead:
+    - Apmeken: ±25.
+    - Scabaras: 50 per puzzle solved and 100 per memory match.
+    - Crondis: 2 per water.
+    - Het: 50 to each raider per statue hit.
+  - Deductions never go below 0.
+- **AP3:** the holder alone sees the vent warnings and the corrupted glow (private map anims, shown when the danger starts
+  and when the Sight moves). The shaking pillars are a loc, which everyone sees.
+- **AP13:** a pool tick also envenoms (the combat poison rules, immunity included).
+- **CR4:** spears are out while dangerous. Cloud tiles show the light cloud the tick before, the dark cloud while
+  dangerous, then the vines.
+- **SC1 shortcuts (cache map and collision):**
+  - Passage 45343: crawl between z 5276 and 5284 (3 ticks).
+  - Platform 45396: jump between z 5277 and 5283 (2 ticks).
+- **HE2:** the lobby cavity shares varbit 14440. It hands out no spare bronze pickaxe (OPEN-PZ38).
+

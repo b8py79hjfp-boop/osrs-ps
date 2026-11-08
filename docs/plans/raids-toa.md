@@ -80,9 +80,21 @@ alternative behind a named flag (`toa.*`).
 - Milestone 6: done. Sarcophagus chests 771 with the wiki loot model (`ToaLoot`, test rows in `RaidRewardMathTest`),
   the Rewards Niche and records (KC by final level, messages, PB through `RecordsDef.modeOf`). Also the summary 482 with
   titles, scoreboard 775, Osmumten and the lobby NPCs.
-- OPEN, behind named flags in the room docs:
-  - Party UI: script 6745's use.
-  - Tomb: the pickaxe cavity, the pet follower, the CA clue perk, the mid-raid time-limit penalty and the Niche
-    warning prompt.
-  - Puzzles: trap visuals, Scabaras shortcuts and venom from pools.
-  - Deposit box: DB1-DB6.
+- Follow-ups (2026-11-08), all built:
+  - `ToaSmokeScenario` fights all five bosses through combat damage (every phase of the Wardens).
+  - Puzzles:
+    - Venom from Apmeken's pools.
+    - The Sight's hints, private to the holder (private map anims).
+    - Crondis' spears and clouds shown on the damage cycle.
+    - Scabaras's Passage and Platform shortcuts.
+    - PC5's per-action puzzle points behind `toa.puzzlePoints.flat=false`.
+  - Tomb and lobby:
+    - The lobby pickaxe cavity.
+    - The Niche warning before entering.
+    - The sarcophagus reveal (seq 9505, then the opened form, for the winner).
+    - TA12's mid-raid penalty behind `toa.timeLimitPenaltyAtEndOnly=false`.
+- Not built, by design:
+  - Script 6745 is optional (OPEN-TC14).
+  - The pet goes to the chest as an item: the server has no follower system for any pet.
+  - The CA clue perk needs Combat Achievements, which brief section 13 leaves out.
+  - Deposit box OPEN DB1-DB6 are in docs/mechanics/deposit-box.md.

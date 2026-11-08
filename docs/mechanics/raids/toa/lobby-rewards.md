@@ -172,3 +172,11 @@ the raid-wide `OPEN-TA1` to `OPEN-TA36` in [../toa.md](../toa.md)).
 7. Jewel duplicate rule: "three jewels" (14 Sep 2022 post) vs four jewels (Chest, since the Jewel of Amascut): TR19, the Chest wins.
 8. Dung threshold: Total (Chest, Dung, post) vs contribution (TR6, reading B): TR6.
 9. Masori crafting kit: needs 1,500 points (Kit) vs the challenge section's only conditions of zero deaths and level (Chest): TR23.
+
+## As built (2026-11-08)
+
+- **TR29:** entering with unclaimed rewards first asks "Unclaimed rewards will be lost if you enter." (Enter the tomb
+  anyway / Stay; the wording is OPEN-TR16).
+- **TR11:** the winner's first Open plays seq 9505 (223 client cycles, about 8 ticks) on the purple sarcophagus. After
+  it, the winner alone sees the opened form 44934 and the loot opens.
+

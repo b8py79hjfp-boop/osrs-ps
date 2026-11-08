@@ -16,7 +16,7 @@ import tp.util.CoordGrid
  * Path of Scabaras (puzzles.md SC1-SC10): five puzzles (sequence, obelisks, lights, addition, matching) and the scarabs
  * that harass the raiders. The four puzzle slots start at the scene tiles LD reads (RT85 / RT92: scene base (3504, 5232)
  * from the flame barriers); the matching boards' place and the barrier that opens when everything is solved are
- * OPEN-PZ30 assumptions. The scarabs fight through the generic NPC combat; their swarm AI is a TODO for the main session.
+ * OPEN-PZ30 assumptions. The scarabs fight through the generic NPC combat (SC2: ranged, max hit 6, speed 4, nothing more).
  */
 internal object ToaScabaras {
     private const val ROOM = "scabaras"
@@ -71,6 +71,23 @@ internal object ToaScabaras {
             onOpLoc(Locs.TOA_SCABARAS_LIGHTSOUT_TILE_OFF, OP_FLIP) { loc -> flip(player, loc) }
             onOpLoc(Locs.TOA_SCABARAS_TOTALTILES_TABLET, 1) { readTablet(player) }
             for (i in 0 until SYMBOLS) onOpLoc(Locs.TOA_SCABARAS_MEMORYGAME_BUTTON1 + i, 1) { loc -> activate(player, loc, i) }
+            // SC1: the shortcuts between the two rows of rooms through the wall band at z 5280 (cache map + collision).
+            onOpLoc(Locs.TOA_SCABARAS_SPAWN_HOLE, 1) { loc ->
+                val run = ToaFlow.runOf(player) ?: return@onOpLoc
+                val end = run.at(if (loc.coord.z < run.at(BAND).z) PASSAGE_NORTH else PASSAGE_SOUTH)
+                player.stopInteraction()
+                player.anim(Seqs.HUMAN_CRAWLING_LONG)
+                delay(CRAWL_TICKS)
+                player.teleport(end)
+            }
+            onOpLoc(Locs.TOA_SCABARAS_STEPPING_STONE, 1) {
+                val run = ToaFlow.runOf(player) ?: return@onOpLoc
+                val end = run.at(if (player.coord.z > run.at(BAND).z) PLATFORM_SOUTH else PLATFORM_NORTH)
+                player.stopInteraction()
+                player.anim(Seqs.HUMAN_STEPPINGSTONEJUMP)
+                player.exactMove(player.coord, end, 0, JUMP_TICKS * CLIENT_CYCLES, if (end.z > player.coord.z) ANGLE_NORTH else ANGLE_SOUTH)
+                delay(JUMP_TICKS)
+            }
         }
     }
 
@@ -410,7 +427,10 @@ internal object ToaScabaras {
             return
         }
         // SC7: identical symbols on both boards match; the last puzzle cannot hurt anybody.
-        if (symbolAt(s, s.pickBoard, s.pickIndex) == sym) mark(run, player, s, sym)
+        if (symbolAt(s, s.pickBoard, s.pickIndex) == sym) {
+            ToaPoints.puzzleAction(run, player.username, ToaPoints.MEMORY_MATCH)
+            mark(run, player, s, sym)
+        }
         s.pickBoard = -1
         s.pickIndex = -1
     }
@@ -427,7 +447,9 @@ internal object ToaScabaras {
     // ---- SC8 completion
 
     private fun solve(run: RaidRun, any: EntityRef, s: State, puzzle: String) {
+        if (puzzle in s.solved) return
         s.solved += puzzle
+        for (p in ToaPuzzles.alive(run, any)) ToaPoints.puzzleAction(run, p.username, ToaPoints.PUZZLE_COMPLETED)
         if (listOf("seq", "obelisk", "lights", "addition", "matching").any { it !in s.solved }) return
         s.solved += ROOM_DONE
         for (y in BARRIER_Z) any.deleteLoc(run.at(CoordGrid(BARRIER_X, y)), SHAPE_OBJECT)
@@ -437,6 +459,28 @@ internal object ToaScabaras {
 
     /** Scene base (3504, 5232) + LD's slot start tiles (36, 56), (36, 44), (53, 56), (53, 44) (RT85 / RT92). */
     private val SLOTS = listOf(CoordGrid(3540, 5288), CoordGrid(3540, 5276), CoordGrid(3557, 5288), CoordGrid(3557, 5276))
+
+    /**
+     * SC1 shortcuts (cache map 55 82 + collision; OPEN-PZ30 for the timings): the wall band between the rooms' two rows
+     * is at z 5280. The "Passage" pair 45343 (Crawl-through) is at (3548, 5277) / (3548, 5283), with walkable fronts at
+     * z 5276 and 5284. The "Platform" 45396 (Jump-to) is at (3560, 5280), between the band's openings at z 5277 / 5283.
+     */
+    private val BAND = CoordGrid(3548, 5280)
+    private val PASSAGE_NORTH = CoordGrid(3548, 5284)
+    private val PASSAGE_SOUTH = CoordGrid(3548, 5276)
+    private val PLATFORM_NORTH = CoordGrid(3560, 5283)
+    private val PLATFORM_SOUTH = CoordGrid(3560, 5277)
+
+    /** OPEN-PZ30: not captured; the long crawl and a two-tick jump, as the game's similar shortcuts. */
+    private const val CRAWL_TICKS = 3
+    private const val JUMP_TICKS = 2
+
+    /** Client cycles per game tick (20 ms cycles, 600 ms ticks) for exactMove. */
+    private const val CLIENT_CYCLES = 30
+
+    /** exactMove face angles on the client's 2048-unit circle (0 south, 1024 north). */
+    private const val ANGLE_NORTH = 1024
+    private const val ANGLE_SOUTH = 0
 
     /** Data: the two spawn holes 45343 (cache map). */
     private val HOLES = listOf(CoordGrid(3548, 5277), CoordGrid(3548, 5283))

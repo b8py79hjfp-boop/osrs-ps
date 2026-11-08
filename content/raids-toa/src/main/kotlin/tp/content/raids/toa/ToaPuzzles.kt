@@ -111,8 +111,14 @@ internal class RunStore<S : Any>(name: String) {
 
     operator fun get(any: EntityRef, run: RaidRun): S? = map(any)[run.id.value]
 
+    /** Stores [state] for [run]; entries of runs that have closed go first (raids-core has no close event to hook). */
     operator fun set(any: EntityRef, run: RaidRun, state: S) {
-        map(any)[run.id.value] = state
+        val m = map(any)
+        val raids =
+            tp.content.raids.Raids
+                .of(any)
+        m.keys.removeIf { it != run.id.value && raids.run(it) == null }
+        m[run.id.value] = state
     }
 
     fun forget(any: EntityRef, run: RaidRun) {

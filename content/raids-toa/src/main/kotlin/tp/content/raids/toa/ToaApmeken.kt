@@ -7,6 +7,9 @@ import tp.plugin.ItemOnPlayerEvent
 import tp.plugin.LocRef
 import tp.plugin.NpcRef
 import tp.plugin.PlayerRef
+import tp.plugin.privateLocAnim
+import tp.plugin.privateLocChange
+import tp.plugin.privateSpotAnimAt
 import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Objs
@@ -16,8 +19,8 @@ import tp.util.CoordGrid
 /**
  * Path of Apmeken (puzzles.md AP1-AP17): eight baboon waves at the six spawn tiles, and Apmeken's Sight dangers (roof
  * supports, floor vents, corruption) answered with the hammer and the neutralising potion. The baboons fight through the
- * generic NPC combat; the special behaviours (volatile explosion, cursed pools, shaman thralls) are hooks for the main
- * session: [addVenomPool] and the volatile / thrall TODOs listed in the hand-over.
+ * generic NPC combat; the special behaviours (volatile explosion, cursed pools, shaman thralls) are content/combat
+ * ToaPuzzleFoes, which reports the pools back ([addVenomPool]).
  */
 internal object ToaApmeken {
     private const val ROOM = "apmeken"
@@ -143,6 +146,31 @@ internal object ToaApmeken {
         next.spotAnim(SpotAnims.TOA_PATH_APMEKEN_GAIN_SIGHT)
         s.holder = next.username.lowercase()
         s.holderSince = now
+        s.danger?.let { showToHolder(s, it, players) }
+    }
+
+    /**
+     * AP3: only the Sight's holder sees the problem: the vents to pour on (Strat caption) and the corrupted raiders' glow
+     * (private map anims; OPEN-PZ11 how long the glow shows: once, when it starts or the Sight moves). Roof supports
+     * shake as a loc, which every raider sees.
+     */
+    private fun showToHolder(s: State, d: Danger, players: List<PlayerRef>) {
+        val holder = players.firstOrNull { it.username.equals(s.holder, ignoreCase = true) } ?: return
+        when (d.kind) {
+            Kind.VENT -> {
+                for (at in d.tiles) holder.privateSpotAnimAt(at, SpotAnims.TOA_PATH_APMEKEN_SIGHT_WARNING)
+            }
+
+            Kind.CORRUPTION -> {
+                for (p in players) {
+                    if (p.username.lowercase() in d.corrupted) holder.privateSpotAnimAt(p.coord, SpotAnims.TOA_PATH_APMEKEN_GAIN_CURSED)
+                }
+            }
+
+            Kind.PILLAR -> {
+                Unit
+            }
+        }
     }
 
     // ---- AP4-AP6 dangers
@@ -154,9 +182,11 @@ internal object ToaApmeken {
             return
         }
         if (d.remaining <= 0) {
+            if (d.kind == Kind.CORRUPTION) s.holder?.let { ToaPoints.puzzleAction(run, it, ToaPoints.APMEKEN_ACTION) }
             s.danger = null
             s.nextDangerAt = now + ToaConfig.apmekenDangerPeriodTicks
         } else if (now >= d.deadline) {
+            if (d.kind == Kind.CORRUPTION) s.holder?.let { ToaPoints.puzzleAction(run, it, -ToaPoints.APMEKEN_ACTION) }
             fail(any, d, players)
             s.danger = null
             s.nextDangerAt = now + ToaConfig.apmekenDangerPeriodTicks
@@ -181,9 +211,7 @@ internal object ToaApmeken {
 
             Kind.VENT -> {
                 for (i in pick(run, VENTS.size, count)) {
-                    val at = run.at(VENTS[i])
-                    d.tiles += at
-                    any.spotAnimAt(at, SpotAnims.TOA_PATH_APMEKEN_SIGHT_WARNING)
+                    d.tiles += run.at(VENTS[i])
                 }
             }
 
@@ -191,11 +219,11 @@ internal object ToaApmeken {
                 d.remaining = count.coerceAtMost(n)
                 for (i in pick(run, n, d.remaining)) {
                     d.corrupted += players[i].username.lowercase()
-                    players[i].spotAnim(SpotAnims.TOA_PATH_APMEKEN_GAIN_CURSED)
                 }
             }
         }
         s.danger = d
+        showToHolder(s, d, players)
         players.firstOrNull { it.username.equals(s.holder, ignoreCase = true) }?.message(SENSE)
     }
 
@@ -244,12 +272,14 @@ internal object ToaApmeken {
         val active = needed && d != null && d.kind == Kind.PILLAR && loc.coord in d.tiles
         if (!active) {
             // AP6: repairing a support that did not need it hurts.
+            ToaPoints.puzzleAction(run, player.username, -ToaPoints.APMEKEN_ACTION)
             player.message(WRONG_ACTION)
             ToaPuzzles.hit(player, ToaConfig.apmekenWrongActionDamage)
             return
         }
         d.tiles.remove(loc.coord)
         d.remaining--
+        ToaPoints.puzzleAction(run, player.username, ToaPoints.APMEKEN_ACTION)
         player.anim(REPAIR_ANIM)
         player.addLoc(Locs.TOA_PATH_APMEKEN_PILLAR, loc.coord, CENTREPIECE, 0)
     }
@@ -263,15 +293,17 @@ internal object ToaApmeken {
             if (!ToaPuzzles.take(player, Objs.TOA_PATH_APMEKEN_POTION, 1, "toa apmeken vent")) return
             d.tiles.remove(player.coord)
             d.remaining--
+            ToaPoints.puzzleAction(run, player.username, ToaPoints.APMEKEN_ACTION)
             player.spotAnim(SpotAnims.TOA_PATH_APMEKEN_LOSE_SIGHT)
         } else if (d != null && d.kind == Kind.CORRUPTION && player.username.equals(s.holder, ignoreCase = true)) {
             if (!ToaPuzzles.take(player, Objs.TOA_PATH_APMEKEN_POTION, 1, "toa apmeken cure")) return
             // AP4: the holder's potion cures every corrupted raider standing on the holder's tile.
             for (p in ToaPuzzles.alive(run, player)) {
-                if (p.coord == player.coord && p.username.lowercase() in d.corrupted) cure(d, p)
+                if (p.coord == player.coord && p.username.lowercase() in d.corrupted) cure(run, d, player, p)
             }
         } else if (onVent) {
             // AP6: a vent cleaned without need hurts.
+            ToaPoints.puzzleAction(run, player.username, -ToaPoints.APMEKEN_ACTION)
             player.message(WRONG_ACTION)
             ToaPuzzles.hit(player, ToaConfig.apmekenWrongActionDamage)
         } else {
@@ -286,12 +318,13 @@ internal object ToaApmeken {
         val d = s.danger ?: return
         if (d.kind != Kind.CORRUPTION || !user.username.equals(s.holder, ignoreCase = true)) return
         if (target.username.lowercase() !in d.corrupted) return
-        if (ToaPuzzles.take(user, Objs.TOA_PATH_APMEKEN_POTION, 1, "toa apmeken cure one")) cure(d, target)
+        if (ToaPuzzles.take(user, Objs.TOA_PATH_APMEKEN_POTION, 1, "toa apmeken cure one")) cure(run, d, user, target)
     }
 
-    private fun cure(d: Danger, p: PlayerRef) {
+    private fun cure(run: RaidRun, d: Danger, healer: PlayerRef, p: PlayerRef) {
         if (d.corrupted.remove(p.username.lowercase())) {
             d.remaining--
+            ToaPoints.puzzleAction(run, healer.username, ToaPoints.APMEKEN_ACTION)
             p.spotAnim(SpotAnims.TOA_PATH_APMEKEN_LOSE_SIGHT)
         }
     }
@@ -311,23 +344,25 @@ internal object ToaApmeken {
         ToaPuzzles.give(player, Objs.TOA_PATH_APMEKEN_POTION, POTIONS_PER_TAKE, "toa apmeken potions")
     }
 
-    // ---- AP13 venom pools (hook: the cursed baboon's walk calls this)
+    // ---- AP13 venom pools (the cursed baboon's walk reports them: RaidSignal `toa.apmeken.venom`)
 
-    /** TODO hook for the main session (cursed baboon AI): leaves a venom pool at instance tile [at] for 20 s. */
+    /** A venom pool at instance tile [at] for 20 s (AP13). */
     fun addVenomPool(run: RaidRun, any: EntityRef, at: CoordGrid) {
         val s = store[any, run] ?: return
         s.pools += Pool(at, any.tick)
         any.addLoc(Locs.TOA_PATH_APMEKEN_VENOM_POOL, at, CENTREPIECE, 0, POOL_TICKS)
     }
 
-    /** AP13: 6-8 damage a tick on a pool, none on the tick it spawns. */
+    /** AP13: 6-8 damage a tick on a pool, none on the tick it spawns, and venom unless immune (the combat poison rules). */
     private fun poolTick(s: State, players: List<PlayerRef>, now: Long) {
         if (s.pools.isEmpty()) return
         s.pools.removeAll { now - it.since >= POOL_TICKS }
         for (pool in s.pools) {
             if (now == pool.since) continue
             for (p in players) {
-                if (p.coord == pool.at) ToaPuzzles.hit(p, POOL_MIN + p.random(POOL_MAX - POOL_MIN + 1))
+                if (p.coord != pool.at) continue
+                ToaPuzzles.hit(p, POOL_MIN + p.random(POOL_MAX - POOL_MIN + 1))
+                p.events.publish(tp.plugin.PoisonRequest(p, 0, venom = true))
             }
         }
     }

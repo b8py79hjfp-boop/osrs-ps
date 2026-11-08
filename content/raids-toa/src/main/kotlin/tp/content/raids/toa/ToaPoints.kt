@@ -214,6 +214,40 @@ internal object ToaPoints {
         addRoom(run, m, l.tally(m.name), state.room.id, points)
     }
 
+    /**
+     * One puzzle action's points (puzzles.md PC5, OPEN-PZ10 "insider knowledge"), only when the flat estimates are off
+     * (`toa.puzzlePoints.flat=false`): the room then reports its own points. A negative value (a mistimed repair or pour,
+     * a failed corruption) takes room points off, never below 0.
+     */
+    fun puzzleAction(run: RaidRun, name: String, points: Int) {
+        if (ToaConfig.puzzleFlatPoints) return
+        val state = run.state as? RunState.InRoom ?: return
+        puzzleReportsPoints(run, state.room.id)
+        if (points >= 0) {
+            add(run, name, points)
+            return
+        }
+        val l = ledger(run) ?: return
+        val m = run.member(name) ?: return
+        val t = l.tally(m.name)
+        val off = minOf(-points, t.room)
+        if (off <= 0) return
+        t.room -= off
+        if (ToaConfig.roomPointsLiveInTotal) Raids.addPoints(run, m.name, -off.toDouble())
+    }
+
+    /** PC5: 25 per Apmeken pillar repaired, vent neutralised, cure, or corruption cleared by the sight; -25 a mistake. */
+    const val APMEKEN_ACTION: Int = 25
+
+    /** PC5: 50 per puzzle completed, to each player in the lane (the Scabaras puzzles, each Het beam on the statue). */
+    const val PUZZLE_COMPLETED: Int = 50
+
+    /** PC5: 100 per matched tile in the memory puzzle, to the second player only. */
+    const val MEMORY_MATCH: Int = 100
+
+    /** PC5: 2 points per health of water given to the palm. */
+    const val CRONDIS_PER_WATER: Int = 2
+
     /** A puzzle room that reports its own points (TA40): the flat estimate is not added for [roomId] at completion. */
     fun puzzleReportsPoints(run: RaidRun, roomId: String) {
         ledger(run)?.detailedPuzzles?.add(roomId)

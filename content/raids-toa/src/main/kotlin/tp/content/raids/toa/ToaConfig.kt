@@ -11,6 +11,12 @@ internal object ToaConfig {
     /** OPEN-TA8: the mode of a finished raid (records, KC) follows the final raid level, not the starting one. */
     val modeUsesFinalLevel: Boolean = System.getProperty("tp.toa.modeUsesFinalLevel") != "false"
 
+    /**
+     * OPEN-TA6 (toa.md TA12): the missed time limit lowers only the reward and mode level at completion (on, the working
+     * assumption). Off: it lowers the raid level the tick the limit passes (HUD and every NPC spawned afterwards).
+     */
+    val timeLimitPenaltyAtEndOnly: Boolean = System.getProperty("tp.toa.timeLimitPenaltyAtEndOnly") != "false"
+
     /** OPEN-TA11: the party size used for scaling is the size at the start (fixed for the run). */
     val partySizeAtStart: Boolean = System.getProperty("tp.toa.partySizeAtStart") != "false"
 
@@ -75,6 +81,9 @@ internal object ToaConfig {
 
     /** OPEN-PZ5: the cloud loc that damages (45418; 45419 / 45420 are the other cloud). */
     val crondisDarkCloudLoc: Int = puzzleProp("crondis.darkCloudLoc", 45418).toInt()
+
+    /** OPEN-PZ5: the lighter (warning) cloud, shown the tick before a cloud tile turns dangerous. */
+    val crondisLightCloudLoc: Int = puzzleProp("crondis.lightCloudLoc", 45419).toInt()
 
     /** OPEN-PZ26: ticks between beams (LD's 9; `toa.het.beamPeriodTicks` in the doc). */
     val hetBeamPeriodTicks: Long = puzzleProp("het.beamPeriodTicks", 9)

@@ -11,6 +11,7 @@ import tp.plugin.ContentScope
 import tp.plugin.EntityRef
 import tp.plugin.PlayerRef
 import tp.plugin.WorldRef
+import tp.plugin.choice
 import tp.symbols.Invs
 import tp.symbols.Locs
 
@@ -38,6 +39,11 @@ internal class ToaState(
 
     /** TA12: the tick the party first entered a path (the raid timer), -1 before. */
     var timerStart = -1L
+
+    /** TA12: the time-limit invocation's limit in ticks and its level (-1 / 0 without one), and whether it was missed. */
+    var limitTicks = -1L
+    var limitLevel = 0
+    var timePenalised = false
 
     /** The tick the current room started (room splits). */
     var roomStart = -1L
@@ -74,7 +80,13 @@ public class ToaFlow : ContentPlugin {
             world = this
             Raids.of(this).register(ToaRaid.DEFINITION)
         }
-        onOpLoc(Locs.TOA_LOBBY_RAID_ENTRY, OP1) { enterRaid(player) }
+        onOpLoc(Locs.TOA_LOBBY_RAID_ENTRY, OP1) {
+            // TR29: "the player will be warned of this prior to entering another raid" (OPEN-TR16: the wording).
+            if (ToaConfig.unclaimedLootLostOnEntry && !ToaChestUi.isEmpty(player)) {
+                if (choice(UNCLAIMED_WARNING, ENTER_ANYWAY, STAY) != 1) return@onOpLoc
+            }
+            enterRaid(player)
+        }
         for ((door, path) in NEXUS_DOORS) {
             onOpLoc(door, OP1) { choosePath(player, path) }
             onOpLoc(door, OP2) { choosePath(player, path) }
@@ -324,6 +336,10 @@ public class ToaFlow : ContentPlugin {
             st.modifierNames = ToaInvocations.active(leader, words).map { it.name }.toSet()
             // TA11: the attempts invocation's value (10 / 5 / 3 / 1, param 1299).
             st.attempts = ToaInvocations.activeValue(leader, words, ToaInvocations.CAT_ATTEMPTS) ?: 0
+            ToaInvocations.active(leader, words).firstOrNull { it.category == ToaInvocations.CAT_TIME_LIMIT }?.let {
+                st.limitTicks = it.value.toLong()
+                st.limitLevel = it.level
+            }
             return st
         }
 
@@ -454,6 +470,11 @@ public class ToaFlow : ContentPlugin {
 
         // OPEN-TA30: texts not captured; placeholders until seen in game.
         private const val NO_PARTY = "You are already in a party for another raid."
+
+        /** OPEN-TR16: the warning before entering with unclaimed rewards is not captured. */
+        private const val UNCLAIMED_WARNING = "Unclaimed rewards will be lost if you enter."
+        private const val ENTER_ANYWAY = "Enter the tomb anyway."
+        private const val STAY = "Stay."
         private const val LEADER_FIRST = "Your party leader must enter first."
         private const val PATH_DONE = "You have already completed this path."
         private const val PUZZLE_NOT_DONE = "You must complete the challenge before you can proceed."

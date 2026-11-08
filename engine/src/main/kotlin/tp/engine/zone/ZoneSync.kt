@@ -80,7 +80,8 @@ internal class ZoneSync {
     /** What [viewer] sees of [e]: adds/removes only for objs they could see; a reveal is an add for everyone else. */
     private fun messageFor(viewer: String, e: ZoneEvent): ZoneOp? {
         val couldSee = e.previousOwner == null || e.previousOwner == viewer
-        val obj = e.obj ?: return e.transient
+        // A transient's previousOwner is its only viewer (a private map anim), else everyone sees it.
+        val obj = e.obj ?: return if (couldSee) e.transient else null
         return when (e.kind) {
             ZoneEvent.Kind.ADD -> if (couldSee) add(obj) else null
             ZoneEvent.Kind.DEL -> if (couldSee) del(obj) else null

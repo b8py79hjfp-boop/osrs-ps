@@ -43,6 +43,7 @@ public class ToaHooks : ContentPlugin {
             .of(world)
             .activeRuns) {
             if (run.raid.id != ToaRaid.ID) continue
+            ToaFlow.state(run)?.let { timeLimit(it, world.tick) }
             val room = (run.state as? tp.content.raids.RunState.InRoom)?.room?.id ?: continue
             // Tick hot loop: no lists per run per tick (CLAUDE.md conventions).
             val any = ToaPuzzles.anyPlayer(world, run) ?: continue
@@ -64,6 +65,15 @@ public class ToaHooks : ContentPlugin {
                 }
             }
         }
+    }
+
+    /** OPEN-TA6 (flag off): the tick the timer passes the limit, the raid level drops by twice the invocation's level. */
+    private fun timeLimit(st: ToaState, now: Long) {
+        if (ToaConfig.timeLimitPenaltyAtEndOnly || st.timePenalised) return
+        val running = st.limitTicks >= 0 && st.timerStart >= 0 && st.endTick < 0
+        if (!running || now - st.timerStart <= st.limitTicks) return
+        st.timePenalised = true
+        st.raidLevel = maxOf(0, st.raidLevel - ToaRecords.TIME_PENALTY_FACTOR * st.limitLevel)
     }
 
     private fun stat(p: PlayerRef, stat: ToaStat, amount: Int) {

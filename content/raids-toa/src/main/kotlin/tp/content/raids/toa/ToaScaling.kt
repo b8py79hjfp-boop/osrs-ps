@@ -19,8 +19,9 @@ internal object ToaScaling {
     const val LEVEL_SETTING = "toa_level"
 
     fun apply(ctx: ScalingContext, npc: NpcRef) {
-        val level = ctx.settings[LEVEL_SETTING] ?: 0
         val run = npc[SharedAttrs.RAID_RUN]?.let { Raids.of(npc).run(it) }
+        // The run's current level (OPEN-TA6: a missed time limit can lower it mid-raid), else the starting one.
+        val level = run?.let { ToaFlow.state(it)?.raidLevel } ?: ctx.settings[LEVEL_SETTING] ?: 0
         val type = npc.type
         if (type in HP_SCALED) {
             val path = ToaNpcs.pathOf(type)?.let { p -> run?.let { ToaFlow.pathLevel(it, p) } } ?: 0

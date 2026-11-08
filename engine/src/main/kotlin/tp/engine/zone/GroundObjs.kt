@@ -143,9 +143,9 @@ class GroundObjs internal constructor() {
         events.getOrPut(zone) { ArrayList() } += e
     }
 
-    /** A one-off zone op (projectile) in the zone of [at], sent to every observer this tick. */
-    internal fun transient(at: CoordGrid, op: tp.protocol.api.ZoneOp) {
-        event(ZoneKey.of(at).packed, ZoneEvent(ZoneEvent.Kind.TRANSIENT, null, null, op))
+    /** A one-off zone op (projectile) in the zone of [at], sent this tick to every observer, or to [viewer] only. */
+    internal fun transient(at: CoordGrid, op: tp.protocol.api.ZoneOp, viewer: String? = null) {
+        event(ZoneKey.of(at).packed, ZoneEvent(ZoneEvent.Kind.TRANSIENT, null, viewer, op))
     }
 
     internal fun clearEvents() {

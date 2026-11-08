@@ -23,7 +23,8 @@ import tp.util.CoordGrid
  * Path of Het (puzzles.md HE1-HE12): the caster statue fires a beam every [ToaConfig.hetBeamPeriodTicks]; mirrors
  * (pick up, place, rotate, push, clean) and barriers (Break) steer it into the shielded statue, which weakens Het's Seal
  * for 15 ticks, and the Seal is mined to death. The room is the 21 x 21 arena of the template (see [ORIGIN]); a wipe
- * redrafts the puzzle (Strat). TODO hooks for the main session (orb of darkness AI): [orbHit] and [dirtyMirrorAt].
+ * redrafts the puzzle (Strat). The orbs of darkness (HE5) are content/combat ToaPuzzleFoes, which reports [orbHit] and
+ * [dirtyMirrorAt].
  */
 internal object ToaHet {
     private const val ROOM = "het"
@@ -66,6 +67,11 @@ internal object ToaHet {
                 onOpLoc(statue, 1) { takePickaxe(player) }
                 onOpLoc(statue, 2) { depositPickaxe(player) }
             }
+            // client-contract 7.2: the lobby's pickaxe cavity (multi 49566) shares the statues' varbit 14440, so a pickaxe
+            // left in the lobby is taken at the Het statue and the other way round. OPEN-PZ38: the cavity hands out no
+            // spare bronze pickaxe (only the statue's is stated).
+            onOpLoc(Locs.TOA_LOBBY_WALL02_CAVITY_PARENT, 1) { takePickaxe(player, spare = false) }
+            onOpLoc(Locs.TOA_LOBBY_WALL02_CAVITY_PARENT, 2) { depositPickaxe(player) }
         }
     }
 
@@ -232,7 +238,10 @@ internal object ToaHet {
         }
         // HE4: the damage lands one tick after the graphic.
         if (s.hit.isNotEmpty()) s.damageAt = now + 1
-        if (weakened) weaken(s, now)
+        if (weakened) {
+            weaken(s, now)
+            for (p in players) ToaPoints.puzzleAction(run, p.username, ToaPoints.PUZZLE_COMPLETED)
+        }
     }
 
     /** HE7: the Seal is exposed for 15 ticks, and no beam fires meanwhile (LD). */
@@ -440,8 +449,12 @@ internal object ToaHet {
 
     // ---- HE2 pickaxe statues
 
-    private fun takePickaxe(player: PlayerRef) {
+    private fun takePickaxe(player: PlayerRef, spare: Boolean = true) {
         val stored = player.varbit(Varbits.TOA_PICKAXE_STORED)
+        if (stored == 0 && !spare) {
+            player.message("There is no pickaxe stored here.")
+            return
+        }
         val obj = if (stored == 0) Objs.BRONZE_PICKAXE else STORED_PICKAXES[stored] ?: return
         if (pickaxeTier(player) != NO_PICKAXE && stored == 0) {
             player.message("You already carry a pickaxe.")
@@ -452,7 +465,7 @@ internal object ToaHet {
 
     private fun depositPickaxe(player: PlayerRef) {
         if (player.varbit(Varbits.TOA_PICKAXE_STORED) != 0) {
-            player.message("The statue already holds a pickaxe.")
+            player.message("There is already a pickaxe stored.")
             return
         }
         val inv = player.inv(Invs.INV)
@@ -463,7 +476,7 @@ internal object ToaHet {
             }
             return
         }
-        player.message("You have no pickaxe the statue can hold.")
+        player.message("You have no pickaxe that can be stored.")
     }
 
     // ---- data

@@ -1104,12 +1104,33 @@ class World(
         npcs[npc.index] = null
     }
 
-    /** A spot anim on a tile (MAP_ANIM) for everyone observing its zone. */
-    fun mapAnim(at: CoordGrid, id: Int, height: Int, delay: Int) {
+    /** Shows loc [id] at [at] to [viewer] only (LOC_ADD_CHANGE, look only: collision and other viewers are unchanged). */
+    fun privateLocChange(at: CoordGrid, id: Int, shape: Int, angle: Int, viewer: String) {
+        ground.transient(
+            at,
+            tp.protocol.api.ZoneOp
+                .LocAddChange(at.x and IN_ZONE_MASK, at.z and IN_ZONE_MASK, id, shape, angle),
+            viewer,
+        )
+    }
+
+    /** Seq [id] on the loc of [shape] at [at] (LOC_ANIM), for everyone observing its zone, or for [viewer] only. */
+    fun locAnim(at: CoordGrid, shape: Int, angle: Int, id: Int, viewer: String? = null) {
+        ground.transient(
+            at,
+            tp.protocol.api.ZoneOp
+                .LocAnim(at.x and IN_ZONE_MASK, at.z and IN_ZONE_MASK, shape, angle, id),
+            viewer,
+        )
+    }
+
+    /** A spot anim on a tile (MAP_ANIM) for everyone observing its zone, or for [viewer] only. */
+    fun mapAnim(at: CoordGrid, id: Int, height: Int, delay: Int, viewer: String? = null) {
         ground.transient(
             at,
             tp.protocol.api.ZoneOp
                 .MapAnim(at.x and IN_ZONE_MASK, at.z and IN_ZONE_MASK, id, height, delay),
+            viewer,
         )
     }
 
