@@ -55,6 +55,36 @@ Archive (TFA)** instead of the brief's ToB-first order (§10); DECISIONS D-079 r
 | R6 | ToA | as brief |
 | R7 | Load and soak, RuneLite end-to-end, docs | brief §7 budgets |
 
+### R4 (ToB) sources
+
+Fact sheets (written in R4 research, date anchor 2026-11-03, wiki read 2026-11-08, wiki copies for the verifier in
+`/tmp/claude-0/ref/wiki-tob/`): [tob.md](../mechanics/raids/tob.md) (TB1-TB35, 17 `OPEN-TB`), and per room under
+`docs/mechanics/raids/tob/`: [maiden.md](../mechanics/raids/tob/maiden.md), [bloat.md](../mechanics/raids/tob/bloat.md),
+[nylocas.md](../mechanics/raids/tob/nylocas.md), [sotetseg.md](../mechanics/raids/tob/sotetseg.md),
+[xarpus.md](../mechanics/raids/tob/xarpus.md), [verzik.md](../mechanics/raids/tob/verzik.md),
+[lobby-rewards.md](../mechanics/raids/tob/lobby-rewards.md). Sources, in the brief's order of authority:
+
+1. **Cache 2757:** NPC configs (ids, size, combat level, base HP; Entry configs hold the 1-player base, TB11), objs (escape
+   crystal `cost` 10,000 = the 3 Nov 2026 change), gamevals (`TOB_*` NPCs / locs / seqs / varps / varbits / interfaces,
+   `TOTAL_COMPLETED_THEATREOFBLOOD` 1748, `_HARD` 3057, `_STORY` 3058). No ToB dbtables, so all rates and timings are wiki.
+2. **OSRS Wiki:** [Theatre of Blood](https://oldschool.runescape.wiki/w/Theatre_of_Blood), [Entry
+   Mode](https://oldschool.runescape.wiki/w/Theatre_of_Blood/Entry_Mode), [Hard
+   Mode](https://oldschool.runescape.wiki/w/Theatre_of_Blood/Hard_Mode), [Strategies](https://oldschool.runescape.wiki/w/Theatre_of_Blood/Strategies)
+   and its [Nylocas wave chart](https://oldschool.runescape.wiki/w/Theatre_of_Blood/Strategies/Nylocas), [Monumental
+   chest](https://oldschool.runescape.wiki/w/Monumental_chest), [Chest (Theatre of
+   Blood)](https://oldschool.runescape.wiki/w/Chest_(Theatre_of_Blood)), the six boss pages and their Nylocas / blood spawn /
+   exhumed / web / pillar pages, [Escape crystal](https://oldschool.runescape.wiki/w/Escape_crystal), [Bandages (Theatre of
+   Blood)](https://oldschool.runescape.wiki/w/Bandages_(Theatre_of_Blood)), [Lil' Zik](https://oldschool.runescape.wiki/w/Lil'_Zik),
+   [Scoreboard](https://oldschool.runescape.wiki/w/Scoreboard_(Theatre_of_Blood)), Abigaila, Mysterious Stranger, and the
+   unique item pages. The reward model is the wiki's own calculator: [Module:Theatre of Blood
+   calculator](https://oldschool.runescape.wiki/w/Module:Theatre_of_Blood_calculator).
+3. **Updates** (changelog entries up to 2026-11-03): 12 Aug 2026 (party cooldown removed), 3 Nov 2026 (escape crystal 10,000 and
+   Death's shop), 22 Jul 2026 (rapier / Sanguinesti item changes), 1 Oct 2025 (Verzik quick-start), 26 Mar 2025 (crystal on
+   logout, lore books), 23 Oct 2024 (spectator scrying), 23 May 2024 (Verzik one-player scaling), 1 Mar 2023 (Entry scaling,
+   unlimited attempts, free reclaim, 20% loot).
+4. **RuneLite** (fixtures only): Loot Tracker regions (ToB 12867, lobby 14642, agree with the wiki map pins) and the chat
+   command patterns for the KC / PB messages (still `OPEN-TB17`).
+
 Why TFA can go first despite the brief's reasoning (ToB exercises the most framework with the fewest players): TFA
 has the same building blocks — fixed-then-chosen room graph, per-player chests, dangerous deaths with wipe eject and
 reclaim, spectating, supply shop — so the framework gets the same coverage, just against the newest and least
