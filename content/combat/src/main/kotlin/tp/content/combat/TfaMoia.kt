@@ -91,11 +91,31 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
         val severity = COUGH_POISON[minOf(s.coughs, COUGH_POISON.size - 1)]
         s.coughs++
         npc.anim(Seqs.MOIA_CHANT01)
-        for (p in TfaKit.arena(npc)) {
-            p.spotAnim(SpotAnims.MOIA_INFECT_SPOTANIM)
-            if (!Toxic.wearsSerpentineHelm(p)) Poison.poison(p, severity)
-            BossCombat.drainPrayer(p, COUGH_DRAIN)
+        // MO2: the cough lands on the target; for the next 8 ticks contact (a tile away) with a coughed player or a
+        // binder spreads it, so the target leaving the group in time keeps it to themself.
+        val target = TfaKit.arena(npc).let { it.getOrNull(npc.random(maxOf(1, it.size))) } ?: return
+        val infected = HashSet<String>()
+        infect(target, severity, infected)
+        for (t in 1..SPREAD_TICKS) {
+            npc.queueHit(t) {
+                if (!npc.isInWorld) return@queueHit
+                val players = TfaKit.arena(npc)
+                val carriers = players.filter { it.username in infected }
+                val binders = Bosses.minions(npc, Npcs.TFA_MOIA_MINION)
+                for (p in players) {
+                    if (p.username in infected) continue
+                    val touching = carriers.any { it.distanceTo(p) <= 1 } || binders.any { TfaKit.gap(it, p) <= 1 }
+                    if (touching) infect(p, severity, infected)
+                }
+            }
         }
+    }
+
+    private fun infect(p: tp.plugin.PlayerRef, severity: Int, infected: MutableSet<String>) {
+        infected += p.username
+        p.spotAnim(SpotAnims.MOIA_INFECT_SPOTANIM)
+        if (!Toxic.wearsSerpentineHelm(p)) Poison.poison(p, severity)
+        BossCombat.drainPrayer(p, COUGH_DRAIN)
     }
 
     // ---- undead binders (MO1)
@@ -175,6 +195,7 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
     private const val SLOW_EXTRA = 4
     private const val SIDES = 4
     private const val COUGH_DRAIN = 10
+    private const val SPREAD_TICKS = 8
     private const val BINDERS = 8
     private const val SHUFFLE_TICKS = 15
     private const val PUSH_DAMAGE = 3

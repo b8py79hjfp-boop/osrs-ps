@@ -119,6 +119,9 @@ public object SharedAttrs {
      */
     public val RAID_SCALE: AttrKey<Int> = AttrKey("raid_scale")
 
+    /** NPC attr: the raid party's member names in orb order (leader first), for tank rules. Set with [RAID_SCALE]. */
+    public val RAID_ORDER: AttrKey<List<String>> = AttrKey("raid_order")
+
     /** Rules of the running duel (bits of [DuelRules]); set from "FIGHT!" until the duel ends. */
     public val DUEL_RULES: AttrKey<Int> = AttrKey("duel_rules")
 

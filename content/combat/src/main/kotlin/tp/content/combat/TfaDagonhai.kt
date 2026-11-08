@@ -31,6 +31,9 @@ internal object TfaDagonhai : Boss(
         var tome = 0
         var channeller: NpcRef? = null
         var channelEnds = -1L
+        var channelElement = 0
+        var focusStep = 0
+        var focus: NpcRef? = null
         val members = ArrayList<NpcRef>(MEMBERS)
     }
 
@@ -47,6 +50,8 @@ internal object TfaDagonhai : Boss(
             m[TRIO] = t
             TfaKit.setPool(m, shield)
         }
+        // DH1: the cauldron (the Dagon'hai focus NPC) circles the room's centre.
+        t.focus = Bosses.summon(npc, Npcs.TFA_DAGONHAI_FOCUS, focusTile(npc.spawn, 0), huntRange = 0)
         return t
     }
 
@@ -58,6 +63,7 @@ internal object TfaDagonhai : Boss(
         val t = trio(npc)
         if (npc.tick < (npc[STUNNED_UNTIL] ?: 0L) || npc.type in UNSHIELDED) return
         resolveChannel(npc, t)
+        if (npc.type == Npcs.TFA_DAGONHAI_LEADER) moveCauldron(npc, t)
         // DH5: the order cycles one tome read and one channel per member (Monk N tome, Monk S channel, Elder channel, ...).
         if (t.channeller == null && t.members.indexOf(npc) == t.turn % t.members.size) {
             t.turn++
@@ -87,7 +93,8 @@ internal object TfaDagonhai : Boss(
 
     /** DH3 / DH4: a channel ("I'll feed the flames!" ...); OPEN-DH3: it lasts 6 ticks; OPEN-DH5: any magic hit interrupts. */
     private fun channel(npc: NpcRef, t: Trio) {
-        npc.say(CHANTS[npc.random(CHANTS.size)])
+        t.channelElement = npc.random(CHANTS.size)
+        npc.say(CHANTS[t.channelElement])
         npc.spotAnim(SpotAnims.TFA_DAGONHAI_DEMONIC_STRENGTH_TELEGRAPH)
         t.channeller = npc
         t.channelEnds = npc.tick + CHANNEL_TICKS
@@ -129,7 +136,8 @@ internal object TfaDagonhai : Boss(
     /** DH4: a channelling member hit by magic is interrupted and stunned; a stunned member takes 15% more damage. */
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val t = trio(npc)
-        if (style == HitStyle.MAGIC && t.channeller == npc) {
+        // DH4: only that element's spell interrupts (a splash counts: it still lands as a 0).
+        if (style == HitStyle.MAGIC && t.channeller == npc && elementOf(source) == CHANT_ELEMENTS[t.channelElement]) {
             t.channeller = null
             npc[STUNNED_UNTIL] = npc.tick + STUN_TICKS
             npc.say("Argh!")
@@ -154,6 +162,7 @@ internal object TfaDagonhai : Boss(
             val shield = SHIELD_HP[t.size - MIN_SCALE]
             for (m in t.members) if (m.isInWorld) m.hitpoints = shield
             npc.say("Zamorak, restore us!")
+            portals(npc, t)
             return true
         }
         // The cauldron explodes: one monk dies, the rest are stunned at 7 HP (the unshielded types).
@@ -165,7 +174,59 @@ internal object TfaDagonhai : Boss(
             if (m == monk) m.hitpoints = 0
         }
         monk?.let { CombatSystem.applyHit(it, null, 1, HitStyle.TYPELESS) }
+        t.focus?.let {
+            it.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_LIGHTNING)
+            it.despawn()
+        }
         return true
+    }
+
+    /** The standard-spellbook element of [source]'s last combat spell (Wind / Water / Earth / Fire ...), or -1. */
+    private fun elementOf(source: EntityRef?): Int {
+        val name = (source as? tp.plugin.PlayerRef)?.get(Attr.LAST_SPELL) ?: return -1
+        return SPELL_WORDS.indexOfFirst { name.startsWith(it) }
+    }
+
+    /** DH1: the cauldron steps around a radius-4 ring; a player in its way is shoved 2 tiles for up to 9. */
+    private fun moveCauldron(npc: NpcRef, t: Trio) {
+        val focus = t.focus?.takeIf { it.isInWorld } ?: return
+        t.focusStep = (t.focusStep + 1) % FOCUS_RING.size
+        val to = focusTile(npc.spawn, t.focusStep)
+        focus.teleport(to)
+        for (p in TfaKit.arena(npc)) {
+            if (!TfaKit.under(focus, p.coord)) continue
+            val dx = Integer.signum(p.coord.x - to.x)
+            val dz = Integer.signum(p.coord.z - to.z)
+            p.teleport(tp.util.CoordGrid(p.coord.x + dx * SHOVE, p.coord.z + dz * SHOVE, p.coord.level))
+            CombatSystem.applyHit(p, focus, BossCombat.roll(npc, 0, SHOVE_MAX), HitStyle.TYPELESS)
+        }
+    }
+
+    private fun focusTile(centre: tp.util.CoordGrid, step: Int): tp.util.CoordGrid {
+        val (dx, dz) = FOCUS_RING[step]
+        return tp.util.CoordGrid(centre.x + dx, centre.z + dz, centre.level)
+    }
+
+    /**
+     * DH6 / OPEN-DH4: after a break, imp portals open: one at party size 4 or less, else two corners; three imps each
+     * for the first three breaks, two for the fourth (Strat's two readings combined).
+     */
+    private fun portals(npc: NpcRef, t: Trio) {
+        val count = if (t.size <= SMALL_PARTY) 1 else 2
+        val imps = if (t.breaks < BREAKS - 1) IMPS_EARLY else IMPS_LATE
+        for (k in 0 until count) {
+            val (dx, dz) = PORTAL_CORNERS[k]
+            val at = tp.util.CoordGrid(npc.spawn.x + dx, npc.spawn.z + dz, npc.spawn.level)
+            val portal = Bosses.summon(npc, Npcs.TFA_DAGONHAI_RIFT, at, huntRange = 0)
+            portal.queueHit(PORTAL_OPEN) {
+                repeat(imps) { Bosses.summon(npc, Npcs.TFA_DAGONHAI_DEMON, BossCombat.randomTile(npc, at, 1)) }
+                portal.despawn()
+            }
+        }
+    }
+
+    override fun died(npc: NpcRef, killer: EntityRef?) {
+        Bosses.dismissMinions(npc)
     }
 
     private val SHIELDED = setOf(Npcs.TFA_DAGONHAI_LEADER, Npcs.TFA_DAGONHAI_MINION_1, Npcs.TFA_DAGONHAI_MINION_2)
@@ -177,6 +238,14 @@ internal object TfaDagonhai : Boss(
             Npcs.TFA_DAGONHAI_MINION_1 to Npcs.TFA_DAGONHAI_MINION_1_UNSHIELDED,
             Npcs.TFA_DAGONHAI_MINION_2 to Npcs.TFA_DAGONHAI_MINION_2_UNSHIELDED,
         )
+
+    /** DH4: the element each chant asks for (fire, water, air, earth), as indices into [SPELL_WORDS]. */
+    private val CHANT_ELEMENTS = intArrayOf(3, 1, 0, 2)
+
+    /** Standard-spellbook combat spell names start with these (air spells are "Wind ..."). */
+    private val SPELL_WORDS = listOf("Wind", "Water", "Earth", "Fire")
+    private val FOCUS_RING = listOf(0 to 4, 3 to 3, 4 to 0, 3 to -3, 0 to -4, -3 to -3, -4 to 0, -3 to 3)
+    private val PORTAL_CORNERS = listOf(-7 to 7, 7 to -7)
 
     /** DH4 chants. */
     private val CHANTS = listOf("I'll feed the flames!", "I'll guide the flow!", "I'll focus the winds!", "I'll strengthen the bond!")
@@ -211,4 +280,28 @@ internal object TfaDagonhai : Boss(
     private const val STUN_BONUS_DEN = 100
     private const val BREAKS = 5
     private const val EXPLOSION_STUN = 20
+    private const val SHOVE = 2
+    private const val SHOVE_MAX = 9
+    private const val SMALL_PARTY = 4
+    private const val IMPS_EARLY = 3
+    private const val IMPS_LATE = 2
+    private const val PORTAL_OPEN = 4
+}
+
+/** DH6: an imp from the portals; "players always max-hit imps" (here: any hit kills one). OPEN-DH6: melee up to 8. */
+internal object TfaDagonhaiImp : Boss(Npcs.TFA_DAGONHAI_DEMON) {
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
+        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+        BossCombat.strike(npc, victim, AttackType.STAB, MAX_HIT, 0)
+    }
+
+    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int =
+        if (source is tp.plugin.PlayerRef) maxOf(damage, npc.hitpoints) else damage
+
+    override fun spawned(npc: NpcRef) {
+        npc.huntRange = HUNT
+    }
+
+    private const val MAX_HIT = 8
+    private const val HUNT = 16
 }

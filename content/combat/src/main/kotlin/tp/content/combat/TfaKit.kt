@@ -66,6 +66,12 @@ internal object TfaKit {
         return maxOf(dx, dz)
     }
 
+    /** Adds [amount] special energy (varp `sa_energy`, 1,000 = 100%). */
+    fun addSpecEnergy(p: PlayerRef, amount: Int) {
+        p.setVarp(tp.symbols.Varps.SA_ENERGY, minOf(FULL_SPEC, p.varp(tp.symbols.Varps.SA_ENERGY) + amount))
+    }
+
+    private const val FULL_SPEC = 1000
     private const val MIN_SCALE = 2
     private const val MAX_SCALE = 8
     private const val NPC_STATS = 6

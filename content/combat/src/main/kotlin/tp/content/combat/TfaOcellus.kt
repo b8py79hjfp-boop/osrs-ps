@@ -28,6 +28,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         var centreBlasts = 0
         var bladeDamage = 0
         var explosionsLeft = 0
+        var quadrant = 0
     }
 
     private val STATE = AttrKey<State>("tfa_ocellus")
@@ -141,7 +142,11 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
 
     // ---- P3 (OC3)
 
-    private fun p3(npc: NpcRef, s: State, victim: EntityRef) {
+    private fun p3(npc: NpcRef, s: State, target: EntityRef) {
+        // OC3 (28 Oct): the quadrant's tank is the leader first, then orb order, skipping dead players.
+        val victim: EntityRef = tank(npc) ?: target
+        if (s.attacks % CYCLE == 1) voidPools(npc, victim)
+        if (s.attacks % SPAWN_EVERY == 0) voidSpawn(npc)
         val step = s.attacks % CYCLE
         if (step != 0) {
             // Two melee, then the directional wave.
@@ -153,10 +158,71 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
             melee(npc, victim)
             return
         }
+        if (s.specials % VINE_EVERY == VINE_EVERY - 1) vine(npc, victim)
         when (SPECIALS[s.specials++ % SPECIALS.size]) {
             Special.PRAYER -> prayerSpecial(npc)
             Special.UNTETHER -> untether(npc)
             Special.INSOLENCE -> insolence(npc)
+        }
+    }
+
+    /** The tank: the first party member in orb order who is alive in the arena. */
+    private fun tank(npc: NpcRef): PlayerRef? {
+        val players = TfaKit.arena(npc)
+        val order = npc[tp.plugin.SharedAttrs.RAID_ORDER] ?: return players.firstOrNull()
+        return order.firstNotNullOfOrNull { n -> players.firstOrNull { it.username.equals(n, ignoreCase = true) } }
+    }
+
+    /** OC3: void pools under everyone but the tank (OPEN-OC15: 10 damage if still there 2 ticks later). */
+    private fun voidPools(npc: NpcRef, tank: EntityRef) {
+        for (p in TfaKit.arena(npc)) {
+            if (p == tank) continue
+            val at = p.coord
+            npc.spotAnimAt(at, SpotAnims.TFA_PORTAL)
+            npc.queueHit(POOL_DELAY) { if (npc.isInWorld && p.coord == at) CombatSystem.applyHit(p, npc, POOL_DAMAGE, HitStyle.TYPELESS) }
+        }
+    }
+
+    /** OC3 secondary: the Void Vine roots a player and hits 50+ unless broken in time (OPEN-OC16: 8 ticks). */
+    private fun vine(npc: NpcRef, tank: EntityRef) {
+        val players = TfaKit.arena(npc).filter { it != tank }.ifEmpty { TfaKit.arena(npc) }
+        val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
+        val vine = Bosses.summon(npc, Npcs.TFA_OCELLUS_P3_VOID_VINE, BossCombat.randomTile(npc, p.coord, 1), huntRange = 0)
+        p.frozenUntil = maxOf(p.frozenUntil, npc.tick + VINE_TICKS)
+        vine.queueHit(VINE_TICKS) {
+            if (vine.isInWorld && vine.hitpoints > 0) {
+                CombatSystem.applyHit(p, npc, VINE_DAMAGE, HitStyle.TYPELESS)
+                vine.despawn()
+            }
+        }
+    }
+
+    /**
+     * OC3 secondary: void spawns: a Void Siphon heals him while it lives, a Void Augmenter strengthens his hits, a Void
+     * Rift attacks (OPEN-OC17: one every 12 attacks in turn; siphon 10 HP per attack, augmenter +20%).
+     */
+    private fun voidSpawn(npc: NpcRef) {
+        val type = VOID_SPAWNS[(npc[SPAWNED] ?: 0) % VOID_SPAWNS.size]
+        npc[SPAWNED] = (npc[SPAWNED] ?: 0) + 1
+        Bosses.summon(npc, type, BossCombat.randomTile(npc, npc.coord, SPAWN_SPREAD))
+    }
+
+    private fun augmented(npc: NpcRef): Boolean = Bosses.minions(npc, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF).isNotEmpty()
+
+    /** OC3: each quadrant ends with a destruction charge: anyone still near him after 4 ticks takes 50; he moves on. */
+    private fun destruction(npc: NpcRef, s: State) {
+        s.quadrant++
+        npc.say("Crumble...")
+        val at = npc.coord
+        npc.queueHit(DESTRUCTION_DELAY) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(npc)) {
+                if (maxOf(kotlin.math.abs(p.coord.x - at.x), kotlin.math.abs(p.coord.z - at.z)) <= DESTRUCTION_RADIUS) {
+                    CombatSystem.applyHit(p, npc, DESTRUCTION_DAMAGE, HitStyle.TYPELESS)
+                }
+            }
+            val (dx, dz) = QUADRANTS[s.quadrant % QUADRANTS.size]
+            npc.teleport(CoordGrid(s.centre.x + dx, s.centre.z + dz, s.centre.level))
         }
     }
 
@@ -167,7 +233,12 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
             for (p in TfaKit.arena(npc)) BossCombat.strike(npc, p, AttackType.MAGIC, VOID_SHOT, BossCombat.delay(npc, p, CombatStyle.MAGIC))
             return
         }
-        BossCombat.strike(npc, victim, AttackType.SLASH, P3_MELEE_MAX, 0)
+        val max = if (augmented(npc)) P3_MELEE_MAX * AUGMENT_NUM / AUGMENT_DEN else P3_MELEE_MAX
+        BossCombat.strike(npc, victim, AttackType.SLASH, max, 0)
+        for (siphon in Bosses.minions(npc, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL)) {
+            npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + SIPHON_HEAL)
+            siphon.spotAnim(SpotAnims.TFA_PORTAL)
+        }
     }
 
     /** The directional wave at the target's line (OPEN-OC12: everyone within 1 tile of the line from him to the target, 25). */
@@ -260,6 +331,7 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)
         if (s.phase == Phase.P2) s.bladeDamage += damage
+        if (s.phase == Phase.P3) return opposite(npc, source, damage)
         if (s.phase != Phase.P4) return damage
         // OC4: Deflect Melee halves melee; slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
         var d = if (style == HitStyle.MELEE) damage / 2 else damage
@@ -274,15 +346,34 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         return d
     }
 
+    /** OC3: +10% damage from attacks made from directly opposite the tank. */
+    private fun opposite(npc: NpcRef, source: EntityRef?, damage: Int): Int {
+        val p = source as? PlayerRef ?: return damage
+        val tank = tank(npc) ?: return damage
+        if (p == tank) return damage
+        val cx = npc.coord.x + npc.size / 2
+        val cz = npc.coord.z + npc.size / 2
+        val opposite =
+            Integer.signum(p.coord.x - cx) == -Integer.signum(tank.coord.x - cx) &&
+                Integer.signum(p.coord.z - cz) == -Integer.signum(tank.coord.z - cz)
+        return if (opposite) damage * (PERCENT + OPPOSITE_BONUS) / PERCENT else damage
+    }
+
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc)
         val pct = npc.hitpoints * PERCENT / maxOf(1, npc.maxHitpoints)
         if (s.phase == Phase.P1 && s.centreBlasts < CENTRE_AT.size && pct <= CENTRE_AT[s.centreBlasts]) centreBlast(npc, s)
+        // OC3: four quadrants: each 25% of the pool lost ends one (the last one is P4).
+        if (s.phase == Phase.P3 && s.quadrant < QUADRANT_ENDS.size && pct <= QUADRANT_ENDS[s.quadrant]) destruction(npc, s)
         if (s.phase == Phase.P3 && pct <= P4_AT) {
             s.phase = Phase.P4
             npc.say("Enough!")
             s.explosionsLeft = EXPLOSION_CYCLES
         }
+    }
+
+    override fun died(npc: NpcRef, killer: EntityRef?) {
+        Bosses.dismissMinions(npc)
     }
 
     override fun onLethal(npc: NpcRef): Boolean {
@@ -313,6 +404,14 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     }
 
     private enum class Special { PRAYER, UNTETHER, INSOLENCE }
+
+    private val SPAWNED = AttrKey<Int>("tfa_ocellus_spawns")
+    private val VOID_SPAWNS =
+        intArrayOf(Npcs.TFA_OCELLUS_P3_BOMBPORTAL_HEAL, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BUFF, Npcs.TFA_OCELLUS_P3_BOMBPORTAL_BASIC)
+
+    /** OC3: the four diagonal quadrants (OPEN-OC9: 6 tiles out from the arena centre). */
+    private val QUADRANTS = listOf(-6 to -6, 6 to -6, 6 to 6, -6 to 6)
+    private val QUADRANT_ENDS = intArrayOf(75, 50)
 
     /** OC3: specials in the order Prayer, Untether, Prayer, Insolence. */
     private val SPECIALS = listOf(Special.PRAYER, Special.UNTETHER, Special.PRAYER, Special.INSOLENCE)
@@ -366,6 +465,20 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     private const val SOUL_PRAYED_MAX = 7
     private const val SOUL_SPLIT = 4
     private const val PERCENT = 100
+    private const val OPPOSITE_BONUS = 10
+    private const val POOL_DELAY = 2
+    private const val POOL_DAMAGE = 10
+    private const val VINE_EVERY = 3
+    private const val VINE_TICKS = 8
+    private const val VINE_DAMAGE = 50
+    private const val SPAWN_EVERY = 12
+    private const val SPAWN_SPREAD = 5
+    private const val SIPHON_HEAL = 10
+    private const val AUGMENT_NUM = 6
+    private const val AUGMENT_DEN = 5
+    private const val DESTRUCTION_DELAY = 4
+    private const val DESTRUCTION_RADIUS = 3
+    private const val DESTRUCTION_DAMAGE = 50
     private const val SLOW_3 = 3
     private const val SLOW_4 = 4
     private const val SLOW_5 = 5

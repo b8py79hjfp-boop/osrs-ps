@@ -85,7 +85,7 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
      * EZ2: a cross-shaped lightning AoE on every player in two bursts 2 ticks apart (dodge diagonally or in an L).
      * OPEN-EZ7: arm length 2, 0-30 typeless per burst.
      */
-    private fun lightning(npc: NpcRef, delay: Int) {
+    private fun lightning(npc: NpcRef, delay: Int, struck: MutableSet<String>? = null) {
         npc.anim(Seqs.NPC_EZEKIEL_SPECIAL01)
         val tiles = TfaKit.arena(npc).flatMap { TfaKit.cross(it.coord, CROSS_ARM) }.distinct()
         for (t in tiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_STAR_EXPLOSION_MARKER01)
@@ -94,7 +94,9 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
                 if (!npc.isInWorld) return@queueHit
                 for (t in tiles) npc.spotAnimAt(t, SpotAnims.VFX_EZEKIEL_STAR_EXPLOSION01)
                 for (p in TfaKit.arena(npc)) {
-                    if (TfaKit.on(p, tiles)) CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, LIGHTNING_MAX), HitStyle.TYPELESS)
+                    if (!TfaKit.on(p, tiles)) continue
+                    struck?.add(p.username)
+                    CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, LIGHTNING_MAX), HitStyle.TYPELESS)
                 }
             }
         }
@@ -103,7 +105,7 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     /**
      * EZ2: 3-4 Animated Swords charge along a player's row or column (charge damage at most 80). A sword that crosses
      * Ezekiel stuns him; one that misses heals him. OPEN-EZ1: heal 50; OPEN-EZ8: telegraph 4 ticks, stun 5 ticks,
-     * swords line up on random players. The 3% special energy for a perfect dodge is not modelled.
+     * swords line up on random players.
      */
     private fun swords(npc: NpcRef) {
         val players = TfaKit.arena(npc)
@@ -124,12 +126,15 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
                     )
                 }
             val sword = Bosses.summon(npc, Npcs.TFA_EZEKIEL_SWORD, start, huntRange = 0)
+            // EZ2: a "perfect dodge" (in the sword's path, out of it when it lands) restores 3% special energy.
+            val inPath = TfaKit.arena(npc).filter { TfaKit.on(it, line) }
             sword.spotAnim(SpotAnims.VFX_EZEKIEL_SWORD_TELEGRAPH01)
             sword.queueHit(SWORD_TELEGRAPH) {
                 if (!npc.isInWorld) return@queueHit
                 for (v in TfaKit.arena(npc)) {
                     if (TfaKit.on(v, line)) CombatSystem.applyHit(v, npc, BossCombat.roll(npc, 0, SWORD_MAX), HitStyle.TYPELESS)
                 }
+                for (v in inPath) if (!v.isDying && !TfaKit.on(v, line)) TfaKit.addSpecEnergy(v, DODGE_ENERGY)
                 if (line.any { TfaKit.under(npc, it) }) {
                     npc.anim(Seqs.NPC_EZEKIEL_WEAKEN01)
                     npc.setAttackClock(maxOf(npc.attackClock(), npc.tick + STUN_TICKS))
@@ -150,7 +155,13 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private fun finale(npc: NpcRef) {
         npc.anim(Seqs.NPC_EZEKIEL_FINALE01)
         npc.spotAnim(SpotAnims.VFX_EZEKIEL_FINALE_CAST01)
-        for (k in 0 until FINALE_PATTERNS) lightning(npc, delay = 1 + k * FINALE_GAP)
+        // EZ3: dodging all three patterns restores 9% special energy.
+        val struck = HashSet<String>()
+        val watching = TfaKit.arena(npc)
+        for (k in 0 until FINALE_PATTERNS) lightning(npc, delay = 1 + k * FINALE_GAP, struck = struck)
+        npc.queueHit(1 + (FINALE_PATTERNS - 1) * FINALE_GAP + BURST_GAP + 1) {
+            for (p in watching) if (!p.isDying && p.username !in struck) TfaKit.addSpecEnergy(p, FINALE_DODGE_ENERGY)
+        }
         npc.setAttackClock(npc.tick + FINALE_CYCLE)
     }
 
@@ -195,6 +206,10 @@ internal object TfaEzekiel : Boss(Npcs.TFA_EZEKIEL) {
     private const val SWORD_TELEGRAPH = 4
     private const val SWORD_MAX = 80
     private const val SWORD_HEAL = 50
+
+    /** EZ2 / EZ3: 3% and 9% of the 1,000-unit special bar. */
+    private const val DODGE_ENERGY = 30
+    private const val FINALE_DODGE_ENERGY = 90
     private const val STUN_TICKS = 5
     private const val FINALE_PATTERNS = 3
     private const val FINALE_GAP = 3

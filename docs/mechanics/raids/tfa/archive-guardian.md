@@ -54,6 +54,7 @@ below list only what a source states; everything else is `OPEN` and gets a named
 - Defence/Magic drift by Strat's formula from damage taken, never above the lowest value reached, floored at 156.
 - **OPEN-AG7:** tendril damage ("moderate"): 0-20 per hit, capped at 11 under Protect from Melee.
 - **OPEN-AG8:** the four batteries (16662, Attack) stand at the cache battery bases and are active whenever a shield is
-  up; destroying one takes 40% of the shield (phase 2: 40% of grounded HP as damage). The laser-only battery is not
-  modelled.
+  up; destroying one takes 40% of the shield (phase 2: 40% of grounded HP as damage). The north-east battery is the
+  laser-only one: players' hits do nothing to it; a laser target within 2 tiles of it lures the beam into it (the
+  battery is charged, the player takes 10).
 - **OPEN-AG4 model:** laser = 35 x players alive (fatal above two players at 99 HP), Protect from Magic -20%.

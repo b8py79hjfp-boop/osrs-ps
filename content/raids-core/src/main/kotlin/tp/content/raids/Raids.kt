@@ -367,6 +367,7 @@ public class Raids internal constructor() {
             val npc = any.spawnNpc(type, run.at(template))
             npc[RaidRun.NPC_RUN] = run.id.value
             npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
+            npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
             run.raid.scaling(run.scaling, npc)
             return npc
         }

@@ -37,7 +37,7 @@ below list only what a source states; everything else is `OPEN` and gets a named
 
 - 3-4 ranged (max 32), then a teleport to one of four sides (radius 9, OPEN-MO7) and a slow magic projectile (max 44,
   +4 ticks flight, OPEN-MO6); every second magic attack a cough (poison 2/5/13/20, prayer -10 OPEN-MO8, at most 4;
-  the spread rules are not modelled). Eight binders on a radius-6 ring rotate every 15 ticks (3 damage to anyone
+  the cough lands on one player and spreads for 8 ticks to anyone within a tile of a coughed player or a binder). Eight binders on a radius-6 ring rotate every 15 ticks (3 damage to anyone
   underneath) and are replaced until the enrage; they melee within 2 tiles (OPEN-MO9: max 15, Protect from Melee blocks).
 - 33%: binders healed, one consumed 10 ticks later (+80 HP), then every 40 ticks 25 x surviving binders to everyone
   (OPEN-MO3). OPEN-MO2: HP for 3-8 players follows Ezekiel's ratios from the 1,900 base.

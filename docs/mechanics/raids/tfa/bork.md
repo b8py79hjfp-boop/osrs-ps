@@ -37,4 +37,5 @@ below list only what a source states; everything else is `OPEN` and gets a named
 - Smorks: volleys at everyone Bork is not focused on (OPEN-BK5: max 25, alternating ranged/magic; x1.5 and speed 3
   once Bork is dead); oil every 4th attack, 3x3 for 8 ticks at 6-7 per tick (OPEN-BK6); a heavy cannonball every 6th
   at a player, 20 within 1 tile, stunning Bork for 8 ticks when it lands next to or on him (OPEN-BK7).
+- A dazed Bork is always hit by melee (Boss.meleeAlwaysHits).
 - Both attack from every 7 ticks down to 4 as the Smorks' HP falls (OPEN-BK3). The room ends when both are dead.

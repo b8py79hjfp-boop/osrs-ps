@@ -84,6 +84,8 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         bork.setAttackClock(maxOf(bork.attackClock(), s.stunnedUntil))
     }
 
+    override fun meleeAlwaysHits(npc: NpcRef): Boolean = npc.tick < state(npc).stunnedUntil
+
     /** BK0: flat armour 8, +2 for every 25% of damage the Smorks have taken (max 14); 0 while stunned. */
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
         val s = state(npc)

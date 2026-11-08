@@ -43,6 +43,9 @@ internal abstract class Boss(vararg ids: Int) {
     /** Whether the NPC may pick [player] when hunting (revenants: not bracelet wearers). */
     open fun hunts(npc: NpcRef, player: PlayerRef): Boolean = true
 
+    /** Whether a player's melee on the NPC always hits right now (a dazed Bork). */
+    open fun meleeAlwaysHits(npc: NpcRef): Boolean = false
+
     /** Callisto/Artio: a freeze on them while unfrozen always lands (bosses.md CA6). */
     open val firstFreezeLands: Boolean = false
 }
@@ -76,6 +79,7 @@ internal object Bosses {
             TfaMoiaBinder,
             TfaDreadnoth,
             TfaDagonhai,
+            TfaDagonhaiImp,
             TfaXarth,
             TfaXarthCorpse,
             TfaOcellus,

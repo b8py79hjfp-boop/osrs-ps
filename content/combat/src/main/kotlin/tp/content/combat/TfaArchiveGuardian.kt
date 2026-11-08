@@ -33,6 +33,9 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
 
     private val STATE = AttrKey<State>("tfa_guardian")
 
+    /** AG2: the battery only the laser can charge. */
+    val LASER_ONLY = AttrKey<Boolean>("tfa_guardian_laser_battery")
+
     private fun state(npc: NpcRef): State =
         npc[STATE] ?: State(npc[SharedAttrs.RAID_SCALE] ?: MIN_SCALE).also {
             npc[STATE] = it
@@ -43,13 +46,14 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     /**
      * AG2: four Inert Guardian batteries on their bases (cache: battery bases at x 4114 / 4139, z 5591 / 5604 on every
      * nexus level, i.e. these offsets from the Guardian's south-west tile (4125, 5597)). OPEN-AG8: they are taken to be
-     * chargeable (active) whenever the shield is up; the laser-only battery is not modelled.
+     * chargeable (active) whenever the shield is up; the north-east one is the laser-only battery.
      */
     private fun batteries(npc: NpcRef) {
         Bosses.dismissMinions(npc)
-        for ((dx, dz) in BATTERY_OFFSETS) {
-            val at = CoordGrid(npc.coord.x + dx, npc.coord.z + dz, npc.coord.level)
-            Bosses.summon(npc, Npcs.TFA_GUARDIAN_BATTERY_ACTIVE, at, huntRange = 0)
+        for ((k, offset) in BATTERY_OFFSETS.withIndex()) {
+            val at = CoordGrid(npc.coord.x + offset.first, npc.coord.z + offset.second, npc.coord.level)
+            val battery = Bosses.summon(npc, Npcs.TFA_GUARDIAN_BATTERY_ACTIVE, at, huntRange = 0)
+            if (k == LASER_BATTERY) battery[LASER_ONLY] = true
         }
     }
 
@@ -189,6 +193,17 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         CombatSystem.announceAttack(npc, target, CombatStyle.MAGIC)
         var damage = LASER_PER_ALIVE * players.size
         if (target.protects(CombatStyle.MAGIC)) damage = damage * (PERCENT - LASER_PRAYER_PERCENT) / PERCENT
+        // AG2: one battery can only be charged by the laser: a target standing by it lures the beam into it, and the
+        // battery takes the blast (OPEN-AG4: the player then takes 10).
+        val lure =
+            Bosses.minions(npc, Npcs.TFA_GUARDIAN_BATTERY_ACTIVE).firstOrNull {
+                it[LASER_ONLY] == true &&
+                    TfaKit.gap(it, target) <= LURE_RANGE
+            }
+        if (lure != null) {
+            CombatSystem.queueHit(lure, npc, lure.hitpoints, HitStyle.MAGIC, LASER_DELAY)
+            damage = LASER_LURED
+        }
         CombatSystem.queueHit(target, npc, damage, HitStyle.MAGIC, LASER_DELAY)
     }
 
@@ -319,6 +334,9 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private const val LASER_PER_ALIVE = 35
     private const val LASER_PRAYER_PERCENT = 20
     private const val LASER_DELAY = 2
+    private const val LASER_LURED = 10
+    private const val LURE_RANGE = 2
+    private const val LASER_BATTERY = 3
 
     /** AG5 numbers. */
     private const val MUSHROOMS_PER_PLAYER = 2
@@ -355,6 +373,10 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
 
 /** AG2: an active battery; destroying it ("charging") breaks part of its Guardian's shield. */
 internal object GuardianBattery : Boss(Npcs.TFA_GUARDIAN_BATTERY_ACTIVE) {
+    /** AG2: "one hit only by the laser": players' hits do nothing to it. */
+    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int =
+        if (npc[ArchiveGuardian.LASER_ONLY] == true && source is PlayerRef) 0 else damage
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         // Batteries never attack (cache: no combat level, only the "Attack" op on them).
     }

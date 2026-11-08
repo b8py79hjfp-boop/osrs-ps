@@ -77,7 +77,9 @@ internal object Attacks {
                 val enticed = (player[SpecialEffects.ENTICED_UNTIL] ?: 0L) > player.tick
                 if (enticed) player[SpecialEffects.ENTICED_UNTIL] = null
                 val roll = if (enticed && target is PlayerRef) attackRoll * 3 / 2 else attackRoll
-                val sure = enticed && target !is PlayerRef
+                // Bosses can make melee sure (bork.md BK2: "melee on a dazed Bork always hits").
+                val bossSure = (target as? NpcRef)?.let { Bosses.of(it.type)?.meleeAlwaysHits(it) } == true
+                val sure = (enticed && target !is PlayerRef) || bossSure
                 PostRoll
                     .melee(
                         player,

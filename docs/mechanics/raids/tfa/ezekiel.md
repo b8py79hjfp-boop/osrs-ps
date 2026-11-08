@@ -44,4 +44,5 @@ below list only what a source states; everything else is `OPEN` and gets a named
   11-tick cycle.
 - **OPEN-EZ6:** magic max 40 per player. **OPEN-EZ7:** lightning cross arm 2, 0-30 typeless per burst.
   **OPEN-EZ8:** sword telegraph 4 ticks, line reach 10, stun 5 ticks; heal 50 (OPEN-EZ1). OPEN-EZ5 model: finale
-  damage x(0.5 + HP fraction). Perfect-dodge special energy is not modelled.
+  damage x(0.5 + HP fraction). A perfect dodge (on a sword's line when it spawns, off it when it lands) gives +3% special
+  energy; a finale with no lightning hit gives +9%.

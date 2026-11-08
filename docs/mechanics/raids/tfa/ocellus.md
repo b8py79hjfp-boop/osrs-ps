@@ -68,3 +68,11 @@ below list only what a source states; everything else is `OPEN` and gets a named
 - P4 below 25% of P3's pool: melee halved (Deflect Melee), slow weapons 33/50/60% less, six void explosion cycles every
   2 ticks then soul-split blasts (40-45 unprayed, 6-7 prayed, healing him a quarter; OPEN-OC8: style alternates).
 - His first action sets `TFA_OCELLUS_MET` for the players in the arena.
+- P3 also: the tank is the first party member in orb order alive in the arena (raids-core tags raid NPCs with the
+  orb order); attacks from directly opposite the tank deal +10%; void pools under non-tanks (10 after 2 ticks,
+  OPEN-OC15); every third special a Void Vine roots a non-tank (50 unless broken within 8 ticks, OPEN-OC16); every 12
+  attacks a void spawn in turn (Siphon heals 10 per melee, Augmenter +20% melee, Rift attacks; OPEN-OC17); quadrants
+  end at 75% and 50% with a destruction charge (50 within 3 tiles after 4 ticks) and he moves to the next diagonal
+  quadrant (6 out, OPEN-OC9).
+- **OPEN-OC14:** the censers (Bandosian, Armadylean, Zarosian, Saradomin) have no loc, NPC or obj in cache 2757, so they
+  are not built.
