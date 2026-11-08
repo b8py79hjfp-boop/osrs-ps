@@ -11,8 +11,8 @@ import tp.symbols.SpotAnims
  * The Dagon'hai, TFA room 4 west (docs/mechanics/raids/tfa/dagonhai.md DH1-DH6): the Elder and two Monks share one
  * shield pool. Members take turns to channel (a magic hit interrupts it and stuns the channeller; an uninterrupted
  * channel fills the ritual bar by 25%, and a full bar empowers all three) and to read their tomes (Zamorak, Bandos,
- * Saradomin). Each shield break restores the shield; the fifth explodes the cauldron: one monk dies and the others
- * stand stunned at 7 HP.
+ * Saradomin). Each shield break restores the shield; the fifth explodes the cauldron and all three stand stunned at 7 HP
+ * (3 Nov fix: the explosion kills none of them).
  */
 internal object TfaDagonhai : Boss(
     Npcs.TFA_DAGONHAI_LEADER,
@@ -165,15 +165,13 @@ internal object TfaDagonhai : Boss(
             portals(npc, t)
             return true
         }
-        // The cauldron explodes: one monk dies, the rest are stunned at 7 HP (the unshielded types).
-        val monk = t.members.lastOrNull { it.type != Npcs.TFA_DAGONHAI_LEADER }
+        // The cauldron explodes; all three stand stunned at 7 HP (the unshielded types). 3 Nov: it no longer kills any
+        // of them ("you should have the satisfaction of dealing those last hits").
         for (m in t.members) {
             if (!m.isInWorld) continue
             m.transform(UNSHIELDED_OF.getValue(m.type), restoreStats = true)
             m[STUNNED_UNTIL] = m.tick + EXPLOSION_STUN
-            if (m == monk) m.hitpoints = 0
         }
-        monk?.let { CombatSystem.applyHit(it, null, 1, HitStyle.TYPELESS) }
         t.focus?.let {
             it.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_LIGHTNING)
             it.despawn()
