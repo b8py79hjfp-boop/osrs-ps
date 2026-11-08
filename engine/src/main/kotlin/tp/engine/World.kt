@@ -239,6 +239,43 @@ class World(
         for (slot in pidOrder) players[slot]?.let(action)
     }
 
+    private val playerIndex = SquareIndex<Player>()
+    private val npcIndex = SquareIndex<Npc>()
+    private val playersByName = HashMap<String, Player>()
+
+    /** pidOrder's inverse: the position of each slot (radius queries return players in [forEachPlayer]'s order). */
+    private val pidRank = IntArray(MAX_PLAYERS) { it - 1 }
+
+    internal fun entityMoved(e: tp.engine.entity.Entity, old: CoordGrid) {
+        when (e) {
+            is Player -> playerIndex.moved(e, old)
+            is Npc -> npcIndex.moved(e, old)
+            else -> Unit
+        }
+    }
+
+    /**
+     * Players whose square is near [centre] (box of [radius]), in [forEachPlayer]'s order; the caller checks distance and
+     * level. A box too wide for the index visits every player.
+     */
+    fun forPlayersNear(centre: CoordGrid, radius: Int, action: (Player) -> Unit) {
+        val out = ArrayList<Player>()
+        if (!playerIndex.collect(centre.x, centre.z, radius, out)) return forEachPlayer(action)
+        if (out.size > 1) out.sortBy { pidRank[it.slot] }
+        for (p in out) action(p)
+    }
+
+    /** NPCs whose square is near [centre] (box of [radius]), in [forEachNpc]'s order (index); the caller checks the rest. */
+    fun forNpcsNear(centre: CoordGrid, radius: Int, action: (Npc) -> Unit) {
+        val out = ArrayList<Npc>()
+        if (!npcIndex.collect(centre.x, centre.z, radius, out)) return forEachNpc(action)
+        if (out.size > 1) out.sortBy { it.index }
+        for (n in out) action(n)
+    }
+
+    /** The online player named [username] (case-insensitive), or null. */
+    fun playerNamed(username: String): Player? = playersByName[username.lowercase()]
+
     fun player(slot: Int): Player? = players.getOrNull(slot)
 
     fun npc(index: Int): Npc? = npcs.getOrNull(index)
@@ -1115,6 +1152,8 @@ class World(
         npc.npcInteraction = null
         respawns.removeAll { it.second === npc }
         npcs[npc.index] = null
+        npc.indexed = false
+        npcIndex.remove(npc)
     }
 
     /** Shows loc [id] at [at] to [viewer] only (LOC_ADD_CHANGE, look only: collision and other viewers are unchanged). */
@@ -1191,6 +1230,8 @@ class World(
         }
         val npc = Npc(this, index, type, size, at, wanderRange)
         npcs[index] = npc
+        npcIndex.add(npc)
+        npc.indexed = true
         init?.invoke(npc)
         network.npcAdded(npc.index, type, at.level, at.x, at.z)
         content.onNpcSpawn(npc)
@@ -1262,6 +1303,9 @@ class World(
     fun addPlayer(player: Player) {
         check(players[player.slot] == null) { "slot ${player.slot} taken" }
         players[player.slot] = player
+        playerIndex.add(player)
+        player.indexed = true
+        playersByName[player.username.lowercase()] = player
         // A PID is assigned on login (Wiki); first re-randomisation after one window.
         nextPidShuffle[player.slot] = tick + rng.nextInt(config.pidShuffle.first, config.pidShuffle.last + 1)
         player.session.beginGame(player.avatarState())
@@ -1287,6 +1331,9 @@ class World(
         content.onLogout(player)
         accounts?.saved(player, PlayerSave.snapshot(player), final = true)
         players[player.slot] = null
+        player.indexed = false
+        playerIndex.remove(player)
+        playersByName.remove(player.username.lowercase())
         interfaces.forget(player)
         player.session.close()
         logger.info { "logout: $player ($playerCount online)" }
@@ -1304,6 +1351,8 @@ class World(
             val to = rng.nextInt(pidOrder.size)
             pidOrder[from] = pidOrder[to]
             pidOrder[to] = slot
+            pidRank[pidOrder[from]] = from
+            pidRank[slot] = to
             nextPidShuffle[slot] = tick + rng.nextInt(config.pidShuffle.first, config.pidShuffle.last + 1)
         }
     }
@@ -1311,7 +1360,10 @@ class World(
     /** Scenario runner: force a processing order (lowest PID first). Disables re-randomisation. */
     fun forcePidOrder(slots: List<Int>) {
         val rest = (1 until MAX_PLAYERS).filter { it !in slots }
-        (slots + rest).forEachIndexed { i, s -> pidOrder[i] = s }
+        (slots + rest).forEachIndexed { i, s ->
+            pidOrder[i] = s
+            pidRank[s] = i
+        }
         pidShuffleEnabled = false
     }
 

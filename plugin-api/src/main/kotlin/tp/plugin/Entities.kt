@@ -78,11 +78,7 @@ public sealed class EntityRef {
     }
 
     /** The online player called [username] in this entity's world (case-insensitive), or null. */
-    public fun onlinePlayer(username: String): PlayerRef? {
-        var found: tp.engine.entity.Player? = null
-        e.world.forEachPlayer { if (found == null && it.username.equals(username, ignoreCase = true)) found = it }
-        return found?.let { PlayerRef(it) }
-    }
+    public fun onlinePlayer(username: String): PlayerRef? = e.world.playerNamed(username)?.let { PlayerRef(it) }
 
     public fun anim(seq: Int, delay: Int = 0) {
         e.visual(Visual.Animate(seq, delay))
@@ -133,7 +129,7 @@ public sealed class EntityRef {
     /** Players within [radius] tiles (Chebyshev, same level), excluding this entity. */
     public fun playersWithin(radius: Int): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
-        e.world.forEachPlayer { p ->
+        e.world.forPlayersNear(coord, radius) { p ->
             // IN11: observers (spectators) are never picked.
             val near =
                 p.coord.level == coord.level && maxOf(kotlin.math.abs(p.coord.x - coord.x), kotlin.math.abs(p.coord.z - coord.z)) <= radius
@@ -145,7 +141,7 @@ public sealed class EntityRef {
     /** NPCs in the world within [radius] tiles of [centre] (Chebyshev from their south-west tile, same level). */
     public fun npcsWithin(centre: CoordGrid, radius: Int): List<NpcRef> {
         val out = ArrayList<NpcRef>()
-        e.world.forEachNpc { n ->
+        e.world.forNpcsNear(centre, radius) { n ->
             if (!n.hidden && n.coord.level == centre.level &&
                 maxOf(kotlin.math.abs(n.coord.x - centre.x), kotlin.math.abs(n.coord.z - centre.z)) <= radius
             ) {
@@ -158,7 +154,7 @@ public sealed class EntityRef {
     /** Players within [radius] tiles of [centre] (Chebyshev, same level). */
     public fun playersAround(centre: CoordGrid, radius: Int): List<PlayerRef> {
         val out = ArrayList<PlayerRef>()
-        e.world.forEachPlayer { p ->
+        e.world.forPlayersNear(centre, radius) { p ->
             if (p.coord.level == centre.level &&
                 maxOf(kotlin.math.abs(p.coord.x - centre.x), kotlin.math.abs(p.coord.z - centre.z)) <= radius
             ) {

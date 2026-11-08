@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
     if (count == null) {
         System.err.println(
             "usage: botswarm <count> [host=127.0.0.1] [port=43594] [centreX=3222] [centreZ=3218] " +
-                "[walk|fight|gear|hop|channel|mixed] [namePrefix=bot]",
+                "[walk|fight|gear|hop|channel|mixed|raids] [namePrefix=bot]",
         )
         exitProcess(2)
     }
@@ -58,6 +58,7 @@ fun main(args: Array<String>) {
                     "clienthop" -> clientHop(bot, "$prefix${i + 1}", modulus, crcs)
                     "gear" -> gear(bot)
                     "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
+                    "raids" -> raids(bot, RAIDS[i % RAIDS.size])
                     else -> wander(bot, centreX, centreZ)
                 }
             }
@@ -194,6 +195,39 @@ private const val LOGOUT_WORLD_SWITCHER = 182 shl 16 or 3
 private const val WORLDSWITCHER_BUTTONS = 69 shl 16 or 18
 private const val HOP_WORLDS = 3
 private const val NANOS_PER_MS = 1_000_000L
+
+/**
+ * Raids brief section 7 load profile: each bot runs a solo raid (the four raids round-robin, so 300 bots = 75 instances
+ * of each) through the `::raid` dev command, moves to its run's next room every [RAID_ROOM_NANOS], and is kept alive.
+ * A run that ended (wipe, completion) is started again on the next room step.
+ */
+private fun raids(bot: BotClient, raid: String) {
+    bot.cheat("max")
+    bot.cheat("raid $raid")
+    val rng = ThreadLocalRandom.current()
+    var nextRoom = System.nanoTime() + RAID_ROOM_NANOS + rng.nextLong(RAID_ROOM_NANOS)
+    var nextHeal = System.nanoTime() + RAID_HEAL_NANOS
+    while (true) {
+        bot.readPacket()
+        val now = System.nanoTime()
+        if (now >= nextHeal) {
+            bot.cheat("hp $RAID_HP")
+            nextHeal = now + RAID_HEAL_NANOS
+        }
+        if (now >= nextRoom) {
+            bot.cheat("raid $raid")
+            bot.cheat("raid next")
+            nextRoom = now + RAID_ROOM_NANOS
+        }
+    }
+}
+
+private val RAIDS = listOf("tob", "cox", "toa", "tfa")
+
+/** A room step every 30 s, a heal every 6 s (the load profile; raids brief section 7). */
+private const val RAID_ROOM_NANOS = 30_000_000_000L
+private const val RAID_HEAL_NANOS = 6_000_000_000L
+private const val RAID_HP = 99
 
 /** Drains server packets; every few seconds clicks a random tile within [WANDER_RADIUS] of the centre. */
 private fun wander(bot: BotClient, centreX: Int, centreZ: Int) {

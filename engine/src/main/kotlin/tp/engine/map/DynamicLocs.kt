@@ -58,13 +58,17 @@ class DynamicLocs internal constructor(
      * An attached instance's own base-loc table (IN6: built off the world thread and handed over whole), looked up by
      * zone; set by [Instances].
      */
-    internal var instanceBases: (Int) -> HashMap<Long, InteractionTarget.Loc>? = { null }
+    internal var instanceBases: (Int) -> ZoneBases? = { null }
 
     /** The instance base loc on [layer] at the tile: zones copied one by one first, then the instance's own table. */
     private fun baseAt(level: Int, x: Int, z: Int, layer: Int): InteractionTarget.Loc? {
         val zone = ZoneKey.of(level, x shr ZONE_SHIFT, z shr ZONE_SHIFT).packed
-        val k = key(level, x, z, layer)
-        return basesByZone[zone]?.get(k) ?: instanceBases(zone)?.get(k)
+        basesByZone[zone]?.get(key(level, x, z, layer))?.let { return it }
+        val table = instanceBases(zone) ?: return null
+        val i = table.indexOf(x and IN_ZONE, z and IN_ZONE, layer)
+        if (i < 0) return null
+        val id = table.id(i)
+        return InteractionTarget.Loc(CoordGrid(x, z, level), id, table.shape(i), table.angle(i), width(id), length(id), forceApproach(id))
     }
 
     /** This tick's zone ops per zone (sent to observers in the info pass, then cleared). */
@@ -178,14 +182,6 @@ class DynamicLocs internal constructor(
     /** Applies [loc]'s collision only (a copied loc that starts outside its instance, so it is not registered). */
     internal fun applyCollision(loc: InteractionTarget.Loc) {
         toggle(loc, add = true)
-    }
-
-    /**
-     * IN6: a zone's base locs prepared off the world thread ([keyOf] keys), installed whole. Their collision is already
-     * in the zone's prepared tiles, so nothing is toggled here.
-     */
-    internal fun installBases(zone: ZoneKey, map: HashMap<Long, InteractionTarget.Loc>) {
-        if (map.isEmpty()) basesByZone.remove(zone.packed) else basesByZone[zone.packed] = map
     }
 
     /**
@@ -319,10 +315,10 @@ class WorldCollision(shared: CollisionFlagMap) {
             .MapSink(flags)
 
     /** Puts [tiles] (built off the world thread) in as zone ([zoneX], [zoneZ]) on [level], owned by this world. */
-    internal fun installZone(level: Int, zoneX: Int, zoneZ: Int, tiles: IntArray) {
+    internal fun installZone(level: Int, zoneX: Int, zoneZ: Int, tiles: IntArray, owned: Boolean = true) {
         val index = index(level, zoneX, zoneZ)
         flags.flags[index] = tiles
-        owned.set(index)
+        if (owned) this.owned.set(index) else this.owned.clear(index)
     }
 
     /** Gives zone ([zoneX], [zoneZ]) on [level] fresh, empty (walkable) tiles owned by this world (instance space). */

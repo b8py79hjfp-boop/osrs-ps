@@ -30,6 +30,9 @@ public class RaidsPlugin : ContentPlugin {
             val run = runInside(req.player) ?: return@on
             Raids.died(req.player, run, req)
         }
+        // Dev / load command (raids brief section 7, botswarm `raids` profile): `::raid <tob|cox|toa|tfa>` starts a solo run
+        // of that raid, `::raid next` moves the run to its next room in order, `::raid leave` leaves it.
+        onCommand("raid") { args -> devRaid(this, args) }
         events.on<LogoutEvent> { e -> loggedOut(e.player) }
         events.on<LoginEvent> { e -> loggedIn(e.player) }
         events.on<InstanceLost> { e ->
@@ -108,5 +111,34 @@ public class RaidsPlugin : ContentPlugin {
         if (run.state == RunState.Completed) Raids.pay(player, run)
         run.markDirty()
         player.events.publish(RaidEvent.Reconnected(run, m.name))
+    }
+}
+
+private fun devRaid(p: PlayerRef, args: List<String>) {
+    val raids = Raids.of(p)
+    val run = raids.runOf(p.username)
+    when (val arg = args.firstOrNull()?.lowercase()) {
+        null -> {
+            p.message("::raid <${raids.allDefinitions().joinToString("|") { it.id }}> | next | leave")
+        }
+
+        "next" -> {
+            val r = run ?: return p.message("You are not in a raid.")
+            val rooms = r.raid.slots.map { it.first() }
+            val now = (r.state as? RunState.InRoom)?.room?.id
+            Raids.enterRoom(p, r, rooms[(rooms.indexOf(now) + 1).mod(rooms.size)])
+        }
+
+        "leave" -> {
+            run?.let { Raids.leave(p, it) } ?: p.message("You are not in a raid.")
+        }
+
+        else -> {
+            if (run != null) return p.message("You are already in a raid.")
+            val def = raids.definition(arg) ?: return p.message("No raid '$arg'.")
+            val party = raids.partyOf(p.username)?.takeIf { it.raid.id == def.id } ?: raids.createParty(def, p.username)
+            if (party == null) return p.message("You are already in another party.")
+            Raids.start(p, party)?.let { p.message(it) }
+        }
     }
 }

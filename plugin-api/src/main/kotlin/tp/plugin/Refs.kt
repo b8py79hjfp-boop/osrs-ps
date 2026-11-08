@@ -923,11 +923,7 @@ public class WorldRef internal constructor(internal val w: World) {
     public val tick: Long get() = w.tick
 
     /** The online player called [username] (case-insensitive), or null. */
-    public fun onlinePlayer(username: String): PlayerRef? {
-        var found: tp.engine.entity.Player? = null
-        w.forEachPlayer { if (found == null && it.username.equals(username, ignoreCase = true)) found = it }
-        return found?.let { PlayerRef(it) }
-    }
+    public fun onlinePlayer(username: String): PlayerRef? = w.playerNamed(username)?.let { PlayerRef(it) }
 
     /** Whether a boat may occupy [tile]: sea with no blocking loc (sailing-movement.md SM1, SM5). */
     public fun isSailable(tile: CoordGrid): Boolean =

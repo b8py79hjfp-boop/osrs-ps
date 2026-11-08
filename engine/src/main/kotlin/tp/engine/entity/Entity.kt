@@ -14,7 +14,14 @@ abstract class Entity internal constructor(
     spawn: CoordGrid,
 ) {
     var coord: CoordGrid = spawn
-        internal set
+        internal set(value) {
+            val old = field
+            field = value
+            if (indexed) world.entityMoved(this, old)
+        }
+
+    /** In the world's square index (raids brief section 7: radius queries), from add / spawn until removal. */
+    internal var indexed: Boolean = false
 
     /** Tiles occupied per side (players 1, NPCs from their config). */
     abstract val size: Int

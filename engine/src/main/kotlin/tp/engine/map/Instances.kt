@@ -35,7 +35,7 @@ class Instances internal constructor(
         internal var zones = HashMap<Int, Int>()
 
         /** Base locs by zone, from the build plan (IN6); zones copied later one by one keep theirs in DynamicLocs. */
-        internal var bases: HashMap<Int, HashMap<Long, InteractionTarget.Loc>> = HashMap()
+        internal var bases: HashMap<Int, ZoneBases> = HashMap()
 
         /** Bumped on every change, so players inside get a fresh REBUILD_REGION (IN4). */
         var version: Int = 0
@@ -137,7 +137,7 @@ class Instances internal constructor(
         internal val zones: List<Pair<ZoneKey, PreparedZone>>,
         internal val squares: List<SquareCopy>,
         internal val tiles: Map<Int, IntArray>,
-        internal val bases: HashMap<Int, HashMap<Long, InteractionTarget.Loc>>,
+        internal val bases: HashMap<Int, ZoneBases>,
         internal val spill: IntArray,
         internal val zoneRefs: HashMap<Int, Int>,
     )
@@ -205,7 +205,7 @@ class Instances internal constructor(
             }
         val tiles = HashMap<Int, IntArray>(zones.size * 2)
         for ((zone, _) in zones) tiles.getOrPut(zone.packed) { IntArray(ZONE_TILES) }
-        val bases = HashMap<Int, HashMap<Long, InteractionTarget.Loc>>(zones.size * 2)
+        val building = HashMap<Int, ZoneBases.Builder>(zones.size * 2)
         val spill = IntArrayList()
         val sink =
             tp.cache.map.LocCollision.FlagSink { x, z, level, mask, add ->
@@ -233,7 +233,7 @@ class Instances internal constructor(
                 // A turned multi-tile loc can start in a zone outside the plan (west / south of the instance): its
                 // collision still lands in the plan's zones, but it is not registered there (that zone belongs to the
                 // map or a neighbouring instance, and nothing could tear it down with this one).
-                if (tiles.containsKey(at) && bases.getOrPut(at) { HashMap() }.put(DynamicLocs.keyOf(loc), loc) != null) continue
+                if (tiles.containsKey(at) && !building.getOrPut(at) { ZoneBases.Builder() }.put(loc)) continue
                 val type = types[loc.id] ?: continue
                 tp.cache.map.LocCollision.toggle(
                     sink,
@@ -253,6 +253,10 @@ class Instances internal constructor(
         }
         val refs = HashMap<Int, Int>(zones.size * 2)
         for ((zone, prep) in zones) refs[zone.packed] = prep.reference
+        val bases = HashMap<Int, ZoneBases>(building.size * 2)
+        for ((zone, b) in building) bases[zone] = b.build()
+        // Zones with no collision at all (empty template space) share one array; a later edit copies it (ownZones).
+        for (e in tiles.entries) if (e.value.all { it == 0 }) e.setValue(EMPTY_TILES)
         return BuildPlan(instance, zones, squares, tiles, bases, spill.toArray(), refs)
     }
 
@@ -262,15 +266,15 @@ class Instances internal constructor(
         if (instance.destroyed) return
         if (instance.zones.isEmpty() && instance.bases.isEmpty()) {
             // A fresh instance (the usual case): tile arrays go in, the zone and base tables are handed over whole.
-            for ((zone, _) in plan.zones) collision.installZone(zone.level, zone.zoneX, zone.zoneZ, plan.tiles.getValue(zone.packed))
+            for ((zone, _) in plan.zones) install(zone, plan.tiles.getValue(zone.packed))
             instance.zones = plan.zoneRefs
             instance.bases = plan.bases
         } else {
             // A re-attach over live zones clears its targets first, then installs zone by zone.
             for ((zone, _) in plan.zones) clear(instance, zone.level, zone.zoneX, zone.zoneZ)
             for ((zone, prep) in plan.zones) {
-                collision.installZone(zone.level, zone.zoneX, zone.zoneZ, plan.tiles.getValue(zone.packed))
-                locs.installBases(zone, plan.bases[zone.packed] ?: EMPTY_BASES)
+                install(zone, plan.tiles.getValue(zone.packed))
+                plan.bases[zone.packed]?.let { instance.bases[zone.packed] = it }
                 instance.zones[zone.packed] = prep.reference
             }
         }
@@ -284,6 +288,11 @@ class Instances internal constructor(
         }
         instance.squares += plan.squares
         instance.version++
+    }
+
+    /** The shared empty array goes in unowned, so the first edit copies it; a zone with collision is this world's own. */
+    private fun install(zone: ZoneKey, tiles: IntArray) {
+        collision.installZone(zone.level, zone.zoneX, zone.zoneZ, tiles, owned = tiles !== EMPTY_TILES)
     }
 
     /** [prep]'s locs placed in [zone] (absolute tiles); a turned loc of a map-edge zone can start off the map: dropped. */
@@ -542,7 +551,9 @@ class Instances internal constructor(
         private const val ZONES_PER_SQUARE_SHIFT = 3
         private const val SPILL_STRIDE = 4
         private const val SPILL_MASK = 3
-        private val EMPTY_BASES = HashMap<Long, InteractionTarget.Loc>()
+
+        /** Every empty instance zone's tiles until something changes them (never written: ownZones copies first). */
+        private val EMPTY_TILES = IntArray(ZONE_TILES)
         private const val MAX_ROTATION = 3
         const val LEVELS = 4
         private const val LEVEL_MASK = 3
