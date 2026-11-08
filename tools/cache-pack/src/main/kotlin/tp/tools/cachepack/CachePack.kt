@@ -11,6 +11,7 @@ private val USAGE =
       pack      (default) pack the content modules' pack/ sources into a copy of the source cache, then verify it
       verify    verify an existing packed cache against the source cache
       script <disk> <id>   list the instructions of one compiled script (core opcode names, commands by number)
+      roundtrip <disk> <interface|script> <id>   decode and re-encode an existing group; reports whether the bytes match
     options:
       --source <dir>     source cache directory with main_file_cache.* (default .data/cache/${Revision.NUMBER}/disk); never modified
       --out <dir>        output root (default .data/cache/${Revision.NUMBER}-packed):
@@ -36,6 +37,9 @@ private fun run(args: List<String>): Int {
         if (command == "script") {
             dumpScript(rest.getOrNull(0) ?: throw UsageException("script needs <disk> <id>"), rest.getOrNull(1)?.toIntOrNull())
             return 0
+        }
+        if (command == "roundtrip") {
+            return roundTrip(rest)
         }
         val options = parseOptions(rest)
         val repo = options.single("--repo")?.let(Path::of) ?: Path.of("")
@@ -129,3 +133,36 @@ private fun parseOptions(args: List<String>): Map<String, List<String>> {
 }
 
 private fun Map<String, List<String>>.single(flag: String): String? = this[flag]?.lastOrNull()
+
+/** D-094: whether an existing interface or script survives decode + re-encode byte-identically (patchable). */
+private fun roundTrip(rest: List<String>): Int {
+    val disk = Path.of(rest.getOrNull(0) ?: throw UsageException("roundtrip needs <disk> <interface|script> <id>"))
+    val kind = rest.getOrNull(1) ?: throw UsageException("roundtrip needs a kind")
+    val id = rest.getOrNull(2)?.toIntOrNull() ?: throw UsageException("roundtrip needs an id")
+    tp.cache.js5.Js5Cache.open(disk).use { cache ->
+        when (kind) {
+            "script" -> {
+                println("script $id: ${if (ScriptPatches.roundTrip(cache, id)) "identical" else "DIFFERENT"}")
+            }
+
+            "interface" -> {
+                val files = cache.readFiles(tp.cache.config.Js5Archive.INTERFACES, id) ?: throw UsageException("no interface $id")
+                var same = 0
+                val bad = ArrayList<Int>()
+                for ((i, data) in files.data.withIndex()) {
+                    val c = If3Codec.decode(data, id shl COMPONENT_SHIFT)
+                    if (c != null && If3Codec.encode(c).contentEquals(data)) same++ else bad += files.ids[i]
+                }
+                println("interface $id: $same of ${files.size} components identical; different: $bad")
+            }
+
+            else -> {
+                throw UsageException("kind is interface or script")
+            }
+        }
+    }
+    return 0
+}
+
+/** Packed component id = interface << 16 | component. */
+private const val COMPONENT_SHIFT = 16

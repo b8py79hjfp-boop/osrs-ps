@@ -7,7 +7,6 @@ import net.runelite.cache.script.assembler.Assembler
 import net.runelite.cache.script.disassembler.Disassembler
 import tp.cache.config.Js5Archive
 import tp.cache.js5.Js5Cache
-import tp.util.Revision
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -91,7 +90,15 @@ internal object ScriptPatches {
         if (hash != patch.baseSha256) {
             throw IOException("${patch.source}: script ${patch.script} has sha256 $hash, the patch was written for ${patch.baseSha256}")
         }
-        var lines = disassemble(patch.script, raw).lines()
+        val text = disassemble(patch.script, raw)
+        // The toolchain must reproduce the original exactly before we trust it with a change.
+        if (!assemble(
+                text,
+            ).contentEquals(raw)
+        ) {
+            throw IOException("${patch.source}: script ${patch.script} does not round-trip; refusing to patch")
+        }
+        var lines = text.lines()
         for ((n, hunk) in patch.hunks.withIndex()) lines = applyHunk(lines, hunk, "${patch.source} hunk ${n + 1}")
         return assemble(lines.joinToString("\n"))
     }
@@ -115,8 +122,9 @@ internal object ScriptPatches {
 
     private fun scriptBytes(source: Js5Cache, id: Int): ByteArray? = source.readFiles(Js5Archive.CLIENTSCRIPTS, id)?.data?.firstOrNull()
 
-    private fun disassemble(id: Int, raw: ByteArray): String =
-        Disassembler().disassemble(ScriptLoader().configureForRevision(Revision.NUMBER).load(id, raw))
+    // The default loader reads the rev-237+ layout (long arguments). `configureForRevision` takes a cache build
+    // timestamp, not a revision number: passing 242 would switch that layout off and misread every script.
+    private fun disassemble(id: Int, raw: ByteArray): String = Disassembler().disassemble(ScriptLoader().load(id, raw))
 
     private fun assemble(text: String): ByteArray {
         val instructions = Instructions().apply { init() }
