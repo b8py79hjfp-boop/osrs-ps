@@ -17,6 +17,7 @@ import kotlin.io.path.name
  * pack/configs/NAME.toml        inv / varp / varbit definitions (see [ConfigPacker])
  * pack/cs2/patch/NAME.diff      diffs of existing client scripts (see [ScriptPatches])
  * pack/sprites/GROUP/NN_x.png   frames appended to existing sprite group GROUP (see [SpriteAppends])
+ * pack/interface-patches/X.toml changes to existing interfaces (see [InterfacePatches])
  * ```
  */
 internal class PackSource(val root: Path) {
@@ -25,6 +26,7 @@ internal class PackSource(val root: Path) {
     val interfaces: List<Path> = filesIn(root.resolve("interfaces"), "if3")
     val configs: List<Path> = filesIn(root.resolve("configs"), "toml")
     val patches: List<Path> = filesIn(root.resolve("cs2/patch"), "diff")
+    val interfacePatches: List<Path> = filesIn(root.resolve("interface-patches"), "toml")
     val spriteDirs: List<Path> =
         root
             .resolve("sprites")
@@ -34,7 +36,8 @@ internal class PackSource(val root: Path) {
             }.orEmpty()
 
     val isEmpty: Boolean get() =
-        scripts.isEmpty() && interfaces.isEmpty() && configs.isEmpty() && patches.isEmpty() && spriteDirs.isEmpty()
+        scripts.isEmpty() && interfaces.isEmpty() && configs.isEmpty() && patches.isEmpty() && spriteDirs.isEmpty() &&
+            interfacePatches.isEmpty()
 
     override fun toString(): String = root.toString()
 

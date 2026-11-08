@@ -72,3 +72,7 @@
 [command,cc_setonmouseleave](hook $hook)
 [command,inv_getnum](inv $inv, int $slot)(int)
 [command,tostring](int $value)(string)
+// Chatbox tabs (D-096; RuneLite Opcodes: IF_SETHIDE 2003, IF_SETGRAPHIC 2105, IF_GETTEXT 2602).
+[command,if_sethide](boolean $hide, component $com)
+[command,if_setgraphic](graphic $graphic, component $com)
+[command,if_gettext](component $com)(string)

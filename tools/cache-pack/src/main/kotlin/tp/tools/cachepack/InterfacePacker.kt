@@ -136,18 +136,27 @@ internal object InterfacePacker {
         return out
     }
 
-    private fun component(def: InterfaceDef, section: MiniToml.Section, resolver: Resolver): If3Component {
-        val v = section.values
-        val where = "${def.source}: component '${InterfaceDef.componentName(section)}'"
-        val typeName = v["type"] ?: throw IOException("$where: missing type")
-        val type = (typeName as? Int) ?: TYPES[typeName] ?: throw IOException("$where: unknown type '$typeName'")
-        val c = If3Component(type)
-        c.parent =
-            when (val parent = v["parent"]) {
+    private fun component(def: InterfaceDef, section: MiniToml.Section, resolver: Resolver): If3Component =
+        component(section, "${def.source}: component '${InterfaceDef.componentName(section)}'", resolver) { parent, where ->
+            when (parent) {
                 null -> InterfaceDef.ROOT
                 is String -> def.ids[parent] ?: throw IOException("$where: unknown parent '$parent'")
                 else -> throw IOException("$where: parent must be a component name")
             }
+        }
+
+    /** One component from its section; [parentOf] turns the `parent` value into a component id (D-096 patches allow ids). */
+    fun component(
+        section: MiniToml.Section,
+        where: String,
+        resolver: Resolver,
+        parentOf: (Any?, String) -> Int,
+    ): If3Component {
+        val v = section.values
+        val typeName = v["type"] ?: throw IOException("$where: missing type")
+        val type = (typeName as? Int) ?: TYPES[typeName] ?: throw IOException("$where: unknown type '$typeName'")
+        val c = If3Component(type)
+        c.parent = parentOf(v["parent"], where)
         c.x = int(v, "x", where)
         c.y = int(v, "y", where)
         c.width = int(v, "width", where)

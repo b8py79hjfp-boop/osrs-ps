@@ -14,3 +14,16 @@ return(false);
 [proc,chatdefault_restoreinput]
 [clientscript,searchbar_mouseover](component $text, int $colour)
 [clientscript,searchbar_mouseleave](component $text, int $colour)
+// D-096: the chat-view switch of script 2823, called by name of id (their roles are not documented; 2823 calls them in this
+// order after setting CHAT_VIEW). 553 and 2526 return an int; 183 takes the view and 0; 84 and 89 take 553's result.
+[proc,script553]()(int)
+return(0);
+[proc,script2526]()(int)
+return(0);
+[proc,script7609]
+[proc,script923]
+[proc,script183](int $view, int $b)
+[proc,script178]
+[proc,script84](int $a)
+[proc,script89](int $a)
+[proc,script223]

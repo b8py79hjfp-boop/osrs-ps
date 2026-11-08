@@ -58,6 +58,11 @@ internal object Packer {
             // 2. Ids. Everything new goes above the cache's maximum so no existing id can collide.
             val legacy = Resources.sym("legacy.sym")
             assignIds(source, symbols, custom, configs, interfaces, scriptNames.map { it.first }, legacy)
+            // D-096: components added to existing interfaces get names scripts can use.
+            val interfacePatches = options.packs.flatMap { it.interfacePatches }.map(InterfacePatches::parse)
+            for (p in interfacePatches) {
+                for ((name, index) in p.ids) custom.add("component", "${p.name}:$name", (p.id shl COMPONENT_BITS) or index)
+            }
 
             // 3. Compiler inputs.
             writeWork(work, symbols, custom, options.packs)
@@ -90,6 +95,10 @@ internal object Packer {
                 // D-094: patched existing scripts keep their id (and group name hash).
                 for ((id, bytes) in patched) it.putGroup(Js5Archive.CLIENTSCRIPTS, id, intArrayOf(0), listOf(bytes))
                 for ((id, bytes) in sprites) it.putGroup(Js5Archive.SPRITES, id, intArrayOf(0), listOf(bytes))
+                for (p in interfacePatches) {
+                    val components = InterfacePatches.build(source, p, resolver)
+                    it.putGroup(Js5Archive.INTERFACES, p.id, IntArray(components.size) { i -> i }, components.map(If3Codec::encode))
+                }
                 for (def in interfaces) {
                     val components = InterfacePacker.build(def, resolver)
                     val id = custom.get("interface", def.name) ?: error("no id for interface ${def.name}")
@@ -110,6 +119,7 @@ internal object Packer {
                             0
                     }
                 writeProperties(
+                    interfacePatches.map { p -> p.id },
                     options.outRoot,
                     sourceGroups,
                     sourceGroups + newGroups,
@@ -126,6 +136,7 @@ internal object Packer {
 
     /** `pack.properties`: facts the server's spot checks (CacheSpotChecks) and the verifier read. */
     private fun writeProperties(
+        patchedInterfaces: Collection<Int>,
         outRoot: Path,
         sourceGroups: Int,
         groups: Int,
@@ -139,7 +150,8 @@ internal object Packer {
                 "sourceGroups=$sourceGroups\ngroups=$groups\n" +
                 "archivesTouched=${indexes.map { t -> t.first }.sorted().joinToString(",")}\n" +
                 "patchedScripts=${patchedScripts.sorted().joinToString(",")}\n" +
-                "patchedSprites=${patchedSprites.sorted().joinToString(",")}\n",
+                "patchedSprites=${patchedSprites.sorted().joinToString(",")}\n" +
+                "patchedInterfaces=${patchedInterfaces.sorted().joinToString(",")}\n",
         )
     }
 

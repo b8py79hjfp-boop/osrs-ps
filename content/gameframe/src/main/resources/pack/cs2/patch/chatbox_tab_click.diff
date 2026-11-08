@@ -1,0 +1,26 @@
+# script 2823
+# base-sha256 87f469ded9f7cc361a276df9fa333e9b7f2c0c10892fa69744a1026e8f556f30
+# D-096 chatbox tabs. Script 2823 switches the chat view when an official tab is clicked; clicking the tab that is already
+# shown collapses the chatbox in resizable mode. A custom tab (Mentions/Yell/Staff) runs on CHAT_VIEW 0, so clicking All
+# from a custom tab would collapse instead of switching: when tp_chat_state (162:578) is set, it is cleared and the
+# normal switch path (LABEL15) runs.
+@@ leave custom tab
+-   getwindowmode
+-   iconst                 2
+-   if_icmpeq              LABEL4
++   iconst                 10617410
++   if_gettext
++   string_length
++   iconst                 0
++   if_icmpeq              TP_CLICK_OFFICIAL
++   sconst                 ""
++   iconst                 10617410
++   if_settext
++   jump                   LABEL15
++TP_CLICK_OFFICIAL:
++   getwindowmode
++   iconst                 2
++   if_icmpeq              LABEL4
+   jump                   LABEL15
+LABEL4:
+   get_varc_int           41

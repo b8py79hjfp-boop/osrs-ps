@@ -11,6 +11,7 @@ private val USAGE =
       pack      (default) pack the content modules' pack/ sources into a copy of the source cache, then verify it
       verify    verify an existing packed cache against the source cache
       script <disk> <id>   list the instructions of one compiled script (core opcode names, commands by number)
+      dumpif <disk> <id> [first] [last]   list an interface's components (type, parent, box, sprite, text, ops, hooks)
       roundtrip <disk> <interface|script|sprite> <id>   decode and re-encode an existing group; reports whether the bytes match
     options:
       --source <dir>     source cache directory with main_file_cache.* (default .data/cache/${Revision.NUMBER}/disk); never modified
@@ -38,6 +39,9 @@ private fun run(args: List<String>): Int {
         if (command == "script") {
             dumpScript(rest.getOrNull(0) ?: throw UsageException("script needs <disk> <id>"), rest.getOrNull(1)?.toIntOrNull())
             return 0
+        }
+        if (command == "dumpif") {
+            return dumpInterface(rest)
         }
         if (command == "roundtrip") {
             return roundTrip(rest)
@@ -101,7 +105,15 @@ private fun verify(sourceDisk: Path, outRoot: Path): Int {
             ?.mapNotNull { it.trim().toIntOrNull() }
             ?.toSet()
             .orEmpty()
-    val result = Verifier.verify(sourceDisk, outRoot.resolve("disk"), custom, ids("patchedScripts"), ids("patchedSprites"))
+    val result =
+        Verifier.verify(
+            sourceDisk,
+            outRoot.resolve("disk"),
+            custom,
+            ids("patchedScripts"),
+            ids("patchedSprites"),
+            ids("patchedInterfaces"),
+        )
     (result.lines + result.failures).forEach(::println)
     println(if (result.ok) "verification passed" else "verification FAILED (${result.failures.size})")
     return if (result.ok) 0 else 1
@@ -179,3 +191,31 @@ private fun roundTrip(rest: List<String>): Int {
 
 /** Packed component id = interface << 16 | component. */
 private const val COMPONENT_SHIFT = 16
+
+/** Lists an existing interface's components, for writing interface patches (D-096). */
+private fun dumpInterface(rest: List<String>): Int {
+    val disk = Path.of(rest.getOrNull(0) ?: throw UsageException("dumpif needs <disk> <id>"))
+    val id = rest.getOrNull(1)?.toIntOrNull() ?: throw UsageException("dumpif needs an id")
+    val first = rest.getOrNull(2)?.toIntOrNull() ?: 0
+    val last = rest.getOrNull(3)?.toIntOrNull() ?: Int.MAX_VALUE
+    tp.cache.js5.Js5Cache.open(disk).use { cache ->
+        val files = cache.readFiles(tp.cache.config.Js5Archive.INTERFACES, id) ?: throw UsageException("no interface $id")
+        for ((i, data) in files.data.withIndex()) {
+            val n = files.ids[i]
+            if (n < first || n > last) continue
+            val c = If3Codec.decode(data, id shl COMPONENT_SHIFT) ?: continue
+            val hooks =
+                c.hooks
+                    .withIndex()
+                    .filter { it.value.isNotEmpty() }
+                    .joinToString(" ") { (h, v) -> "${If3Component.HOOK_NAMES[h]}=$v" }
+            println(
+                "$n t${c.type} p${c.parent} ${c.x},${c.y} ${c.width}x${c.height} m${c.xMode}${c.yMode}${c.widthMode}${c.heightMode}" +
+                    (if (c.hidden) " hidden" else "") + (if (c.sprite >= 0) " spr${c.sprite}" else "") +
+                    (if (c.text.isNotEmpty()) " \"${c.text}\"" else "") + (if (c.actions.isNotEmpty()) " ops=${c.actions}" else "") +
+                    (if (c.type == If3Component.TYPE_TEXT) " font${c.font} col${Integer.toHexString(c.color)}" else "") + " $hooks",
+            )
+        }
+    }
+    return 0
+}

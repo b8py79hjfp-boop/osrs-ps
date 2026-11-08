@@ -1,0 +1,11 @@
+[clientscript,tp_chat_tab_hover](component $graphic, string $tab, int $on)
+// D-096: hover art of a custom chat tab, as the official tabs do (chat_tab_button 1 hovered, 0 normal); the selected tab
+// keeps its selected art (drawn by the patched script 178).
+if (compare(if_gettext(chatbox:tp_chat_state), $tab) = 0) {
+    return;
+}
+if ($on = 1) {
+    if_setgraphic("chat_tab_button,1", $graphic);
+} else {
+    if_setgraphic("chat_tab_button,0", $graphic);
+}

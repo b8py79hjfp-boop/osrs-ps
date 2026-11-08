@@ -24,6 +24,7 @@ internal object Verifier {
         custom: List<CustomSymbol>,
         patchedScripts: Set<Int> = emptySet(),
         patchedSprites: Set<Int> = emptySet(),
+        patchedInterfaces: Set<Int> = emptySet(),
     ): Result {
         val lines = ArrayList<String>()
         val failures = ArrayList<String>()
@@ -36,7 +37,7 @@ internal object Verifier {
                 // D-094: patched existing scripts are rewritten on purpose; everything else must stay byte-identical.
                 val written =
                     custom.writtenGroups() + patchedScripts.map { Js5Archive.CLIENTSCRIPTS to it } +
-                        patchedSprites.map { Js5Archive.SPRITES to it }
+                        patchedSprites.map { Js5Archive.SPRITES to it } + patchedInterfaces.map { Js5Archive.INTERFACES to it }
                 // 1. Index integrity: every group's container matches the CRC (and lengths, for rewritten ones) its index records.
                 var crcChecked = 0
                 var crcBad = 0

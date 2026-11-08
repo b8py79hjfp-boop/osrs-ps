@@ -49,3 +49,6 @@
 1404	cc_setonmouseleave
 3302	inv_getnum
 4106	tostring
+2105	if_setgraphic
+2602	if_gettext
+2003	if_sethide
