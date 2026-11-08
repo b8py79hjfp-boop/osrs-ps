@@ -53,7 +53,13 @@ internal object PohFurniture {
     }
 
     /** Every loc id a built piece can have; "Remove" is registered on all of them. */
-    val builtLocs: Set<Int> by lazy { pieces.flatMapTo(HashSet()) { it.locs } }
+    val builtLocs: Set<Int> by lazy { pieces.flatMapTo(HashSet()) { it.locs } - RAID_STORAGE }
+
+    /**
+     * The Chambers of Xeric storage units (29770 / 29779 / 29780 / 37978) are in the Wiki's Construction table but are raid
+     * scenery, not house furniture: content/raids-cox owns their ops.
+     */
+    private val RAID_STORAGE = setOf(29770, 29779, 29780, 37978)
 
     /** The pieces that only exist as the result of an upgrade (construction.md CO29): they are not in the build menus. */
     private val upgradeOnly: Set<String> by lazy { ConstructionData.upgrades().mapTo(HashSet()) { it.to } }

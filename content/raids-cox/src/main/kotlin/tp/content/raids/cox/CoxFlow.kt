@@ -141,12 +141,20 @@ public class CoxFlow : ContentPlugin {
                     player.message(LEADER_FIRST)
                     return
                 }
+                // CX41: items left in the private storage outside the raid must be taken out first.
+                if (CoxStorage.holdsItems(player)) {
+                    CoxStorage.blockEntry(player)
+                    return
+                }
                 val cm = party.settings[CM_SETTING] == 1
+                // CX18: the board's scaled party size (0 = unset).
+                val scaled = party.settings[CoxBoard.SETTING_SCALING]?.takeIf { it > 0 } ?: party.members.size
                 Raids
                     .start(
                         player,
                         party,
                         mode = if (cm) CoxRaid.CHALLENGE else CoxRaid.NORMAL,
+                        scaledSize = scaled,
                         enterNow = false,
                     )?.let { player.message(it) }
             }
@@ -225,24 +233,6 @@ public class CoxFlow : ContentPlugin {
         enterCell(run, st, next, player)
     }
 
-    /** CX4: the leader starts the raid by walking on from the lobby; members who are not inside now are left out. */
-    private fun beginRaid(player: PlayerRef, run: RaidRun, st: CoxState) {
-        if (!st.begun) {
-            if (!run.party.leader.equals(player.username, ignoreCase = true)) {
-                player.message(LEADER_STARTS)
-                return
-            }
-            st.begun = true
-            st.begunTick = player.tick
-            for (p in run.presentPlayers(player)) p.message(RAID_BEGUN)
-            Raids.roomCleared(player, run)
-            Raids.advance(player, run, CoxRaid.CHAMBERS)
-        }
-        val next = st.plan.next(st.plan.cells.first()) ?: return
-        player.teleport(CoxMap.arrival(player, run, next, next.entrySide))
-        enterCell(run, st, next, player)
-    }
-
     /** The floor-end hole: down to the next floor's start cell (CX8), once the floor's rooms are done. */
     private fun descend(player: PlayerRef) {
         val run = runOf(player) ?: return
@@ -302,6 +292,24 @@ public class CoxFlow : ContentPlugin {
     }
 
     internal companion object {
+        /** CX4: the leader starts the raid by walking on from the lobby; members who are not inside now are left out. */
+        internal fun beginRaid(player: PlayerRef, run: RaidRun, st: CoxState) {
+            if (!st.begun) {
+                if (!run.party.leader.equals(player.username, ignoreCase = true)) {
+                    player.message(LEADER_STARTS)
+                    return
+                }
+                st.begun = true
+                st.begunTick = player.tick
+                for (p in run.presentPlayers(player)) p.message(RAID_BEGUN)
+                Raids.roomCleared(player, run)
+                Raids.advance(player, run, CoxRaid.CHAMBERS)
+            }
+            val next = st.plan.next(st.plan.cells.first()) ?: return
+            player.teleport(CoxMap.arrival(player, run, next, next.entrySide))
+            enterCell(run, st, next, player)
+        }
+
         fun state(run: RaidRun): CoxState? = run.content as? CoxState
 
         fun runOf(player: PlayerRef): RaidRun? {
@@ -312,7 +320,9 @@ public class CoxFlow : ContentPlugin {
         /** RaidDefinition.layout: draws the run's layout (CX11-CX13) and describes its instance. */
         fun build(run: RaidRun): RaidLayout {
             // CX15 / CX48: Challenge Mode always uses the fixed three-floor layout.
-            val plan = if (run.scaling.mode == CoxRaid.CHALLENGE) CoxLayout.challenge() else CoxLayout.generate(run.rng)
+            // CX3 / CX9: the "Full" pool also uses it (normal difficulty); OPEN-CX7: the Large pool draws from the regular one.
+            val full = run.scaling.settings[CoxBoard.SETTING_POOL] == POOL_FULL
+            val plan = if (run.scaling.mode == CoxRaid.CHALLENGE || full) CoxLayout.challenge() else CoxLayout.generate(run.rng)
             run.content = CoxState(plan)
             return CoxLayout.instance(plan)
         }
@@ -470,6 +480,9 @@ public class CoxFlow : ContentPlugin {
 
         private const val OP1 = 1
         private const val OP2 = 2
+
+        /** Varbit 5408 values (client-contract 1.2): 0 Small, 1 Large, 2 Full. */
+        private const val POOL_FULL = 2
 
         /** The rooms whose entrance hurts a raider leaving mid-fight, and the damage (OPEN-CX33: not stated). */
         private val ENTRANCE_HAZARDS = setOf(CoxKind.MUTTADILES, CoxKind.SHAMANS, CoxKind.VESPULA, CoxKind.VASA)

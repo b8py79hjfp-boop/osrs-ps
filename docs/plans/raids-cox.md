@@ -42,4 +42,5 @@ Sources: `docs/mechanics/raids/cox.md`, `cox/lobby-rewards.md`, the room docs in
 4. Done: thieving, tightrope, ice demon, crabs; scavengers, shortcuts, farming, food, Herblore, kindling (fdf1f57,
    2a4d505).
 5. Done: the Great Olm (all phases, powers, specials) and the Challenge Mode layout and bonus (f4f13ac).
-6. Loot model done (513bed2); board / party tab / storage / reward chest / scoreboard interfaces in progress.
+6. Done: loot model (513bed2); board 499 / 507, party tab 500, storage units 271 / 550 / 551, reward chest 539 and its
+   light, CM scoreboard 21, Rimor's capes, lore books (`CoxInterfaces`; OPEN-CXUI1-11 in the code).
