@@ -120,6 +120,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     override fun onCommand(player: Player, command: String, args: List<String>): Boolean {
         val handler = h.commands[command] ?: return false
+        if (!player.rank.atLeast(h.commandRanks[command] ?: tp.util.Rank.PLAYER)) return false
         ref(player).handler(args)
         return true
     }
@@ -129,7 +130,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
 
     public val dispatcher: tp.plugin.commands.CommandDispatcher =
         tp.plugin.commands.CommandDispatcher(h.registry) { p, name, args ->
-            val handler = h.commands[name]
+            val handler = h.commands[name]?.takeIf { p.rank.atLeast(h.commandRanks[name] ?: tp.util.Rank.PLAYER) }
             when {
                 handler != null -> true.also { p.handler(args) }
                 args.isEmpty() -> h.commandFallbacks.any { fallback -> p.fallback(name) }

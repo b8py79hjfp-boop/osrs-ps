@@ -40,11 +40,15 @@ class Scenario(
 
     private var nextSlot = 1
 
-    /** Queues a player for admission in the next tick's post-tick (as a network login would be). */
-    fun player(username: String, at: CoordGrid = world.config.spawn): ScenarioPlayer {
+    /**
+     * Queues a player for admission in the next tick's post-tick (as a network login would be). Scenario players are
+     * developers by default (a dev world: setup cheats such as `::item` need it); permission scenarios pass a [rank].
+     */
+    fun player(username: String, at: CoordGrid = world.config.spawn, rank: tp.util.Rank = tp.util.Rank.DEVELOPER): ScenarioPlayer {
         val session = HeadlessSession()
         session.clock = { world.tick }
         val player = world.newPlayer(nextSlot++, username, session, at)
+        player.rank = rank
         world.queueAdmission(player)
         return ScenarioPlayer(player, session)
     }

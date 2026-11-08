@@ -1305,3 +1305,20 @@ means is not known.
 - **Suite order:** rank by rank, as commands brief §11 lists: player, moderator, administrator, owner, developer.
   The raid tables come last.
 
+
+## D-089 Legacy `::` commands are rank-gated until they move onto the registry (2026-11-08)
+
+- Before this change, every `onCommand` handler ran for any player, including `::item`, `::max` and `::tele`.
+  `onCommand(name, rank)` now takes a minimum rank. Below that rank, the player gets the unknown-command reply
+  (commands brief §2), so the command's existence never leaks.
+  - The dev cheats, `::raid`, `::pandemonium`, `::openbank`, the `::ge*` shortcuts and the music unlocks are DEVELOPER.
+  - `::pos` is MODERATOR, as brief §6 lists it.
+  - The dev `::empty` is gone: the player `::empty` (CONVENIENCE, with confirmation) replaces it.
+- **Scenario players default to DEVELOPER** (a dev world), so the golden scenarios' setup cheats run unchanged. The
+  permission scenario passes explicit ranks.
+- **Dev bots:** `config/server.toml` lists `developers = ["bot*"]` (D-088), so botswarm load runs keep their cheats.
+  Remove it on a live world.
+- **Official fallbacks** (`::bank`, emote names) run when no usable command matches, even when a same-named staff
+  command exists. A player who types `::bank` sees the official joke, never a hint that a staff `::bank` exists.
+- `Impact`, `CommandOverride` and `CommandsConfig` moved to `util` (`tp.util.commands`), next to `Rank`. Content
+  modules depend only on plugin-api and symbols, and they declare an impact on every command.

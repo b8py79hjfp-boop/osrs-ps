@@ -132,7 +132,7 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         name: String,
         rank: tp.util.Rank,
         category: tp.plugin.commands.Category,
-        impact: tp.engine.commands.Impact,
+        impact: tp.util.commands.Impact,
         block: tp.plugin.commands.CommandBuilder.() -> Unit,
     ) {
         val builder = tp.plugin.commands.CommandBuilder(name, rank, category, impact, ownerName())
@@ -151,9 +151,17 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
     /** The plugin class registering now (registry messages name it). */
     private fun ownerName(): String = handlers.owner
 
-    /** `::name args` typed in the chatbox (legacy: unchecked; moving onto [command]). */
-    public fun onCommand(name: String, handler: PlayerRef.(args: List<String>) -> Unit) {
+    /**
+     * `::name args` typed in the chatbox (legacy, moving onto [command]): untyped arguments, no audit. Players below
+     * [rank] get the unknown-command reply, so the command's existence never leaks (commands brief §2).
+     */
+    public fun onCommand(
+        name: String,
+        rank: tp.util.Rank = tp.util.Rank.PLAYER,
+        handler: PlayerRef.(args: List<String>) -> Unit,
+    ) {
         handlers.put(handlers.commands, name.lowercase(), handler, "command ::$name")
+        handlers.commandRanks[name.lowercase()] = rank
     }
 
     /** Operable loc interaction ([op] 1..5): runs when the player reaches the loc (interactions.md I1). */
@@ -309,6 +317,9 @@ internal class Handlers {
     val modalClosed = HashMap<Int, MutableList<PlayerRef.() -> Unit>>()
     var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
+
+    /** Minimum rank of each legacy [commands] entry (below it the player gets the unknown reply, commands brief §2). */
+    val commandRanks = HashMap<String, tp.util.Rank>()
     val registry = tp.plugin.commands.CommandRegistry()
     val commandFallbacks = ArrayList<PlayerRef.(String) -> Boolean>()
 

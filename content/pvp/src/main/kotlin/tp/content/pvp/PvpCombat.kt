@@ -32,6 +32,11 @@ public class PvpCombat : ContentPlugin {
         bus.on<AttackEvent> { e -> onAttack(bus, e) }
         bus.on<HitEvent> { e -> onHit(e) }
         bus.on<DeathEvent> { e -> onDeath(e) }
+        bus.on<tp.plugin.commands.SkullRequest> { r ->
+            // `::skull` (commands brief §6): the same skull as an unprovoked attack, 20 minutes (SKULL_TICKS).
+            skull(bus, r.player)
+            r.handled = true
+        }
         onButton(Components.Logout.LOGOUT) { requestLogout() }
         onButton(Components.Worldswitcher.LOGOUT) { requestLogout() }
         onButton(Components.Worldswitcher.BUTTONS) { click -> requestHop(click.slot) }
@@ -178,6 +183,9 @@ public class PvpCombat : ContentPlugin {
 
     private fun onDeath(e: DeathEvent) {
         val dead = e.entity as? PlayerRef ?: return
+        val killer = e.killer as? PlayerRef
+        // `::kdr` (commands brief §6): PvP kills and deaths, not duels (a safe fight, DA1).
+        if (killer != null && killer != dead && dead[SharedAttrs.DUEL_OPPONENT] == null) PvpStats.record(killer, dead)
         dead[FIGHTING] = null
         dead[HIT_BY] = null
         dead[VENGEANCE] = null

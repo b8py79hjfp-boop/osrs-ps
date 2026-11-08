@@ -50,8 +50,9 @@ public class Bank : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcOption("Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
-        // The OSRS client keeps "::bank" for itself (it says "Hey, everyone, I just tried to do something very silly!").
-        onCommand("openbank") { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        onCommand("openbank", tp.util.Rank.DEVELOPER) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
+        // Commands brief §2 (official): `::bank` makes the player say this; developers get the bank instead.
+        commandFallback { name -> bankCommand(name) }
         events.on<BankTransfer> { t -> t.player.transfer(t) }
         events.on<tp.plugin.BankPinRequest> { r -> r.player.weakQueue(0) { if (with(BankPin) { unlock() }) r.then(player) } }
         onLogin { BankPin.onLogin(this) }
@@ -800,7 +801,21 @@ public class Bank : ContentPlugin {
         setVarbit(id, 1 - varbit(id))
     }
 
+    /** `::bank`: the official joke, or the bank for developers. */
+    private fun PlayerRef.bankCommand(name: String): Boolean {
+        if (name != "bank") return false
+        if (rank.atLeast(tp.util.Rank.DEVELOPER)) {
+            weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() }
+        } else {
+            say(SILLY)
+        }
+        return true
+    }
+
     private companion object {
+        /** Commands brief §2: the official `::bank` reply. */
+        const val SILLY = "Hey, everyone, I just tried to do something very silly!"
+
         /**
          * Members' bank capacity (RS Mod `BankConstants.default_capacity`; OSRS Wiki "Bank": members start with 800). The
          * cache inv holds more (1410) for slots a banker sells, which are not implemented (bank.md OPEN-B1).

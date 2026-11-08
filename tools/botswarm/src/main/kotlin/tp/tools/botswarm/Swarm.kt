@@ -128,6 +128,7 @@ private fun hop(first: BotClient, name: String, modulus: BigInteger, crcs: IntAr
  */
 private fun gear(bot: BotClient) {
     bot.cheat("empty")
+    bot.cheat("confirm") // ::empty asks for confirmation (commands brief §4)
     bot.cheat("item $WHIP")
     bot.cheat("item $DDS")
     bot.button(INVENTORY_ITEMS, WIELD_OP, sub = 0, obj = WHIP)

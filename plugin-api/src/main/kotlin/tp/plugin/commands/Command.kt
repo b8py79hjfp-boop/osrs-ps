@@ -1,8 +1,8 @@
 package tp.plugin.commands
 
-import tp.engine.commands.Impact
 import tp.plugin.PlayerRef
 import tp.util.Rank
+import tp.util.commands.Impact
 
 /** Groups in `::commands` and docs/commands.md (commands brief §5, §6). */
 public enum class Category { GENERAL, INFO, SOCIAL, MODERATION, ADMINISTRATION, OPERATIONS, DEVELOPMENT, RAIDS }
@@ -83,7 +83,7 @@ public class CommandDef internal constructor(
     /** Which module declared it (validation messages). */
     public val owner: String,
     /** Whether the world's config offers the command at all (e.g. `::discord` only with a configured URL). */
-    public val available: (tp.engine.commands.CommandsConfig) -> Boolean,
+    public val available: (tp.util.commands.CommandsConfig) -> Boolean,
 ) {
     /** `::name <a> [b]` for each signature. */
     public val usages: List<String> get() = signatures.map { s -> "::$name${if (s.args.isEmpty()) "" else " " + s.usage}" }
@@ -107,10 +107,10 @@ public class CommandBuilder internal constructor(
     public var cooldownTicks: Int = 0
     public var audit: AuditLevel = if (rank.isStaff) AuditLevel.FULL else AuditLevel.NONE
     private var predicate: ((PlayerRef) -> String?)? = null
-    private var available: (tp.engine.commands.CommandsConfig) -> Boolean = { true }
+    private var available: (tp.util.commands.CommandsConfig) -> Boolean = { true }
 
     /** Lists the command only where [check] holds for the world's config (§6: URL commands need a URL). */
-    public fun availableWhen(check: (tp.engine.commands.CommandsConfig) -> Boolean) {
+    public fun availableWhen(check: (tp.util.commands.CommandsConfig) -> Boolean) {
         available = check
     }
 

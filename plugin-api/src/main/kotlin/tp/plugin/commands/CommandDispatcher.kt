@@ -1,10 +1,10 @@
 package tp.plugin.commands
 
 import tp.engine.World
-import tp.engine.commands.CommandsConfig
 import tp.plugin.AttrKey
 import tp.plugin.PlayerRef
 import tp.util.Rank
+import tp.util.commands.CommandsConfig
 
 /**
  * The execution pipeline (commands brief §4), shared by typed commands and the `::commands` interface: parse, resolve
@@ -40,8 +40,9 @@ public class CommandDispatcher internal constructor(
         if (!allowedByRate(player, world.tick, config)) return Outcome.Dropped
         val def = registry.find(name)
         if (def == null || !registry.usable(def, player.rank, config)) {
-            // §2: a command the player may not use gets exactly the unknown reply; the legacy path stays until moved.
-            if (def == null && legacy(player, name, tokens.drop(1))) return Outcome.Ran(CommandResult.Done())
+            // §2: a command the player may not use gets exactly the unknown reply. The legacy path (rank-checked) and
+            // the official fallbacks (`::bank`, emote names) still answer, so a same-named staff command never hides them.
+            if (legacy(player, name, tokens.drop(1))) return Outcome.Ran(CommandResult.Done())
             return unknown(player, name, config)
         }
         def.predicate?.invoke(player)?.let { return refuse(player, it) }

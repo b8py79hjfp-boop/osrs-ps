@@ -132,7 +132,7 @@ object WorldNode {
         hub: HubServices? = null,
         bindHost: String? = null,
         proxyTrust: List<String>? = null,
-        commands: tp.engine.commands.CommandsConfig = tp.engine.commands.CommandsConfig(),
+        commands: tp.util.commands.CommandsConfig = tp.util.commands.CommandsConfig(),
     ): World {
         val network = Osrs242Network(data.net, rsa, gamePort, maxPerIp, bindHost, proxyTrust != null, proxyTrust.orEmpty())
         val content = PluginContent.load()

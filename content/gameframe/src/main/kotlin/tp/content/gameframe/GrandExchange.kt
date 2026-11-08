@@ -32,12 +32,16 @@ public class GrandExchange : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Collect") { player.openCollectionBox() }
         onOpNpcOption("History") { player.history() }
         onOpNpcOption("Collect") { player.openCollectionBox() }
-        onCommand("geui") { open() }
-        onCommand("ge") { exchange(GeRequest.Offers) { offers -> list(offers) } }
-        onCommand("gebuy") { args -> placeFromCommand(args, buy = true) }
-        onCommand("gesell") { args -> placeFromCommand(args, buy = false) }
-        onCommand("gecollect") { args -> slotArg(args)?.let { slot -> collect(slot, ItemForm.DEFAULT, coins = true) } }
-        onCommand("geabort") { args -> slotArg(args)?.let { slot -> abort(slot) } }
+        onCommand("geui", tp.util.Rank.DEVELOPER) { open() }
+        onCommand("ge", tp.util.Rank.DEVELOPER) { exchange(GeRequest.Offers) { offers -> list(offers) } }
+        onCommand("gebuy", tp.util.Rank.DEVELOPER) { args -> placeFromCommand(args, buy = true) }
+        onCommand("gesell", tp.util.Rank.DEVELOPER) { args -> placeFromCommand(args, buy = false) }
+        onCommand("gecollect", tp.util.Rank.DEVELOPER) { args ->
+            slotArg(args)?.let { slot ->
+                collect(slot, ItemForm.DEFAULT, coins = true)
+            }
+        }
+        onCommand("geabort", tp.util.Rank.DEVELOPER) { args -> slotArg(args)?.let { slot -> abort(slot) } }
 
         for ((n, component) in SLOT_COMPONENTS.withIndex()) onButton(component) { click -> slotButton(n, click) }
         onButton(Components.Ge_Offers.BACK) { showIndex() }

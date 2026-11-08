@@ -1,8 +1,8 @@
 package tp.plugin.commands
 
-import tp.engine.commands.CommandOverride
-import tp.engine.commands.CommandsConfig
 import tp.util.Rank
+import tp.util.commands.CommandOverride
+import tp.util.commands.CommandsConfig
 
 /**
  * Every command of one world's content (commands brief §3): one source of truth for dispatch, the `::commands`

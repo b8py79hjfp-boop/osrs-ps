@@ -71,11 +71,11 @@ public class MusicTab : ContentPlugin {
         onButton(Components.Music.SHUFFLE) { setVarp(Varps.MUSICPLAY, MODE_SHUFFLE) }
         onButton(Components.Music.SINGLE) { setVarp(Varps.MUSICPLAY, MODE_SINGLE) }
         onButton(Components.Music.SKIP) { skip() }
-        onCommand("unlockmusic") {
+        onCommand("unlockmusic", tp.util.Rank.DEVELOPER) {
             for (track in tracks) unlockBit(track)
             message("All music tracks unlocked.")
         }
-        onCommand("musicarea") { args -> args.getOrNull(0)?.toIntOrNull()?.let { enterArea(it) } }
+        onCommand("musicarea", tp.util.Rank.DEVELOPER) { args -> args.getOrNull(0)?.toIntOrNull()?.let { enterArea(it) } }
     }
 
     private fun load(world: tp.plugin.WorldRef) {

@@ -30,7 +30,8 @@ hiscores = ""
 # Applied once per account at its next login and written to the audit log. There is no in-game path to the first
 # developer; `./gradlew admin --setRank=<account>:DEVELOPER` is the other way in. A trailing `*` matches a name
 # prefix (D-088), e.g. developers = ["bot*"] for botswarm accounts on a dev world.
-developers = []
+# Dev world: botswarm accounts are developers so load runs can use the setup cheats. Remove on a live world.
+developers = ["bot*"]
 owners = []
 administrators = []
 moderators = []

@@ -32,7 +32,7 @@ public class RaidsPlugin : ContentPlugin {
         }
         // Dev / load command (raids brief section 7, botswarm `raids` profile): `::raid <tob|cox|toa|tfa>` starts a solo run
         // of that raid, `::raid next` moves the run to its next room in order, `::raid leave` leaves it.
-        onCommand("raid") { args -> devRaid(this, args) }
+        onCommand("raid", tp.util.Rank.DEVELOPER) { args -> devRaid(this, args) }
         events.on<LogoutEvent> { e -> loggedOut(e.player) }
         events.on<LoginEvent> { e -> loggedIn(e.player) }
         events.on<InstanceLost> { e ->

@@ -44,7 +44,7 @@ internal class Pandemonium(
         for (npc in Npcs.SAILING_INTRO_RIBS..Npcs.SAILING_INTRO_RIBS_VIS) onOpNpc(npc, OP_TALK) { with(talk) { ribsTalk() } }
         for (npc in Npcs.JUNIOR_JIM..Npcs.JUNIOR_JIM_4OPS) onOpNpc(npc, OP_TALK) { with(jim) { jimTalk() } }
         for (loc in Locs.SAILING_INTRO_SALVAGING_HOOK..Locs.SAILING_INTRO_SALVAGING_HOOK_OPS) onOpLoc(loc, OP_HOOK) { deployHook() }
-        onCommand("pandemonium") { args -> stageCommand(this, args) }
+        onCommand("pandemonium", tp.util.Rank.DEVELOPER) { args -> stageCommand(this, args) }
         onLogout { clearNpcs(this) }
     }
 

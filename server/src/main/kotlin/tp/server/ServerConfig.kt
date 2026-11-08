@@ -5,10 +5,10 @@ import com.akuleshov7.ktoml.TomlInputConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import tp.engine.commands.CommandOverride
-import tp.engine.commands.CommandsConfig
-import tp.engine.commands.Impact
 import tp.util.Rank
+import tp.util.commands.CommandOverride
+import tp.util.commands.CommandsConfig
+import tp.util.commands.Impact
 import java.nio.file.Files
 import java.nio.file.Path
 

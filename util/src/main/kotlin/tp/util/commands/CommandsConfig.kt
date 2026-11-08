@@ -1,4 +1,4 @@
-package tp.engine.commands
+package tp.util.commands
 
 import tp.util.Rank
 

@@ -1,9 +1,9 @@
 package tp.plugin.commands
 
-import tp.engine.commands.Impact
 import tp.plugin.ContentScope
 import tp.plugin.PluginContent
 import tp.util.Rank
+import tp.util.commands.Impact
 
 /** Commands the pipeline itself owns (commands brief §4). */
 internal object CoreCommands {

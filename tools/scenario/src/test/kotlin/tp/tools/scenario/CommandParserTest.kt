@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import tp.engine.commands.CommandsConfig
-import tp.engine.commands.Impact
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
 import tp.plugin.PlayerRef
@@ -24,6 +22,8 @@ import tp.plugin.commands.PlayerTarget
 import tp.plugin.commands.Tokenizer
 import tp.util.CoordGrid
 import tp.util.Rank
+import tp.util.commands.CommandsConfig
+import tp.util.commands.Impact
 
 /**
  * Commands brief §10 test 1, table-driven: quoting and names with spaces and underscores, every typed argument

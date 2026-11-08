@@ -6,54 +6,61 @@ import tp.plugin.PlayerRef
 import tp.symbols.Invs
 import tp.util.CoordGrid
 
-/** Developer `::commands` (Phase 3 stand-ins; an admin rights check arrives with accounts in Phase 5). */
+/** Developer `::commands` (Phase 3 stand-ins), developers only until each moves onto the registry (commands brief §6). */
 public class DevCommands : ContentPlugin {
     private var world: tp.plugin.WorldRef? = null
 
     override fun ContentScope.register() {
         onWorldStart { world = this }
-        onLogin { message("Dev: ::pos ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace") }
-        onCommand("pos") { message("$coord tick $tick pid $pid") }
-        onCommand("run") {
+        onLogin {
+            if (rank.atLeast(
+                    DEV,
+                )
+            ) {
+                message("Dev: ::pos ::run ::tele x z ::item id [n] ::empty ::xp stat n ::max ::kit ::wild ::hp n ::trace")
+            }
+        }
+        onCommand("pos", tp.util.Rank.MODERATOR) { message("$coord tick $tick pid $pid") }
+        onCommand("run", DEV) {
             runMode = !runMode
             message("Run: $runMode")
         }
-        onCommand("tele") { args -> tele(args) }
-        onCommand("hp") { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
-        onCommand("setlevel") { args ->
+        onCommand("tele", DEV) { args -> tele(args) }
+        onCommand("hp", DEV) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
+        onCommand("setlevel", DEV) { args ->
             val stat = args.getOrNull(0)?.toIntOrNull()
             val level = args.getOrNull(1)?.toIntOrNull()
             if (stat != null && level != null && stat in 0 until STAT_COUNT) setLevel(stat, level)
         }
-        onCommand("spellbook") { args ->
+        onCommand("spellbook", DEV) { args ->
             // 0 standard, 1 ancient, 2 lunar, 3 arceuus (varbit `spellbook`).
             val book = args.getOrNull(0)?.toIntOrNull()
             if (book != null && book in 0..LAST_SPELLBOOK) setVarbit(tp.symbols.Varbits.SPELLBOOK, book)
         }
-        onCommand("max") {
+        onCommand("max", DEV) {
             for (stat in 0..LAST_COMBAT_STAT) addXp(stat, MAX_XP)
             message("Combat stats set to 99.")
         }
-        onCommand("kit") {
+        onCommand("kit", DEV) {
             transaction("dev ::kit") { KIT.all { (obj, count) -> add(Invs.INV, obj, count) } }
             message("Kit added: weapons, food, potions and runes.")
         }
-        onCommand("wild") { teleport(CoordGrid(WILD_X, WILD_Z)) }
-        onCommand("trace") { message("Tick trace: ${toggleTrace()}") }
+        onCommand("wild", DEV) { teleport(CoordGrid(WILD_X, WILD_Z)) }
+        onCommand("trace", DEV) { message("Tick trace: ${toggleTrace()}") }
         // ::instance <squareX> <squareZ> [w] [l]: copies w x l map squares into a fresh instance (built off-thread,
         // instances.md IN6) and moves you to the same spot inside; ::instance leave tears it down (IN9) and returns you.
-        onCommand("instance") { args -> devInstance(this, args) }
-        onCommand("item") { args -> item(args) }
+        onCommand("instance", DEV) { args -> devInstance(this, args) }
+        onCommand("item", DEV) { args -> item(args) }
         // ::if <interface id>: opens it as the main modal (interface layout checks against the real client).
-        onCommand("if") { args ->
+        onCommand("if", DEV) { args ->
             args.getOrNull(0)?.toIntOrNull()?.let { openModal(tp.symbols.Components.Toplevel.MAINMODAL, it) }
         }
         // ::npc <type>: spawns that NPC next to you (no wandering).
-        onCommand("npc") { args ->
+        onCommand("npc", DEV) { args ->
             args.getOrNull(0)?.toIntOrNull()?.let { world?.spawnNpc(it, CoordGrid(coord.x + 1, coord.z, coord.level), 0) }
         }
         // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
-        onCommand("fight") { args ->
+        onCommand("fight", DEV) { args ->
             val arg = args.getOrNull(0) ?: return@onCommand
             // ::fight <player name>: attack a nearby player (headless test clients cannot click players in the scene).
             val type =
@@ -65,13 +72,7 @@ public class DevCommands : ContentPlugin {
             val npc = npcsWithin(coord, FIGHT_RADIUS).filter { it.type == type }.minByOrNull { it.coord.chebyshev(coord) }
             if (npc == null) message("No such NPC nearby.") else interact(npc, ATTACK_OP)
         }
-        onCommand("empty") {
-            val inv = inv(Invs.INV)
-            transaction("dev ::empty") {
-                (0 until inv.size).all { slot -> inv.obj(slot) < 0 || removeAt(Invs.INV, slot, inv.obj(slot), inv.count(slot)) }
-            }
-        }
-        onCommand("xp") { args ->
+        onCommand("xp", DEV) { args ->
             val stat = args.getOrNull(0)?.toIntOrNull()
             val xp = args.getOrNull(1)?.toDoubleOrNull()
             if (stat == null || xp == null || stat !in 0 until STAT_COUNT) {
@@ -104,6 +105,7 @@ public class DevCommands : ContentPlugin {
     }
 
     private companion object {
+        val DEV = tp.util.Rank.DEVELOPER
         const val FIGHT_RADIUS = 15
         const val ATTACK_OP = 2
 

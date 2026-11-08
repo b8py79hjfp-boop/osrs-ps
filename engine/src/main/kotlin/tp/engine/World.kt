@@ -61,7 +61,7 @@ data class WorldConfig(
     /** Ground obj lifetimes (ground-items.md; OPEN-G1 is this flag). */
     val groundTiming: GroundTiming = GroundTiming(),
     /** Commands policy (commands brief §3, §9; config/server.toml): live flag, enabled impacts, overrides. */
-    val commands: tp.engine.commands.CommandsConfig = tp.engine.commands.CommandsConfig(),
+    val commands: tp.util.commands.CommandsConfig = tp.util.commands.CommandsConfig(),
 )
 
 /**
@@ -1150,7 +1150,8 @@ class World(
         return true
     }
 
-    private fun Player.isMuted(): Boolean = mutedUntil < 0 || mutedUntil > System.currentTimeMillis()
+    /** Whether [this] is muted now (a negative mutedUntil is permanent). */
+    fun Player.isMuted(): Boolean = mutedUntil < 0 || mutedUntil > System.currentTimeMillis()
 
     /** Logs [player] out at the end of this tick (logout button). */
     fun requestLogout(player: Player) {

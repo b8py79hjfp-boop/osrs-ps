@@ -34,6 +34,14 @@ public class Emotes : ContentPlugin {
     override fun ContentScope.register() {
         onWorldStart { EmoteTab.names = enumStrings(EMOTE_NAMES_ENUM) }
         onButton(Components.Emote.CONTENTS) { click -> perform(click.slot, loop = click.op == OP_LOOP) }
+        // Commands brief §2 (official): typing an emote's name (`::wave`, `::dance`, `::airguitar`) performs it.
+        commandFallback { name ->
+            val slot =
+                EmoteTab.names.entries
+                    .firstOrNull { (_, n) -> n.replace(" ", "").equals(name, ignoreCase = true) }
+                    ?.key
+            slot?.let { perform(it, loop = false) } != null
+        }
     }
 
     private fun PlayerRef.perform(slot: Int, loop: Boolean) {
