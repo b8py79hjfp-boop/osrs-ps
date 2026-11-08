@@ -169,6 +169,16 @@ are TFA-specific. RAIDS_ITEMLOSS_WARNING (varbit 27) is generic.
     32336 halibut 2, 141 prayer potion(2) 1, 2434 prayer potion(4) 2, 6685 Saradomin brew(4) 3, 3024 super restore(4) 3,
     171 (2-dose ranging potion) 2, 12699 (2-dose combat-type potion) 2. The last two item names come from the dbrow gameval
     names [I].
+  - Implemented in `TfaSupplies.kt` (omnishop protocol as OpenRune's `content/interfaces/omnishop`, ISC): open interfaces 819
+    (main modal) + 806 (over the backpack), set varps `OMNISHOP_LASTSHOP` = shop row, `SELECTED_ID` / `SELECTED_SIDE_ID` = -1,
+    varbit 16381 = the player's credits, send inv 1030 [I: the buyable stock rows in order, padded to 10, because the failure
+    shop has 11 rows and the inv 10], then clientscripts 7140 (row, -1, -1) and 7246 (row), then IF_SETEVENTS on 819:list
+    (0..288, ops 1-6, 10), 806:items, 819:trigger_buy and 819:trigger_request_info (script trigger). Triggers: buy
+    `(shopRow, index, option)` on 819:trigger_buy; info `(shopRow, index)` on 819:trigger_request_info, answered with
+    clientscript 9772 (row, -1, index, text, 1, 0, 1) [I: ids and trailing args from OpenRune, not disassembled here]. Buy
+    options 1, 5, 6, 2 (table 39 cols 20-23) map through enum 5844 to quantities 1, 2, 3, 5. After a purchase the server
+    toggles varp `OMNISHOP_REDRAW`. Examine (819:trigger_examine) is not answered; selling is off (table 40 col 19 = 0).
+    Script triggers are keyed by component, so another plugin cannot also handle those two components.
 
 ---
 
@@ -287,6 +297,14 @@ NAMES_HEADER text depends on **TFA_CLIENT_PARTYSTATUS**, re-evaluated on varp 59
   totals row (row 8); 10139(i, i, plus three array args, signature `XWWiiii`) fills the party times. All [R signatures; I
   semantics]. 10110 is the message "You are currently viewing your party stats.".
 
+- Implemented in `TfaStats.kt`: open 979 as the main modal, IF_SETEVENTS script trigger on 979:34, clientscript 10102(1 inside
+  a raid, else 0); on the trigger `(category dbrow)` (validated against table 264 and the interface being open) send one
+  10125(category, row, partySize, current, 0, personal, global, globalToday, worldToday) per row of the category's `rows`
+  column (the time row once per party size 1-8), then 10124() to hide the spinner [I: the role of the fifth argument is
+  taken as 0 = ordinary cell, per the live-timer note above]. `current` is -1 outside a raid; inside, Overall Deaths is the
+  member's deaths and the time row of the run's party size is the elapsed ticks (Overall: since the run began; a boss:
+  since its room began).
+
 ### 2.6 Vault and lobby chests
 - Vault chest NPCs 16736..16751 (chest 1..8, CLOSED/OPEN pairs) are multi-NPCs on **TFA_VAULT_OWN_CHEST (16433)**
   [R]:
@@ -297,6 +315,45 @@ NAMES_HEADER text depends on **TFA_CLIENT_PARTYSTATUS**, re-evaluated on varp 59
   anywhere on the client**, so they are server-side or client-unused [R/I].
 - Unique chest: 16730 (closed, "Open") / 16731 (open, "Search"). Vault exit: 16690 "Rift" ("Leave", "Quick-leave").
 - Lobby rewards chest loc 63299 follows HAS_CLAIMABLE_LOOT (§1.2). The chest interface 973 is server-driven.
+
+### 2.7 Party UI as implemented (content/raids-tfa `TfaPartyUi`, `TfaLobbyWorld`)
+Scripts 632, 1574-1576, 10055, 10061, 10065, 10087, 10094-10097 were disassembled from the cache to settle the following [R]:
+- **Age (10094 field 13)**: game ticks as a decimal string. 1574 turns it into seconds (`ticks x 60 / 100`) and prints `m:ss`
+  (minutes are not wrapped into hours), then ticks live from varc 59, which 10087 sets to `clientclock` on every load of 977.
+  The server therefore sends `now - creation tick` and reloads 977 (re-opens the modal) for Refresh, so varc 59 restarts.
+- **Row counters**: 10053 and 10058 number rows with varc 178 (zeroed by the onLoad scripts); 10058 uses `178 - 8`. The
+  server therefore sends **exactly eight** 10053 calls (empty string for vacant slots), then one 10058 per applicant, then
+  10060. Every change re-opens 976 for the same reason. An empty 10094 row (`0, ""`) hides the row and shows
+  "No parties are currently listed.".
+- **Roles (10061 switch)**: 0 may apply ("Apply"), 1 member ("Leave"), 2 leader ("Disband", plus Refresh and Unblock),
+  3 applicant ("Withdraw"), 4 cannot apply (greyed "Apply"). 10060 forwards the role to 10061, which labels ACTION, so
+  **10072 is not called** (the label would be written twice).
+- **Spectate flag (10060)**: 1 = spectating currently disabled (op "Enable spectating"); stored as setting `tfa.spectateOff`.
+- Applicant rows (10058) take the same string as member rows, completions before practice, although the columns are swapped.
+- Pause buttons are resumed by the client itself (`cc_resume_pausebutton` inside 10065/10097), so no IF_SETEVENTS is needed
+  for 976:1 / 977:1. The row ops of 977 ("View Party:") are plain IF_BUTTON ops and need `IfEvents.op(1)` per row.
+
+Server behaviour: list rows are the forming TFA parties, oldest first, at most 45. Settings live in `Party.settings`
+(`tfa.preferredSize`, `tfa.preferredCompletions`, `tfa.mode` 0 Normal / 1 Practice, `tfa.spectateOff`); the run mode passed to
+`Raids.start` is `practice` when `tfa.mode` is 1. `TFA_MYCONTROLLER` is the party id for every member (-1 none, repaired on
+login). The lobby overlay 975 is opened on the OVERLAY_HUD slot while the player stands in square (64, 86) level 0; the
+varbit `TFA_CLIENT_PARTYSTATUS` is 0 / 1 / 2 (2 = run started in its first room and this member is not inside). A party whose
+run closed (wipe) is Forming again, so the UI shows it as a normal forming party (TFA5). Every sub-id, row and role is
+re-checked server-side against the rows last sent to that viewer.
+
+OPEN items of the party UI:
+- **OPEN-TFA-UI1**: whether the client runs a server-sent 10053/10058/10060 before the interface's own onLoad (10049/10087)
+  when both arrive in one tick; the implementation sends them right after opening the modal.
+- **OPEN-TFA-UI2**: how the "View Party:" row click reaches the server. Handled three ways, all validated against the rows
+  sent: IF_BUTTON on the row components 977:15-59, and a 977:1 pause button with sub `3 + row` (`LIST_ROW_SUB_BASE`).
+- **OPEN-TFA-UI3**: kick and reject block the player from re-applying until the leader presses Unblock (`BLOCK_ON_KICK`,
+  `BLOCK_ON_REJECT` in `TfaParties`). The Unblock button exists in the cache, its exact rule is not documented.
+- **OPEN-TFA-UI4**: practice completions. The rows read the saved value `raids.tfa.practiceKc`, but nothing writes it:
+  raids-core counts every completion, practice included, in `TOTAL_COMPLETED_THEFRACTUREDARCHIVE` and has no per-mode record.
+- **OPEN-TFA-UI5**: bounds of the count dialogs (size 1-8; completions 0-99,999 `MAX_PREFERRED_COMPLETIONS`), whether the
+  mode button toggles or opens a menu (it toggles), whether the list's "max" is the preferred size (it is, default 8), and
+  that a leader's "Move up" on row 1 cannot hand over the lead (the leader stays in slot 0).
+- **OPEN-NX8** (texts): all refusal texts in `TfaParties` are placeholders.
 
 ---
 

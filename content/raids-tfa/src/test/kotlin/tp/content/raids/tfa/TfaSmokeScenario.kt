@@ -36,21 +36,21 @@ class TfaSmokeScenario {
         s = Scenario(seed = 7)
         a = s.player("a", TfaRaid.LOBBY_DOOR)
         b = s.player("b", TfaRaid.LOBBY_DOOR)
-        s.tick()
+        tick()
         val raids = Raids.of(ra)
         val party = requireNotNull(raids.createParty(requireNotNull(raids.definition(TfaRaid.ID)), "a"))
         assertTrue(party.join("b"))
 
         // Lobby: the leader opens the raid, the second player follows through the door.
         a.input(ClientCommand.OpLoc(1, Locs.TFA_LOBBY_RAID_ENTRY, DOOR.x, DOOR.z, false))
-        s.tick(WALK)
+        tick(WALK)
         run = requireNotNull(raids.runOf("a"))
         assertEquals(listOf("guardian"), run.roomsTaken)
         assertEquals(run.at(TfaRaid.GUARDIAN_ENTRY), a.coord, "leader at the Guardian")
         assertNotNull(npc(Npcs.TFA_GUARDIAN_START), "Inert Guardian waits")
         assertTrue(b.coord !in requireNotNull(run.instance), "b has not entered yet")
         b.input(ClientCommand.OpLoc(1, Locs.TFA_LOBBY_RAID_ENTRY, DOOR.x, DOOR.z, false))
-        s.tick(WALK)
+        tick(WALK)
         assertEquals(run.at(TfaRaid.GUARDIAN_ENTRY), b.coord, "b followed")
         assertTrue(a.player.let { PlayerRef.of(it).isOpen(Interfaces.TFA_HUD) }, "HUD open")
 
@@ -84,36 +84,44 @@ class TfaSmokeScenario {
         clear()
         val blade = requireNotNull(npc(Npcs.TFA_BLADE_NPC_VAULT_ENTRY)) { "the Blade" }
         a.input(ClientCommand.OpNpc(OP_TRAVEL, blade.index, false))
-        s.tick(WALK)
+        tick(WALK)
         assertEquals(RunState.Completed, run.state)
         assertEquals(run.at(TfaRaid.VAULT_ENTRY), a.coord)
         assertEquals(1, a.player.vars[Varps.TOTAL_COMPLETED_THEFRACTUREDARCHIVE])
         assertTrue(a.messages.any { it.startsWith("Your completed Fractured Archive count is: <col=ff0000>1</col>") })
-        s.tick(TfaConfig.brazierTicks + 1)
+        tick(TfaConfig.brazierTicks + 1)
         val chest = requireNotNull(npc(Npcs.TFA_REWARDS_CHEST_VAULT_1_CLOSED)) { "chest after the braziers" }
         assertNotNull(npc(Npcs.TFA_REWARDS_CHEST_VAULT_2_CLOSED), "b's chest")
         ra.teleport(run.at(PLATFORM)) // the chests are out of view from the entrance
-        s.tick()
+        tick()
         a.input(ClientCommand.OpNpc(1, chest.index, false))
-        s.tick(WALK)
+        tick(WALK)
         assertEquals(Npcs.TFA_REWARDS_CHEST_VAULT_1_OPEN, chest.type, "chest shattered into a rift")
         assertTrue(ra.isOpen(Interfaces.TFA_CHESTS), "loot interface")
 
         // The vault rift leaves to the lobby.
         ra.teleport(run.at(TfaRaid.VAULT_ENTRY))
-        s.tick()
+        tick()
         val rift = requireNotNull(npc(Npcs.TFA_VAULT_EXIT_SMALL))
         a.input(ClientCommand.OpNpc(1, rift.index, false))
-        s.tick(WALK)
+        tick(WALK)
         assertEquals(TfaRaid.LOBBY_DOOR, a.coord)
     }
 
     private fun clear() = TfaFlow.cleared(ra, run)
 
+    /** Ticks with both players kept alive: the rooms' bosses fight, but this test only walks the doors. */
+    private fun tick(n: Int = 1) {
+        repeat(n) {
+            for (p in listOf(a, b)) PlayerRef.of(p.player).hitpoints = KEEP_ALIVE
+            s.tick()
+        }
+    }
+
     private fun door(id: Int, template: CoordGrid, op: Int) {
         val at = run.at(template)
         a.input(ClientCommand.OpLoc(op, id, at.x, at.z, false))
-        s.tick(WALK)
+        tick(WALK)
     }
 
     private fun loc(id: Int, template: CoordGrid) = door(id, template, op = 1)
@@ -135,5 +143,6 @@ class TfaSmokeScenario {
         const val WALK = 45
         const val OP_TRAVEL = 3
         const val NPC_RADIUS = 40
+        const val KEEP_ALIVE = 255
     }
 }

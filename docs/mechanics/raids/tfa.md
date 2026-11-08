@@ -65,7 +65,7 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 
 | Id | Rule | Source |
 |---|---|---|
-| TFA16 | The Quartermaster's "Alliance Supplies" shop sells for supply credits earned in the raid: Saradomin brew(4) 6 stock, Super restore(4) 4, Prayer potion(4) 4, Manta ray 10, Halibut 5, Giant krill 10, Prayer potion(2) 1, Ranging potion(2) 1, Super combat potion(2) 1, Leftovers (only with poor contribution), Alliance log. Prices as printed: brew 3, restore 3, prayer(4) 2, manta 2, halibut 2, krill 1, prayer(2) 1, ranging(2) 2, combat(2) 2. Cache row names match this list (`TFA_MIDRAID_SUPPLIES_SHOP_*`). **OPEN-TFA7:** how credits are earned ("your performance up until then does play a role") and whether the printed column is the credit price. Supplies cannot be banked during the raid. | Quartermaster page; Everything; gamevals |
+| TFA16 | The Quartermaster's "Alliance Supplies" shop sells for supply credits earned in the raid: Saradomin brew(4) 6 stock, Super restore(4) 4, Prayer potion(4) 4, Manta ray 10, Halibut 5, Giant krill 10, Prayer potion(2) 1, Ranging potion(2) 1, Super combat potion(2) 1, Leftovers (only with poor contribution), Alliance log. Prices as printed: brew 3, restore 3, prayer(4) 2, manta 2, halibut 2, krill 1, prayer(2) 1, ranging(2) 2, combat(2) 2. Cache row names match this list (`TFA_MIDRAID_SUPPLIES_SHOP_*`). **OPEN-TFA7:** how credits are earned ("your performance up until then does play a role") and whether the printed column is the credit price. Supplies cannot be banked during the raid. **Implemented (TfaSupplies.kt):** op1 "Resupply" opens the cache omnishop (client-contract 1.6); stock counts above, one stock per run shared by the party (**OPEN-TFA7b**, `-Dtp.tfa.supplyStockPerPlayer=true` gives each player their own); credits are granted once, when the third room is cleared (**OPEN-TFA7a**, invented placeholder: `round(share x 24)` capped at 127, where share = the member's points / an equal split of three rooms (3 x 100 / party size), capped at 1.5; `-Dtp.tfa.supplyCreditsBase`); a member under 0.5 of an equal split gets the failure shop 17151 with the free Leftovers, 1 each (**OPEN-TFA7c**, `-Dtp.tfa.supplyPoorShare`). Credits are cleared when a member enters or leaves. Quartermaster dialogue is the shop's own intro line (**OPEN-NX8**). | Quartermaster page; Everything; gamevals |
 
 ## Spectating
 
@@ -91,7 +91,34 @@ data. Numbers below therefore come from the wiki; anything it does not give is `
 |---|---|---|
 | TFA25 | KC in `TOTAL_COMPLETED_THEFRACTUREDARCHIVE`: `Your completed Fractured Archive count is: <col=ff0000>1</col>.` Time: `The Fractured Archive: Total completion time: <col=ef1020>2:25.80</col> (new personal best)` or `... <col=ef1020>2:54.60</col>. Personal best: 0:00.60`. **OPEN-TFA12:** these strings are from the brief; not yet seen in game or in RuneLite's captured fixtures. | brief §1.5 |
 | TFA26 | Living record capes at 100, 500, 1,000, 1,500 and 2,000 completions (`TFA_CAPE_T1..5`), claimed in the records room behind the archive key door (the key drops from the first Archive Guardian kill after 100 completions; "You can gain another by defeating the Archive Guardian" — **OPEN-TFA13**: whether only when lost). | Main; Living record (tier 1); Archive key |
-| TFA27 | Stats interface `TFA_STATS` (979): categories Overall + eight bosses (Ocellus hidden until `TFA_OCELLUS_MET`), rows attempts, completions, completions (practice), deaths, wipes, failures, time (one row per party size), from dbtables 264/265. Global and world stats reset daily. | client-contract §2.5; Alliance records |
+| TFA27 | Stats interface `TFA_STATS` (979): categories Overall + eight bosses (Ocellus hidden until `TFA_OCELLUS_MET`), rows attempts, completions, completions (practice), deaths, wipes, failures, time (one row per party size), from dbtables 264/265. Global and world stats reset daily. **Implemented (TfaStats.kt):** the lobby scoreboard (loc 62773, "Read") opens it; the Record Keeper (NPC 16692) only has "Talk-to" and is not wired. Personal counters are player saves `tfa.stats.<category>.<row>[.<party size>]` (category `overall` or the room id, row `attempts|completions|practice|deaths|wipes|failures|time`; times are the best ticks). Events: first entry into a run = Overall attempt (practice runs count too), room started = boss attempt, room cleared = boss completion (practice mode: the practice row) and boss time for the party size, death = Overall and room death, team wipe = Overall wipe, leaving a live run = Overall failure, completed = Overall completion and time (practice raids have no Overall row). **OPEN-TFA14:** there is no global service, so Global is this world's all-time value, Global Today and World Today are this world's UTC-day value; in-memory only, lost on restart; the semantics of "failures" and the party-size time rows with no record (sent as 0) are not sourced. Party panels (10131 and friends) are not sent. | client-contract §2.5; Alliance records |
+
+## Loot implementation notes (TfaLoot.kt)
+
+- **TFA21 (standard table)**: `TfaStandardTable` holds the 33 rows, weights asserted to sum to 330 at class init
+  (15 x 11 + 8 x 7 + 9 x 6 + 55). Per roll: weight pick `next(330)`, quantity `min + next(max - min + 1)`, bonus
+  `next(51) == 0` multiplies by 5; equal items from the three rolls are merged. Objs (by cache name): battlestaff 1391,
+  dragon platelegs 4087, dragon plateskirt 4585, rune kiteshield 1201, nature 561, astral 9075, blood 565, soul 566,
+  earth 557, grimy harralander 205, ranarr 207, toadflax 3049, snapdragon seed 5300, kwuarm seed 5299, snape grass seed
+  22879, yew seed 5315, sapphire 1607, emerald 1605, ruby 1603, diamond 1601 (cut gems, the plain names), iron ore 440,
+  adamantite 449, runite 451, ascension shards 34669, onyx bolt tips 9194, earth orb 575, wine of Zamorak 245, desiccated
+  page 30640, aether catalyst 30771 (gameval `COSMIC_SOUL_CATALYST`; the Wiki infobox id), pure essence 7936 (gameval
+  `BLANKRUNE_HIGH`), mahogany logs 6332, dragon arrowtips 11237 (gameval `DRAGON_ARROWHEADS`), raw shark 383.
+- **OPEN-TFA17**: the Wiki table lists no "(noted)". Unstackable items whose quantity is above one are delivered **noted**
+  (battlestaff 1392, platelegs 4088, plateskirt 4586, kiteshield 1202, herbs 206 / 208 / 3050, gems 1602-1608, ores
+  441 / 450 / 452, earth orb 576, wine 246, shark 384, pure essence 7937, mahogany 8836): 900 loose ores cannot fit the
+  six-slot claim inventory.
+- **TFA22 / TFA23 (tertiaries)**, `TfaTertiaries`: folio 1/15 (inert folio 34722), fragment 1/20 then one of the four
+  (34671 earth, 34673 water, 34675 air, 34677 fire), elite clue 1/10 (12073), Orion 1/750 (34646, gameval
+  `OCELLUSPET`). Rolled for every player who did not get the cabbage. **OPEN-TFA16:** ownership checks need the player; rolled
+  without duplicate protection (the folio can repeat, fragments never stop dropping). OPEN-TFA9 stays: the elite
+  Combat Achievement 1/9 rate is not applied. There is no clue-scroll system on the server yet, so the elite scroll is
+  an inert item.
+- **OPEN-TFA18**: the Wiki lists the tertiaries under the *Standard* drop version only; they are rolled for unique
+  recipients as well (the Orion text "not dependent on anything").
+- **Cabbage (OPEN-TFA11)**: a player without a unique rolls the cabbage first with `min(1, deaths x 10%)` (constant
+  `CABBAGE_CHANCE_PER_DEATH`, chosen to mirror the 10% death penalty of TFA13); a cabbage replaces the standard loot and
+  all tertiaries (tag `junk`). Poor contribution is not part of the rule.
 
 ## Not now
 

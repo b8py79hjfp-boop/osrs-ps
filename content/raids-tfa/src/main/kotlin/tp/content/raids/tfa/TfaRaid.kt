@@ -138,13 +138,59 @@ internal object TfaRaid {
                     TfaFlow.guardianRoom(run, any)
                 }),
             )
-            room(RoomDef("ezekiel", RoomKind.ENCOUNTER, EZEKIEL_ENTRY, contribution = c))
-            room(RoomDef("bork", RoomKind.ENCOUNTER, BORK_ENTRY, contribution = c))
-            room(RoomDef("moia", RoomKind.ENCOUNTER, MOIA_ENTRY, contribution = c))
-            room(RoomDef("dreadnoth", RoomKind.ENCOUNTER, DREADNOTH_ENTRY, contribution = c))
-            room(RoomDef("dagonhai", RoomKind.ENCOUNTER, DAGONHAI_ENTRY, contribution = c))
-            room(RoomDef("xarth", RoomKind.ENCOUNTER, XARTH_ENTRY, contribution = c))
-            room(RoomDef("ocellus", RoomKind.ENCOUNTER, OCELLUS_ENTRY, contribution = TfaRewards.OCELLUS_CONTRIBUTION))
+            room(
+                RoomDef("ezekiel", RoomKind.ENCOUNTER, EZEKIEL_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "ezekiel")
+                }),
+            )
+            room(
+                RoomDef("bork", RoomKind.ENCOUNTER, BORK_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "bork")
+                }),
+            )
+            room(
+                RoomDef("moia", RoomKind.ENCOUNTER, MOIA_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "moia")
+                }),
+            )
+            room(
+                RoomDef("dreadnoth", RoomKind.ENCOUNTER, DREADNOTH_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "dreadnoth")
+                }),
+            )
+            room(
+                RoomDef("dagonhai", RoomKind.ENCOUNTER, DAGONHAI_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "dagonhai")
+                }),
+            )
+            room(
+                RoomDef("xarth", RoomKind.ENCOUNTER, XARTH_ENTRY, contribution = c, onStart = {
+                    run,
+                    any,
+                    ->
+                    TfaBosses.start(run, any, "xarth")
+                }),
+            )
+            room(
+                RoomDef("ocellus", RoomKind.ENCOUNTER, OCELLUS_ENTRY, contribution = TfaRewards.OCELLUS_CONTRIBUTION) { run, any ->
+                    TfaBosses.start(run, any, "ocellus")
+                },
+            )
             room(RoomDef("vault", RoomKind.REWARD, VAULT_ENTRY, onStart = { run, any -> TfaVault.start(run, any) }))
             slot("guardian")
             for ((west, east) in SECTIONS) slot(west, east)

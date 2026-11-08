@@ -101,7 +101,14 @@ public class TfaFlow : ContentPlugin {
                     player.message(LEADER_FIRST)
                 } else {
                     val size = maxOf(TfaRaid.MIN_SCALE, party.members.size)
-                    Raids.start(player, party, scaledSize = size, enterNow = false)?.let { player.message(it) }
+                    Raids
+                        .start(
+                            player,
+                            party,
+                            mode = TfaParties.modeOf(party),
+                            scaledSize = size,
+                            enterNow = false,
+                        )?.let { player.message(it) }
                 }
             }
 

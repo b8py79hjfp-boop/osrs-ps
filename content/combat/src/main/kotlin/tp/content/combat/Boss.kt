@@ -69,6 +69,9 @@ internal object Bosses {
             Maledictus,
             ArchiveGuardian,
             GuardianBattery,
+            TfaEzekiel,
+            TfaBork,
+            TfaSmorks,
         )
         ) {
             for (id in boss.ids) byType[id] = boss

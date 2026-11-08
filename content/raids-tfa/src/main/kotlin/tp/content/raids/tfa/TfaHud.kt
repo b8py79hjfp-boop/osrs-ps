@@ -96,4 +96,16 @@ internal class TfaState {
     /** Tick the vault chests appear (braziers lit), -1 = not due. */
     var chestsAt: Long = -1
     var chestsSpawned: Boolean = false
+
+    /** Supply credits per member (lower-case name), granted when the third room is cleared (OPEN-TFA7). */
+    val supplyCredits: MutableMap<String, Int> = HashMap()
+
+    /** Members offered the failure shop (row 17151, with the Leftovers). */
+    val poorPerformers: MutableSet<String> = HashSet()
+
+    /** Alliance Supplies left: owner ("" = the whole run, or a lower-case name) to stock dbrow to count. */
+    val supplyStock: MutableMap<String, MutableMap<Int, Int>> = HashMap()
+
+    /** Members whose raid attempt is already in their stats (a member enters a run once). */
+    val statsAttempted: MutableSet<String> = HashSet()
 }

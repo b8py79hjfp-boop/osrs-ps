@@ -21,6 +21,7 @@ internal object TfaVault {
         Raids.complete(any, run)
         for (p in run.presentPlayers(any)) {
             p.setVarbit(Varbits.TFA_VAULT_OWN_CHEST, run.party.members.indexOfFirst { it.equals(p.username, ignoreCase = true) } + 1)
+            TfaChestUi.sync(p)
         }
         Raids.spawn(any, run, Npcs.TFA_VAULT_EXIT_SMALL, TfaRaid.VAULT_RIFT)
         TfaFlow.state(run).chestsAt = any.tick + TfaConfig.brazierTicks
@@ -53,12 +54,5 @@ public class TfaVaultPlugin : ContentPlugin {
         onOpNpc(Npcs.TFA_REWARDS_CHEST_VAULT_OPEN_MINE, 1) { TfaChestUi.open(player) }
         onOpNpc(Npcs.TFA_UNIQUE_CHEST_VAULT_CLOSED, 1) { chest -> chest.transform(Npcs.TFA_UNIQUE_CHEST_VAULT_OPEN, restoreStats = false) }
         onOpNpc(Npcs.TFA_UNIQUE_CHEST_VAULT_OPEN, 1) { TfaChestUi.open(player) }
-    }
-}
-
-/** The loot interface 973 over `TFA_CHESTS` (bank, take, destroy). */
-internal object TfaChestUi {
-    fun open(player: PlayerRef) {
-        player.openModal(tp.symbols.Components.Toplevel.MAINMODAL, tp.symbols.Interfaces.TFA_CHESTS)
     }
 }
