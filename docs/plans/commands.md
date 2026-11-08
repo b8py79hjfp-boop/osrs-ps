@@ -171,3 +171,12 @@ The work is committed at each green milestone.
   - Output stays on game messages (type 0); the console type (99) is not confirmed to render in RuneLite.
   - RuneLite's developer-tools plugin acts locally on 19 command names (`DevToolsPlugin`, lines 336-568).
 
+- **Milestone 5, the suites:** done.
+  - All five rank tables and the raid tables; live rank pushes with `::setrank`; hidden staff with `::invisible`.
+  - The ECONOMY policy applied to legacy commands and to content tools (D-089 to D-092).
+  - `::ghosts` and `::phasing` (brief §0) don't exist in this repo, so there was nothing to move. The tick-inspector
+    `::trace` and the raids' `::raid` are on the registry now.
+- **Milestone 6, interface views:** see docs/features/commands.md.
+- **Milestone 7, tests:** CommandParserTest, CommandPermissionScenario and CrossWorldModerationScenario pass. The
+  RuneLite check needs the user.
+- **Follow-ups:** listed in PROGRESS.md under "Commands".
