@@ -416,6 +416,24 @@ public class Raids internal constructor() {
             player.message(r.kcMessageByMode?.invoke(mode, kc) ?: r.kcMessage(kc))
         }
 
+        /**
+         * A raid time as [player] reads it (CoX CX53, ToA TA62): `m:ss`, `h:mm:ss` past an hour, with `.cc` hundredths when
+         * the precise-timing option (varbit 11866) is on. 60 hundredths per tick.
+         */
+        public fun formatTime(player: PlayerRef, ticks: Long): String {
+            val precise = player.varbit(tp.symbols.Varbits.OPTION_PRECISE_TIMING) == 1
+            val centis = ticks * CENTIS_PER_TICK
+            val totalSeconds = centis / CENTIS
+            val h = totalSeconds / SECONDS_PER_HOUR
+            val m = (totalSeconds / SECONDS_PER_MINUTE) % SECONDS_PER_MINUTE
+            val sec = totalSeconds % SECONDS_PER_MINUTE
+            val base = if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
+            return if (precise) base + ".%02d".format(centis % CENTIS) else base
+        }
+
+        private const val CENTIS = 100L
+        private const val SECONDS_PER_HOUR = 3600L
+
         /** Ticks as `m:ss.cc` (0.6 s per tick), the raids' time format (`2:25.80`). */
         public fun formatTicks(ticks: Long): String {
             val centis = ticks * CENTIS_PER_TICK

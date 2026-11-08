@@ -23,8 +23,6 @@ internal object ToaRecords {
     /** The boss rooms whose durations make the challenge time (TA63: "time spent actually fighting bosses"). */
     private val BOSS_ROOMS = ToaPath.entries.map { it.boss } + ToaRaid.WARDENS
 
-    private const val CENTIS_PER_TICK = 60L
-    private const val CENTIS = 100L
     private const val SECONDS_PER_MINUTE = 60L
     private const val TICKS_PER_SECOND_NUMERATOR = 3
     private const val TICKS_PER_SECOND_DENOMINATOR = 5
@@ -45,12 +43,9 @@ internal object ToaRecords {
     // ---- time
 
     /** TA62: `m:ss`, with two decimals when the precise-timing option is on (the scoreboard always shows them). */
-    fun formatTime(p: PlayerRef, ticks: Long): String {
-        val centis = ticks * CENTIS_PER_TICK
-        val seconds = centis / CENTIS
-        val base = "${seconds / SECONDS_PER_MINUTE}:${(seconds % SECONDS_PER_MINUTE).toString().padStart(2, '0')}"
-        return if (p.varbit(Varbits.OPTION_PRECISE_TIMING) == 1) base + "." + (centis % CENTIS).toString().padStart(2, '0') else base
-    }
+    fun formatTime(p: PlayerRef, ticks: Long): String =
+        tp.content.raids.Raids
+            .formatTime(p, ticks)
 
     /** TA12: the raid level after the time limit: lowered by twice the invocation's value when the timer ran out. */
     fun finalLevel(st: ToaState, any: PlayerRef?): Int {

@@ -27,6 +27,9 @@ import tp.symbols.Objs
 import tp.symbols.Varbits
 import tp.symbols.Varps
 
+/** The deposit box asks the bank to deposit everything from [source] (backpack or worn) in one pass (DepositBox). */
+internal class DepositAllRequest(val player: PlayerRef, val source: Int) : tp.plugin.Event
+
 /**
  * The bank (docs/mechanics/bank.md): `bankmain` (12) as the main modal with `bankside` (15) over the backpack, inv 95.
  * Opened from bank booths, bank chests, bankers and `::bank`. Rules, op numbers and component roles follow RS Mod
@@ -59,6 +62,8 @@ public class Bank : ContentPlugin {
         onButton(Components.Bankmain.TABS) { click -> tab(click) }
         onButton(Components.Bankmain.DEPOSITINV) { depositAll(Invs.INV) }
         onButton(Components.Bankmain.DEPOSITWORN) { depositAll(Invs.WORN) }
+        // The deposit box's "Deposit inventory" / "Deposit worn items": the bank's own pass, one summary.
+        events.on<DepositAllRequest> { r -> if (r.player.isOpen(Interfaces.BANK_DEPOSITBOX)) r.player.depositAll(r.source, fromBox = true) }
         onButton(Components.Bankmain.INCINERATOR_CONFIRM) { click -> incinerate(click) }
         for (w in WORN_COMPONENTS) onButton(w.bankTab) { click -> wornItem(w.slot, click) }
         registerSettings()
@@ -380,7 +385,8 @@ public class Bank : ContentPlugin {
      */
     private fun PlayerRef.transfer(t: BankTransfer) {
         // The deposit box (docs/mechanics/deposit-box.md) deposits through the same path without the bank being open.
-        val open = bankOpen() || (t.deposit && isOpen(Interfaces.BANK_DEPOSITBOX))
+        val fromBox = t.deposit && (t.source == Invs.INV || t.source == Invs.WORN) && isOpen(Interfaces.BANK_DEPOSITBOX)
+        val open = bankOpen() || fromBox
         if (!open || t.requested <= 0) return
         if (t.deposit) {
             val out = deposit(if (t.source >= 0) t.source else SOURCE_EXTERNAL, listOf(t.obj to t.requested))
@@ -473,8 +479,8 @@ public class Bank : ContentPlugin {
     }
 
     /** Deposit inventory (backpack) or Deposit worn items. */
-    private fun PlayerRef.depositAll(source: Int) {
-        if (!bankOpen()) return
+    private fun PlayerRef.depositAll(source: Int, fromBox: Boolean = false) {
+        if (!fromBox && !bankOpen()) return
         val from = inv(source)
         val wants = ArrayList<Pair<Int, Int>>()
         val seen = HashSet<Int>()

@@ -39,10 +39,7 @@ internal object ToaRestores {
     private class Wipe(val runId: Long, val at: Long, val room: String)
 
     /** The run's members that are online and inside (the event handlers have no entity to ask). */
-    fun present(world: WorldRef, run: RaidRun): List<PlayerRef> =
-        run.members.values
-            .filter { it.inside && it.online }
-            .mapNotNull { world.onlinePlayer(it.name) }
+    fun present(world: WorldRef, run: RaidRun): List<PlayerRef> = run.presentPlayers(world)
 
     /** Removes poison and venom (one venom-curing request), then gives [immunityTicks] of immunity. */
     fun curePoison(p: PlayerRef, immunityTicks: Int) {

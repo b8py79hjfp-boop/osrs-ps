@@ -70,25 +70,14 @@ internal object CoxRaid {
             "<col=ff0000>$time</col>$tail"
     }
 
-    /** Raid times as `m:ss` (`h:mm:ss` past an hour), `m:ss.cc` with the precise-timing option 11866 (CX53). */
-    fun formatTime(p: tp.plugin.PlayerRef, ticks: Long): String {
-        val precise = p.varbit(tp.symbols.Varbits.OPTION_PRECISE_TIMING) == 1
-        val centis = ticks * CENTIS_PER_TICK
-        val totalSeconds = centis / CENTIS
-        val h = totalSeconds / SECONDS_PER_HOUR
-        val m = (totalSeconds / SECONDS_PER_MINUTE) % SECONDS_PER_MINUTE
-        val sec = totalSeconds % SECONDS_PER_MINUTE
-        val base = if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
-        return if (precise) base + ".%02d".format(centis % CENTIS) else base
-    }
+    /** Raid times as `m:ss` (`h:mm:ss` past an hour), `m:ss.cc` with the precise-timing option 11866 (CX53; raids-core). */
+    fun formatTime(p: tp.plugin.PlayerRef, ticks: Long): String =
+        tp.content.raids.Raids
+            .formatTime(p, ticks)
 
     private const val BUCKET_SMALL = 10
     private const val BUCKET_MID = 15
     private const val BUCKET_LARGE = 23
-    private const val CENTIS_PER_TICK = 60L
-    private const val CENTIS = 100L
-    private const val SECONDS_PER_MINUTE = 60L
-    private const val SECONDS_PER_HOUR = 3600L
 
     /** Room ids are not template tiles here: every entry comes from [RoomDef.entryAt]. */
     private val NOWHERE = CoordGrid(3296, 5184)

@@ -153,10 +153,7 @@ public class ToaRooms : ContentPlugin {
                 if (run.raid.id != ToaRaid.ID) continue
                 val st = ToaFlow.state(run) ?: continue
                 val room = st.retryRoom ?: continue
-                val present =
-                    run.members.values
-                        .filter { it.inside && it.online }
-                        .mapNotNull { world.onlinePlayer(it.name) }
+                val present = run.presentPlayers(world)
                 val any = present.firstOrNull() ?: continue
                 if (present.any { it.hitpoints <= 0 }) continue
                 st.retryRoom = null

@@ -123,7 +123,8 @@ public class DepositBox : ContentPlugin {
         val objs = LinkedHashSet<Int>()
         for (slot in 0 until from.size) from.obj(slot).takeIf { it >= 0 }?.let { objs += it }
         if (objs.isEmpty()) return message("You have nothing to deposit.")
-        for (obj in objs) events.publish(BankTransfer(this, obj, Int.MAX_VALUE, deposit = true, source = source))
+        // One pass through the bank's own deposit-all (one transaction per batch, one summary message).
+        events.publish(DepositAllRequest(this, source))
     }
 
     /** "Deposit loot": the looting bag's contents, as the bank's own button does it (only with a bag in the backpack). */

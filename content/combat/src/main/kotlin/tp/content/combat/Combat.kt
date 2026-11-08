@@ -53,7 +53,14 @@ public class Combat : ContentPlugin {
         }
         // PO6: a content potion's cure (immunity in poison intervals of 30 ticks).
         events.on<tp.plugin.CurePoisonRequest> { r -> Poison.cure(r.player, r.immunityTicks / POISON_INTERVAL, antiVenom = r.curesVenom) }
-        events.on<tp.plugin.AttackDelayRequest> { r -> r.player.setAttackClock(maxOf(r.player.attackClock(), r.player.tick) + r.ticks) }
+        // As eating (E-rules, test 3g): only a pending attack is pushed back; an idle player is not delayed.
+        events.on<tp.plugin.AttackDelayRequest> { r ->
+            if (r.player.attackClock() >
+                r.player.tick
+            ) {
+                r.player.setAttackClock(r.player.attackClock() + r.ticks)
+            }
+        }
         events.on<tp.plugin.SpellAccuracyRoll> { roll ->
             val attack = Attacks.attackRoll(roll.caster, Stance.SPELL, AttackType.MAGIC, target = roll.target)
             roll.hit = Formulas.hits(attack, Attacks.defenceRoll(roll.target, AttackType.MAGIC), roll.caster::random)

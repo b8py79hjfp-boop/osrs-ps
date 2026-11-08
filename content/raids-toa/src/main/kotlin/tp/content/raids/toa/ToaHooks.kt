@@ -44,14 +44,13 @@ public class ToaHooks : ContentPlugin {
             .activeRuns) {
             if (run.raid.id != ToaRaid.ID) continue
             val room = (run.state as? tp.content.raids.RunState.InRoom)?.room?.id ?: continue
-            val present =
-                run.members.values
-                    .filter { it.inside && it.online }
-                    .mapNotNull { world.onlinePlayer(it.name) }
-            val any = present.firstOrNull() ?: continue
+            // Tick hot loop: no lists per run per tick (CLAUDE.md conventions).
+            val any = ToaPuzzles.anyPlayer(world, run) ?: continue
             when (room) {
                 "crondis" -> {
-                    for (p in present) {
+                    for (m in run.members.values) {
+                        if (!m.inside || !m.online) continue
+                        val p = world.onlinePlayer(m.name) ?: continue
                         p[tp.plugin.SharedAttrs.RAID_CARRYING] = ToaCrondis.carrying(run, any, p.username)
                         p[tp.plugin.SharedAttrs.RAID_TRAP_HITS] = ToaCrondis.recentTrapHits(run, any, p.username)
                     }

@@ -133,9 +133,11 @@ internal object Consumables {
     /** ToA Dehydration's "health-restoring potions" (toa.md TA15): Saradomin brews and Guthix rest (cache names). */
     private val HEALTH_POTIONS = listOf("Saradomin brew", "Guthix rest")
 
+    /** ToA On a Diet (toa.md TI18, Strat): "Guthix Rest counts as food and cannot be used". */
+    private const val GUTHIX_REST = "Guthix rest"
+
     /** Mix name, the potion whose effect it has (as named in [potionsByName]; missing = heal only, OPEN-E6), heal. */
     @Suppress("MagicNumber") // the Wiki table's heal column
-
     private val MIXES: List<Triple<String, String, Int>> =
         listOf(
             Triple("Attack mix", "Attack potion", 3),
@@ -177,7 +179,9 @@ internal object Consumables {
         if (food != null || potions[obj] != null) {
             val name = player.objName(obj)
             val restores = HEALTH_POTIONS.any { name.startsWith(it) }
-            val check = tp.plugin.ConsumeCheck(player, obj, food = food != null, restoresHealth = restores)
+            // TI18: On a Diet treats Guthix rest as food although it is drunk like a potion.
+            val isFood = food != null || name.startsWith(GUTHIX_REST)
+            val check = tp.plugin.ConsumeCheck(player, obj, food = isFood, restoresHealth = restores)
             player.events.publish(check)
             check.refusal?.let {
                 player.message(it)

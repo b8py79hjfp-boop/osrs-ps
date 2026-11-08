@@ -57,7 +57,7 @@ internal object ToaKit {
         onLand: ((Int) -> Unit)? = null,
     ) {
         val hit = accurate || BossCombat.rolls(npc, victim, type)
-        val raw = if (hit) BossCombat.roll(npc, if (max > 0) 1 else 0, max) else 0
+        val raw = if (hit) BossCombat.roll(npc, 0, max) else 0
         val damage = afterPrayer(npc, victim, type.style, raw, rule)
         CombatSystem.queueHit(victim, npc, damage, CombatSystem.hitStyle(type.style), delay) { onLand?.invoke(damage) }
     }

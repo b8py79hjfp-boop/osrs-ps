@@ -61,7 +61,10 @@ internal object ToaPresets {
             return
         }
         var words = IntArray(WORDS)
-        for (inv in ToaInvocations.active(p, saved)) words = ToaInvocations.toggle(p, words, inv.key)
+        // Skip one already ticked as an earlier invocation's prerequisite: toggling it again would untick it and its dependants.
+        for (inv in ToaInvocations.active(p, saved)) {
+            if (!ToaInvocations.isActive(words, inv)) words = ToaInvocations.toggle(p, words, inv.key)
+        }
         ToaBoard.setInvocations(p, party, words)
     }
 

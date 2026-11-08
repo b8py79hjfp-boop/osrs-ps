@@ -137,6 +137,10 @@ public class RaidRun internal constructor(
     public fun presentPlayers(any: tp.plugin.EntityRef): List<PlayerRef> =
         members.values.filter { it.inside && it.online }.mapNotNull { any.onlinePlayer(it.name) }
 
+    /** [presentPlayers] for code that only holds the world (world ticks). */
+    public fun presentPlayers(world: tp.plugin.WorldRef): List<PlayerRef> =
+        members.values.filter { it.inside && it.online }.mapNotNull { world.onlinePlayer(it.name) }
+
     public fun markDirty() {
         dirty = true
     }

@@ -223,6 +223,11 @@ public class ToaFlow : ContentPlugin {
             player.message(WARDENS_LOCKED)
             return
         }
+        // A member who stayed behind follows; entering the room again would restart the fight (a second boss spawn).
+        if ((run.state as? RunState.InRoom)?.room?.id == ToaRaid.WARDENS) {
+            player.teleport(Raids.entryOf(run, requireNotNull(run.raid.rooms[ToaRaid.WARDENS]), player))
+            return
+        }
         if (!run.party.leader.equals(player.username, ignoreCase = true)) {
             player.message(LEADER_FIRST)
             return

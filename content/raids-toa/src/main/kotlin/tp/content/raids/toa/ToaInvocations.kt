@@ -66,11 +66,12 @@ internal object ToaInvocations {
     private const val WORD1_FIRST = 31
     private const val WORD2_FIRST = 62
 
-    @Volatile private var table: List<Invocation>? = null
+    /** The table is world-scoped (each world reads its own cache): no JVM-wide mutable state. */
+    private val TABLE = tp.plugin.AttrKey<List<Invocation>>("toa_invocations")
 
-    /** All invocations in enum order (cache data, identical for every world). */
+    /** All invocations in enum order (cache enum 4664), read once per world. */
     fun all(any: PlayerRef): List<Invocation> =
-        table ?: any
+        any.worldAttr(TABLE) ?: any
             .enumInts(ENUM_INVOCATIONS)
             .entries
             .sortedBy { it.key }
@@ -86,7 +87,7 @@ internal object ToaInvocations {
                     any.structInt(struct, P_REQUIRES) ?: -1,
                     any.structInt(struct, P_MIN_LEVEL) ?: 0,
                 )
-            }.also { table = it }
+            }.also { any.setWorldAttr(TABLE, it) }
 
     fun words(party: Party): IntArray = IntArray(WORDS.size) { party.settings[WORDS[it]] ?: 0 }
 
