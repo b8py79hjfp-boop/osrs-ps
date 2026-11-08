@@ -32,3 +32,14 @@ Sources: `docs/mechanics/raids/cox.md`, `cox/lobby-rewards.md`, the room docs in
 5. Great Olm (all phases and specials) and Challenge Mode.
 6. Board / party (499 / 507 / 500), storage units (271 / 550 / 551), reward chest 539 and the loot model, CM scoreboard 21
    (implementers, against the stable flow).
+
+## Status (2026-11-08)
+
+1. Done: layouts (26 codes + rotation cycles), per-run instance of zone copies, entrance, lobby start and Reload,
+   passages / holes / ropes, room gating, CX34 respawn (commits ac8f991, 6c4b2a6).
+2. Done: points ledger (OPEN-CX13 rate), death penalty, HUD 513, records with team size and PB buckets (c0209db).
+3. Done: the eight combat rooms with the wiki calculator's scaling (06236c2).
+4. Done: thieving, tightrope, ice demon, crabs; scavengers, shortcuts, farming, food, Herblore, kindling (fdf1f57,
+   2a4d505).
+5. Done: the Great Olm (all phases, powers, specials) and the Challenge Mode layout and bonus (f4f13ac).
+6. Loot model done (513bed2); board / party tab / storage / reward chest / scoreboard interfaces in progress.
