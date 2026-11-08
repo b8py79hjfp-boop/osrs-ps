@@ -425,11 +425,21 @@ public class Raids internal constructor() {
         // ---- closing
 
         /** Tears a finished or empty run down: NPCs, ground items and the instance go (IN9), the party is released. */
-        internal fun close(world: WorldRef, run: RaidRun) {
+        internal fun close(world: WorldRef, run: RaidRun) = close(of(world), run)
+
+        /**
+         * Ends [run] at once (CoX's lobby Reload, CX5): everyone inside leaves to the exit, the instance goes and the party
+         * forms again, so its leader can start a new run.
+         */
+        public fun reset(any: EntityRef, run: RaidRun) {
+            for (p in run.presentPlayers(any)) leave(p, run)
+            close(of(any), run)
+        }
+
+        private fun close(raids: Raids, run: RaidRun) {
             if (run.state == RunState.Closed) return
             run.instance?.destroy()
             run.state = RunState.Closed
-            val raids = of(world)
             raids.runs.remove(run.id.value)
             run.party.state = PartyState.Forming
             if (run.party.members.isEmpty()) raids.dropParty(run.party)

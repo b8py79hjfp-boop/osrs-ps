@@ -84,6 +84,14 @@ public class CoxFlow : ContentPlugin {
         onOpLoc(Locs.RAIDS_BOSSENTRANCE, OP1) { toOlm(player) }
         onOpLoc(Locs.RAIDS_BOSSEXIT, OP1) { fromOlm(player) }
         onOpLoc(Locs.RAIDS_OLM_BARRIER, OP1) { loc -> passBarrier(player, loc) }
+        // The lobby staircase (multi 49999 on varbit 5423: Climb for everyone, Reload for the leader); the client may send
+        // the parent or the child it resolved.
+        for (steps in intArrayOf(Locs.RAIDS_EXIT_STEPS_MULTI, Locs.RAIDS_EXIT_STEPS, Locs.RAIDS_EXIT_STEPS_RELOAD)) {
+            onOpLoc(steps, OP1) {
+                climb(player)
+            }
+        }
+        for (steps in intArrayOf(Locs.RAIDS_EXIT_STEPS_MULTI, Locs.RAIDS_EXIT_STEPS_RELOAD)) onOpLoc(steps, OP2) { reload(player) }
         onWorldTick {
             CoxHud.tick(this)
             watchCells(this)
@@ -145,6 +153,30 @@ public class CoxFlow : ContentPlugin {
                 return
             }
         }
+    }
+
+    /** The lobby steps: Climb leaves the raid (Mount Quidamortem). */
+    private fun climb(player: PlayerRef) {
+        val run = runOf(player) ?: return
+        Raids.leave(player, run)
+    }
+
+    /**
+     * CX5 (29 Nov 2023 / 27 Aug 2025): the leader's Reload before the start draws a new layout: everyone else is booted
+     * (OPEN-CX4: to Mount Quidamortem, no message) and items left on the floor are lost; Challenge Mode cannot be reloaded.
+     */
+    private fun reload(player: PlayerRef) {
+        val run = runOf(player) ?: return
+        val st = state(run) ?: return
+        if (!run.party.leader.equals(player.username, ignoreCase = true) || st.begun) return
+        if (run.scaling.mode == CoxRaid.CHALLENGE) {
+            player.message(NO_CM_RELOAD)
+            return
+        }
+        val party = run.party
+        val mode = run.scaling.mode
+        Raids.reset(player, run)
+        Raids.start(player, party, mode = mode, enterNow = false)?.let { player.message(it) }
     }
 
     /** A room passage: back through the side the room was entered by, else on once the room is done. */
@@ -422,6 +454,10 @@ public class CoxFlow : ContentPlugin {
             }.filter { it >= 0 }
 
         private const val OP1 = 1
+        private const val OP2 = 2
+
+        /** OPEN-CX4: the refusal line is not captured. */
+        private const val NO_CM_RELOAD = "Challenge Mode layouts cannot be reloaded."
         private const val CENTREPIECE = 10
 
         /** Client-contract 6.4: the floor-start rope at (16, 15), the lobby steps at (2, 1), END3's hole at (11, 22). */
