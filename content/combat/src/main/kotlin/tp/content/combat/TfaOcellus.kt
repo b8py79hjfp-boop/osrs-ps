@@ -70,6 +70,10 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
             corner(npc, s)
             return
         }
+        if (s.attacks % BARRAGE_EVERY == 0) {
+            barrage(npc)
+            return
+        }
         if (victim is PlayerRef && TfaKit.gap(npc, victim) <= SLAM_RANGE && npc.random(2) == 0) {
             for (p in TfaKit.arena(npc)) if (TfaKit.gap(npc, p) <= SLAM_RANGE) BossCombat.strike(npc, p, AttackType.CRUSH, SLAM_MAX, 1)
             return
@@ -80,6 +84,23 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         val delay = BossCombat.delay(npc, victim, style)
         BossCombat.projectile(npc, victim, SpotAnims.TFA_OCELLUS_SF_PROJ, delay)
         BossCombat.strike(npc, victim, if (magic) AttackType.MAGIC else AttackType.RANGED, MAX_HIT, delay)
+    }
+
+    /**
+     * OC1: the ranged barrage: lines of projectiles along rows and columns (the patterns are the stripped dbtable 141,
+     * OPEN-OC3: a row and a column through each of up to three players, 2-tick telegraph, 20 to anyone still on one).
+     */
+    private fun barrage(npc: NpcRef) {
+        val players = TfaKit.arena(npc).take(BARRAGE_LINES)
+        val rows = players.map { it.coord.z }.toSet()
+        val cols = players.map { it.coord.x }.toSet()
+        for (p in players) npc.spotAnimAt(p.coord, SpotAnims.TFA_OCELLUS_SF_PROJ)
+        npc.queueHit(BARRAGE_TELEGRAPH) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(npc)) {
+                if (p.coord.z in rows || p.coord.x in cols) CombatSystem.applyHit(p, npc, BARRAGE_DAMAGE, HitStyle.RANGED)
+            }
+        }
     }
 
     /**
@@ -339,13 +360,16 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         if (s.explosionsLeft > 0) {
             s.explosionsLeft--
             for (p in TfaKit.arena(npc)) {
-                val t = BossCombat.randomTile(npc, p.coord, 1)
+                // OC4: the void explosion lands under the player; a perfect dodge (off the tile as it lands) cuts their
+                // next attack's cooldown by 3 ticks.
+                val t = p.coord
                 npc.spotAnimAt(t, SpotAnims.TFA_PORTAL)
                 npc.queueHit(1) {
-                    if (npc.isInWorld && p.coord.x == t.x &&
-                        p.coord.z == t.z
-                    ) {
+                    if (!npc.isInWorld) return@queueHit
+                    if (p.coord.x == t.x && p.coord.z == t.z) {
                         CombatSystem.applyHit(p, npc, EXPLOSION, HitStyle.TYPELESS)
+                    } else {
+                        p.setAttackClock(maxOf(p.tick, p.attackClock() - DODGE_COOLDOWN_CUT))
                     }
                 }
             }
@@ -382,8 +406,10 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
         }
         if (s.phase == Phase.P3) return opposite(npc, source, damage)
         if (s.phase != Phase.P4) return damage
-        // OC4: Deflect Melee halves melee; slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
-        var d = if (style == HitStyle.MELEE) damage / 2 else damage
+        // OC4: Deflect Melee halves melee, Deflect Range (later in the cycle, while the soul-split blasts run) halves
+        // ranged; slow weapons do less (33% less for 3t, 50% for 4t, 60% for 5t+).
+        val deflected = if (s.explosionsLeft > 0) HitStyle.MELEE else HitStyle.RANGED
+        var d = if (style == deflected) damage / 2 else damage
         val speed = (source as? PlayerRef)?.attackSpeed() ?: return d
         d =
             when {
@@ -418,6 +444,9 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
             s.phase = Phase.P4
             npc.say("Enough!")
             s.explosionsLeft = EXPLOSION_CYCLES
+            // OC4: "the blue-wind orb takes half his current HP (rounded down)".
+            npc.spotAnim(SpotAnims.TFA_WAVE_DUST)
+            CombatSystem.applyHit(npc, null, npc.hitpoints / 2, HitStyle.TYPELESS)
         }
     }
 
@@ -516,6 +545,11 @@ internal object TfaOcellus : Boss(Npcs.TFA_OCELLUS_P1, Npcs.TFA_OCELLUS_P2, Npcs
     private const val SOUL_PRAYED_MAX = 7
     private const val SOUL_SPLIT = 4
     private const val PERCENT = 100
+    private const val BARRAGE_EVERY = 5
+    private const val BARRAGE_LINES = 3
+    private const val BARRAGE_TELEGRAPH = 2
+    private const val BARRAGE_DAMAGE = 20
+    private const val DODGE_COOLDOWN_CUT = 3
     private const val SETS_PER_QUADRANT = 5
 
     /** OPEN-OC5: one portal set every 5 ticks. */

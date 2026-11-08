@@ -123,12 +123,30 @@ internal object TfaDagonhai : Boss(
 
             1 -> {
                 BossCombat.strike(npc, victim, AttackType.CRUSH, BANDOS_MAX, 1)
+                // DH5: "+ shockwave" (OPEN-DH7: 15 to everyone within 2 tiles of the target).
+                for (p in TfaKit.arena(npc)) {
+                    if (p != victim &&
+                        p.distanceTo(victim) <= SHOCKWAVE_RANGE
+                    ) {
+                        CombatSystem.queueHit(p, npc, SHOCKWAVE, HitStyle.MELEE, 1)
+                    }
+                }
             }
 
             else -> {
                 npc.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_HEAL_IMPACT)
-                val heal = SARA_MIN + npc.random(SARA_MAX - SARA_MIN + 1)
+                // DH5: "heals 10-20 or 50 + lightning": the empowered tome heals 50 and calls lightning on a player
+                // (OPEN-DH8: 20 damage).
+                val empowered = npc.tick < t.empoweredUntil
+                val heal = if (empowered) SARA_EMPOWERED else SARA_MIN + npc.random(SARA_MAX - SARA_MIN + 1)
                 for (m in t.members) m.hitpoints = minOf(m.maxHitpoints, m.hitpoints + heal)
+                if (empowered) {
+                    val players = TfaKit.arena(npc)
+                    players.getOrNull(npc.random(maxOf(1, players.size)))?.let { p ->
+                        p.spotAnim(SpotAnims.TFA_DAGONHAI_SARADOMIN_DAMAGE_LIGHTNING)
+                        CombatSystem.queueHit(p, npc, SARA_LIGHTNING, HitStyle.MAGIC, 1)
+                    }
+                }
             }
         }
     }
@@ -273,6 +291,10 @@ internal object TfaDagonhai : Boss(
     private const val BANDOS_MAX = 55
     private const val SARA_MIN = 10
     private const val SARA_MAX = 20
+    private const val SARA_EMPOWERED = 50
+    private const val SARA_LIGHTNING = 20
+    private const val SHOCKWAVE = 15
+    private const val SHOCKWAVE_RANGE = 2
     private const val STUN_TICKS = 5
     private const val STUN_BONUS_NUM = 115
     private const val STUN_BONUS_DEN = 100

@@ -36,6 +36,9 @@ internal object TfaMoia : Boss(Npcs.TFA_MOIA) {
             it.rangedBurst = BURST_MIN + npc.random(BURST_VARIANTS)
             it.shuffleAt = npc.tick + SHUFFLE_TICKS
             binders(npc, it)
+            // MO0: "Moia starts outside the arena, so a ranged or magic weapon is needed" (her first side position).
+            val (dx, dz) = SIDE_OFFSETS[0]
+            npc.teleport(CoordGrid(it.centre.x + dx, it.centre.z + dz, it.centre.level))
         }
     }
 

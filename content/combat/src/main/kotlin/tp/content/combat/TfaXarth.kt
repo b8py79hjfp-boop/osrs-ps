@@ -245,7 +245,7 @@ internal object TfaXarthCorpse : Boss(Npcs.TFA_XARTH_CORPSE) {
         val spell = (source as? tp.plugin.PlayerRef)?.get(Attr.LAST_SPELL)
         if (style == HitStyle.MAGIC && spell != null) {
             when {
-                spell == "Undead Grasp" -> {
+                spell == "Undead Grasp" && source is tp.plugin.PlayerRef && SpellEffects.marked(source) -> {
                     npc.frozenUntil = maxOf(npc.frozenUntil, npc.tick + GRASP_TICKS)
                 }
 

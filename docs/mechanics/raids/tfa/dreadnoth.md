@@ -32,3 +32,5 @@ below list only what a source states; everything else is `OPEN` and gets a named
   jelly per two players (OPEN-DR1); jellies under him are absorbed for their HP (OPEN-DR5). Below 25% he only jumps
   on random players (heal 35 if they are underneath, OPEN-DR4) and follows with a ranged attack. Death: seven jellies
   (OPEN-DR2).
+- DR1: a root (e.g. the scorching bow's Scorching shackles, SP55: bound 20 ticks) stops his jumps; he fires ranged
+  instead while bound.

@@ -58,3 +58,6 @@ below list only what a source states; everything else is `OPEN` and gets a named
   laser-only one: players' hits do nothing to it; a laser target within 2 tiles of it lures the beam into it (the
   battery is charged, the player takes 10).
 - **OPEN-AG4 model:** laser = 35 x players alive (fatal above two players at 99 HP), Protect from Magic -20%.
+- AG0: the woken Guardian engages the first party member in orb order. AG1: each phase-1 attack lashes players within
+  2 tiles on the far side of its body from its target (OPEN-AG9: 0-10 typeless). AG5 / OPEN-AG6: an inner mushroom
+  burst also drains 10 prayer and binds the player 2 ticks (drowsy), unless they wear a serpentine helm.

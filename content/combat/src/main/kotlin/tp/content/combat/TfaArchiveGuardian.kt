@@ -41,6 +41,8 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
             npc[STATE] = it
             setPool(npc, FLYING_HP[index(it.size)])
             batteries(npc)
+            // AG0: it targets the first player in orb order (the party leader should start the fight).
+            TfaKit.firstInOrbOrder(npc)?.let { first -> NpcCombat.engage(npc, first) }
         }
 
     /**
@@ -81,6 +83,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
                     under(npc, victim) -> slam(npc, victim)
                     else -> rock(npc, victim)
                 }
+                tendrilsBehind(npc, victim)
             }
 
             Phase.FINAL -> {
@@ -100,6 +103,22 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         BossCombat.projectile(npc, victim, SpotAnims.VFX_GUARDIAN_RANGED_PROJANIM01, delay)
         BossCombat.strike(npc, victim, AttackType.RANGED, MAX_HIT, delay) {
             victim.spotAnim(SpotAnims.VFX_GUARDIAN_RANGED_HITANIM01)
+        }
+    }
+
+    /**
+     * AG1: "tendrils behind it deal typeless damage": players on the far side of the Guardian from its target, within 2
+     * tiles of its body, are lashed (OPEN-AG9: 0-10 with each attack).
+     */
+    private fun tendrilsBehind(npc: NpcRef, victim: EntityRef) {
+        val cx = npc.coord.x + npc.size / 2
+        val cz = npc.coord.z + npc.size / 2
+        val vx = Integer.signum(victim.coord.x - cx)
+        val vz = Integer.signum(victim.coord.z - cz)
+        for (p in arenaPlayers(npc)) {
+            if (p == victim || TfaKit.gap(npc, p) > BEHIND_REACH) continue
+            val behind = (vx != 0 && Integer.signum(p.coord.x - cx) == -vx) || (vz != 0 && Integer.signum(p.coord.z - cz) == -vz)
+            if (behind) CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, BEHIND_MAX), HitStyle.TYPELESS)
         }
     }
 
@@ -209,7 +228,7 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
 
     /**
      * AG5: two mushrooms near every player; 5 ticks later each explodes: 10 damage, poison and run off within 1 tile,
-     * 3-4 damage within 2 tiles. OPEN-AG6: the drowsy and prayer effects are not modelled.
+     * 3-4 damage within 2 tiles. OPEN-AG6: drowsiness and the prayer drain are modelled as a 2-tick bind and -10 prayer.
      */
     private fun mushrooms(npc: NpcRef) {
         npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_SWOOSH_ATTACK01)
@@ -226,6 +245,9 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
                         if (!Toxic.wearsSerpentineHelm(p)) {
                             Poison.poison(p, MUSHROOM_POISON)
                             p.runMode = false
+                            // AG5 / OPEN-AG6: the spores also sap prayer (10) and leave the player drowsy (bound 2 ticks).
+                            BossCombat.drainPrayer(p, SPORE_PRAYER)
+                            p.frozenUntil = maxOf(p.frozenUntil, p.tick + DROWSY_TICKS)
                         }
                     } else {
                         CombatSystem.applyHit(p, npc, BossCombat.roll(npc, MUSHROOM_OUTER_MIN, MUSHROOM_OUTER_MAX), HitStyle.TYPELESS)
@@ -334,6 +356,10 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private const val LASER_PER_ALIVE = 35
     private const val LASER_PRAYER_PERCENT = 20
     private const val LASER_DELAY = 2
+    private const val BEHIND_REACH = 2
+    private const val BEHIND_MAX = 10
+    private const val SPORE_PRAYER = 10
+    private const val DROWSY_TICKS = 2
     private const val LASER_LURED = 10
     private const val LURE_RANGE = 2
     private const val LASER_BATTERY = 3

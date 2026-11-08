@@ -42,3 +42,5 @@ below list only what a source states; everything else is `OPEN` and gets a named
   the target and players within 3 tiles. The cauldron is the focus NPC 16649 stepping round a radius-4 ring each Elder attack (a player in its way is
   shoved 2 tiles for 0-9). After breaks 1-4 imp portals (16651) open (one at party size 4 or less, else two corners;
   three imps for breaks 1-3, two for break 4; OPEN-DH4); imps (16650) die to any player hit and melee up to 8 (OPEN-DH6).
+- DH5 tomes: Bandos adds a shockwave of 15 within 2 tiles of the target (OPEN-DH7); an empowered Saradomin tome heals
+  50 and calls lightning (20) on a random player (OPEN-DH8).

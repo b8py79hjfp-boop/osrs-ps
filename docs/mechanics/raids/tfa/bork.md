@@ -39,3 +39,5 @@ below list only what a source states; everything else is `OPEN` and gets a named
   at a player, 20 within 1 tile, stunning Bork for 8 ticks when it lands next to or on him (OPEN-BK7).
 - A dazed Bork is always hit by melee (Boss.meleeAlwaysHits).
 - Both attack from every 7 ticks down to 4 as the Smorks' HP falls (OPEN-BK3). The room ends when both are dead.
+- BK2 cart: every 6th Bork attack while the Smorks live is a 2-tick wind-up stomp over the whole arena (max 50); a
+  player with the Smorks' cart on the line from Bork is shielded (OPEN-BK8).

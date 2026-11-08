@@ -98,6 +98,11 @@ internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
 
     /** DR3: jumps on a random player, healing ~30-40 if they are underneath, then one ranged attack (OPEN-DR4: heal 35). */
     private fun jump(npc: NpcRef) {
+        // DR1: a root (the scorching bow's special binds demons for 20 ticks, SP55) holds him in place.
+        if (npc.isFrozen) {
+            ranged(npc, TfaKit.arena(npc).firstOrNull() ?: return)
+            return
+        }
         val players = TfaKit.arena(npc)
         val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
         val at = p.coord

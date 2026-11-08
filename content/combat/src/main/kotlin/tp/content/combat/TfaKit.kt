@@ -66,6 +66,28 @@ internal object TfaKit {
         return maxOf(dx, dz)
     }
 
+    /**
+     * Whether any of [cover] (NPC footprints) stands on the line from [npc]'s centre to [to], strictly between: a
+     * pillar, cart or rubble shielding a player.
+     */
+    fun covered(npc: NpcRef, to: CoordGrid, cover: List<NpcRef>): Boolean {
+        val cx = npc.coord.x + npc.size / 2
+        val cz = npc.coord.z + npc.size / 2
+        val steps = maxOf(kotlin.math.abs(to.x - cx), kotlin.math.abs(to.z - cz))
+        for (i in 1 until steps) {
+            val t = CoordGrid(cx + (to.x - cx) * i / steps, cz + (to.z - cz) * i / steps, to.level)
+            if (cover.any { under(it, t) }) return true
+        }
+        return false
+    }
+
+    /** The first raid party member (orb order, leader first) alive near [npc], else the nearest player. */
+    fun firstInOrbOrder(npc: NpcRef): PlayerRef? {
+        val players = arena(npc)
+        val order = npc[SharedAttrs.RAID_ORDER] ?: return players.minByOrNull { gap(npc, it) }
+        return order.firstNotNullOfOrNull { n -> players.firstOrNull { it.username.equals(n, ignoreCase = true) } }
+    }
+
     /** Adds [amount] special energy (varp `sa_energy`, 1,000 = 100%). */
     fun addSpecEnergy(p: PlayerRef, amount: Int) {
         p.setVarp(tp.symbols.Varps.SA_ENERGY, minOf(FULL_SPEC, p.varp(tp.symbols.Varps.SA_ENERGY) + amount))

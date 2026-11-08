@@ -42,7 +42,7 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         } else {
             // BK1: "Bork smash [name] now" marks an aggression switch (OPEN-BK4: every 5th attack, a random player).
             if (s.attacks % SWITCH_EVERY == 0) switchTarget(npc)
-            shockwave(npc, victim, first = s.attacks == 1)
+            if (s.attacks % CART_STOMP_EVERY == 0) cartStomp(npc, smorks) else shockwave(npc, victim, first = s.attacks == 1)
         }
         npc.setAttackClock(npc.tick + speed(smorks))
     }
@@ -64,6 +64,23 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
         npc.anim(Seqs.NPC_BORK_ENRAGED_STOMP_ATTACK01)
         npc.spotAnim(SpotAnims.VFX_BORK_ENRAGED_STOMP_SPOTANIM01)
         for (p in TfaKit.arena(npc)) BossCombat.strike(npc, p, AttackType.CRUSH, STOMP_MAX, 1)
+    }
+
+    /**
+     * BK2: "Stomp covers the arena: hide behind the Smorks' cart": everyone not shielded by the cart (the Smorks NPC on
+     * the line from Bork) takes heavy melee (OPEN-BK8: every 6th attack, max 50, 2-tick wind-up).
+     */
+    private fun cartStomp(npc: NpcRef, smorks: NpcRef) {
+        npc.anim(Seqs.NPC_BORK_IDLE_TO_ENRAGED_STOMP_ATTACK_IN01)
+        npc.say("Bork stomp!")
+        npc.queueHit(STOMP_WINDUP) {
+            if (!npc.isInWorld) return@queueHit
+            npc.anim(Seqs.NPC_BORK_ENRAGED_STOMP_ATTACK01)
+            npc.spotAnim(SpotAnims.VFX_BORK_ENRAGED_STOMP_SPOTANIM01)
+            for (p in TfaKit.arena(npc)) {
+                if (!TfaKit.covered(npc, p.coord, listOf(smorks))) BossCombat.strike(npc, p, AttackType.CRUSH, STOMP_MAX, 0)
+            }
+        }
     }
 
     private fun switchTarget(npc: NpcRef) {
@@ -112,6 +129,8 @@ internal object TfaBork : Boss(Npcs.TFA_BORK) {
 
     private const val HUNT = 20
     private const val SWITCH_EVERY = 5
+    private const val CART_STOMP_EVERY = 6
+    private const val STOMP_WINDUP = 2
     private const val MELEE_MAX = 40
     private const val FIRST_NUM = 3
     private const val FIRST_DEN = 2

@@ -46,3 +46,7 @@ below list only what a source states; everything else is `OPEN` and gets a named
   **OPEN-EZ8:** sword telegraph 4 ticks, line reach 10, stun 5 ticks; heal 50 (OPEN-EZ1). OPEN-EZ5 model: finale
   damage x(0.5 + HP fraction). A perfect dodge (on a sword's line when it spawns, off it when it lands) gives +3% special
   energy; a finale with no lightning hit gives +9%.
+- EZ1: after a magic attack, 1 in 3 (OPEN-EZ9) he names a random other player ("<name>!") and tanks them.
+- EZ3 finale: he moves 6 tiles south of his spawn, the players are placed in a 3x3 in front of him with three more
+  (inert) swords (OPEN-EZ10); each 11-tick cycle casts three patterns, each leaving one column of the box safe and
+  striking the rest of the box and everyone outside it (0-30); the middle column is never the last pattern.

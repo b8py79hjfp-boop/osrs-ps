@@ -78,3 +78,7 @@ below list only what a source states; everything else is `OPEN` and gets a named
   quadrant (6 out, OPEN-OC9).
 - **OPEN-OC14:** the censers (Bandosian, Armadylean, Zarosian, Saradomin) have no loc, NPC or obj in cache 2757, so they
   are not built.
+- P1 barrage every fifth attack: a row and a column through up to three players, 20 to anyone still on one after 2
+  ticks (OPEN-OC3: the stripped barrage patterns). P4: on entry the wind orb takes half his current HP (rounded down);
+  Deflect Melee while the void explosions run, Deflect Range during the blasts; a player off their explosion tile when it
+  lands has their next attack's cooldown cut by 3 ticks.

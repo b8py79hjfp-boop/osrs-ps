@@ -34,3 +34,4 @@ below list only what a source states; everything else is `OPEN` and gets a named
   on a player's tile spreading by one tile every 4 ticks three times (8 per tick, OPEN-XA4); a corpse every 15 ticks
   from 12 tiles out walks to him and heals him for its HP; two heals within 10 ticks blast everyone for 30 (OPEN-XA2).
   Water spells and freezes stop a corpse for 10 ticks (OPEN-XA11), Undead Grasp for 24, fire spells add a corpse.
+- Undead Grasp holds a corpse 24 ticks only while the caster's Mark of Darkness is active (XA2).

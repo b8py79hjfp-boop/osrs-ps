@@ -41,3 +41,4 @@ below list only what a source states; everything else is `OPEN` and gets a named
   underneath) and are replaced until the enrage; they melee within 2 tiles (OPEN-MO9: max 15, Protect from Melee blocks).
 - 33%: binders healed, one consumed 10 ticks later (+80 HP), then every 40 ticks 25 x surviving binders to everyone
   (OPEN-MO3). OPEN-MO2: HP for 3-8 players follows Ezekiel's ratios from the 1,900 base.
+- MO0: she starts at her first side position (9 tiles out), outside melee reach.
