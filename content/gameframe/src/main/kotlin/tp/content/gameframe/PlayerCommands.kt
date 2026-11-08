@@ -184,6 +184,8 @@ public class PlayerCommands : ContentPlugin {
 
     private fun listCommands(p: PlayerRef, search: String?): CommandResult {
         val registry = p.commandRegistry ?: return CommandResult.Failed("No commands here.")
+        // Commands brief section 5: the interface when this world has one; the chat list below is the fallback.
+        if (p.openCommands(search)) return CommandResult.Done()
         val word = search?.lowercase()
         val defs =
             registry

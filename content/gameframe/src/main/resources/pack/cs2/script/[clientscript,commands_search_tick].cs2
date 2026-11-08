@@ -1,0 +1,7 @@
+[clientscript,commands_search_tick](int $deadline, component $searchtext)
+// Sends the query to the server once typing pauses (12 client cycles), like the trading post.
+if (clientclock < $deadline) {
+    return;
+}
+if_setontimer(null, $searchtext);
+if_runscript*(ifscript_3414196760, commands:searchtext, -1)(0, 0, %settings_search_string);

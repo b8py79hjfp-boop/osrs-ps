@@ -26,6 +26,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::skull` | `::skull` | — | CONVENIENCE | — | Skulls you, as attacking another player would. (confirmation) |
 | `::staff` | `::staff` | — | INFO | — | Visible online staff, with rank and world. |
 | `::store` | `::store` | — | INFO | — | Opens the store page. |
+| `::ticket` | `::ticket <message…>` | — | SOCIAL | — | Sends a help ticket to the staff of this world; a moderator will look at it. |
 | `::time` | `::time` | `::uptime`, `::serverinfo` | INFO | — | Server time, uptime, world and player counts. |
 | `::vote` | `::vote` | — | INFO | — | Opens the voting page. |
 | `::yell` | `::yell <off\|on>`<br>`::yell <message…>` | — | SOCIAL | — | Sends a line to every world with your rank tag; ::yell off\|on stops or resumes receiving yells. |

@@ -1,0 +1,61 @@
+[clientscript,commands_rows](component $list, component $scrollbar, component $status, string $data, string $empty)
+// Server -> client: one page of rows. $data rows are "|"-separated, fields ";"-separated: left;middle;right;kind.
+// kind 0 = information (full width), 1 = clickable row (three columns), 2 = heading. Row n draws children n * 6 .. n * 6 + 5;
+// the transparent cover at n * 6 + 5 takes the click (the server uses sub / 6 and sub % 6).
+if_setscrollpos(0, 0, $list);
+cc_deleteall($list);
+def_int $slot = 0;
+def_int $more = 1;
+def_int $id = 0;
+def_int $y = 0;
+def_string $row = "";
+def_string $kind = "";
+while ($more = 1) {
+    $row = ~commands_row($data, $slot);
+    if (string_length($row) = 0 | $slot = 50) {
+        $more = 0;
+    } else {
+        $kind = ~commands_field($row, 3);
+        $id = calc($slot * 6);
+        $y = calc($slot * 20);
+        cc_create($list, ^iftype_rectangle, $id);
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 20, ^setsize_minus, ^setsize_abs);
+        if (compare($kind, "2") = 0) {
+            cc_setcolour(0x2b2318);
+        } else if (calc($slot % 2) = 0) {
+            cc_setcolour(0x3e3529);
+        } else {
+            cc_setcolour(0x463c2f);
+        }
+        cc_setfill(true);
+        if (compare($kind, "1") = 0) {
+            ~commands_cell($list, calc($id + 1), 4, $y, 110, 0xff981f, ~commands_fit(~commands_field($row, 0), 110));
+            ~commands_cell($list, calc($id + 2), 118, $y, 246, 0xffffff, ~commands_fit(~commands_field($row, 1), 246));
+            ~commands_cell($list, calc($id + 3), 368, $y, 96, 0x9f8b6b, ~commands_fit(~commands_field($row, 2), 96));
+            // A transparent cover over the row takes the clicks and lights the row on hover.
+            cc_create($list, ^iftype_rectangle, calc($id + 5));
+            cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+            cc_setsize(0, 20, ^setsize_minus, ^setsize_abs);
+            cc_setcolour(0xffffff);
+            cc_setfill(true);
+            cc_settrans(255);
+            cc_setop(1, "Select");
+            cc_setopbase(append("<col=ff9040>", ~commands_fit(~commands_field($row, 0), 110)));
+            cc_setonmouseover("commands_hover(event_com, event_comsubid, 220)");
+            cc_setonmouseleave("commands_hover(event_com, event_comsubid, 255)");
+        } else if (compare($kind, "2") = 0) {
+            ~commands_cell($list, calc($id + 1), 4, $y, 460, 0xffff00, ~commands_fit(~commands_field($row, 0), 460));
+        } else {
+            ~commands_cell($list, calc($id + 1), 4, $y, 460, 0xffffff, ~commands_fit(~commands_field($row, 0), 460));
+        }
+        $slot = calc($slot + 1);
+    }
+}
+if ($slot = 0) {
+    if_settext($empty, $status);
+} else {
+    if_settext("", $status);
+}
+if_setscrollsize(0, calc($slot * 20), $list);
+~scrollbar_vertical($scrollbar, $list, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

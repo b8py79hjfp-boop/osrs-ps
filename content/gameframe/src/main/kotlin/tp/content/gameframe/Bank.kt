@@ -53,15 +53,7 @@ public class Bank : ContentPlugin {
         onCommand("openbank", DEV_RANK, DEV_CONVENIENCE) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
         // Commands brief §2 (official): `::bank` makes the player say this; developers get the bank instead.
         commandFallback { name -> bankCommand(name) }
-        // §6 developer `::bank` (CONVENIENCE); everyone else, and developers on live worlds, get the joke above.
-        command("bank", DEV_RANK, tp.plugin.commands.Category.DEVELOPMENT, DEV_CONVENIENCE) {
-            description("Opens your bank.")
-            example("::bank")
-            signature { ctx ->
-                ctx.player.weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() }
-                ctx.done()
-            }
-        }
+        devBankCommand()
         events.on<BankTransfer> { t -> t.player.transfer(t) }
         events.on<tp.plugin.BankPinRequest> { r -> r.player.weakQueue(0) { if (with(BankPin) { unlock() }) r.then(player) } }
         onLogin { BankPin.onLogin(this) }
@@ -808,6 +800,18 @@ public class Bank : ContentPlugin {
 
     private fun PlayerRef.toggle(id: Int) {
         setVarbit(id, 1 - varbit(id))
+    }
+
+    /** §6 developer `::bank` (CONVENIENCE); everyone else, and developers on live worlds, get the official joke. */
+    private fun ContentScope.devBankCommand() {
+        command("bank", DEV_RANK, tp.plugin.commands.Category.DEVELOPMENT, DEV_CONVENIENCE) {
+            description("Opens your bank.")
+            example("::bank")
+            signature { ctx ->
+                ctx.player.weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() }
+                ctx.done()
+            }
+        }
     }
 
     /** `::bank`: the official joke, or the bank for developers. */

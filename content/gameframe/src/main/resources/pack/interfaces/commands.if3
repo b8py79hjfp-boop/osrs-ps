@@ -1,0 +1,176 @@
+# ::commands (docs/plans/commands-brief.md section 5). Same family as trading_post.if3: a stone border, tab links, one scrolled list of rows
+# drawn by the commands_rows clientscript from a server-built string, a search box and Back / Prev / Next buttons.
+[[interface]]
+name = "interface.commands"
+width = 512
+height = 334
+on_load = ["clientscript.commands_init", "component.commands:border", "component.commands:searchbar", "component.commands:searchtext", "component.commands:list", "component.commands:list_scrollbar", "component.commands:status", "component.commands:backbtn", "component.commands:prevbtn", "component.commands:nextbtn"]
+
+[[component]]
+name = "border"
+type = "layer"
+x = 0
+y = 0
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "tab_commands"
+type = "text"
+x = 12
+y = 32
+width = 100
+height = 18
+options = ["Open"]
+text = "Commands"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "tab_players"
+type = "text"
+x = 116
+y = 32
+width = 100
+height = 18
+options = ["Open"]
+text = "Players"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "tab_tickets"
+type = "text"
+x = 220
+y = 32
+width = 100
+height = 18
+options = ["Open"]
+text = "Tickets"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "tab_recent"
+type = "text"
+x = 324
+y = 32
+width = 100
+height = 18
+options = ["Open"]
+text = "Recent"
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "heading"
+type = "text"
+x = 12
+y = 52
+width = 486
+height = 18
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "list"
+type = "layer"
+x = 12
+y = 72
+width = 468
+height = 196
+
+[[component]]
+name = "status"
+type = "text"
+x = 12
+y = 72
+width = 468
+height = 196
+text = ""
+font = "bold"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "list_scrollbar"
+type = "layer"
+x = 482
+y = 72
+width = 16
+height = 196
+
+[[component]]
+name = "searchbar"
+type = "layer"
+x = 12
+y = 274
+width = 170
+height = 24
+
+[[component]]
+name = "searchtext"
+type = "text"
+x = 18
+y = 274
+width = 158
+height = 24
+options = ["Search"]
+text = "Search..."
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "backbtn"
+type = "layer"
+x = 190
+y = 274
+width = 70
+height = 24
+options = ["Back"]
+
+[[component]]
+name = "prevbtn"
+type = "layer"
+x = 266
+y = 274
+width = 70
+height = 24
+options = ["Previous page"]
+
+[[component]]
+name = "nextbtn"
+type = "layer"
+x = 342
+y = 274
+width = 70
+height = 24
+options = ["Next page"]
+
+[[component]]
+name = "notice"
+type = "text"
+x = 12
+y = 302
+width = 486
+height = 16
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#9F8B6B"

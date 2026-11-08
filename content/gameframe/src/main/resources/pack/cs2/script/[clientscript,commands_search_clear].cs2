@@ -1,0 +1,5 @@
+[clientscript,commands_search_clear](component $searchtext)
+// Show all: empties the search box and puts the placeholder back (the server clears its query).
+if_setontimer(null, $searchtext);
+%settings_search_string = "";
+~commands_search_idle($searchtext);

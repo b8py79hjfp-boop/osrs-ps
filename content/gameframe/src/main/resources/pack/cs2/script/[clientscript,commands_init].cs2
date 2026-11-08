@@ -1,0 +1,8 @@
+[clientscript,commands_init](component $border, component $searchbar, component $searchtext, component $list, component $scrollbar, component $status, component $back, component $prev, component $next)
+~stoneborder($border, "Commands", 0);
+~searchbar_create($searchbar, null);
+%settings_search_string = "";
+~commands_search_idle($searchtext);
+~button_setup(null, $back, "Back");
+~button_setup(null, $prev, "Prev");
+~button_setup(null, $next, "Next");

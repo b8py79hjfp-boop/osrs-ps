@@ -176,7 +176,11 @@ The work is committed at each green milestone.
   - The ECONOMY policy applied to legacy commands and to content tools (D-089 to D-092).
   - `::ghosts` and `::phasing` (brief §0) don't exist in this repo, so there was nothing to move. The tick-inspector
     `::trace` and the raids' `::raid` are on the registry now.
-- **Milestone 6, interface views:** see docs/features/commands.md.
+- **Milestone 6, interface views:** done (`commands.if3` and cs2 in content/gameframe's pack; `CommandsInterface.kt`,
+  `CommandsScreens.kt`, `CommandsRun.kt`, `CommandTickets.kt`). Every run goes through `runCommandLine(...,
+  Source.INTERFACE)`, and rank is re-checked on every click; a demotion closes the views. Not shown: account age and
+  the "new account" filter (no source yet). The ticket limits (3 open per player, 100 per world, 200 characters, a
+  30 s cooldown) are our own choice. Column widths are estimates until the RuneLite check.
 - **Milestone 7, tests:** CommandParserTest, CommandPermissionScenario and CrossWorldModerationScenario pass. The
   RuneLite check needs the user.
 - **Follow-ups:** listed in PROGRESS.md under "Commands".
