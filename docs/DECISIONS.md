@@ -1086,3 +1086,12 @@ or slot withdrawal and then reports the amount moved; the storage changes by tha
 committed (same tick, single thread). The looting bag is an inventory (516), so its deposits are taken in the bank's own
 transaction. Load-out varbits and the name list's index rule come from the rev-242 client scripts (4895, 8092), checked
 against packets logged in game.
+
+## D-078 Settings window adapted from OpenRune; settings are player variables
+
+The All-settings window's server side follows OpenRune-Server `content/interfaces/settings` (ISC, Copyright (c) 2025 RS
+Mod): its `settings_configs` table (setting id -> varbit / varp, default, range, prompt, enable toggle) and
+`account_default_vars` were converted to `content/gameframe/src/main/resources/settings/*.tsv` with variable ids
+resolved from our gamevals; `AllSettings.kt` keeps the licence header. Every setting is a player variable, so persistence
+is the existing varp save; nothing setting-specific is stored. New-account defaults are applied once and only to
+variables still at 0, so accounts that existed before this change keep their values.

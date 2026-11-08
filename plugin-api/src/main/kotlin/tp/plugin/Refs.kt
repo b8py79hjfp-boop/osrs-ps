@@ -657,6 +657,18 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 
+    /** Int param [param] of cache struct [struct], or null. */
+    public fun structInt(struct: Int, param: Int): Int? =
+        p.world.data.configs.structs[struct]
+            ?.params
+            ?.int(param)
+
+    /** String param [param] of cache struct [struct], or null. */
+    public fun structString(struct: Int, param: Int): String? =
+        p.world.data.configs.structs[struct]
+            ?.params
+            ?.string(param)
+
     /** Int param [param] of obj [obj], or null. */
     public fun objParamInt(obj: Int, param: Int): Int? =
         p.world

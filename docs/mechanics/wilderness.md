@@ -54,7 +54,10 @@ Logout button (LO), Tele Block (TB), Vengeance (VG), Ring of recoil (RR), Multic
 - **W16:** `SharedAttrs.WILDERNESS_LEVEL` is the real level; the PvP-world +15 is only for combat brackets (OPEN-P1).
 - **W17:** the server sets varbits `inside_wilderness` (5963), `combatlevel_transmit` (13027), on PvP worlds
   `pvp_area_client` (8121) and bit 2 of varp `map_flags_cached` (3717).
+- **W19:** the `pvp_icons` overlay (Wilderness level, attack range, PK skull prevention icon) is opened when the player
+  enters a PvP area and closed on leaving it (OpenRune `WildernessAreaScript`); it is not part of the login gameframe
+  (closes OPEN-H1).
 - **W18:** multi-combat polygon vertices are inclusive tile coordinates (RS Mod `multiway.json`).
-- OPEN-M3 (Wiki vs RS Mod surface multi shape), OPEN-H1 (pvp_icons open policy) and the rest of the research OPEN
+- OPEN-M3 (Wiki vs RS Mod surface multi shape), the rest of the research OPEN
   list stand.
 

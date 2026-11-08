@@ -123,7 +123,6 @@ public class Gameframe : ContentPlugin {
                 Interfaces.STAT_BOOSTS_HUD to Components.Toplevel.STAT_BOOSTS_HUD,
                 Interfaces.PM_CHAT to Components.Toplevel.PM_CONTAINER,
                 Interfaces.HPBAR_HUD to Components.Toplevel.HPBAR_HUD,
-                Interfaces.PVP_ICONS to Components.Toplevel.PVP_ICONS,
                 Interfaces.ORBS to Components.Toplevel.ORBS,
                 Interfaces.XP_DROPS to Components.Toplevel.XP_DROPS,
                 Interfaces.POPOUT to Components.Toplevel.POPOUT,

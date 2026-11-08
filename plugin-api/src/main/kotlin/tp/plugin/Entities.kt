@@ -271,6 +271,12 @@ public sealed class EntityRef {
             ?.intValues
             .orEmpty()
 
+    /** String values of cache enum [id] (key -> value); empty if absent. */
+    public fun enumStrings(id: Int): Map<Int, String> =
+        e.world.data.configs.enums[id]
+            ?.stringValues
+            .orEmpty()
+
     /** Whether a boat may occupy [tile]: sea, with no blocking loc such as a rock (sailing-movement.md SM1, SM5). */
     public fun isSailable(tile: CoordGrid): Boolean =
         e.world.data.locs

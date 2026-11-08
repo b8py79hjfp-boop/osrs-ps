@@ -7,6 +7,8 @@ import tp.plugin.PlayerRef
 import tp.plugin.PolygonAreas
 import tp.plugin.SharedAttrs
 import tp.plugin.TimerId
+import tp.symbols.Components
+import tp.symbols.Interfaces
 import tp.symbols.Varbits
 import tp.util.CoordGrid
 
@@ -84,6 +86,16 @@ public class Wilderness : ContentPlugin {
                 // W17: the client's `inside_wilderness` (K/D panel, RuneLite) and, on PvP worlds, `pvp_area_client`.
                 setVarbit(Varbits.INSIDE_WILDERNESS, if (realLevel(coord) > 0) 1 else 0)
                 if (isPvpWorld) setVarbit(Varbits.PVP_AREA_CLIENT, if (inWild) 1 else 0)
+                // W19: pvp_icons (Wilderness level, attack range, PK skull prevention) is open only where players
+                // can fight (OpenRune `WildernessAreaScript`: opened on entry, closed on exit).
+                if (inWild) {
+                    openOverlay(
+                        Components.Toplevel.PVP_ICONS,
+                        Interfaces.PVP_ICONS,
+                    )
+                } else {
+                    closeOverlay(Components.Toplevel.PVP_ICONS)
+                }
             }
         }
         val combat = combatLevel
