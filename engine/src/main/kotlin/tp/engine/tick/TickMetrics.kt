@@ -14,6 +14,16 @@ class TickMetrics {
     @Volatile var instanceAttachNanos: Long = 0
         internal set
 
+    /** Duration of the last instance build (off the world thread). */
+    @Volatile var instanceBuildNanos: Long = 0
+        internal set
+
+    /** Raids brief section 7: instance builds off the world thread (p99 <= 50 ms), 10 µs buckets up to 200 ms. */
+    val instanceBuild = Histogram(FINE_BUCKET_NANOS, FINE_BUCKETS)
+
+    /** Raids brief section 7: instance attaches on the world thread (<= 1 ms), 10 µs buckets up to 200 ms. */
+    val instanceAttach = Histogram(FINE_BUCKET_NANOS, FINE_BUCKETS)
+
     /** Ticks that ended after their 600 ms deadline. */
     @Volatile var missedDeadlines: Long = 0
         internal set
@@ -21,8 +31,12 @@ class TickMetrics {
     @Volatile var ticks: Long = 0
         internal set
 
-    class Histogram internal constructor() {
-        private val counts = LongArray(MAX_MS + 1)
+    /** [buckets] buckets of [bucketNanos] each; anything slower lands in the last. The default is 1 ms up to [MAX_MS]. */
+    class Histogram internal constructor(
+        private val bucketNanos: Long = NANOS_PER_MS,
+        buckets: Int = MAX_MS + 1,
+    ) {
+        private val counts = LongArray(buckets)
 
         @Volatile private var total = 0L
 
@@ -30,16 +44,19 @@ class TickMetrics {
             private set
 
         internal fun record(nanos: Long) {
-            val ms = (nanos / NANOS_PER_MS).toInt().coerceIn(0, MAX_MS)
-            counts[ms]++
+            val bucket = (nanos / bucketNanos).toInt().coerceIn(0, counts.size - 1)
+            counts[bucket]++
             total++
             if (nanos > maxNanos) maxNanos = nanos
         }
 
         val count: Long get() = total
 
-        /** Upper bound (ms) of the bucket holding quantile [q] (0..1); 0 when empty. */
-        fun percentileMs(q: Double): Int {
+        /** Upper bound (ms) of the bucket holding quantile [q] (0..1); 0 when empty (1 ms buckets). */
+        fun percentileMs(q: Double): Int = (percentileNanos(q) / NANOS_PER_MS).toInt()
+
+        /** Upper bound (ns) of the bucket holding quantile [q] (0..1); 0 when empty. */
+        fun percentileNanos(q: Double): Long {
             val n = total
             if (n == 0L) return 0
             val rank =
@@ -48,11 +65,11 @@ class TickMetrics {
                     .toLong()
                     .coerceAtLeast(1)
             var seen = 0L
-            for (ms in counts.indices) {
-                seen += counts[ms]
-                if (seen >= rank) return ms + 1
+            for (b in counts.indices) {
+                seen += counts[b]
+                if (seen >= rank) return (b + 1) * bucketNanos
             }
-            return MAX_MS
+            return counts.size * bucketNanos
         }
 
         /** Copy of the bucket counts (index = ms). */
@@ -69,5 +86,9 @@ class TickMetrics {
         /** Histogram range: 2 s at 1 ms resolution (beyond 600 ms a tick has already failed its deadline). */
         const val MAX_MS = 2000
         private const val NANOS_PER_MS = 1_000_000L
+
+        /** The instance histograms: 10 µs buckets, 20,000 of them (200 ms). */
+        private const val FINE_BUCKET_NANOS = 10_000L
+        private const val FINE_BUCKETS = 20_000
     }
 }

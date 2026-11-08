@@ -125,7 +125,15 @@ class World(
                     )
                 }
             }
-        val future = INSTANCE_BUILDER.submit<tp.engine.map.Instances.BuildPlan> { instances.prepare(instance, placed, squares) }
+        val future =
+            INSTANCE_BUILDER.submit<tp.engine.map.Instances.BuildPlan> {
+                val start = System.nanoTime()
+                val plan = instances.prepare(instance, placed, squares)
+                val took = System.nanoTime() - start
+                metrics.instanceBuildNanos = took
+                synchronized(metrics.instanceBuild) { metrics.instanceBuild.record(took) }
+                plan
+            }
         pendingBuilds += PendingBuild(tick, future, onAttached)
         return instance
     }
@@ -140,6 +148,7 @@ class World(
             val start = System.nanoTime()
             instances.attach(plan)
             metrics.instanceAttachNanos = System.nanoTime() - start
+            metrics.instanceAttach.record(metrics.instanceAttachNanos)
             if (!plan.instance.destroyed) b.onAttached(plan.instance)
         }
     }
@@ -221,6 +230,10 @@ class World(
     var tracer: TickTracer? = null
 
     val playerCount: Int get() = players.count { it != null }
+
+    /** NPCs in the world (live, dead or waiting to respawn) and pending respawns (soak leak checks). */
+    val npcCount: Int get() = npcs.count { it != null }
+    val pendingRespawns: Int get() = respawns.size
 
     fun forEachPlayer(action: (Player) -> Unit) {
         for (slot in pidOrder) players[slot]?.let(action)

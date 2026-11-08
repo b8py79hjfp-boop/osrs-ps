@@ -63,6 +63,7 @@ include(
     ":tools:cache-pack:neptune:clientscript-compiler",
     ":tools:scenario",
     ":tools:botswarm",
+    ":tools:raid-soak",
     ":tools:replay",
     ":tools:wiki-import",
     ":tools:symbol-gen",

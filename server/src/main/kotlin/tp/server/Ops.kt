@@ -92,6 +92,14 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
                 }
                 sb.append("tp_tick_ms_max{world=\"$id\",phase=\"$phase\"} ${h.maxNanos / NANOS_PER_MS}\n")
             }
+            // Raids brief section 7: build p99 <= 50 ms (off-thread), attach <= 1 ms (world thread).
+            sb.append("tp_instances{world=\"$id\"} ${w.instances.live}\n")
+            for ((phase, h) in listOf("build" to m.instanceBuild, "attach" to m.instanceAttach)) {
+                for ((label, q) in QUANTILES) {
+                    sb.append("tp_instance_us{world=\"$id\",phase=\"$phase\",quantile=\"$label\"} ${h.percentileNanos(q) / NANOS_PER_US}\n")
+                }
+                sb.append("tp_instance_us_max{world=\"$id\",phase=\"$phase\"} ${h.maxNanos / NANOS_PER_US}\n")
+            }
         }
         sb.append("tp_save_last_ms ${SaveMetrics.lastNanos / NANOS_PER_MS}\n")
         sb.append("tp_save_max_ms ${SaveMetrics.maxNanos / NANOS_PER_MS}\n")
@@ -114,6 +122,7 @@ class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
         const val DEFAULT_PORT = 9090
         private const val P99 = 0.99
         private const val NANOS_PER_MS = 1_000_000L
+        private const val NANOS_PER_US = 1_000L
         private const val HTTP_OK = 200
         private const val HTTP_UNAVAILABLE = 503
         private val QUANTILES = listOf("0.5" to 0.5, "0.99" to P99, "0.999" to 0.999)

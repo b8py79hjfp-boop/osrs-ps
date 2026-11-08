@@ -32,7 +32,10 @@ class Instances internal constructor(
         val baseZ: Int get() = squareZ shl SQUARE_SHIFT
 
         /** Copied zones: [ZoneKey] packed -> reference zone (protocol-api `RebuildRegion` layout). */
-        internal val zones = HashMap<Int, Int>()
+        internal var zones = HashMap<Int, Int>()
+
+        /** Base locs by zone, from the build plan (IN6); zones copied later one by one keep theirs in DynamicLocs. */
+        internal var bases: HashMap<Int, HashMap<Long, InteractionTarget.Loc>> = HashMap()
 
         /** Bumped on every change, so players inside get a fresh REBUILD_REGION (IN4). */
         var version: Int = 0
@@ -124,17 +127,38 @@ class Instances internal constructor(
         val locs: List<InteractionTarget.Loc>,
     )
 
-    /** A built but not yet attached instance (IN6): its zones, prepared off the world thread. */
+    /**
+     * A built but not yet attached instance (IN6): its zones, prepared off the world thread. [tiles] and [bases] hold each
+     * target zone's final collision (template tiles plus every base loc's, across zone edges) and base locs, so attaching
+     * is a swap per zone; [spill] is base-loc collision that falls in a zone outside the plan (x, z, level, mask).
+     */
     class BuildPlan internal constructor(
         val instance: Instance,
         internal val zones: List<Pair<ZoneKey, PreparedZone>>,
         internal val squares: List<SquareCopy>,
+        internal val tiles: Map<Int, IntArray>,
+        internal val bases: HashMap<Int, HashMap<Long, InteractionTarget.Loc>>,
+        internal val spill: IntArray,
+        internal val zoneRefs: HashMap<Int, Int>,
     )
 
     private val prepared = java.util.concurrent.ConcurrentHashMap<Long, PreparedZone>()
 
     private val bySquare = HashMap<Int, Instance>()
+
+    init {
+        // IN6: base-loc lookups in an attached instance read its own table (handed over whole at attach).
+        locs.instanceBases = { packed ->
+            val zone = ZoneKey(packed)
+            bySquare[squareKey(zone.zoneX shr ZONES_PER_SQUARE_SHIFT, zone.zoneZ shr ZONES_PER_SQUARE_SHIFT)]?.bases?.get(packed)
+        }
+    }
+
     private var nextId = 1
+
+    /** Instances allocated and not yet destroyed (raids brief section 7 soak: back to the baseline after teardown). */
+    @Volatile var live: Int = 0
+        private set
 
     /** Allocates a free block of [widthSquares] × [lengthSquares] map squares in instance space (IN1). */
     fun create(widthSquares: Int, lengthSquares: Int): Instance {
@@ -144,6 +168,7 @@ class Instances internal constructor(
                 if (!free(sx, sz, widthSquares, lengthSquares)) continue
                 val instance = Instance(nextId++, sx, sz, widthSquares, lengthSquares)
                 forSquares(instance) { bySquare[it] = instance }
+                live++
                 return instance
             }
         }
@@ -178,18 +203,120 @@ class Instances internal constructor(
                 require(c.to in instance) { "${c.to} is not in instance ${instance.id}" }
                 ZoneKey.of(c.to.level, c.to.x shr ZONE_SHIFT, c.to.z shr ZONE_SHIFT) to prepareZone(c.from, c.rotation)
             }
-        return BuildPlan(instance, zones, squares)
+        val tiles = HashMap<Int, IntArray>(zones.size * 2)
+        for ((zone, _) in zones) tiles.getOrPut(zone.packed) { IntArray(ZONE_TILES) }
+        val bases = HashMap<Int, HashMap<Long, InteractionTarget.Loc>>(zones.size * 2)
+        val spill = IntArrayList()
+        val sink =
+            tp.cache.map.LocCollision.FlagSink { x, z, level, mask, add ->
+                val zone = tiles[ZoneKey.of(level, x shr ZONE_SHIFT, z shr ZONE_SHIFT).packed]
+                if (zone == null) {
+                    if (add) spill.add(x, z, level, mask)
+                } else {
+                    val i = (x and ZONE_MASK) or ((z and ZONE_MASK) shl ZONE_SHIFT)
+                    zone[i] = if (add) zone[i] or mask else zone[i] and mask.inv()
+                }
+            }
+        // As applying zone after zone onto cleared targets: tile bits first, then the base locs and their collision.
+        for ((zone, prep) in zones) {
+            val arr = tiles.getValue(zone.packed)
+            for (i in prep.tileOffsets.indices) {
+                val b = prep.tileBits[i]
+                val t = (prep.tileOffsets[i] shr ZONE_SHIFT) or ((prep.tileOffsets[i] and ZONE_MASK) shl ZONE_SHIFT)
+                if (b and StaticLocs.ZoneTemplate.BLOCKED != 0) arr[t] = arr[t] or CollisionFlag.BLOCK_WALK
+                if (b and StaticLocs.ZoneTemplate.ROOF != 0) arr[t] = arr[t] or CollisionFlag.ROOF
+            }
+        }
+        for ((zone, prep) in zones) {
+            for (loc in placedLocs(zone, prep)) {
+                val at = ZoneKey.of(loc.coord.level, loc.coord.x shr ZONE_SHIFT, loc.coord.z shr ZONE_SHIFT).packed
+                // A turned multi-tile loc can start in a zone outside the plan (west / south of the instance): its
+                // collision still lands in the plan's zones, but it is not registered there (that zone belongs to the
+                // map or a neighbouring instance, and nothing could tear it down with this one).
+                if (tiles.containsKey(at) && bases.getOrPut(at) { HashMap() }.put(DynamicLocs.keyOf(loc), loc) != null) continue
+                val type = types[loc.id] ?: continue
+                tp.cache.map.LocCollision.toggle(
+                    sink,
+                    loc.coord.x,
+                    loc.coord.z,
+                    loc.coord.level,
+                    loc.shape,
+                    loc.angle,
+                    type.width,
+                    type.length,
+                    type.blockWalk,
+                    type.blockRange,
+                    type.breakRouteFinding,
+                    true,
+                )
+            }
+        }
+        val refs = HashMap<Int, Int>(zones.size * 2)
+        for ((zone, prep) in zones) refs[zone.packed] = prep.reference
+        return BuildPlan(instance, zones, squares, tiles, bases, spill.toArray(), refs)
     }
 
-    /** IN6: applies a prepared plan (world thread, pre-tick). */
+    /** IN6: applies a prepared plan (world thread, pre-tick): a swap per zone, nothing recomputed (budget 1 ms). */
     fun attach(plan: BuildPlan) {
         val instance = plan.instance
         if (instance.destroyed) return
-        // Clear every target first: a turned multi-tile loc can reach into a neighbouring zone, which must not wipe it.
-        for ((zone, _) in plan.zones) reset(instance, zone)
-        for ((zone, prep) in plan.zones) apply(instance, zone, prep, cleared = true)
+        if (instance.zones.isEmpty() && instance.bases.isEmpty()) {
+            // A fresh instance (the usual case): tile arrays go in, the zone and base tables are handed over whole.
+            for ((zone, _) in plan.zones) collision.installZone(zone.level, zone.zoneX, zone.zoneZ, plan.tiles.getValue(zone.packed))
+            instance.zones = plan.zoneRefs
+            instance.bases = plan.bases
+        } else {
+            // A re-attach over live zones clears its targets first, then installs zone by zone.
+            for ((zone, _) in plan.zones) clear(instance, zone.level, zone.zoneX, zone.zoneZ)
+            for ((zone, prep) in plan.zones) {
+                collision.installZone(zone.level, zone.zoneX, zone.zoneZ, plan.tiles.getValue(zone.packed))
+                locs.installBases(zone, plan.bases[zone.packed] ?: EMPTY_BASES)
+                instance.zones[zone.packed] = prep.reference
+            }
+        }
+        // Base locs that live in a target zone but cast collision outside the plan (rare: an instance's own edges).
+        val spill = plan.spill
+        var i = 0
+        while (i < spill.size) {
+            collision.ownZones(spill[i + 2], spill[i], spill[i + 1], 1, 1)
+            collision.sink.change(spill[i], spill[i + 1], spill[i + 2], spill[i + SPILL_MASK], true)
+            i += SPILL_STRIDE
+        }
         instance.squares += plan.squares
         instance.version++
+    }
+
+    /** [prep]'s locs placed in [zone] (absolute tiles); a turned loc of a map-edge zone can start off the map: dropped. */
+    private fun placedLocs(zone: ZoneKey, prep: PreparedZone): List<InteractionTarget.Loc> {
+        val baseX = zone.zoneX shl ZONE_SHIFT
+        val baseZ = zone.zoneZ shl ZONE_SHIFT
+        val locBase = PREP_BIAS shl ZONE_SHIFT
+        val out = ArrayList<InteractionTarget.Loc>(prep.locs.size)
+        for (loc in prep.locs) {
+            val x = baseX + loc.coord.x - locBase
+            val z = baseZ + loc.coord.z - locBase
+            if (x < 0 || z < 0) continue
+            out +=
+                InteractionTarget.Loc(CoordGrid(x, z, zone.level), loc.id, loc.shape, loc.angle, loc.width, loc.length, loc.forceApproach)
+        }
+        return out
+    }
+
+    /** A growable int list (spill quadruples) without boxing. */
+    private class IntArrayList {
+        private var a = IntArray(SPILL_STRIDE * 4)
+        private var n = 0
+
+        fun add(x: Int, z: Int, level: Int, mask: Int) {
+            if (n + SPILL_STRIDE > a.size) a = a.copyOf(a.size * 2)
+            a[n] = x
+            a[n + 1] = z
+            a[n + 2] = level
+            a[n + SPILL_MASK] = mask
+            n += SPILL_STRIDE
+        }
+
+        fun toArray(): IntArray = a.copyOf(n)
     }
 
     /** IN7: the zone copies of template square [copy] turned as a whole: zone positions rotate inside the square too. */
@@ -250,7 +377,6 @@ class Instances internal constructor(
         if (!cleared) reset(instance, zone)
         val baseX = zone.zoneX shl ZONE_SHIFT
         val baseZ = zone.zoneZ shl ZONE_SHIFT
-        val locBase = PREP_BIAS shl ZONE_SHIFT
         for (i in prep.tileOffsets.indices) {
             val x = baseX + (prep.tileOffsets[i] shr ZONE_SHIFT)
             val z = baseZ + (prep.tileOffsets[i] and ZONE_MASK)
@@ -258,22 +384,9 @@ class Instances internal constructor(
             if (b and StaticLocs.ZoneTemplate.BLOCKED != 0) collision.flags.add(x, z, level, CollisionFlag.BLOCK_WALK)
             if (b and StaticLocs.ZoneTemplate.ROOF != 0) collision.flags.add(x, z, level, CollisionFlag.ROOF)
         }
-        for (loc in prep.locs) {
-            val x = baseX + loc.coord.x - locBase
-            val z = baseZ + loc.coord.z - locBase
-            // A turned loc of a zone on the map's south / west edge can start off the map: nothing to place.
-            if (x < 0 || z < 0) continue
-            locs.placeBase(
-                InteractionTarget.Loc(
-                    CoordGrid(x, z, level),
-                    loc.id,
-                    loc.shape,
-                    loc.angle,
-                    loc.width,
-                    loc.length,
-                    loc.forceApproach,
-                ),
-            )
+        for (placed in placedLocs(zone, prep)) {
+            // As in [prepare]: a loc starting outside the instance keeps its collision but is not registered there.
+            if (placed.coord in instance) locs.placeBase(placed) else locs.applyCollision(placed)
         }
         instance.zones[zone.packed] = prep.reference
     }
@@ -296,6 +409,7 @@ class Instances internal constructor(
         instance.squares.clear()
         instance.version++
         forSquares(instance) { bySquare.remove(it) }
+        live--
     }
 
     /**
@@ -320,6 +434,7 @@ class Instances internal constructor(
         locs.clearZone(zone)
         collision.freeZone(level, zoneX, zoneZ)
         instance.zones.remove(zone.packed)
+        instance.bases.remove(zone.packed)
     }
 
     /** [loc] moved into the destination zone, turned like the client turns a copied zone (IN3). */
@@ -421,6 +536,13 @@ class Instances internal constructor(
         private const val PREP_BIAS = 1
         private const val ZONE_SIZE = 8
         private const val ZONE_MASK = 7
+        private const val ZONE_TILES = 64
+
+        /** Zones to a square side: 8 = 1 shl 3. */
+        private const val ZONES_PER_SQUARE_SHIFT = 3
+        private const val SPILL_STRIDE = 4
+        private const val SPILL_MASK = 3
+        private val EMPTY_BASES = HashMap<Long, InteractionTarget.Loc>()
         private const val MAX_ROTATION = 3
         const val LEVELS = 4
         private const val LEVEL_MASK = 3

@@ -6,7 +6,8 @@
  * granted, provided that the above copyright notice and this permission notice appear in all copies.
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE.
  *
- * Changes: table-driven wall cases instead of nested whens; coordinates as (x, z, level) ints. Semantics unchanged.
+ * Changes: table-driven wall cases instead of nested whens; coordinates as (x, z, level) ints; edits go through a
+ * FlagSink (instance builds collect them off the world thread). Semantics unchanged.
  */
 package tp.cache.map
 
@@ -19,6 +20,20 @@ import org.rsmod.routefinder.loc.LocShapeConstants as Shape
  * Used for the static base map at boot and (Phase 3) for dynamic loc changes.
  */
 object LocCollision {
+    /**
+     * Where a loc's collision edits go: the world's map, or (instance builds off the world thread) the zones being built.
+     */
+    fun interface FlagSink {
+        fun change(x: Int, z: Int, level: Int, mask: Int, add: Boolean)
+    }
+
+    /** A [FlagSink] writing straight into [flags]; keep one per map (the world thread must not allocate per edit). */
+    class MapSink(private val flags: CollisionFlagMap) : FlagSink {
+        override fun change(x: Int, z: Int, level: Int, mask: Int, add: Boolean) {
+            if (add) flags.add(x, z, level, mask) else flags.remove(x, z, level, mask)
+        }
+    }
+
     /** Loc angles: 0 west, 1 north, 2 east, 3 south (rsmod-pathfinder `LocAngleConstants`). */
     private const val ANGLE_NORTH = 1
     private const val ANGLE_SOUTH = 3
@@ -26,9 +41,26 @@ object LocCollision {
     /** blockWalk value that makes ground decor (shape 22) block: client checks `blockWalk == 1`. */
     private const val GROUND_DECOR_BLOCKING = 1
 
+    /** [toggle] into [flags] directly (boot: the static map). */
     @Suppress("LongParameterList")
     fun toggle(
         flags: CollisionFlagMap,
+        x: Int,
+        z: Int,
+        level: Int,
+        shape: Int,
+        angle: Int,
+        width: Int,
+        length: Int,
+        blockWalk: Int,
+        blockRange: Boolean,
+        breakRouteFinding: Boolean,
+        add: Boolean,
+    ): Unit = toggle(MapSink(flags), x, z, level, shape, angle, width, length, blockWalk, blockRange, breakRouteFinding, add)
+
+    @Suppress("LongParameterList")
+    fun toggle(
+        flags: FlagSink,
         x: Int,
         z: Int,
         level: Int,
@@ -67,7 +99,7 @@ object LocCollision {
 
     @Suppress("LongParameterList")
     private fun ground(
-        flags: CollisionFlagMap,
+        flags: FlagSink,
         x: Int,
         z: Int,
         level: Int,
@@ -170,7 +202,7 @@ object LocCollision {
     private val L_SHAPE = arrayOf(arrayOf(WEST, NORTH), arrayOf(NORTH, EAST), arrayOf(EAST, SOUTH), arrayOf(SOUTH, WEST))
 
     @Suppress("LongParameterList")
-    private fun wall(flags: CollisionFlagMap, x: Int, z: Int, level: Int, shape: Int, angle: Int, blockRange: Boolean, add: Boolean) {
+    private fun wall(flags: FlagSink, x: Int, z: Int, level: Int, shape: Int, angle: Int, blockRange: Boolean, add: Boolean) {
         val edges =
             when (shape) {
                 Shape.WALL_STRAIGHT -> STRAIGHT[angle]
@@ -183,7 +215,7 @@ object LocCollision {
         }
     }
 
-    private fun apply(flags: CollisionFlagMap, x: Int, z: Int, level: Int, mask: Int, add: Boolean) {
-        if (add) flags.add(x, z, level, mask) else flags.remove(x, z, level, mask)
+    private fun apply(flags: FlagSink, x: Int, z: Int, level: Int, mask: Int, add: Boolean) {
+        flags.change(x, z, level, mask, add)
     }
 }

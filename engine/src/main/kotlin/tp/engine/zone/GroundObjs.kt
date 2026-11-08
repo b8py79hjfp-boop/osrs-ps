@@ -72,6 +72,10 @@ class GroundObjs internal constructor() {
         add(GroundObj(id, count, coord, null, -1, Long.MAX_VALUE, respawn))
     }
 
+    /** Objs on the ground (taken static spawns excluded) and the zones holding them (soak leak checks). */
+    val size: Int get() = byZone.values.sumOf { it.size }
+    val zoneCount: Int get() = byZone.size
+
     fun at(coord: CoordGrid): List<GroundObj> = byZone[ZoneKey.of(coord).packed]?.filter { it.coord == coord }.orEmpty()
 
     internal fun inZone(zone: ZoneKey): List<GroundObj> = byZone[zone.packed].orEmpty()
@@ -92,7 +96,11 @@ class GroundObjs internal constructor() {
         if (obj.removed) return
         obj.removed = true
         val zone = ZoneKey.of(obj.coord).packed
-        byZone[zone]?.remove(obj)
+        byZone[zone]?.let { list ->
+            list.remove(obj)
+            // An emptied zone's list goes, or every instance zone that ever held an obj would stay in the map.
+            if (list.isEmpty()) byZone.remove(zone)
+        }
         if (obj.respawn == 0) live.remove(obj)
         event(zone, ZoneEvent(ZoneEvent.Kind.DEL, obj, obj.owner))
         if (obj.respawn > 0) respawning[obj] = obj.respawn

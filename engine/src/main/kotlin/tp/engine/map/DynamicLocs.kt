@@ -42,8 +42,30 @@ class DynamicLocs internal constructor(
      * the cache map there: no zone updates are sent for them (the client builds them from the region rebuild), and
      * dynamic changes layer on top of them as on top of cache locs.
      */
-    private val bases = HashMap<Long, InteractionTarget.Loc>()
-    private val basesByZone = HashMap<Int, MutableList<Long>>()
+    private val basesByZone = HashMap<Int, HashMap<Long, InteractionTarget.Loc>>()
+
+    /** Dynamic changes, instance base locs and the zone index sizes (soak leak checks). */
+    val changeCount: Int get() = changes.size
+    val baseCount: Int get() = basesByZone.values.sumOf { it.size }
+    val zoneCount: Int get() = byZone.size + basesByZone.size
+
+    /** Where the dynamic changes and instance base locs are ("level x z id"; soak leak diagnosis, not for the tick). */
+    fun describe(): List<String> =
+        changes.values.map { "change ${it.level} ${it.x} ${it.z} ${it.id}" } +
+            basesByZone.values.flatMap { m -> m.values.map { "base ${it.coord} ${it.id}" } }
+
+    /**
+     * An attached instance's own base-loc table (IN6: built off the world thread and handed over whole), looked up by
+     * zone; set by [Instances].
+     */
+    internal var instanceBases: (Int) -> HashMap<Long, InteractionTarget.Loc>? = { null }
+
+    /** The instance base loc on [layer] at the tile: zones copied one by one first, then the instance's own table. */
+    private fun baseAt(level: Int, x: Int, z: Int, layer: Int): InteractionTarget.Loc? {
+        val zone = ZoneKey.of(level, x shr ZONE_SHIFT, z shr ZONE_SHIFT).packed
+        val k = key(level, x, z, layer)
+        return basesByZone[zone]?.get(k) ?: instanceBases(zone)?.get(k)
+    }
 
     /** This tick's zone ops per zone (sent to observers in the info pass, then cleared). */
     internal val events = HashMap<Int, MutableList<ZoneOp>>()
@@ -55,7 +77,7 @@ class DynamicLocs internal constructor(
             if (c.id == id) return target(c)
         }
         for (layer in 0 until LAYERS) {
-            val b = bases[key(level, x, z, layer)] ?: continue
+            val b = baseAt(level, x, z, layer) ?: continue
             if (b.id == id) return if (changes.containsKey(key(level, x, z, layer))) null else b
         }
         val base = statics.find(level, x, z, id) ?: return null
@@ -66,7 +88,7 @@ class DynamicLocs internal constructor(
     fun at(level: Int, x: Int, z: Int, layer: Int): InteractionTarget.Loc? {
         val c = changes[key(level, x, z, layer)]
         if (c != null) return if (c.id < 0) null else target(c)
-        return bases[key(level, x, z, layer)] ?: statics.atLayer(level, x, z, layer)
+        return baseAt(level, x, z, layer) ?: statics.atLayer(level, x, z, layer)
     }
 
     /** Puts loc [id] at the tile (replacing what is on its layer); reverts after [duration] ticks if positive. */
@@ -147,11 +169,23 @@ class DynamicLocs internal constructor(
 
     /** Places an instance base loc (no zone update) and applies its collision. */
     internal fun placeBase(loc: InteractionTarget.Loc) {
-        val k = key(loc.coord.level, loc.coord.x, loc.coord.z, layerOf(loc.shape))
-        if (bases.put(k, loc) != null) return
         val zone = ZoneKey.of(loc.coord.level, loc.coord.x shr ZONE_SHIFT, loc.coord.z shr ZONE_SHIFT)
-        basesByZone.getOrPut(zone.packed) { ArrayList() } += k
+        val map = basesByZone.getOrPut(zone.packed) { HashMap() }
+        if (map.put(keyOf(loc), loc) != null) return
         toggle(loc, add = true)
+    }
+
+    /** Applies [loc]'s collision only (a copied loc that starts outside its instance, so it is not registered). */
+    internal fun applyCollision(loc: InteractionTarget.Loc) {
+        toggle(loc, add = true)
+    }
+
+    /**
+     * IN6: a zone's base locs prepared off the world thread ([keyOf] keys), installed whole. Their collision is already
+     * in the zone's prepared tiles, so nothing is toggled here.
+     */
+    internal fun installBases(zone: ZoneKey, map: HashMap<Long, InteractionTarget.Loc>) {
+        if (map.isEmpty()) basesByZone.remove(zone.packed) else basesByZone[zone.packed] = map
     }
 
     /**
@@ -159,7 +193,7 @@ class DynamicLocs internal constructor(
      * its collision is reset by the caller.
      */
     internal fun clearZone(zone: ZoneKey) {
-        basesByZone.remove(zone.packed)?.forEach { bases.remove(it) }
+        basesByZone.remove(zone.packed)
         byZone.remove(zone.packed)?.forEach { changes.remove(key(it.level, it.x, it.z, it.layer)) }
     }
 
@@ -168,7 +202,7 @@ class DynamicLocs internal constructor(
     }
 
     private fun baseOf(level: Int, x: Int, z: Int, layer: Int): InteractionTarget.Loc? =
-        changes[key(level, x, z, layer)]?.base ?: bases[key(level, x, z, layer)] ?: statics.atLayer(level, x, z, layer)
+        changes[key(level, x, z, layer)]?.base ?: baseAt(level, x, z, layer) ?: statics.atLayer(level, x, z, layer)
 
     private fun target(c: Change): InteractionTarget.Loc =
         InteractionTarget.Loc(CoordGrid(c.x, c.z, c.level), c.id, c.shape, c.angle, width(c.id), length(c.id), forceApproach(c.id))
@@ -186,7 +220,7 @@ class DynamicLocs internal constructor(
         val l = if (rotated) type.width else type.length
         collision.ownZones(loc.coord.level, loc.coord.x, loc.coord.z, w, l)
         LocCollision.toggle(
-            collision.flags,
+            collision.sink,
             loc.coord.x,
             loc.coord.z,
             loc.coord.level,
@@ -210,7 +244,11 @@ class DynamicLocs internal constructor(
 
     private fun remove(k: Long) {
         val old = changes.remove(k) ?: return
-        byZone[ZoneKey.of(old.level, old.x shr ZONE_SHIFT, old.z shr ZONE_SHIFT).packed]?.remove(old)
+        val zone = ZoneKey.of(old.level, old.x shr ZONE_SHIFT, old.z shr ZONE_SHIFT).packed
+        byZone[zone]?.let { list ->
+            list.remove(old)
+            if (list.isEmpty()) byZone.remove(zone)
+        }
     }
 
     private fun event(coord: CoordGrid, op: ZoneOp) {
@@ -221,6 +259,9 @@ class DynamicLocs internal constructor(
         const val LAYERS = 4
         private const val IN_ZONE = 7
         private const val ZONE_SHIFT = 3
+
+        /** The key a base loc is stored under (instance builds prepare whole zones of them off the world thread). */
+        internal fun keyOf(loc: InteractionTarget.Loc): Long = key(loc.coord.level, loc.coord.x, loc.coord.z, layerOf(loc.shape))
 
         /** Client layer of a loc shape: walls 0–3, wall decor 4–8, ground 9–21, ground decor 22. */
         fun layerOf(shape: Int): Int =
@@ -236,12 +277,29 @@ class DynamicLocs internal constructor(
         private const val LAST_GROUND = 21
         private const val GROUND_DECOR_LAYER = 3
 
-        private fun key(level: Int, x: Int, z: Int, layer: Int): Long =
-            (level.toLong() shl LEVEL_SHIFT) or (x.toLong() shl X_SHIFT) or (z.toLong() shl Z_SHIFT) or layer.toLong()
+        /**
+         * One tile layer: the packed coordinate, then MurmurHash3's fmix64 (a bijection, so keys stay unique and nothing
+         * decodes them: each value keeps its own coordinate). Without the mix, `Long.hashCode` and HashMap's bit
+         * spreading fold x into z and neighbouring tiles share buckets: instance attaches spent most of their time in
+         * treeified bins.
+         */
+        private fun key(level: Int, x: Int, z: Int, layer: Int): Long {
+            var h = (level.toLong() shl LEVEL_SHIFT) or (x.toLong() shl X_SHIFT) or (z.toLong() shl Z_SHIFT) or layer.toLong()
+            h = h xor (h ushr MIX_SHIFT)
+            h *= MIX_1
+            h = h xor (h ushr MIX_SHIFT)
+            h *= MIX_2
+            return h xor (h ushr MIX_SHIFT)
+        }
 
         private const val LEVEL_SHIFT = 50
         private const val X_SHIFT = 30
         private const val Z_SHIFT = 4
+
+        /** MurmurHash3 fmix64 constants (Appleby, public domain). */
+        private const val MIX_SHIFT = 33
+        private const val MIX_1 = -0xae502812aa7333L
+        private const val MIX_2 = -0x3b314601e57a13adL
     }
 }
 
@@ -251,20 +309,34 @@ class DynamicLocs internal constructor(
  */
 class WorldCollision(shared: CollisionFlagMap) {
     val flags: CollisionFlagMap = CollisionFlagMap(shared.flags.copyOf())
-    private val owned = HashSet<Int>()
+
+    /** Zones whose tile array is this world's own (copy-on-write done): a bit per zone index (2^24 zones, 2 MB). */
+    private val owned = java.util.BitSet(TOTAL_ZONES)
+
+    /** Loc collision edits into [flags] (one sink for the world: no allocation per edit). */
+    internal val sink =
+        tp.cache.map.LocCollision
+            .MapSink(flags)
+
+    /** Puts [tiles] (built off the world thread) in as zone ([zoneX], [zoneZ]) on [level], owned by this world. */
+    internal fun installZone(level: Int, zoneX: Int, zoneZ: Int, tiles: IntArray) {
+        val index = index(level, zoneX, zoneZ)
+        flags.flags[index] = tiles
+        owned.set(index)
+    }
 
     /** Gives zone ([zoneX], [zoneZ]) on [level] fresh, empty (walkable) tiles owned by this world (instance space). */
     internal fun resetZone(level: Int, zoneX: Int, zoneZ: Int) {
         val index = index(level, zoneX, zoneZ)
         flags.flags[index] = IntArray(ZONE_TILES)
-        owned.add(index)
+        owned.set(index)
     }
 
     /** Returns zone ([zoneX], [zoneZ]) on [level] to unallocated (fully blocked), as instance space starts. */
     internal fun freeZone(level: Int, zoneX: Int, zoneZ: Int) {
         val index = index(level, zoneX, zoneZ)
         flags.flags[index] = null
-        owned.remove(index)
+        owned.clear(index)
     }
 
     private fun index(level: Int, zx: Int, zz: Int): Int =
@@ -275,7 +347,8 @@ class WorldCollision(shared: CollisionFlagMap) {
         for (zx in ((x - 1) shr ZONE_SHIFT)..((x + width) shr ZONE_SHIFT)) {
             for (zz in ((z - 1) shr ZONE_SHIFT)..((z + length) shr ZONE_SHIFT)) {
                 val index = index(level, zx, zz)
-                if (!owned.add(index)) continue
+                if (owned.get(index)) continue
+                owned.set(index)
                 flags.flags[index] = flags.flags[index]?.copyOf()
             }
         }
@@ -289,5 +362,8 @@ class WorldCollision(shared: CollisionFlagMap) {
         const val LEVEL_MASK = 0x3
         const val LEVEL_BITS = 22
         const val ZONE_TILES = 64
+
+        /** Zone indexes: 11 bits x, 11 bits z, 2 bits level. */
+        const val TOTAL_ZONES = 1 shl 24
     }
 }
