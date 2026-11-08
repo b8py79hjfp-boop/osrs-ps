@@ -50,6 +50,7 @@ include(
     ":content:skills",
     ":content:raids-core",
     ":content:raids-tfa",
+    ":content:raids-tob",
     ":services",
     ":server",
     ":hub",

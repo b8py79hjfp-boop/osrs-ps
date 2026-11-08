@@ -23,6 +23,7 @@ dependencies {
     runtimeOnly(project(":content:skills"))
     runtimeOnly(project(":content:raids-core"))
     runtimeOnly(project(":content:raids-tfa"))
+    runtimeOnly(project(":content:raids-tob"))
     testImplementation(project(":symbols"))
     testImplementation(project(":content:raids-core"))
     testRuntimeOnly(libs.logback.classic)

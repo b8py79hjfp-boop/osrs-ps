@@ -24,6 +24,7 @@ dependencies {
     runtimeOnly(project(":content:skills"))
     runtimeOnly(project(":content:raids-core"))
     runtimeOnly(project(":content:raids-tfa"))
+    runtimeOnly(project(":content:raids-tob"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
     implementation(project(":hub"))
