@@ -276,7 +276,7 @@ Game-chat type `FRIENDSCHATNOTIFICATION`: `The raid has begun!`, `<Floor> level 
 loot beam is a per-player multi (§5.4). RuneLite's loot tracker reads inv 581 when interface 539 opens; the standard inv-draw of 581 into 539:5 is done by the script above, so **set the inv before opening the interface** [R/I].
 
 ### 2.10 Other client-side readers
-`6716` (options) reads 12347, 16107, 16108 only. `1658` (a settings screen) reads 5432. `404` / `1605` read 5432 (§2.7). `5923` reads the buff varbits (§2.2). `962`, `967`, `2556`, `2563`, `4774`, `4778`, `10310` read the completion varps (Combat Achievements / hiscore-style summaries). No CoX script reads the room names: **rooms are not shown in the client at all** (the Wiki's scouting is by plugins).
+`6716` (options) reads 12347, 16107, 16108 only. `1658` (a settings screen) reads 5432. `404` / `1605` read 5432 (§2.7). `5923` reads the buff varbits (§2.2). `962`, `967`, `2556`, `2563`, `4774`, `4778`, `10310` read the completion varps (Combat Achievements / hiscore-style summaries). No CoX script reads the room names: **rooms are not shown in the client at all** (the Wiki's scouting is by plugins). The boss HP bars (Olm hands and head, Tekton, ...) are the **generic boss HP HUD**: varp `HP_HUD_NPC_ID` selects the NPC id and varbits `HPBAR_HUD_HP` 6099 / `HPBAR_HUD_BASEHP` 6100 carry current / base HP; the CoX plugins read them for the Olm hands (NPC ids 7553 / 7555) [R/I].
 
 ---
 

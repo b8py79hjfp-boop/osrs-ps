@@ -51,6 +51,7 @@ include(
     ":content:raids-core",
     ":content:raids-tfa",
     ":content:raids-tob",
+    ":content:raids-cox",
     ":services",
     ":server",
     ":hub",

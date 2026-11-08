@@ -1138,3 +1138,30 @@ RuneLite plugins (docs/mechanics/raids/{tfa,tob}/runelite-timings.md) and RSProx
   `tp.tob.entry.wipeRestartsRoom`).
 - **Run time** ends at Verzik's final blow (LR22) even though rewards are computed when the party enters the treasure
   room (`Raids.complete(endedAt)`).
+
+## D-082 Loc approach flags use the low four bits (2026-11-08)
+
+The loc config's force-approach byte (opcode 69) is rotated by the loc's angle before reach checks (N 1, E 2, S 4,
+W 8). Some locs carry a higher bit as well (the Chambers of Xeric entrance steps 29777 hold 30 = 0b11110); the vendored
+routefinder's rotation shifts that bit into the side bits and blocks every side, so the steps could never be used. The
+engine passes `forceApproach and 0xF` to both route finding and reach (`InteractionTarget.Loc.approachFlags`), which
+leaves the steps open from the south, where Captain Rimor stands. The routefinder stays unmodified. What the high bit
+means is not known.
+
+## D-083 Chambers of Xeric structure on this server (2026-11-08)
+
+- **Instance:** each run builds its own instance (`RaidDefinition.layout`): both generated floors as zone copies of
+  their template cells (4 x 4 zones each, client-contract 6.2-6.4) on planes 3 and 2 of a 128 x 64 area, so RuneLite's
+  CoX plugins read the real template references, and the Olm square (50, 89) copied whole two squares east.
+- **Layout:** one of RuneLite's 26 patterns (small or medium with equal weight, OPEN-CX7), placed on the 4 x 2 grids
+  from every possible start until it fits; floor 2 starts in floor 1's end cell. Combat rooms follow the drawn rotation
+  cycle and offset by grid slot (CX11); a placement that would repeat a combat room is skipped. A cell's variant and
+  rotation come from its entry and exit directions (rotation = entry move, winding = exit - rotation).
+- **Traversal (OPEN-CX31):** the corridors between cells are not in the cache (cell edges are blocked). Every passage
+  (29789) teleports to the arrival tile of the neighbouring cell (the first walkable tile in from the middle of the
+  shared edge); a passage is spawned on each side a template has none. Forward passages of combat and puzzle rooms
+  wait for the room to be done; the side a room was entered by leads back.
+- **Start:** the leader's entry at the steps creates the party if there is none and builds the instance (the run's
+  membership and scaling are fixed then, earlier than CX4's "at the start"); members follow while the run is in the
+  lobby; the leader's lobby passage starts the raid (`The raid has begun!`), after which nobody joins (OPEN-CX3).
+- **Rooms in raids-core:** `lobby`, `chambers` (both floors, one encounter; content tracks the cells), `olm`, `rewards`.

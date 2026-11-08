@@ -67,7 +67,8 @@ class Instances internal constructor(
             val dx = (coord.x shr SQUARE_SHIFT) - squareX
             val dz = (coord.z shr SQUARE_SHIFT) - squareZ
             val copy =
-                squares.firstOrNull { it.dstDx == dx && it.dstDz == dz && coord.level - it.dstLevel in 0 until it.levels } ?: return null
+                squares.firstOrNull { it.dstDx == dx && it.dstDz == dz && coord.level - it.dstLevel in 0 until it.levels }
+                    ?: return zoneTemplate(coord)
             val inverse = (ROTATIONS - copy.rotation) and MAX_ROTATION
             val lx = coord.x and SQUARE_MASK
             val lz = coord.z and SQUARE_MASK
@@ -75,6 +76,20 @@ class Instances internal constructor(
                 (copy.srcSquareX shl SQUARE_SHIFT) + rotateIn(lx, lz, 1, 1, inverse, SQUARE_MASK, true),
                 (copy.srcSquareZ shl SQUARE_SHIFT) + rotateIn(lx, lz, 1, 1, inverse, SQUARE_MASK, false),
                 coord.level - copy.dstLevel + copy.srcLevel,
+            )
+        }
+
+        /** [toTemplate] for a tile of a single copied zone: its reference names the template zone and turn (IN3). */
+        private fun zoneTemplate(coord: CoordGrid): CoordGrid? {
+            val ref = zones[ZoneKey.of(coord.level, coord.x shr ZONE_SHIFT, coord.z shr ZONE_SHIFT).packed] ?: return null
+            val rotation = (ref shr 1) and MAX_ROTATION
+            val inverse = (ROTATIONS - rotation) and MAX_ROTATION
+            val lx = coord.x and ZONE_MASK
+            val lz = coord.z and ZONE_MASK
+            return CoordGrid(
+                (((ref shr REF_X_SHIFT) and REF_X_MASK) shl ZONE_SHIFT) + rotateIn(lx, lz, 1, 1, inverse, ZONE_MASK, true),
+                (((ref shr REF_Z_SHIFT) and REF_Z_MASK) shl ZONE_SHIFT) + rotateIn(lx, lz, 1, 1, inverse, ZONE_MASK, false),
+                (ref shr REF_LEVEL_SHIFT) and LEVEL_MASK,
             )
         }
     }
@@ -105,6 +120,7 @@ class Instances internal constructor(
         val reference: Int,
         val tileOffsets: IntArray,
         val tileBits: IntArray,
+        /** Locs relative to a zone at ([PREP_BIAS], [PREP_BIAS]) zones: a turned multi-tile loc can start west / south of its zone. */
         val locs: List<InteractionTarget.Loc>,
     )
 
@@ -169,7 +185,9 @@ class Instances internal constructor(
     fun attach(plan: BuildPlan) {
         val instance = plan.instance
         if (instance.destroyed) return
-        for ((zone, prep) in plan.zones) apply(instance, zone, prep)
+        // Clear every target first: a turned multi-tile loc can reach into a neighbouring zone, which must not wipe it.
+        for ((zone, _) in plan.zones) reset(instance, zone)
+        for ((zone, prep) in plan.zones) apply(instance, zone, prep, cleared = true)
         instance.squares += plan.squares
         instance.version++
     }
@@ -218,16 +236,21 @@ class Instances internal constructor(
                     bits += b
                 }
             }
-            PreparedZone(ref, offsets.toIntArray(), bits.toIntArray(), template.locs.map { rotated(it, 0, 0, 0, rotation) })
+            PreparedZone(ref, offsets.toIntArray(), bits.toIntArray(), template.locs.map { rotated(it, 0, PREP_BIAS, PREP_BIAS, rotation) })
         }
     }
 
-    private fun apply(instance: Instance, zone: ZoneKey, prep: PreparedZone) {
+    private fun reset(instance: Instance, zone: ZoneKey) {
+        clear(instance, zone.level, zone.zoneX, zone.zoneZ)
+        collision.resetZone(zone.level, zone.zoneX, zone.zoneZ)
+    }
+
+    private fun apply(instance: Instance, zone: ZoneKey, prep: PreparedZone, cleared: Boolean = false) {
         val level = zone.level
-        clear(instance, level, zone.zoneX, zone.zoneZ)
-        collision.resetZone(level, zone.zoneX, zone.zoneZ)
+        if (!cleared) reset(instance, zone)
         val baseX = zone.zoneX shl ZONE_SHIFT
         val baseZ = zone.zoneZ shl ZONE_SHIFT
+        val locBase = PREP_BIAS shl ZONE_SHIFT
         for (i in prep.tileOffsets.indices) {
             val x = baseX + (prep.tileOffsets[i] shr ZONE_SHIFT)
             val z = baseZ + (prep.tileOffsets[i] and ZONE_MASK)
@@ -236,9 +259,13 @@ class Instances internal constructor(
             if (b and StaticLocs.ZoneTemplate.ROOF != 0) collision.flags.add(x, z, level, CollisionFlag.ROOF)
         }
         for (loc in prep.locs) {
+            val x = baseX + loc.coord.x - locBase
+            val z = baseZ + loc.coord.z - locBase
+            // A turned loc of a zone on the map's south / west edge can start off the map: nothing to place.
+            if (x < 0 || z < 0) continue
             locs.placeBase(
                 InteractionTarget.Loc(
-                    CoordGrid(baseX + loc.coord.x, baseZ + loc.coord.z, level),
+                    CoordGrid(x, z, level),
                     loc.id,
                     loc.shape,
                     loc.angle,
@@ -389,6 +416,9 @@ class Instances internal constructor(
         private const val SQUARE_SHIFT = 6
         private const val SQUARE_AXIS_BITS = 8
         private const val ZONE_SHIFT = 3
+
+        /** Prepared zones keep their locs one zone in from the origin, so a turned loc never has a negative tile. */
+        private const val PREP_BIAS = 1
         private const val ZONE_SIZE = 8
         private const val ZONE_MASK = 7
         private const val MAX_ROTATION = 3

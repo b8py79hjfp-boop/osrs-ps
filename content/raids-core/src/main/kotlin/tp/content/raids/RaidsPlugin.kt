@@ -98,7 +98,11 @@ public class RaidsPlugin : ContentPlugin {
         // A member who reconnects after the party moved on (or who died) joins the party where it is now.
         val room = (run.state as? RunState.InRoom)?.room
         val movedOn = m.roomsAtLogout >= 0 && m.roomsAtLogout != run.roomsTaken.size
-        if (room != null && (!m.alive || movedOn)) player.teleport(run.at(if (!m.alive) room.waitAt ?: room.entry else room.entry))
+        if (room != null &&
+            (!m.alive || movedOn)
+        ) {
+            player.teleport(if (!m.alive) Raids.waitOf(run, room, player) else Raids.entryOf(run, room, player))
+        }
         m.roomsAtLogout = -1
         if (run.state == RunState.Completed) Raids.pay(player, run)
         run.markDirty()

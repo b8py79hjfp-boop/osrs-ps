@@ -163,7 +163,8 @@ effect; OPEN-CX16 CM bonus definition; OPEN-CX17 respawn location; OPEN-CX18 rai
 OPEN-CX19 leaving, logout and Olm-room logout; OPEN-CX20 plank cost reading; OPEN-CX21 Ultimate Ironman storage;
 OPEN-CX22 scavenger remainder and counts; OPEN-CX23 herb yield; OPEN-CX24 food-tier aggregate; OPEN-CX25 potion effects
 beyond Overload; OPEN-CX26 boss drop scaling; OPEN-CX27 CM requirement; OPEN-CX28 target-time clock; OPEN-CX29 message
-strings; OPEN-CX30 PB buckets. **30 open items** (plus the reward items `OPEN-CR1` to `OPEN-CR14` in
+strings; OPEN-CX30 PB buckets; OPEN-CX31 the corridors between rooms (cache cell edges are blocked; passages teleport to the
+neighbouring cell, DECISIONS D-083) and the passage / room-lock messages. **31 open items** (plus the reward items `OPEN-CR1` to `OPEN-CR14` in
 [cox/lobby-rewards.md](cox/lobby-rewards.md)).
 
 ## Conflicts between sources (raid-wide)

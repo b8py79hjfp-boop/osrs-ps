@@ -95,12 +95,15 @@ public class Raids internal constructor() {
             party.state = PartyState.Locked(run)
             raids.addRun(run)
             val entering = if (enterNow) players else listOf(leader)
+            val custom = def.layout?.invoke(run)
             val squares =
-                def.squares.map { (x, z) ->
+                custom?.squares ?: def.squares.map { (x, z) ->
                     val levels = def.squareLevels[x to z] ?: ALL_LEVELS
                     InstanceSquare(x, z, x - def.originSquareX, z - def.originSquareZ, levels = levels)
                 }
-            leader.buildInstance(def.instanceWidth, def.instanceLength, squares) { inst ->
+            val width = custom?.widthSquares ?: def.instanceWidth
+            val length = custom?.lengthSquares ?: def.instanceLength
+            leader.buildInstance(width, length, squares, custom?.zones.orEmpty()) { inst ->
                 run.instance = inst
                 // Whoever logged out during the build is not admitted (they would hold the run open, unseen).
                 val still = entering.mapNotNull { leader.onlinePlayer(it.username) }
@@ -125,7 +128,7 @@ public class Raids internal constructor() {
             val state = run.state
             if (run.instance == null || state !is RunState.InRoom || run.roomsTaken.size != 1) return "Your party has already moved on."
             admit(player, run)
-            player.teleport(run.at(state.room.entry))
+            player.teleport(entryOf(run, state.room, player))
             return null
         }
 
@@ -148,7 +151,7 @@ public class Raids internal constructor() {
                 m.roomDamage = 0
                 m.alive = true
             }
-            for (p in run.presentPlayers(any)) p.teleport(run.at(room.entry))
+            if (room.gather) for (p in run.presentPlayers(any)) p.teleport(entryOf(run, room, p))
             run.dirty = true
             room.onStart(run, any)
             any.events.publish(RaidEvent.RoomStarted(run, room))
@@ -218,7 +221,12 @@ public class Raids internal constructor() {
             when (val rule = run.raid.deaths) {
                 is DeathPolicy.RespawnAtCheckpoint -> {
                     policy.keepItems = true
-                    run.raid.rooms[rule.checkpoint(run)]?.let { policy.respawnAt = run.at(it.entry) }
+                    run.raid.rooms[rule.checkpoint(run)]?.let { policy.respawnAt = entryOf(run, it, player) }
+                }
+
+                is DeathPolicy.RespawnAt -> {
+                    policy.keepItems = true
+                    policy.respawnAt = rule.at(run, player) ?: (run.state as? RunState.InRoom)?.room?.let { entryOf(run, it, player) }
                 }
 
                 is DeathPolicy.WaitUntilRoomEnds -> {
@@ -228,7 +236,7 @@ public class Raids internal constructor() {
                         // wipe; the player stands up at the last room's entry with their items.
                         policy.keepItems = true
                         val last = run.roomsTaken.lastOrNull()?.let { run.raid.rooms[it] }
-                        policy.respawnAt = last?.let { run.at(it.entry) }
+                        policy.respawnAt = last?.let { entryOf(run, it, player) }
                         return
                     }
                     m.alive = false
@@ -236,7 +244,7 @@ public class Raids internal constructor() {
                     val othersAlive = run.members.values.any { it !== m && it.inside && it.online && it.alive }
                     if (othersAlive && room != null) {
                         policy.keepItems = true
-                        policy.respawnAt = run.at(room.waitAt ?: room.entry)
+                        policy.respawnAt = waitOf(run, room, player)
                     } else {
                         wipe(player, run, rule.wipeByMode[run.scaling.mode] ?: rule.wipe, policy)
                     }
@@ -250,7 +258,7 @@ public class Raids internal constructor() {
             if (rule == WipePolicy.RetryRoom && room != null) {
                 // TB16: everyone stands up again outside the room, items kept; content restarts the room on RoomFailed.
                 policy.keepItems = true
-                policy.respawnAt = run.at(room.waitAt ?: room.entry)
+                policy.respawnAt = waitOf(run, room, dying)
                 for (m in run.members.values) m.alive = true
                 dying.events.publish(RaidEvent.RoomFailed(run, room))
                 return
@@ -412,6 +420,23 @@ public class Raids internal constructor() {
             run.party.state = PartyState.Forming
             if (run.party.members.isEmpty()) raids.dropParty(run.party)
         }
+
+        /** Spawns NPC [type] for [run] at instance tile [at] (generated layouts): tagged and scaled like [spawn]. */
+        public fun spawnAt(any: EntityRef, run: RaidRun, type: Int, at: CoordGrid): NpcRef {
+            val npc = any.spawnNpc(type, at)
+            npc[RaidRun.NPC_RUN] = run.id.value
+            npc[tp.plugin.SharedAttrs.RAID_SCALE] = run.scaling.scaledSize
+            npc[tp.plugin.SharedAttrs.RAID_ORDER] = run.party.members.toList()
+            run.raid.scaling(run.scaling, npc)
+            return npc
+        }
+
+        /** Where [room] is entered in [run] (its per-run entry, else its template entry). */
+        public fun entryOf(run: RaidRun, room: RoomDef, any: EntityRef): CoordGrid = room.entryAt?.invoke(run, any) ?: run.at(room.entry)
+
+        /** Where a dead player waits in [room]. */
+        public fun waitOf(run: RaidRun, room: RoomDef, any: EntityRef): CoordGrid =
+            room.waitAt?.let { run.at(it) } ?: entryOf(run, room, any)
 
         /** Spawns NPC [type] for [run] at template tile [template]: tagged to the run and scaled (brief 3.7). */
         public fun spawn(any: EntityRef, run: RaidRun, type: Int, template: CoordGrid): NpcRef {

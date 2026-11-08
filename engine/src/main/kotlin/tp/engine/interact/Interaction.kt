@@ -23,7 +23,17 @@ sealed interface InteractionTarget {
         val width: Int,
         val length: Int,
         val forceApproach: Int,
-    ) : InteractionTarget
+    ) : InteractionTarget {
+        /**
+         * The approach sides only (N 1, E 2, S 4, W 8): the cache byte can carry a higher bit (Chambers of Xeric steps
+         * 29777 hold 30), which the routefinder's rotation would wrap into the side bits (DECISIONS D-082).
+         */
+        val approachFlags: Int get() = forceApproach and APPROACH_SIDES
+
+        private companion object {
+            const val APPROACH_SIDES = 0xF
+        }
+    }
 
     /** Ground item (static). */
     data class Obj(val coord: CoordGrid, val id: Int) : InteractionTarget
@@ -329,7 +339,7 @@ class InteractionProcessor internal constructor(
         if (!entity.route.isEmpty && !i.isMobileTarget) return
         val t = i.target
         if (t is InteractionTarget.Loc) {
-            movement.routeToTarget(entity, t.coord.x, t.coord.z, t.width, t.length, t.shape, t.angle, t.forceApproach)
+            movement.routeToTarget(entity, t.coord.x, t.coord.z, t.width, t.length, t.shape, t.angle, t.approachFlags)
         } else {
             val r = rect(t)
             movement.routeToTarget(entity, r.x, r.z, r.width, r.length, shapeOf(i), 0, 0)
@@ -379,7 +389,7 @@ class InteractionProcessor internal constructor(
                 entity.size,
                 t.angle,
                 t.shape,
-                t.forceApproach,
+                t.approachFlags,
             )
         }
         val r = rect(t)

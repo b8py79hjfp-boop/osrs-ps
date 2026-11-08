@@ -90,5 +90,8 @@ public class InstanceSquare(
     public val levels: Int = Instances.LEVELS,
 )
 
-/** One template zone (holding tile [from]) to copy to the instance zone holding [to], turned [rotation] times. */
+/**
+ * One template zone (holding tile [from]) to copy to the instance zone holding [to], turned [rotation] times. A [to]
+ * outside instance space is an offset from the instance's south-west corner (a layout built before the instance is).
+ */
 public class InstanceZone(public val from: CoordGrid, public val to: CoordGrid, public val rotation: Int = 0)

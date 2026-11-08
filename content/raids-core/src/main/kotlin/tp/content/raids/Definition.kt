@@ -39,12 +39,22 @@ public class RaidDefinition internal constructor(
     public val squareLevels: Map<Pair<Int, Int>, Int>,
     /** A logout that does not count as a death even in an encounter (ToB TB20: holding an escape crystal). */
     public val safeLogout: (PlayerRef) -> Boolean,
+    /** A per-run instance (CoX's generated layouts); null = the fixed [squares]. */
+    public val layout: ((RaidRun) -> RaidLayout)?,
 ) {
-    internal val instanceWidth: Int = squares.maxOf { it.first } - squares.minOf { it.first } + 1
-    internal val instanceLength: Int = squares.maxOf { it.second } - squares.minOf { it.second } + 1
-    internal val originSquareX: Int = squares.minOf { it.first }
-    internal val originSquareZ: Int = squares.minOf { it.second }
+    internal val instanceWidth: Int = if (squares.isEmpty()) 1 else squares.maxOf { it.first } - squares.minOf { it.first } + 1
+    internal val instanceLength: Int = if (squares.isEmpty()) 1 else squares.maxOf { it.second } - squares.minOf { it.second } + 1
+    internal val originSquareX: Int = squares.minOfOrNull { it.first } ?: 0
+    internal val originSquareZ: Int = squares.minOfOrNull { it.second } ?: 0
 }
+
+/** A run's own instance: [widthSquares] x [lengthSquares] squares built from whole [squares] and single [zones]. */
+public class RaidLayout(
+    public val widthSquares: Int,
+    public val lengthSquares: Int,
+    public val squares: List<tp.plugin.InstanceSquare>,
+    public val zones: List<tp.plugin.InstanceZone>,
+)
 
 /** What kind of space a room is (encounters count damage and deaths). */
 public enum class RoomKind { ENCOUNTER, CHOICE, REWARD }
@@ -57,6 +67,10 @@ public class RoomDef(
     public val contribution: Int = 0,
     /** Where a dead player waits while teammates fight on (template); null = [entry]. */
     public val waitAt: CoordGrid? = null,
+    /** The entry as an instance tile for a run (generated layouts); null = [entry] through the template. */
+    public val entryAt: ((RaidRun, tp.plugin.EntityRef) -> CoordGrid)? = null,
+    /** Whether starting the room moves every member inside to its entry (CoX: each player walks on alone). */
+    public val gather: Boolean = true,
     /** Runs when the room starts, with an entity of the run's world (spawns, messages). */
     public val onStart: (RaidRun, tp.plugin.EntityRef) -> Unit = { _, _ -> },
 )
@@ -72,6 +86,9 @@ public sealed interface DeathPolicy {
 
     /** The player respawns at the [checkpoint] room's entry, items kept (CoX: start of the previous floor). */
     public class RespawnAtCheckpoint(public val checkpoint: (RaidRun) -> String) : DeathPolicy
+
+    /** The player respawns at an instance tile the raid names ([at]; null = the room's entry), items kept (CoX). */
+    public class RespawnAt(public val at: (RaidRun, PlayerRef) -> CoordGrid?) : DeathPolicy
 }
 
 public sealed interface WipePolicy {
@@ -161,6 +178,7 @@ public class RaidBuilder internal constructor(private val id: String) {
     public var autoAdvance: Boolean = true
     public var squareLevels: Map<Pair<Int, Int>, Int> = emptyMap()
     public var safeLogout: (PlayerRef) -> Boolean = { false }
+    public var layout: ((RaidRun) -> RaidLayout)? = null
     private val rooms = LinkedHashMap<String, RoomDef>()
     private val slots = ArrayList<List<String>>()
 
@@ -174,7 +192,7 @@ public class RaidBuilder internal constructor(private val id: String) {
     }
 
     internal fun build(): RaidDefinition {
-        require(squares.isNotEmpty()) { "raid $id: no template squares" }
+        require(squares.isNotEmpty() || layout != null) { "raid $id: no template squares" }
         require(slots.isNotEmpty() && slots.flatten().all { it in rooms }) { "raid $id: slots must name declared rooms" }
         require(claimInv >= 0) { "raid $id: claimInv" }
         val exit = requireNotNull(exit) { "raid $id: exit" }
@@ -201,6 +219,7 @@ public class RaidBuilder internal constructor(private val id: String) {
             autoAdvance,
             squareLevels,
             safeLogout,
+            layout,
         )
     }
 }

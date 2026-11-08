@@ -112,7 +112,20 @@ class World(
         onAttached: (tp.engine.map.Instances.Instance) -> Unit,
     ): tp.engine.map.Instances.Instance {
         val instance = instances.create(widthSquares, lengthSquares)
-        val future = INSTANCE_BUILDER.submit<tp.engine.map.Instances.BuildPlan> { instances.prepare(instance, copies, squares) }
+        // A copy aimed outside instance space is relative to the new instance's south-west corner (generated layouts).
+        val placed =
+            copies.map { c ->
+                if (instances.isInstanceSpace(c.to)) {
+                    c
+                } else {
+                    tp.engine.map.Instances.ZoneCopy(
+                        c.from,
+                        CoordGrid(instance.baseX + c.to.x, instance.baseZ + c.to.z, c.to.level),
+                        c.rotation,
+                    )
+                }
+            }
+        val future = INSTANCE_BUILDER.submit<tp.engine.map.Instances.BuildPlan> { instances.prepare(instance, placed, squares) }
         pendingBuilds += PendingBuild(tick, future, onAttached)
         return instance
     }
