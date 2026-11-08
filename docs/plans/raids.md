@@ -52,7 +52,7 @@ Archive (TFA)** instead of the brief's ToB-first order (§10); DECISIONS D-079 r
 | R3 | **TFA**: lobby, Grouping Board, selection rooms and doors, the eight bosses, Quartermaster, Void reward room, spectating, stats, capes, miniquest start | `TfaSmokeScenario` takes every door; RuneLite Loot Tracker records the chest; KC/PB messages match |
 | R4 | ToB | as brief |
 | R5 | CoX | as brief |
-| R6 | ToA | as brief |
+| R6 | ToA ([plan](raids-toa.md)) | as brief |
 | R7 | Load and soak, RuneLite end-to-end, docs | brief §7 budgets |
 
 ### R4 (ToB) sources
