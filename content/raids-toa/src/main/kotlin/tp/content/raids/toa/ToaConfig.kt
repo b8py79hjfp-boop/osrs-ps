@@ -16,4 +16,7 @@ internal object ToaConfig {
 
     /** OPEN-TA23: when the leader leaves a forming party, the next slot leads. */
     val leaderHandover: Boolean = System.getProperty("tp.toa.leaderHandover") != "false"
+
+    /** OPEN-TC13 (client-contract 10): "Move up" on member row 1 promotes that member to leader; false ignores that click. */
+    val moveUpPromotes: Boolean = System.getProperty("tp.toa.moveUpPromotes") != "false"
 }
