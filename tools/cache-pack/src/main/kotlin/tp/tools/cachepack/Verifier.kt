@@ -18,7 +18,13 @@ internal object Verifier {
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod") // one block per check, each a few lines
-    fun verify(sourceDisk: Path, packedDisk: Path, custom: List<CustomSymbol>, patchedScripts: Set<Int> = emptySet()): Result {
+    fun verify(
+        sourceDisk: Path,
+        packedDisk: Path,
+        custom: List<CustomSymbol>,
+        patchedScripts: Set<Int> = emptySet(),
+        patchedSprites: Set<Int> = emptySet(),
+    ): Result {
         val lines = ArrayList<String>()
         val failures = ArrayList<String>()
 
@@ -28,7 +34,9 @@ internal object Verifier {
         Js5Cache.open(sourceDisk).use { source ->
             Js5Cache.open(packedDisk).use { packed ->
                 // D-094: patched existing scripts are rewritten on purpose; everything else must stay byte-identical.
-                val written = custom.writtenGroups() + patchedScripts.map { Js5Archive.CLIENTSCRIPTS to it }
+                val written =
+                    custom.writtenGroups() + patchedScripts.map { Js5Archive.CLIENTSCRIPTS to it } +
+                        patchedSprites.map { Js5Archive.SPRITES to it }
                 // 1. Index integrity: every group's container matches the CRC (and lengths, for rewritten ones) its index records.
                 var crcChecked = 0
                 var crcBad = 0

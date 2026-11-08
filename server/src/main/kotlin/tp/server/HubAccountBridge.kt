@@ -253,7 +253,8 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
     override fun yell(player: Player, text: String) {
         val from = player.username
         val rank = player.rank
-        io.execute { call("yell") { hub.broadcasts.yell(from, rank, worldId, text) } }
+        val donator = player.donator
+        io.execute { call("yell") { hub.broadcasts.yell(from, rank, worldId, text, donator) } }
     }
 
     override fun setInvisible(player: Player, invisible: Boolean) {

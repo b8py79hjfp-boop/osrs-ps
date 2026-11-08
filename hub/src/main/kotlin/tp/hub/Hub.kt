@@ -667,8 +667,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 broadcastSinks.forEach { runCatching { it(Broadcast.SystemUpdate(seconds)) } }
             }
 
-            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String) {
-                broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text)) } }
+            override suspend fun yell(from: String, rank: Rank, worldId: Int, text: String, donator: tp.util.DonatorTier) {
+                broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text, donator)) } }
             }
 
             override suspend fun setInvisible(accountId: Long, invisible: Boolean) {

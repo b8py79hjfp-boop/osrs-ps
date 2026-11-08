@@ -50,6 +50,7 @@ object ConfigGroup {
 object Js5Archive {
     const val CONFIG = 2
     const val INTERFACES = 3
+    const val SPRITES = 8
     const val MAPS = 5
     const val CLIENTSCRIPTS = 12
     const val DBTABLEINDEX = 21

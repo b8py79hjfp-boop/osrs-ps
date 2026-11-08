@@ -572,7 +572,8 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
         }
 
         override suspend fun yell(request: tp.services.grpc.YellRequest): PbEmpty {
-            hub.broadcasts.yell(request.from, Rank.parseOrPlayer(request.rank), request.worldId, request.text)
+            val donator = tp.util.DonatorTier.parse(request.donator) ?: tp.util.DonatorTier.NONE
+            hub.broadcasts.yell(request.from, Rank.parseOrPlayer(request.rank), request.worldId, request.text, donator)
             return EMPTY
         }
 
@@ -622,7 +623,8 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                                             .setFrom(b.from)
                                             .setRank(b.rank.stored)
                                             .setWorldId(b.worldId)
-                                            .setText(b.text),
+                                            .setText(b.text)
+                                            .setDonator(b.donator.name),
                                     )
                                 }
                             }

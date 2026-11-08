@@ -68,12 +68,19 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
 
     /**
      * World thread: a `::yell` line to every player here who has not turned yells off. The text was escaped by the
-     * sender; the crown is the rank's chat icon (OPEN-CMD2: `<img=0>` player-moderator, `<img=1>` J-Mod).
+     * sender. The icon is the staff rank's, else the donator tier's, and donators' names take their tier colour (D-095).
      */
     private fun yell(b: Broadcast.Yell) {
-        val crown = b.rank.crown
-        val icon = if (crown > 0) "<img=${crown - 1}>" else ""
-        val line = "[Yell] $icon${b.from}: ${b.text}"
+        val icon =
+            tp.util.ChatIcons
+                .of(b.rank, b.donator)
+                ?.let { "<img=$it>" }
+                .orEmpty()
+        val name =
+            tp.util.ChatIcons
+                .nameColour(b.donator)
+                ?.let { "<col=$it>${b.from}</col>" } ?: b.from
+        val line = "[Yell] $icon$name: ${b.text}"
         world.forEachPlayer { p -> if ((p.saved[YELL_OFF_KEY] ?: 0L) == 0L) p.session.send(ServerMessage.GameMessage(line)) }
     }
 

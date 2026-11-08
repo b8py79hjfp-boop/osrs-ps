@@ -11,7 +11,7 @@ private val USAGE =
       pack      (default) pack the content modules' pack/ sources into a copy of the source cache, then verify it
       verify    verify an existing packed cache against the source cache
       script <disk> <id>   list the instructions of one compiled script (core opcode names, commands by number)
-      roundtrip <disk> <interface|script> <id>   decode and re-encode an existing group; reports whether the bytes match
+      roundtrip <disk> <interface|script|sprite> <id>   decode and re-encode an existing group; reports whether the bytes match
     options:
       --source <dir>     source cache directory with main_file_cache.* (default .data/cache/${Revision.NUMBER}/disk); never modified
       --out <dir>        output root (default .data/cache/${Revision.NUMBER}-packed):
@@ -82,7 +82,7 @@ private fun verify(sourceDisk: Path, outRoot: Path): Int {
             val p = it.split('\t')
             CustomSymbol(p[0], p[1], p[2].toInt(), p.getOrElse(3) { "" })
         }
-    val patched =
+    val properties =
         outRoot
             .resolve("pack.properties")
             .takeIf {
@@ -91,13 +91,17 @@ private fun verify(sourceDisk: Path, outRoot: Path): Int {
             }?.let {
                 java.nio.file.Files
                     .readAllLines(it)
-            }?.firstOrNull { it.startsWith("patchedScripts=") }
+            }.orEmpty()
+
+    fun ids(key: String) =
+        properties
+            .firstOrNull { it.startsWith("$key=") }
             ?.substringAfter('=')
             ?.split(',')
             ?.mapNotNull { it.trim().toIntOrNull() }
             ?.toSet()
             .orEmpty()
-    val result = Verifier.verify(sourceDisk, outRoot.resolve("disk"), custom, patched)
+    val result = Verifier.verify(sourceDisk, outRoot.resolve("disk"), custom, ids("patchedScripts"), ids("patchedSprites"))
     (result.lines + result.failures).forEach(::println)
     println(if (result.ok) "verification passed" else "verification FAILED (${result.failures.size})")
     return if (result.ok) 0 else 1
@@ -144,6 +148,14 @@ private fun roundTrip(rest: List<String>): Int {
         when (kind) {
             "script" -> {
                 println("script $id: ${if (ScriptPatches.roundTrip(cache, id)) "identical" else "DIFFERENT"}")
+            }
+
+            "sprite" -> {
+                val raw =
+                    cache.readFiles(tp.cache.config.Js5Archive.SPRITES, id)?.data?.firstOrNull()
+                        ?: throw UsageException("no sprite $id")
+                val group = SpriteGroup.decode(raw)
+                println("sprite $id: ${group.frames.size} frames, ${if (group.encode().contentEquals(raw)) "identical" else "DIFFERENT"}")
             }
 
             "interface" -> {

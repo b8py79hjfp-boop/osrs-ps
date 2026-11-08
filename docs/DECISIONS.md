@@ -1385,3 +1385,17 @@ means is not known.
 - **Bookkeeping.** `pack.properties` lists `patchedScripts`. The verifier accepts exactly those as rewritten groups;
   every other group must stay byte-identical.
 - **First use.** The chatbox mentions patch (docs/mechanics/chatbox.md).
+
+## D-095 Chat icons: sprite appends, our icon table, and yell lines (2026-11-08)
+
+- **The capability.** `tools/cache-pack` can append frames to an existing sprite group: `pack/sprites/<group>/NN_name.png`
+  plus `base-frames.txt`. The codec re-encodes the official group byte-identically before appending.
+- **Palette.** The `mod_icons` palette is already full (256 colours), so new pixels take the nearest existing colour.
+- **Our icons.** Frames 60-68 of group 423 (`mod_icons`): Administrator, Owner and Developer crowns, then one gem per
+  donator tier (Regular to Uber). They are drawn by `tools/icons/chat_icons.py`, and the indexes are in
+  `tp.util.ChatIcons`.
+- **Yell lines.** These are server-built game messages, so they take the icon (the staff rank's, else the donator
+  tier's) and the donator name colour directly.
+- **Player-sent chat.** Public, private, friends and clan messages carry a "chat crown" byte, and the client maps it
+  to an icon with a table I have no source for. So icons and colours for those are drawn by the patched chat-line
+  script from a server-kept roster (D-096), not by inventing crown values.

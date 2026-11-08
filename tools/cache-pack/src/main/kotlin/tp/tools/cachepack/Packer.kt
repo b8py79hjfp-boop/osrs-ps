@@ -27,6 +27,7 @@ internal class PackReport(
  * source cache, and record the new names. The source cache is only read.
  */
 internal object Packer {
+    @Suppress("LongMethod") // the packing steps in order (parse, ids, compile, write); each is a helper call
     fun run(options: PackOptions): PackReport {
         if (options.packs.isEmpty() || options.packs.all { it.isEmpty }) throw IOException("No pack sources found")
         val outDisk = options.outRoot.resolve("disk")
@@ -44,6 +45,8 @@ internal object Packer {
                     .sortedBy { it.name }
             // Applied (and hash-checked) before anything is written, like every other input.
             val patched = patchScripts(source, options.packs)
+            // D-095: frames appended to existing sprite groups (chat icons).
+            val sprites = SpriteAppends.all(source, options.packs)
             val scriptSources = options.packs.flatMap { it.scripts }
             val scriptNames = scriptSources.flatMap { ScriptName.headers(it).map { n -> n to it } }
             if (scriptNames.map { it.first }.distinct().size !=
@@ -86,6 +89,7 @@ internal object Packer {
                 }
                 // D-094: patched existing scripts keep their id (and group name hash).
                 for ((id, bytes) in patched) it.putGroup(Js5Archive.CLIENTSCRIPTS, id, intArrayOf(0), listOf(bytes))
+                for ((id, bytes) in sprites) it.putGroup(Js5Archive.SPRITES, id, intArrayOf(0), listOf(bytes))
                 for (def in interfaces) {
                     val components = InterfacePacker.build(def, resolver)
                     val id = custom.get("interface", def.name) ?: error("no id for interface ${def.name}")
@@ -105,16 +109,38 @@ internal object Packer {
                         source.index(g.substringBefore('/').toInt()).slotOf(g.substringAfter('/').toInt()) <
                             0
                     }
-                Files.writeString(
-                    options.outRoot.resolve("pack.properties"),
-                    "# Facts about this packed cache; the server's spot checks expect the group count (CacheSpotChecks).\n" +
-                        "sourceGroups=$sourceGroups\ngroups=${sourceGroups + newGroups}\n" +
-                        "archivesTouched=${indexes.map { t -> t.first }.sorted().joinToString(",")}\n" +
-                        "patchedScripts=${patched.keys.sorted().joinToString(",")}\n",
+                writeProperties(
+                    options.outRoot,
+                    sourceGroups,
+                    sourceGroups + newGroups,
+                    indexes,
+                    patched.keys,
+                    sprites.map { s ->
+                        s.first
+                    },
                 )
                 return PackReport(custom.symbols, it.written, indexes, symbols.duplicates)
             }
         }
+    }
+
+    /** `pack.properties`: facts the server's spot checks (CacheSpotChecks) and the verifier read. */
+    private fun writeProperties(
+        outRoot: Path,
+        sourceGroups: Int,
+        groups: Int,
+        indexes: List<Triple<Int, Int, Int>>,
+        patchedScripts: Collection<Int>,
+        patchedSprites: Collection<Int>,
+    ) {
+        Files.writeString(
+            outRoot.resolve("pack.properties"),
+            "# Facts about this packed cache; the server's spot checks expect the group count (CacheSpotChecks).\n" +
+                "sourceGroups=$sourceGroups\ngroups=$groups\n" +
+                "archivesTouched=${indexes.map { t -> t.first }.sorted().joinToString(",")}\n" +
+                "patchedScripts=${patchedScripts.sorted().joinToString(",")}\n" +
+                "patchedSprites=${patchedSprites.sorted().joinToString(",")}\n",
+        )
     }
 
     /** D-094: every diff in a pack's `cs2/patch` directory, applied to the source cache's script; one diff per script. */

@@ -415,7 +415,7 @@ interface BroadcastService {
     suspend fun systemUpdate(seconds: Int)
 
     /** Commands brief §6 `::yell`: a line to every world, tagged with [rank]. */
-    suspend fun yell(from: String, rank: Rank, worldId: Int, text: String)
+    suspend fun yell(from: String, rank: Rank, worldId: Int, text: String, donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE)
 
     /** Commands brief §1 hidden staff (`::invisible`): updates the account's presence on every world. */
     suspend fun setInvisible(accountId: Long, invisible: Boolean)
@@ -435,5 +435,11 @@ sealed interface Broadcast {
     /** [online] entries are added or replaced, [offline] account ids removed; [snapshot] replaces everything. */
     class Presence(val online: List<PresenceEntry>, val offline: List<Long>, val snapshot: Boolean) : Broadcast
 
-    class Yell(val from: String, val rank: Rank, val worldId: Int, val text: String) : Broadcast
+    class Yell(
+        val from: String,
+        val rank: Rank,
+        val worldId: Int,
+        val text: String,
+        val donator: tp.util.DonatorTier = tp.util.DonatorTier.NONE,
+    ) : Broadcast
 }

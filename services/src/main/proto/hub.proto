@@ -624,6 +624,7 @@ message YellRequest {
   string rank = 2;
   int32 world_id = 3;
   string text = 4;
+  string donator = 5; // tp.util.DonatorTier name (D-095: yell icon and name colour)
 }
 
 message InvisibleRequest {
