@@ -179,6 +179,9 @@ class CoxSmokeScenario {
                 Varps.TOTAL_COMPLETED_XERICCHAMBERS
             }
         assertEquals(1, ra.varp(kc), "seed $seed: KC")
+        // CR7: commons and the Dark journal wait in the reward inventory (581) for the chest.
+        val rewards = ra.inv(Invs.RAIDS_REWARDS)
+        assertTrue((0 until rewards.size).any { rewards.count(it) > 0 }, "seed $seed: rewards paid")
     }
 
     /** Solves a puzzle room through its real ops (the crab bounce geometry excepted: the orb is checked, then the room). */
