@@ -154,3 +154,12 @@ public class BankTransfer(
 ) : Event {
     public var moved: Int = 0
 }
+
+/** [player] picked [count] of [obj] up off the ground into the backpack (open bags then store it: gem bag, herb sack, seed box). */
+public class ObjPickedUp(public val player: PlayerRef, public val obj: Int, public val count: Int) : Event
+
+/**
+ * [player] died a PvP death; storage whose contents are lost to the killer (herb sack: Wiki "Herb sack") drops them at
+ * [at] for [killer] and clears itself. Published by content/combat before the items are split.
+ */
+public class PvpDeathStorage(public val player: PlayerRef, public val killer: String, public val at: tp.util.CoordGrid) : Event

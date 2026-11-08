@@ -1,6 +1,7 @@
 package tp.content.combat
 
 import tp.plugin.PlayerRef
+import tp.plugin.PvpDeathStorage
 import tp.plugin.RunePouch
 import tp.symbols.Invs
 import tp.symbols.Objs
@@ -44,6 +45,7 @@ internal object StorageDeath {
      */
     fun pvpLoss(dead: PlayerRef, lost: List<Triple<Int, Int, Int>>, owner: String): List<Triple<Int, Int, Int>> {
         dropRunes(dead, owner)
+        dead.events.publish(PvpDeathStorage(dead, owner, dead.coord))
         val pouches = lost.filter { objAt(dead, it) in UNLOCKED_POUCHES }
         val bags = lost.filter { objAt(dead, it) in LOOTING_BAGS }
         if (bags.isNotEmpty()) dropBagContents(dead, owner)

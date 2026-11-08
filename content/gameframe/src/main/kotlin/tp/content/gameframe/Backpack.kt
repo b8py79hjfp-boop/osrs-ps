@@ -2,6 +2,7 @@ package tp.content.gameframe
 
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.ObjPickedUp
 import tp.plugin.confirmDestroy
 import tp.symbols.Components
 import tp.symbols.Invs
@@ -42,8 +43,9 @@ public class Backpack : ContentPlugin {
             // LB4: an open looting bag in the Wilderness takes tradeable pickups first.
             if (LootingBag.pickUp(player, obj)) return@onOpObjDefault
             if (!player.transaction("take") { take(obj, Invs.INV) }) {
-                player.message("You don't have enough inventory space to hold that item.")
+                return@onOpObjDefault player.message("You don't have enough inventory space to hold that item.")
             }
+            player.events.publish(ObjPickedUp(player, obj.id, obj.count))
         }
     }
 

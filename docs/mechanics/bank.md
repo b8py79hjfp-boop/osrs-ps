@@ -51,12 +51,13 @@ slots in the cache), `inv` (93), `worn` (94).
 | B32 | **Rune pouch panel.** While it is open (op 1 "Configure", CS 297 / 490), runes withdrawn (not as notes) go into the pouch while it has room (rune-pouch.md RP11-RP14). | Wiki "Rune pouch" |
 | B33 | **Looting bag panel.** Op 1 "View" shows it; items and "Deposit loot" bank the bag's contents (looting-bag.md LB6). | Wiki "Looting bag" |
 | B34 | **Panel buttons.** "Dismiss" closes the panel client side; the server forgets which panel is open when the bank opens again. | CS 490 / 491 |
+| B35 | **"Empty containers"** (`bankmain:depositcontainers`, hidden by varbit 19721 via its toggle): every storage item in the backpack whose ninth op reads "Empty" (B30) is emptied into the bank, and the looting bag's loot is banked. **OPEN-B35:** which containers the real button covers. | Wiki "Bank" |
 
 ## Not implemented
 
 - **B4 (closed for wear / eat / drink):** content/combat handles `EquipRequest` / `ConsumeRequest` with the backpack ops' rules, without interrupting (the bank stays open). Storage items: B30-B34.
-- **OPEN-B4b (closed by B30-B34)** except the gem bag (no bank op in CS 2576), the seed box, the herb sack and the "Empty
-  containers" button (`bankmain:depositcontainers`), which do not exist yet.
+- **OPEN-B4b (closed by B30-B34)** the herb sack, seed box and gem bag use the same "Empty" op (storage-bags.md); "Empty
+  containers" is B35.
 - **OPEN-B5b (closed by B20-B26)** The potion store. The deposit locks (CS 7795) stay OPEN.
 - **OPEN-B5d** Buying the potion store unlock (Mixology rewards). **OPEN-B5e** Messages for too few vials / no room in the store.
   **OPEN-B5f** Where the bank opens after "forget storage tab". **OPEN-B5g** Store deposits because the store tab is open; noted

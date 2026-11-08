@@ -5,6 +5,7 @@ import tp.plugin.BankTransfer
 import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
 import tp.plugin.ContentScope
+import tp.plugin.ObjPickedUp
 import tp.plugin.PlayerRef
 import tp.symbols.Invs
 import tp.symbols.Objs
@@ -27,6 +28,9 @@ public class Bags : ContentPlugin {
             onItemOp(bag, "Check") { holds(this, it, Objs.GEM_BAG, Objs.GEM_BAG_OPEN)?.let { checkGems(this) } }
         }
         events.on<BankItemOp> { op -> if (op.obj == Objs.COAL_BAG || op.obj == Objs.COAL_BAG_OPEN) bankCoal(op) }
+        events.on<BankItemOp> { op -> if (op.obj == Objs.GEM_BAG || op.obj == Objs.GEM_BAG_OPEN) bankGems(op) }
+        // Wiki "Gem bag": an open bag stores gems the player picks up.
+        events.on<ObjPickedUp> { e -> if (e.obj in GEMS) repeat(e.count) { autoStore(e.player, e.obj) } }
         onItemOp(Objs.COAL_BAG, "Open") { toggle(this, it, Objs.COAL_BAG, Objs.COAL_BAG_OPEN, "coal") }
         onItemOp(Objs.COAL_BAG_OPEN, "Close") { toggle(this, it, Objs.COAL_BAG_OPEN, Objs.COAL_BAG, "coal") }
         onItemOp(Objs.GEM_BAG, "Open") { toggle(this, it, Objs.GEM_BAG, Objs.GEM_BAG_OPEN, "gem") }
@@ -121,6 +125,22 @@ public class Bags : ContentPlugin {
             packed = packed - (n.toLong() shl (i * GEM_BITS))
         }
         p.setSaved(GEMS_KEY, packed.takeIf { it != 0L })
+    }
+
+    /** Bank B30: "Empty" (obj param 595) banks every gem in the bag. */
+    private fun bankGems(op: BankItemOp) {
+        op.handled = true
+        val p = op.player
+        if ((p.saved(GEMS_KEY) ?: 0L) == 0L) return p.message("Your gem bag is empty.")
+        for ((i, gem) in GEMS.withIndex()) {
+            val n = gemCount(p.saved(GEMS_KEY) ?: 0L, i)
+            if (n <= 0) continue
+            p.events.publish(
+                BankTransfer(p, gem, n, deposit = true, onMoved = { m ->
+                    p.setSaved(GEMS_KEY, ((p.saved(GEMS_KEY) ?: 0L) - (m.toLong() shl (i * GEM_BITS))).takeIf { it != 0L })
+                }),
+            )
+        }
     }
 
     private fun checkGems(p: PlayerRef) {

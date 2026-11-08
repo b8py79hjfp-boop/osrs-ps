@@ -657,6 +657,13 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
 
     public fun objTradeable(obj: Int): Boolean = p.world.objType(obj)?.tradeable ?: false
 
+    /** Int param [param] of obj [obj], or null. */
+    public fun objParamInt(obj: Int, param: Int): Int? =
+        p.world
+            .objType(obj)
+            ?.params
+            ?.int(param)
+
     /** String param [param] of obj [obj], or null. */
     public fun objParamString(obj: Int, param: Int): String? =
         p.world

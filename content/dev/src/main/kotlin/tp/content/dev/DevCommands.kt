@@ -51,7 +51,14 @@ public class DevCommands : ContentPlugin {
         }
         // ::fight <type>: attacks the nearest NPC of that type within 15 tiles (op 2 "Attack"), as a click would.
         onCommand("fight") { args ->
-            val type = args.getOrNull(0)?.toIntOrNull() ?: return@onCommand
+            val arg = args.getOrNull(0) ?: return@onCommand
+            // ::fight <player name>: attack a nearby player (headless test clients cannot click players in the scene).
+            val type =
+                arg.toIntOrNull() ?: return@onCommand (
+                    playersWithin(FIGHT_RADIUS)
+                        .firstOrNull { it.username.equals(arg, ignoreCase = true) && it != this }
+                        ?.let { interact(it, ATTACK_OP) } ?: message("No such player nearby.")
+                )
             val npc = npcsWithin(coord, FIGHT_RADIUS).filter { it.type == type }.minByOrNull { it.coord.chebyshev(coord) }
             if (npc == null) message("No such NPC nearby.") else interact(npc, ATTACK_OP)
         }

@@ -181,6 +181,7 @@ public class Farming : ContentPlugin {
         when {
             obj == Objs.RAKE -> rakeClick(p, patch)
             seed != null -> plant(p, patch, seed)
+            obj in SeedBox.BOXES -> plantFromBox(p, patch)
             obj == Objs.PLANTPOT_EMPTY -> saplings.fillPot(p, patch)
             obj in FarmingItems.COMPOST -> compost(p, patch, obj)
             obj in FarmingItems.CANS -> water(p, patch, obj)
@@ -217,8 +218,22 @@ public class Farming : ContentPlugin {
         return state.stage > 1
     }
 
+    /**
+     * SB6 Wiki "Seed box": "Using the box on a patch will automatically plant the first applicable seed of that patch's type"
+     * (box order; enough seeds and the Farming level). **OPEN-SB2:** the message when none fits.
+     */
+    private fun plantFromBox(p: PlayerRef, patch: Patch) {
+        val box = p.inv(Invs.SEED_BOX)
+        val crop =
+            (0 until box.size)
+                .mapNotNull { box.obj(it).takeIf { o -> o >= 0 }?.let { o -> crops.bySeed[o] } }
+                .firstOrNull { it.type == patch.type && p.level(Stats.FARMING) >= it.level && box.total(it.seed) >= it.seedsPer }
+                ?: return p.message("You don't have any seeds in your seed box that can be planted here.")
+        plant(p, patch, crop, Invs.SEED_BOX)
+    }
+
     /** F3: sow [crop] on a raked patch: the seeds (or sapling) are used up, the planting xp is given at once (rev 242, OPEN-FM1). */
-    private fun plant(p: PlayerRef, patch: Patch, crop: Crop) {
+    private fun plant(p: PlayerRef, patch: Patch, crop: Crop, from: Int = Invs.INV) {
         val state = patches.load(p, patch).state
         val tool = if (crop.isSapling) Objs.SPADE else Objs.DIBBER
         val problem =
@@ -228,22 +243,22 @@ public class Farming : ContentPlugin {
                 state.phase != Phase.WEEDS -> "There is already something growing here."
                 p.level(Stats.FARMING) < crop.level -> "You need a Farming level of ${crop.level} to plant this."
                 p.inv(Invs.INV).total(tool) == 0L -> "You need a ${p.objName(tool).lowercase()} to plant this."
-                p.inv(Invs.INV).total(crop.seed) < crop.seedsPer -> "You need ${crop.seedsPer} seeds to plant in this patch."
+                p.inv(from).total(crop.seed) < crop.seedsPer -> "You need ${crop.seedsPer} seeds to plant in this patch."
                 else -> null
             }
         if (problem != null) return p.message(problem)
         val anim = if (crop.isSapling) Seqs.HUMAN_DIG else Seqs.FARMING_SEED_DIBBING
-        Production.start(p, Batch(1, anim, FarmingConst.PLANT_TICKS) { plantNow(this, patch, crop) }, FarmingConst.PLANT_TICKS)
+        Production.start(p, Batch(1, anim, FarmingConst.PLANT_TICKS) { plantNow(this, patch, crop, from) }, FarmingConst.PLANT_TICKS)
     }
 
-    private fun plantNow(p: PlayerRef, patch: Patch, crop: Crop): Boolean {
+    private fun plantNow(p: PlayerRef, patch: Patch, crop: Crop, from: Int): Boolean {
         val state = patches.load(p, patch).state
         if (state.phase != Phase.WEEDS || state.stage != 0) return false
         // Wiki "Plant pot": planting a sapling returns the empty plant pot.
         val pot = chains.chains.any { it.sapling == crop.seed }
         val done =
             p.transaction("farming-plant") {
-                remove(Invs.INV, crop.seed, crop.seedsPer) && (!pot || add(Invs.INV, Objs.PLANTPOT_EMPTY, 1))
+                remove(from, crop.seed, crop.seedsPer) && (!pot || add(Invs.INV, Objs.PLANTPOT_EMPTY, 1))
             }
         if (!done) return false
         patches.store(p, patch, state.with(crop = crop.index, phase = Phase.GROWING, stage = 0, watered = false), p.epochMinutes)

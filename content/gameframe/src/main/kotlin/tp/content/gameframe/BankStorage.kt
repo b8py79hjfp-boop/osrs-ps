@@ -1,6 +1,7 @@
 package tp.content.gameframe
 
 import tp.plugin.AttrKey
+import tp.plugin.BankItemOp
 import tp.plugin.BankTransfer
 import tp.plugin.ButtonClick
 import tp.plugin.ContentPlugin
@@ -12,6 +13,7 @@ import tp.symbols.Components
 import tp.symbols.Invs
 import tp.symbols.Objs
 import tp.symbols.Varbits
+import tp.symbols.Varps
 
 /**
  * Storage items in the bank (docs/mechanics/bank.md B30-B34): the backpack column's "Fill" / "Empty" for essence pouches,
@@ -30,6 +32,10 @@ public class BankStorage : ContentPlugin {
         for ((i, load) in LOADS.withIndex()) onButton(load) { RunePouchLoadouts.load(this, i) }
         for ((i, comp) in LOADOUTS.withIndex()) onButton(comp) { click -> RunePouchLoadouts.editSlot(this, i, click.slot) }
         for ((i, comp) in NAMES.withIndex()) onButton(comp) { RunePouchLoadouts.editName(this, i) }
+        onButton(Components.Bankmain.DEPOSITCONTAINERS) { emptyContainers(this) }
+        onButton(Components.Bankmain.DEPOSITCONTAINERS_TOGGLE) {
+            setVarbit(Varbits.BANK_HIDEDEPOSITCONTAINERS, 1 - varbit(Varbits.BANK_HIDEDEPOSITCONTAINERS))
+        }
         onButton(Components.Bankside.RUNEPOUCH_SELECT_LIST) { click -> RunePouchLoadouts.pickRune(this, click.slot) }
         onButton(Components.Bankside.RUNEPOUCH_NAME_SELECT_LIST) { click -> RunePouchLoadouts.pickName(this, click.slot) }
     }
@@ -182,6 +188,26 @@ public class BankStorage : ContentPlugin {
                     then(Int.MAX_VALUE)
                 }
             }
+        }
+
+        /**
+         * B35 "Empty containers" (`bankmain:depositcontainers`): every storage item in the backpack whose bank op reads
+         * "Empty" (CS 2576: filled essence pouches, a coal bag with coal, gem bag, herb sack, seed box, rune pouch) is
+         * emptied into the bank, and the looting bag's loot is banked. **OPEN-B35:** the exact set of containers.
+         */
+        fun emptyContainers(p: PlayerRef) {
+            val inv = p.inv(Invs.INV)
+            val seen = HashSet<Int>()
+            for (slot in 0 until inv.size) {
+                val obj = inv.obj(slot)
+                if (obj < 0 || !seen.add(obj)) continue
+                if (obj in LootingBag.BAGS) {
+                    if (p.inv(Invs.LOOTING_BAG).freeSlots < p.inv(Invs.LOOTING_BAG).size) depositLoot(p)
+                    continue
+                }
+                if (extraOpText(p, obj) == "Empty") p.events.publish(BankItemOp(p, slot, obj, "Empty"))
+            }
+            p.setVarp(Varps.IF1, storageBits(p))
         }
 
         // ---- looting bag panel
