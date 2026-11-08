@@ -143,6 +143,15 @@ public object SharedAttrs {
     /** NPC attr: damage on this raid NPC earns no points while set (CoX: an Olm hand it has regained control of). */
     public val RAID_NO_POINTS: AttrKey<Boolean> = AttrKey("raid_no_points")
 
+    /**
+     * NPC attr: per-mille multipliers raid scaling puts on the NPC's rolls and damage (ToA toa.md TA31: the defence and
+     * attack rolls x (250 + RL) / 250, damage up to +150%), applied by the combat formulas: [RAID_DEFENCE_PERMILLE] on
+     * the defence roll against it, [RAID_ACCURACY_PERMILLE] on its attack roll, [RAID_DAMAGE_PERMILLE] on its max hit.
+     */
+    public val RAID_DEFENCE_PERMILLE: AttrKey<Int> = AttrKey("raid_defence_permille")
+    public val RAID_ACCURACY_PERMILLE: AttrKey<Int> = AttrKey("raid_accuracy_permille")
+    public val RAID_DAMAGE_PERMILLE: AttrKey<Int> = AttrKey("raid_damage_permille")
+
     /** NPC attr: the raid room an NPC was spawned for (CoX cells: template positions per rotation). */
     public val RAID_ROOM: AttrKey<RaidRoomFrame> = AttrKey("raid_room")
 

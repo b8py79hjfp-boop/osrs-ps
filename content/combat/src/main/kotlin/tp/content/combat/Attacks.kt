@@ -212,7 +212,7 @@ internal object Attacks {
                         AttackType.MAGIC -> NpcCombatDef.DEF_MAGIC
                         AttackType.RANGED -> rangedDefence
                     }
-                Formulas.npcDefenceRoll(level, NpcCombatTable.of(target.type)?.defence?.get(column) ?: 0)
+                RaidScale.defence(target, Formulas.npcDefenceRoll(level, NpcCombatTable.of(target.type)?.defence?.get(column) ?: 0))
             }
 
             is PlayerRef -> {

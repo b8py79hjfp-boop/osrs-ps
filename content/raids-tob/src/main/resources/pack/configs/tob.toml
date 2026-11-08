@@ -5,3 +5,5 @@ size = 120
 scope = "Perm"
 stack = "Always"
 protect = false
+# Fixed id: ToB's reclaim inventory had 1036 before any other pack existed (player saves key inventories by id).
+num = 1036

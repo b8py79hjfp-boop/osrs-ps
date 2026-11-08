@@ -452,7 +452,7 @@ internal object NpcCombat {
                 CombatStyle.MAGIC -> Formulas.npcDefenceRoll(npc.level(NpcStat.MAGIC), def?.magicAttack ?: 0)
             }
         val defenceRoll = Attacks.defenceRoll(victim, type)
-        val damage = npcDamage(npc, def, style, victim, attackRoll, defenceRoll)
+        val damage = npcDamage(npc, def, style, victim, RaidScale.accuracy(npc, attackRoll), defenceRoll)
         val delay =
             when (style) {
                 CombatStyle.MELEE -> 0
@@ -485,7 +485,7 @@ internal object NpcCombat {
             SlayerGear.unprotectedMax(npc, victim) ?: npc.maxHitOverride.takeIf { it >= 0 } ?: def?.maxFor(style)
                 ?: Formulas.maxHit(npc.level(NpcStat.STRENGTH) + EFFECTIVE_BASE + 1, 0)
         val hit = !protected && Formulas.hits(attackRoll, defenceRoll, npc::random)
-        return if (hit) Formulas.damage(max, npc::random) else 0
+        return if (hit) Formulas.damage(RaidScale.damage(npc, max), npc::random) else 0
     }
 
     /** Hand-written fights (bosses.md B1): the script picks the attack; poisonous hits still poison (N7). */

@@ -100,6 +100,12 @@ public sealed interface WipePolicy {
 
     /** The room starts again with everyone alive, items kept (ToB Entry, TB16); content restarts it on RoomFailed. */
     public object RetryRoom : WipePolicy
+
+    /**
+     * Decided per run at the wipe (ToA attempts, TA41-TA45): [pick] returns [RetryRoom], [FailRaid] or
+     * [EjectWithGraves], and may spend state (an attempt) while it decides. Called once per wipe.
+     */
+    public class ByRun(public val pick: (RaidRun) -> WipePolicy) : WipePolicy
 }
 
 /** What a lost session does (brief 3.10). */

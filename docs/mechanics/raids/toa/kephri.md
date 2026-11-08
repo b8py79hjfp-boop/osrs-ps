@@ -41,7 +41,7 @@ source gives a damage number by raid level for any Kephri attack, and none gives
   stab **60**, slash **300**, crush **100**, magic **200** (params 5-8, infobox agrees); ranged light / standard / heavy
   **300** (infobox only). **Attack speed 6** (param 14, infobox). **Max hit 24** (infobox; scale not stated, **OPEN-KP2**).
   Attack style magic. Poison and venom resistance 100, cannon-immune, thralls not immune.
-- **Elemental weakness** fire: **40%** on the shielded form, **35%** on the final form (infobox); Main says 40% since 29 May 2024
+- **Elemental weakness** fire: **40%** on the shielded form, **35%** on the final form (infobox); the Kephri page changelog says 40% since 29 May 2024
   and Strat says "35% more damage from fire spells" (conflict 6). Best melee style stab, then crush; slash is "highly resistant";
   ranged and magic very resistant (Strat).
 - **Scarab Swarm** 11723 `TOA_KEPHRI_SHIELD_SCARAB`: size 1, combat 8, `stats` [1, 0, 1, 10, 1, 1] = **HP 10**, defence 0, op2
@@ -97,13 +97,13 @@ source gives a damage number by raid level for any Kephri attack, and none gives
   **OPEN-KP1** (TA's shadow chain for Akkha is raid, then path, then party with rounding to 5 / 10; applying it to Kephri is an
   assumption behind `toa.scaling.model`).
 - **Kephri's children** scale their combat stats "barring their Defence" with raid level (Strat); since Sweep (25 Jun 2025) the
-  scarabs inside Kephri's fight **no longer scale their Defence**. Agile Scarabs and eggs are not affected by raid level (Strat).
+  scarabs inside Kephri's fight **no longer scale their Defence**. Agile Scarabs are not affected by raid level (Strat); nothing is stated for the eggs (**OPEN-KP17**).
   Swarm HP is "scaled" in the infobox but players always hit swarms and eggs for their max.
 - **Arcane Scarab relocation counter** scales with party size (2 + players, see KP9). The Page's HP row (150 shielded, 80 final)
   is the solo, raid-level-0 value (infobox "scaledhp"), the same reading as Akkha.
 - Path-level effects (Main, Strat): auto-attacks become **faster** per two levels (amount **OPEN-KP4**); in the shield-charging
   intermission **groups of three** swarms may appear instead of one, "the frequency of these increase at raid level 4"
-  (read as path level 4, **OPEN-KP5**). Path levelling no longer changes the Arcane Scarab's charge speed (2 Sep 2022).
+  (read as path level 4, **OPEN-KP5**). Path levelling no longer changes the Arcane Scarab's charge speed (8 Sep 2022).
 - Prayer invocations: Quiet Prayers -10% protection (cache struct 432), Deadly Prayers drains Prayer by 20% of damage taken (433).
 
 ## Rules
@@ -113,8 +113,9 @@ source gives a damage number by raid level for any Kephri attack, and none gives
   calls her **children** and the swarms restore **one shield charge**; at the end of the intermission she wakes (9581) back
   into 11719 (MT treats any change among 11719-11721 as a phase transition). After the last shield the form changes to 11721 (final), whose
   HP is 80 (the real health pool). The number of shield breaks is a source conflict: the Page says "two phases of shields", Strat says
-  the swarm "after the third shield" dissipates and starts "her fourth and final phase", and TA only counts two intermissions
-  with swarm waves (conflict 1). The HP at which each break happens is not stated (**OPEN-KP6**).
+  the swarm "after the third shield" dissipates and starts "her fourth and final phase", and ST tracks the NPC changes 11720, 11719,
+  11720, 11719, 11721 as "Phase 1" to "Phase 4" (11721 = "green health bar exposed"), i.e. **three depletions, two swarm
+  intermissions** (conflict 1). Only the HP at which each break happens is not stated (**OPEN-KP6**).
 - **KP2 Main attack.** A **fireball** launched into the air "every few ticks" at **speed 6** (cache, infobox) with a magic roll.
   A **shadow on the ground** forewarns the target tile(s); a player on it takes "immense damage" and Protect from Magic
   mitigates **about 66%** (Strat). MT times the hit from the shadow graphic: **1447 -> 4 ticks, 1446 -> 3 ticks, 2111 -> 2
@@ -143,8 +144,10 @@ source gives a damage number by raid level for any Kephri attack, and none gives
   Spitting NE of Kephri, Soldier E, Arcane SE (Strat). Kill them before resuming the fight.
 - **KP6 Shield swarms.** Swarms spawn at **six edge points** (NE, SE, S, SW, NW, N); the first point is random, then **clockwise,
   occasionally skipping one**. First intermission: **28 swarms**, of which the first **18** heal; second: **24**, first **14**
-  heal; the rest do not reach her in time. **Spawn speed accelerates in four steps**: 4 swarms every 4 ticks, 4 every 3, 4
-  every 2, then the last 16 one **every tick** (stated for the first intermission, the second is not given, **OPEN-KP10**).
+  heal; the rest do not reach her in time. **Spawn speed accelerates in four steps**, one swarm per spawn event: the first 4 swarms
+  spawn every 4 ticks, the next 4 every 3, the next 4 every 2 and the last 16 every tick, so the 28 swarms take 4x4 + 4x3 + 4x2 + 16 =
+  **52 ticks**. TA's wave counter (a new wave number per spawn tick, healing waves 1 to 18) fits one swarm per event. The batch split of
+  the 24-swarm second intermission is not given (**OPEN-KP10**).
   Each swarm that arrives plays animation 9607 and heals the shield **about 10% or less** (less for larger teams); overcharge is
   capped at roughly **15% above** her maximum. Each swarm has 10 HP and defence bonuses of -100.
   Path levels 2+ may send **groups of three**. **Medic!** keeps spawning swarms from the edges outside the shield phases
@@ -159,18 +162,28 @@ source gives a damage number by raid level for any Kephri attack, and none gives
 - **KP9 Arcane Scarab.** Does not attack players directly; it **charges a red swarm** around itself (3x3 on itself, graphic 2149).
   A fully charged swarm hits **all players** for well over **65 damage** without Protect from Magic and Protect from Magic
   cuts it by about **66%** ("even through prayer"). It **relocates** (dispersing the charge) after **2 + N successful hits** (N =
-  players in the raid; misses count, thralls and burn do not), or on a single hit of **39 or more** (Mod Ash, 28 Oct 2024) (conflict 5).
+  players in the raid; misses count, thralls and burn do not), or on a single hit of **39 or more** (Mod Ash, 28 Oct 2024) (conflict 5); Strat also lists
+  "three moderately damaging hits" and "successful use of the charge attack" as relocation triggers. Since 1 Sep 2022 Arcane Scarabs
+  no longer nullify damage in various situations or teleport immediately after firing, and bomber scarabs detonate more consistently.
   Relocation order SE -> NW -> mid-south -> NE (Strat). It always first appears south-east of Kephri. Charge time, the charge-release
   delay and the "within 4 ticks" qualifier are **OPEN-KP12**.
 - **KP10 Final phase.** Kephri becomes 11721 with HP 80 and **no longer regenerates HP** (1 Sep 2022); her defence is reset
-  to 80 (Page). Soldier scarabs are described as healing her "on actual health" (Strat), which conflicts with that note
-  (conflict 9). Dung Strike and Mass Incubation are used only while shielded (Page); the Page and Strat do not say which attacks run in the final phase besides the fireball, which is assumed to continue (**OPEN-KP16**).
+  to 80 (Page). The 1 Sep 2022 note is read as passive regeneration; Soldier scarab swarms still
+  restore her health "if Kephri is on actual health" (Strat, Soldier: "recharge her shield or restore her health"), by an amount that scales with the
+  scarab's current HP (conflict 9, **OPEN-KP14** resolved). Dung Strike and Mass Incubation are used only while shielded (Page); the Page and Strat do not say which attacks run in the final phase besides the fireball, which is assumed to continue (**OPEN-KP16**).
 - **KP11 Defence drains.** Her base defence "can be lowered by a maximum of 20 damage", to a minimum of **60**, and is reset to
   80 for the final phase (Page, Strat); a drain bug was fixed on 8 Sep 2022. Specials: the bone dagger special **guarantees a hit** on Kephri when used first
   (6 Aug 2025). The Strat advises dumping damaging specials instead of draining unless a soulflame horn is used.
-- **KP12 Death and rewards.** Drops: Scabaras' capture (once, if not banked) and **Scarab dung** (obj 27214, only to the player
+- **KP12 Death and rewards.** Drops: Scabaras' capture (obj `TOA_BOOK_KEPHRI` 27306, once, if not banked) and **Scarab dung** (obj 27214, only to the player
   with the most damage). Spitting, Soldier and Arcane Scarabs give **0.5x** room points; Kephri 1x; per-room cap 20,000 room points
   (Drops).
+
+- **KP13 AoE stacking.** Since 1 Sep 2022 fewer AoE mechanics stack with each other; the post's own example is a Kephri bomb on a tile
+  where two players once stood, which no longer deals double damage. Which other Kephri AoEs stack is not stated.
+- **KP14 Stat restore.** Main (25 Jun 2025): drained stats are fully restored at the end of a boss fight. Her own defence drain is KP11.
+- **KP15 Remnant of Kephri.** Reward chest only at raid level **450+**, **zero deaths for all party members**, **all Kephri invocations
+  enabled** (Lively Larvae, More Overlords, Blowing Mud, Medic!, Aerial Assault) and Kephri defeated at **path level 4 or higher**
+  (Remnant of Kephri page, Main). Priority among remnants: Akkha, Zebak, Ba-Ba, Kephri, Tumeken, Ancient (Mod Ash, 25 Jul 2023).
 
 ## Attack reference
 
@@ -220,34 +233,35 @@ Cache category 11 (struct number in brackets); modifier from cache param 1162, e
 - **OPEN-KP3** which attack animation is the fireball and which are radial.
 - **OPEN-KP4** how much faster the auto-attack gets per two path levels.
 - **OPEN-KP5** the trio-swarm chance at each path level and what "raid level 4" means.
-- **OPEN-KP6** HP thresholds of the shield breaks, how many breaks there are (two or three), the size of one "shield charge".
+- **OPEN-KP6** HP thresholds of the three shield breaks and the size of one "shield charge" (the count is settled by ST).
 - **OPEN-KP7** rule choosing shadow graphic 1447 / 1446 / 2111 (distance from Kephri, projectile length).
 - **OPEN-KP8** Dung Strike: delay to impact, "too many scarabs" threshold, knock-back distance, how frequently it fires.
 - **OPEN-KP9** Mass Incubation: egg counts (light), fuse and hatch times, explosion radius and damage.
-- **OPEN-KP10** swarm spawn schedule of the second intermission, whether "every k ticks" counts before or after each spawn.
+- **OPEN-KP10** batch split of the second intermission's 24 swarms, and whether each interval precedes or follows its spawn.
 - **OPEN-KP11** Medic! spawn rate and swarm speed (50% slower than what).
 - **OPEN-KP12** Arcane Scarab charge time, release delay, damage, the "4 tick" qualifier on the 39 hit; Spitting radius 8 versus 10.
 - **OPEN-KP13** whether Vengeance bounces bomb damage and in which phase.
-- **OPEN-KP14** whether the soldier's swarm heals Kephri in the final phase (conflict 9).
+- **OPEN-KP14** resolved: soldier swarms heal her health when she is on real health; passive regeneration is what the 1 Sep 2022 note removes (the interpretation is not stated outright).
 - **OPEN-KP15** spawn timing of the children after the shield breaks (positions are fixed, timing is not).
 - **OPEN-KP16** which attacks Kephri uses in the final phase (the fireball is assumed; Dung Strike once at the start).
+- **OPEN-KP17** whether eggs scale with raid level (stated only for Agile Scarabs).
 
-**16 open items.** Working assumptions sit behind named config flags (`toa.scaling.model`, `toa.kephri.*`).
+**17 open items (OPEN-KP14 resolved).** Working assumptions sit behind named config flags (`toa.scaling.model`, `toa.kephri.*`).
 
 ## Conflicts between sources
 
 1. **Shield breaks.** Page: "After two phases of shields"; Strat: children at the first and second threshold, "after the third shield is
-   cleared" the final phase; TA: only two intermissions. Strat is the most specific and TA fits it; used as three shield depletions,
-   two intermissions with swarms (OPEN-KP6).
+   cleared" the final phase; TA: only two intermissions. Strat and ST (Phase 1 to 4) agree; used as three shield depletions, two
+   intermissions with swarms (OPEN-KP6 only for HP thresholds).
 2. **Lively Larvae.** Cache "double", Main "2 to 4" agree; Strat "2 to 3-5" loses.
 3. **Soldier attack speed.** Cache param 14 = 6, infobox 7. Cache wins (6).
 4. **Spitting radius.** Strat has both 8 and ten tiles; unresolved (OPEN-KP12).
 5. **Arcane hit threshold.** Arcane page 39 or more in one hit (Mod Ash tweet 28 Oct 2024) versus Strat "over 40" and "over 39+
    within 4 ticks". The Arcane page wins.
-6. **Fire weakness.** Infobox 35% / 40%, Strat 35%, Main change 40%. Infobox per form is used.
+6. **Fire weakness.** Infobox 35% / 40%, Strat 35%, Main change 40%. Infobox per form is used; the 40% date comes from the Kephri page changelog.
 7. **Fireball size.** Infobox max hit 24 versus "immense damage" in Strat; kept as OPEN-KP2.
 8. **Medic!.** Cache "continuous", Main "50% slower"; both kept.
 9. **Final phase healing.** Strat: soldier scarab heals her if she is on real health; Main (1 Sep 2022): "Kephri no longer
-   regenerates HP during her final phase". Treated as OPEN-KP14.
+   regenerates HP during her final phase". Read as passive regeneration versus swarm healing; both kept (KP10).
 10. **Blowing Mud.** Cache "twice as potent" versus Strat "no effect in solo encounters". Strat used.
 11. **Bomber scarab.** Strat names an NPC-like "Bomber Scarab"; the cache has none (projectile 2147). The projectile reading is used.

@@ -59,4 +59,9 @@ alternative behind a named flag (`toa.*`).
 
 ## Status (2026-11-08)
 
-- Research: done (seven docs drafted from cache 2757, the wiki copies, seven RuneLite ToA plugins); verifier passes running.
+- Research: done (seven docs from cache 2757, the wiki copies and seven RuneLite ToA plugins; three verifier passes, all
+  findings applied).
+- Milestone 1: done except the party interfaces (772 / 774 / 776 / presets, next): definition and instance, lobby door,
+  Nexus doors and the room graph, flame barriers, the Wardens door, the burial chamber, invocations and raid level,
+  starting path levels and Walk the Path, attempts (`WipePolicy.ByRun`), HP / roll scaling, HUD 481; `ToaSmokeScenario`
+  walks all four paths to the burial chamber.

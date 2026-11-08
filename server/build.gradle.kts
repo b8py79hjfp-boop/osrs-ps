@@ -26,6 +26,7 @@ dependencies {
     runtimeOnly(project(":content:raids-tfa"))
     runtimeOnly(project(":content:raids-tob"))
     runtimeOnly(project(":content:raids-cox"))
+    runtimeOnly(project(":content:raids-toa"))
     implementation(project(":plugin-api"))
     implementation(project(":services"))
     implementation(project(":hub"))

@@ -262,7 +262,10 @@ public class Raids internal constructor() {
         }
 
         /** Everyone in the room is dead: eject with graves (TFA) or fail (ToB). */
-        private fun wipe(dying: PlayerRef, run: RaidRun, rule: WipePolicy, policy: tp.plugin.DeathPolicyRequest) {
+        private fun wipe(dying: PlayerRef, run: RaidRun, given: WipePolicy, policy: tp.plugin.DeathPolicyRequest) {
+            // A per-run rule resolves once to a concrete one (a nested ByRun falls back to failing the raid).
+            val rule = (given as? WipePolicy.ByRun)?.pick?.invoke(run)?.takeIf { it !is WipePolicy.ByRun } ?: given
+            if (rule is WipePolicy.ByRun) return wipe(dying, run, WipePolicy.FailRaid(), policy)
             val room = (run.state as? RunState.InRoom)?.room
             if (rule == WipePolicy.RetryRoom && room != null) {
                 // TB16: everyone stands up again outside the room, items kept; content restarts the room on RoomFailed.

@@ -52,7 +52,7 @@ pit (BB11).
   complete: Ba-Ba." (ST).
 - **Player-side ids seen by MT** (names are the cache's; all are reused generic assets): slam impact graphic **1103** (`DARKBOW_SMOKE_ARROW_IMPACT`),
   boulder knock-down animation **7210** (`HUMAN_KNOCKDOWN`), knock-back animation **9799** (`HUMAN_TROLL_FLYBACK_MERGE`), pit fall animation **4366**
-  (`QUEST_LUNAR_FALLING_ON_PLATFORM`; defined in MT, not used by its detection), banana slip animation **4030** (`ROYAL_HUMAN_SLIP_FALL`) with graphic **1575**
+  (`QUEST_LUNAR_FALLING_ON_PLATFORM`; MT declares the constant but never uses it), banana slip animation **4030** (`ROYAL_HUMAN_SLIP_FALL`) with graphic **1575**
   (`TOB_BLOAT_STUNNED`), rubble absorb graphic **1463** (`EARTHSURGE_IMPACT`). The peel fall animation is seq **9758** `TOA_BABA_BANANA_FALL` (cache, 162 cycles = 5.4 ticks).
 - **Ba-Ba animations (cache; all generic "mandrill" names; keyframe-range end in brackets; whether one keyframe is one 20 ms cycle is not established,
   OPEN-BB11):** idle 9741 (90), walk 9737 and 9738 backwards (90), walk 02 9739 / 9740 (60), melee 9742 `NPC_MANDRILL_ATTACK_MELEE` (60), melee **9743**
@@ -97,7 +97,7 @@ pit (BB11).
   Hitpoints, and "a base tank can keep aggro on her by keeping their health low" (Strat). The exact rule and re-target interval: **OPEN-BB2**.
 - **BB2 Standard attacks:** speed **6** (**4** in the last form, BB12). Melee (crush, max **24**) in range. **Protect from Melee** blocks the melee fully since 25 Jun 2025
   (before: damage reduced to 33%, then to 25% on 29 May 2024). Which animation plays (9742 or 9743), whether she has an ordinary ranged or magic auto attack (the infobox lists crush
-  and ranged; CA-Perfect says "Ba-Ba's attacks off-prayer"), and how Quiet Prayers (10% less effective) interacts with "fully blocks": **OPEN-BB3**.
+  and ranged; CA-Perfect says "Ba-Ba's attacks off-prayer"), and the amount for Quiet Prayers (10% less effective): the 25 Jun 2025 update post ("Summer Sweep Up: Combat") says "Protect from Melee now mitigates all damage at Ba-Ba, unless Invocations which reduce the effectiveness of Protection Prayers are activated", so only the reduced amount is open: **OPEN-BB3**.
 - **BB3 Special selection:** besides the boulder phases she has four specials: Shockwave (BB4), Rockfall (BB5), Rock Throw (BB6) and Baboon's Discharge (BB7). **No source gives the
   order, the cadence or the weights.** Stated links only: after a Rock Throw, "if debris was destroyed, Ba-Ba will use Rockfall again" (Strat); the Shockwave doubles as a "stomp" when her
   target stays under her (BB4). **OPEN-BB4**; working assumption: normal attacks on her cycle and a special on a fixed cycle, behind `toa.baba.specialCycle`.
@@ -107,7 +107,7 @@ pit (BB11).
   plus one tile out of each side is 5 wide; with the invocation a 5x5 block plus one tile per side is 7 wide) (conflict 2, **OPEN-BB5**). **Stomp:** if her target stays under her "for a
   prolonged time" she uses the same attack and "reacts much faster" (the duration is **OPEN-BB5**). Telegraph: the ground shadow; graphic on a hit tile **1103** (MT). Damage, hit delay,
   animation: **OPEN-BB5**.
-- **BB5 Rockfall** (Page, Strat, Main): she swipes her claws and rocks fall from the ceiling. **One rock per player** lands on the tile the player stood on when the ability started and
+- **BB5 Rockfall** (Page, Strat, Main; the Page merges Rockfall and Rock Throw into one description, "large boulders fall at random locations ... shortly after, Ba-Ba will hurl rocks at every player", while the Strat splits them into two attacks, conflict 14; the Strat split is used): she swipes her claws and rocks fall from the ceiling. **One rock per player** lands on the tile the player stood on when the ability started and
   does heavy damage to a player still under the shadow. At the same time **two large piles of debris** drop (Rubble NPCs 11784-11787, size 3), shown by the same shadow; each has a 3x3
   AoE, players directly under the shadow are damaged, others are "harmlessly pushed aside". Debris HP: "10 health, increasing by 10 for every player in the room" (Strat; OPEN-BB6,
   conflict 3). **Fall time:** graphic 2250 hits **6 ticks** after it appears, 2251 after **4 ticks** (MT; the Wardens phase 3 detector uses the same pair). Graphic 2252 `_FASTEST` has no
@@ -117,11 +117,11 @@ pit (BB11).
   hitsplat lands on the marked tile at the activation tick and the player is not in the knock-back animation 9799.
 - **BB6 Rock Throw** (Page, Strat, Main, MT): she throws a large boulder at **every player**; it lands "~6 ticks" after it is used (Strat) / **7 ticks** after her animation **9744** starts (MT:
   "seemingly always 7 ticks later"; conflict 5). The hit is "massive", and "less in a group than solo, though still very high" (Strat). It is **fully nulled** for a player standing next to an
-  unopened sarcophagus, a baboon or a debris pile; since 25 Jun 2025 the damage "is now always split completely with any appropriate object, including sarcophagi" (Main). Each object takes
+  unopened sarcophagus, a baboon or a debris pile (Strat), or, per the Page, "even another player" (Page vs Strat, conflict 13; the Strat omits players); since 25 Jun 2025 the damage "is now always split completely with any appropriate object, including sarcophagi" (Main). Each object takes
   damage from the throw: debris **10** (destroyed), an unopened sarcophagus **30**, a baboon **12** (a baboon has 10 HP, so a shared throw kills it) (Strat). MT's "next to" test is the 5x5 block
   around the 3x3 debris (footprint plus one tile on every side); it observed that a correctly handled throw deals about 4 or less and a failed one about 40 or more, and that when too many players stand
   by one debris only some are spared (the debris took one hitsplat per spared player). The capacity of an object and the exact damage are **OPEN-BB7**. MT also notes that when she changes phase
-  while a throw is in the air the pending throws are discarded (its tracking is cleared on the phase change), which may mean the throw does not land: **OPEN-BB7**. MT's older note "you can half it by
+  while a throw is in the air, MT clears its pending-throw tiles when a Rubble NPC takes a hitsplat whose graphic is not 1463, which its author reads as a phase change; that the throw then does not land is **my inference, not stated**: **OPEN-BB7**. MT's older note "you can half it by
   standing next to a baboon or sarcophagus" is superseded by the 25 Jun 2025 change (conflict 6).
 - **BB7 Baboon's Discharge** (Page, Strat, Baboon): she calls **1-4** baboons (Page, Baboon, Main 25 Jun 2025, down from 1-8; the Strat says "2-4 depending on party size"; conflict 7): level 77,
   **10 HP**, ranged attackers (speed 4), and "players are guaranteed to land max hits on them". They target the **sarcophagi** on the arena edges; "periodically" one stops attacking players and tries to open a
@@ -147,7 +147,7 @@ pit (BB11).
   and when debris returns: **OPEN-BB10**.
 - **BB11 Mind the Gap!:** the pit at the bottom of the arena "becomes a danger zone" and any player knocked into it "either from a boulder knockback or from the scream" is **killed instantly**; safe spots are the sides
   (outside the middle columns where the gap is) or the very top row (Page, Strat, Main). MT's geometry: the pit is the **10** region-local tiles x 20-21, y 30-34 of region 15188 (a 2 x 5 block) and the boulder wall
-  column is x = 22; MT flags standing there as the gap mistake regardless of the invocation (animation 4366). What a fall does without the invocation is not stated (**OPEN-BB10**).
+  column is x = 22; MT flags standing there as the gap mistake purely by tile (previous-tick tile in the pit; no animation is used) regardless of the invocation. Wording: Main says players fall "unless they stand at the northern/southern sides of the room", Page/Strat say the sides or the very top row (conflict 12). What a fall does without the invocation is not stated (**OPEN-BB10**).
 - **BB12 Last form (33.3% and below):** the cache has NPC **11779**: attack 200, defence 100, strength 220, defence bonuses 100 / 200 / 320 / 400, **attack speed 4** (derived max hit 32). The wiki infobox and the Strat
   say nothing about a change; the evidence is the cache and ST's id-change reading (conflict 1). Whether the Defence drain floor stays at 60 (Page: "a maximum of 20 damage ... down to 60", from base 80) or follows the new
   base, and whether the changes apply from the end of the second boulder phase or from the 33.3% threshold: **OPEN-BB11**.
@@ -175,7 +175,7 @@ pit (BB11).
 - **Raid mode** (Entry 0-149, Normal 150-299, Expert 300-600): no Ba-Ba-specific rule; everything follows the raid-level multiplier. CA tasks: Perfect Ba-Ba needs raid level 150+, two or more players, all Ba-Ba
   invocations and no damage from off-prayer attacks, her slam, boulders, the rubble attack or falling rocks (no sarcophagus may be opened; peels are allowed; wipes allowed); Ba-Bananza needs raid level 300+, all
   Ba-Ba invocations and path level 4 (solo deaths do not count against it).
-- **Solo:** fewer baboons, lower Rock Throw damage, debris HP 10 or 20 (OPEN-BB6).
+- **Solo:** fewer baboons, **higher** Rock Throw damage than in a group (Strat: "less damage in a group encounter than solo"), debris HP 10 or 20 (OPEN-BB6).
 - **Party scale:** HP x (1 + 0.9 + 0.9 + 0.6 x (n - 3)) for n of at least 3; boulders half the party effect.
 - **Path level 2 / 4:** faster rockfall, wider sarcophagus blast, boulder HP +10% / +25% after the party step.
 
@@ -187,9 +187,9 @@ pit (BB11).
 
 ## Changes up to 2026-11-03 that matter
 
-25 Jun 2025 (Protect from Melee fully blocks; Rock Throw damage fully split with debris, baboons and sarcophagi; 1-4 baboons, 10 HP, guaranteed max hit, two peels); 29 May 2024 (Protect from Melee 33% to
-25%; ranged heavy defence 200 to 120; challenge-room baboons made static HP); 14 Sep 2022 (no walking inside rubble); 8 Sep 2022 (boulders no longer invisible; Defence drain bug; path level +8 / 13 /
-... %; mechanics at levels 2 and 4); 1 Sep 2022 (peels on baboon death with far less damage; sarcophagus blast 1x1 instead of 3x3; no getting stuck in rock); 26 Aug 2022 (no rubble safespots). No Ba-Ba entry
+25 Jun 2025 (drained stats fully restored at the end of a boss fight; Protect from Melee fully blocks unless a prayer-weakening invocation is on; Rock Throw damage fully split with debris, baboons and sarcophagi; 1-4 baboons, 10 HP, guaranteed max hit, two peels); 29 May 2024 (Protect from Melee 33% to
+25%; ranged heavy defence 200 to 120; challenge-room baboons made static HP); 14 Sep 2022 (no walking inside rubble); 8 Sep 2022 (Boulderdash boulders come out faster; boulders no longer invisible; Defence drain bug; path level +8 / 13 /
+... %; mechanics at levels 2 and 4); 1 Sep 2022 (AoE no longer stacks: double damage from overlapping AoEs removed; peels on baboon death with far less damage; sarcophagus blast 1x1 instead of 3x3; no getting stuck in rock); 9 Sep 2022 hotfix (Ba-Ba's shadow and boulder attacks made consistent); 26 Aug 2022 (no rubble safespots). No Ba-Ba entry
 after 25 Jun 2025.
 
 ## Open list
@@ -218,3 +218,6 @@ boulder phase as ST reads it), `toa.baba.faithMorePrayerMoreDamage` (BB7, defaul
 9. Boulder set: "waves of four boulders ... one of the five" (Page, self-contradictory) vs "one of the five boulders in each column" (Strat). Five lanes used; whether a set has four or five boulders is OPEN-BB10.
 10. Boulder-hit damage: "moderate" (Page) vs "heavy" (Strat). Heavy used.
 11. The Boulder table is for "various team sizes and path levels" with no raid level stated (OPEN-BB1).
+12. Pit-safe positions: Main "northern/southern sides" vs Page/Strat "sides ... or the very top row". Both kept (BB11).
+13. Rock-nulling objects: Page lists "even another player" alongside sarcophagus, baboon and debris; Strat lists only the three objects. Page kept as a possibility, OPEN-BB7.
+14. Rockfall vs Rock Throw: one attack (Page) vs two (Strat). Two used.

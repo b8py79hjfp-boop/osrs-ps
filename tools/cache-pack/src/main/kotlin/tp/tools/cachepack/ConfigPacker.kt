@@ -19,7 +19,8 @@ import java.nio.file.Path
  * `stack`, `protect`, `transmit`) is server-side; it is kept as the `attributes` column of `custom-symbols.tsv`.
  */
 internal object ConfigPacker {
-    class InvDef(val name: String, val size: Int, val attributes: String)
+    /** [num]: an explicit id (`num = ...`) that stays put when other packs add inventories (saves key invs by id); 0 = allocate. */
+    class InvDef(val name: String, val size: Int, val attributes: String, val num: Int = 0)
 
     class VarpDef(val name: String, val clientCode: Int, val attributes: String)
 
@@ -37,7 +38,12 @@ internal object ConfigPacker {
                 when (s.name) {
                     "inventory" -> {
                         invs +=
-                            InvDef(name(s, "inv", where), int(s, "size", where, required = true), attributes(s, SERVER_KEYS_INV))
+                            InvDef(
+                                name(s, "inv", where),
+                                int(s, "size", where, required = true),
+                                attributes(s, SERVER_KEYS_INV),
+                                int(s, "num", where),
+                            )
                     }
 
                     "varp" -> {

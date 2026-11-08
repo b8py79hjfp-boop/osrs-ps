@@ -1,0 +1,10 @@
+# Tombs of Amascut (docs/mechanics/raids/toa.md TA44-TA45): items lost when the attempts run out, kept for the lobby
+# Item Retrieval chest (loc 46078 "Claim").
+[[inventory]]
+id = "inv.toa_reclaim"
+size = 120
+scope = "Perm"
+stack = "Always"
+protect = false
+# Fixed id, after ToB's 1036 (player saves key inventories by id).
+num = 1037

@@ -69,9 +69,10 @@ Zebak's Phantom (NPC 11774) reuses his attacks in Wardens phase 3; that fight is
 | **2184** | `ZEBAK_ROAR_WAVE_DUST` | 9647 (60 cycles = 2 ticks) | roar impact dust on each tile hit; also appears on a jug's landing tile for a tick (MT). Short versions 2953 and 3979 / 3980 / 3981 (rotated 90 / 180 / 270; seq 11596 = 46 cycles) |
 | 2174 | `ZEBAK_DUSTFALL01` | 9498 | dust fall (name only) |
 
+- **Client varbit:** `BUFF_ZEBAK_BLEED_DURATION_DISABLED` 14291 (cache symbol; presumably the bleed's duration display, role not stated).
 - **Plugin facts for the wave and swimming:** swimming pose ids **772 / 773** (MT); a push moves a player at least 3 tiles along Y, sometimes 4 (MT). A bleed leaves temporary blood splatters on the tiles a
   player walks (Wave, BWave, Page trivia).
-- **Drops** (Page): "Crondis' capture" (always, only if the player does not have it stored in their bank) and the **Fang** (always, only to the player who dealt the most damage; item
+- **Drops** (Page): "Crondis' capture" (item `TOA_BOOK_ZEBAK` 27308; always, only if the player does not have it stored in their bank) and the **Fang** (always, only to the player who dealt the most damage; item
   `TOA_ZEBAK_FANG` 27219). Music: "Jaws of Gluttony". Remnant of Zebak (item 27380 `TOA_PET_MORPH_ZEBAK`): raid level 450+, zero deaths for the whole party, all Zebak invocations on, path level 4 or higher.
 - **Points** (PT, raid-wide): damage to Zebak (11730 / 11732 / 11733 / 10680 `TOA_ZEBAK_TRANSMOG`) counts **1.5** points per HP; the room cap is **half** the normal one (10,000 against 20,000). The repo plan
   (`docs/plans/raids-brief.md`) lists the same 1.5x.
@@ -122,7 +123,7 @@ Zebak's Phantom (NPC 11774) reuses his attacks in Wardens phase 3; that fight is
   "sometimes only poison you and not damage you on the second tick". "Rarely, acid may not cover a tile behind a rock" (Strat). Per-tick damage, the spike curve, spit projectile 2194 landing time: OPEN-ZB7.
 - **ZB8 Jugs** (Page, Jug, Strat): each special spits **jugs** (stationary NPC 11735, 5 HP, ops Push / Pull / Hit). A jug can be **pushed or pulled straight or diagonally** and rolls (NPC 11736) "two tiles further before
   stopping" (1 Sep 2022); it breaks when **attacked** (ranged or magic; magic works since 8 Jan 2025 and allows an immediate next attack since 6 Aug 2025) or when it **hits one of the rocks**, releasing water that clears
-  the poison in a **5x5** area (**3x3** with Upset Stomach). The jugs have an **attack delay** so that only one shot is spent (28 Sep 2022), but not "if they are attacked before Zebak" (1 Sep 2022 wording). "Two extra jugs
+  the poison in a **5x5** area (**3x3** with Upset Stomach). The jugs have an **attack delay** so that only one shot is spent (28 Sep 2022), but not "if they are attacked before Zebak" (1 Sep 2022 wiki wording). The 1 Sep 2022 update post says instead "Jugs no longer set attack delay, but still respect it - so you should be able to pop a jug and hit Zebak immediately, but might have to wait if you hit Zebak before the jug"; the wiki wording and the 28 Sep entry differ from it (conflict 13), so the rule for who sets and who respects the delay is OPEN-ZB8. "Two extra jugs
   now appear during jug-related mechanics" (1 Sep 2022); the base count is not stated. "Every pattern that Zebak throws out will always have at least one jug that will create safespot(s)" (Strat). Diagonally
   pushing a jug into a rock can mis-apply the water ("indirect hits", Strat). The roar dust graphic 2184 also appears for a tick on the tile a jug lands on (MT). Number, positions, damage a jug does to a player it lands on
   ("getting hit by the water jugs does not fail" CA-Perfect, so it does hurt): OPEN-ZB8.
@@ -134,12 +135,12 @@ Zebak's Phantom (NPC 11774) reuses his attacks in Wardens phase 3; that fight is
   or a line), rock placement rule: OPEN-ZB9.
 - **ZB10 Tidal Waves** (Page, Wave, Strat): Zebak spits jugs and poison, then **slams his tail** (animation 9630 by name; boulders drop from the source side, graphic 2195 `ZEBAK_ROCK_FALL`, 260 cycles, by name) and a wave line sweeps the arena "from one
   side to the other". The first iteration "always starts to the south", the second "comes in from the north". A wave (NPC 11738, or 11739 when bloody) is a line with **gaps** to walk through; a player hit takes **6 - 10**
-  damage ("scales with invocation") and is **pushed in the direction of the wave** (at least 3 tiles, sometimes 4, MT); waves also push jugs and clean some poison. A pushed player over the edge lands in the **water**: walking
+  damage ("scales with invocation") (the Strat and Wave pages call it "moderate", conflict 12) and is **pushed in the direction of the wave** (at least 3 tiles, sometimes 4, MT); waves also push jugs and clean some poison. A pushed player over the edge lands in the **water**: walking
   speed, cannot attack, must climb a ramp (rock steps), and **crocodiles** in the water (cache NPC 11741, speed 2) bite for melee damage, partly blocked by Protect from Melee (Strat). MT swim poses 772 / 773 and
   a "moved more than 2 tiles in Y" test detect a push. Wave speed, count, spacing, push distance, gap widths and the time from slam to first wave: OPEN-ZB10. Fixed: players can no longer stand on one particular tile in the water
   (5 Oct 2022); pushes no longer carry the player closer to Zebak while attacking (6 Aug 2025); waves interact "smarter" with pushback (25 Jun 2025).
 - **ZB11 Bloody waves:** a wave that washes over blood splatters becomes a **Bloody Wave** (NPC 11739), whether the splatters come from a bleeding player or are the fixed ones at the north and south edges of the room
-  (BWave, the latter since 30 Jun 2026 "The Blood Moon Rises"). Its different effect, if any, is not stated (OPEN-ZB10).
+  (BWave, the latter since 30 Jun 2026 "The Blood Moon Rises"; BWave says the fixed splatters act on "the first waves at the start of the fight", so later waves are not covered by the sources). While a player is in the water, "Zebak will continue attacking alongside other crocodiles lurking in the waters" (Page). Its different effect, if any, is not stated (OPEN-ZB10).
 - **ZB12 Not Just a Head:** Zebak "will occasionally cast a form of **Blood Blitz** on all players" with one of two effects (Main, CA-Rock, Blitz; the Strat text calls it Blood Barrage, conflict 7): (a) the blast
   hits **8 - 11** "regardless of the player's defence bonuses" unless **Protect from Magic** is used, and **heals Zebak** "roughly ~66%" of the damage (Main, CA-Rock) / "2x the damage inflicted" (Strat, conflict 8); a player
   standing close to others takes more and the blast splashes onto them ("players must spread apart"); or (b) it summons **Blood Clouds** (ZB13). The healing happens "if damage is inflicted"; the Strat adds that
@@ -150,7 +151,7 @@ Zebak's Phantom (NPC 11774) reuses his attacks in Wardens phase 3; that fight is
   lose **2 HP per tick / per tile moved** (Strat "2 damage to itself every tick"; Cloud "2 for every tile they move"; conflict 9) and, on touching a player, "siphon their health", dealing "rapid but light" damage and healing
   themselves (Cloud, CA-Rock). They have no aggro range: if nobody is within range when they appear they "wander about aimlessly and will not aggro even if the player gets close" (Strat). Roar rocks block them from a
   player behind a rock; standing on a tile next to the far-side ramp is safe because the walk time matches the self-damage lifetime (Strat; 25 HP at 2 per tick is about 12-13 ticks). MT detects the heal hitsplat on a
-  cloud and flags the players on its tile. **Blood Thinners:** three clouds (the thinned NPC 11743) appear instead of one; both versions got slightly more HP on 8 Sep 2022. Spawn tile choice, speed, damage per
+  cloud and flags the players on its tile. **Blood Thinners:** three clouds (the thinned NPC 11743) appear instead of one; the changelog says only that "the blood clouds ... slightly higher health" (8 Sep 2022; the Blood Thinners clouds in the Main changelog); that both versions got it is not stated. Spawn tile choice, speed, damage per
   contact, heal amount, aggro range: OPEN-ZB11.
 - **ZB14 Arterial Spray:** "the radius and healing of Zebak's blood magic will be increased" (Main; needs Not Just a Head). The radius and the heal factor: OPEN-ZB11.
 - **ZB15 Upset Stomach:** swaps the two AoEs: acid pools spread **5x5** (was 3x3) and jug water clears **3x3** (was 5x5) (Main; the Page and Jug say the same). Players must stage jugs so their smaller AoE leaves safe
@@ -195,7 +196,7 @@ Zebak's Phantom (NPC 11774) reuses his attacks in Wardens phase 3; that fight is
 
 ## Changes up to 2026-11-03 that matter
 
-30 Jun 2026 (fixed blood splatters at the room edges turn waves into Bloody Waves); 6 Aug 2025 (immediate attack after hitting a jug with magic; wave pushback no longer moves the player closer);
+25 Jun 2025 (drained stats fully restored at the end of a boss fight); 1 Sep 2022 (AoE no longer stacks: double damage from overlapping AoEs removed); 30 Jun 2026 (fixed blood splatters at the room edges turn waves into Bloody Waves); 6 Aug 2025 (immediate attack after hitting a jug with magic; wave pushback no longer moves the player closer);
 25 Jun 2025 (waves interact "smarter" with pushback; the Palm of Resourcefulness water no longer scales linearly: not boss); 8 Jan 2025 (jugs can be hit with magic); 24 May 2023 (XP stops scaling after 2,000 HP);
 5 Oct 2022 (no standing on a certain water tile); 28 Sep 2022 (jug attack delay so one shot is enough); 21 Sep 2022 (no melee avoidance by standing on rock tiles next to him); 14 Sep 2022 (crocodiles
 cleaned up; Upset Stomach +10 to +15); 8 Sep 2022 (rocks next to him do not block ranged; Blood Clouds slightly more HP; path level mechanics at 2 and 4, +8 / 13 / ... %); 1 Sep 2022 (HP +10%; rubble to stop melee safespots; the roar no longer knocks into edge safe areas; two extra jugs; jugs no longer roll between
@@ -203,8 +204,7 @@ rocks and break more reliably; jugs have no attack delay if attacked before Zeba
 
 ## Open list
 
-OPEN-ZB1 scaling composition (raid level x party x path, rounding; wave / blood damage under the cap; HP of rocks, jugs, clouds, crocodiles; 928 vs 930); OPEN-ZB2 which special is first, exact threshold test,
-discard rule; OPEN-ZB3 melee: bleed chance and damage, range and AoE geometry, Protect from Melee reduction; OPEN-ZB4 path level 2 attack speeds and launch/impact timing under faster speeds; OPEN-ZB5 animation
+OPEN-ZB1 scaling composition (raid level x party x path, rounding; wave / blood damage under the cap; HP of rocks, jugs, clouds, crocodiles; 928 vs 930); OPEN-ZB2 which special is first, exact threshold test (the discard rule is stated by the Strat); OPEN-ZB3 melee: bleed chance and damage, range and AoE geometry, Protect from Melee reduction; OPEN-ZB4 path level 2 attack speeds and launch/impact timing under faster speeds; OPEN-ZB5 animation
 of the magic attack and the specials, style choice per cycle, melee projectile ids 2175 / 2180, launch-to-burst time; OPEN-ZB6 melee delay (1 vs 2 ticks) and the melee prayer reduction; OPEN-ZB7 pool damage per
 tick, spike curve, spit landing time; OPEN-ZB8 jug count, positions, landing damage, attack delay length, rock-break rule; OPEN-ZB9 Great Roar (rock count 3 vs 2-3, damage, knock-back, rock damage 50 per hit or
 total, coverage geometry, rock placement); OPEN-ZB10 Tidal Waves (speed, count, gaps, damage scaling, bloody-wave effect, slam-to-wave time, animation-length unit); OPEN-ZB11 Blood Blitz (cadence, choice, area,
@@ -225,3 +225,5 @@ open items.** Working assumptions behind named flags: `toa.zebak.specialOrder` (
 9. Blood Cloud self-damage: "2 for every tile they move" (Cloud) vs "2 damage to itself every tick" (Strat); equal when it moves one tile per tick.
 10. Zebak damage under Protect from Melee: "reduced accuracy and damage" (Strat) with no number; no conflict, an OPEN item.
 11. Perfect Zebak "must not push more than two jugs on the roar" (CA-Perfect) vs the Strat's "at least one jug solves the roar": consistent, not a conflict; noted for the roar tests.
+12. Wave damage: "6 - 10" (Page) vs "moderate" (Strat, Wave); the number is used, the word is a description.
+13. Jug attack delay: see ZB8 (wiki wording, 28 Sep 2022 entry and the 1 Sep 2022 post disagree).

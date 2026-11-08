@@ -76,7 +76,7 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
 - **Scenery**: hourglass locs (2x2, block walk) `AKKHA_ARENA_OUTER_LVL2_22 / _23 / _57 / _58` in three states, `_EMPTY01`
   46056-46059, `_EMPTY02` 46060-46063, `_FULL01` **46064-46067**; which of the four is which quadrant is not stated
   (**OPEN-AK4**). Arena scenery `AKKHA_ARENA_OUTER_LVL1_01-64` 45896-45959 and `LVL2_01-78` 45960-46037 is decoration. Drop
-  objs: `TOA_AKKHA_ASHES` 27223 ("Eldritch ashes"); Het's capture has no symbol found (**OPEN-AK5**).
+  objs: `TOA_AKKHA_ASHES` 27223 ("Eldritch ashes"); Het's capture is `TOA_BOOK_AKKHA` **27302** (cache name "Het's capture"); the Remnant of Akkha is `TOA_PET_MORPH_AKKHA` 27377.
 - **Regions** (PT, ST): Akkha room 14676, Path of Het puzzle room 14674.
 - **Quadrants** (Strat): north-west fire (burn), north-east skull (shadow / darkness), south-east lightning, south-west ice
   (freeze). OrbD agrees that the Orb of Darkness appears when the player moves in the north-east quadrant.
@@ -94,8 +94,8 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
   table only) make **Detonate trigger faster**. The amounts are **OPEN-AK6**.
 - **Party size**: the 2nd and 3rd member each add **90%** of the base boss HP, the 4th and later each add **60%** (Main).
   TA applies, each on the running value and in this order, the raid level percent, the path level percent, then a party
-  percent, and rounds values above 100 to the nearest 5 and above 300 to the nearest 10. Its party term is `9` (tenths of a
-  percent of the running HP, i.e. +90%) for 2 players, `18` for 3, and for 4 or more `9 + 6 * (n - 3)`, which is lower for 4
+  percent, and rounds values above 100 to the nearest 5 and above 300 to the nearest 10. Its party term is applied as `hp += hp * f / 10`, so `f = 9` means
+  +90% of the running HP, for 2 players, `18` for 3, and for 4 or more `9 + 6 * (n - 3)`, which is lower for 4
   players than for 3 and so is read as a plugin bug; the Main rule wins (conflict 3). TA uses the chain for the shadows only
   (base 70); applying it to Akkha's 400 is an assumption (**OPEN-AK7**, working assumption: same order and rounding for Akkha,
   shadows and orbs, behind `toa.scaling.model`).
@@ -114,20 +114,23 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
   tank can hold him by standing close; the tank may swap to melee gear during Memory Blast to keep aggro (Strat).
 - **AK2 Style cycle and overhead prayer.** Akkha uses one combat style and one matching overhead protection at a time: melee
   form 11790 (Protect from Melee), ranged form 11791 (Missiles), magic form 11792 (Magic). The base order is **melee ->
-  ranged -> magic** (Page); "Akkha now only protects against the same style that he's attacking with" (Sweep). The Page says the overhead
-  "protects him from attacks of that style"; what a hit in that style does (0 or a reduction) is **OPEN-AK8**. Players "stop attacking" when he changes style and prayer (14 Sep 2022).
-- **AK3 Style change.** He changes style (and prayer) after a special attack (see AK4) **or** if he has not been able to
-  attack his target for more than a minute (Page; 1 Sep 2022: "after 60 seconds"). The Page's "six auto-attacks followed by a
+  ranged -> magic** (Page); "Akkha now only protects against the same style that he's attacking with" (Sweep). The Page only says he prays against the
+  style he is attacking with; Strat says the overhead "protects him from attacks of that style". What a hit in that style does (0 or a reduction) is **OPEN-AK8**. Players "stop attacking" when he changes style and prayer (14 Sep 2022).
+- **AK3 Style change.** He changes style (and prayer) after a special attack (see AK4) **or** on a 60 second timer. The sources
+  disagree on what the timer measures: the Page says "unable to attack his target for more than a minute", Main and the 1 Sep 2022
+  note say he changes "if he has not done so after 60 seconds" (the last style change); conflict 7 (**OPEN-AK19**). The Page's "six auto-attacks followed by a
   special" and "1/4 and 1/5 chance" (Mod Ash, 17 Mar 2025) are older than the 25 Jun 2025 rework and are superseded (conflict
   1). He only changes style "whenever he is able to attack players" (Strat), which is what makes kiting possible.
 - **AK4 Special cadence.** A special attack **every 7 standard attacks**; with **Stay Vigilant** every **6** (Sweep, Strat).
-  At attack speed 6 that is 42 ticks (36 with Stay Vigilant) between specials, a derived figure. Which special is chosen is
+  At attack speed 6 that is 42 ticks (36 with Stay Vigilant) between specials if the special takes no standard-attack slot, or 48
+  (42) if it takes its own slot; the sources do not say which (derived, **OPEN-AK20**). Which special is chosen is
   not stated beyond "one of the following" (**OPEN-AK9**); Detonate is group-only (Page, Strat). With Stay Vigilant, after a
   special he swaps style and prayer **only if he has made a standard attack since the previous special** ("Don't get hit and he
   won't change styles", Sweep). Without Stay Vigilant the swap after every special is assumed from the Page text
   (**OPEN-AK10**).
-- **AK5 Standard melee.** Hits only his target but **cleaves** onto players next to the target, and he uses it anyway if a
-  non-target stands underneath him while he chases the target (Page, Strat). The melee attack hits hardest (Page).
+- **AK5 Standard melee.** Hits only his target but **cleaves** onto players next to the target, and he uses it anyway while chasing
+  the target: Page says when a player is **underneath him**, Strat when a non-target is **in his path** (conflict 8). Strat adds that
+  he is **incapable of attacking diagonally**, which is why he runs in circles when kited. The melee attack hits hardest (Page).
   Protect from Melee reduces it by about **75%** (Strat, after Sweep). It cannot be fully blocked (Page).
 - **AK6 Standard ranged and magic.** Hit **everyone in the arena** while he walks towards his target to close the gap (Page).
   Ranged is a sand projectile (2255), magic a glowing red sand projectile (2253). **Damage is calculated when the projectile
@@ -174,14 +177,21 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
   with raid and path level, **capped at 25**; it also drains Prayer when Deadly Prayers is on. **Protect from Magic removes
   25%** before the cap; below raid level 300 the cap is not reached so the prayer helps, at 300+ it only helps when several
   players share the tile (damage is split) (Strat, Page). "Fewer orbs" since Sweep; count and pattern are **OPEN-AK16**.
-  He stays in one quadrant until **3 successful player hits** (+1 per extra player), then jumps to another shadow; thralls,
-  misses and burn damage do not count, each hit of a multi-hit special counts separately (Strat, 30 Aug 2023).
+  He stays in one quadrant until **3 successful player hits** (+1 per extra player), then jumps to another shadow; thralls
+  and misses do not count (burn damage is not mentioned for Akkha, **OPEN-AK21**), each hit of a multi-hit special counts separately (Strat, 30 Aug 2023).
 - **AK13 Defence and drains.** Defence can be drained to a minimum of **70** (from 80), restores "significantly faster" than
-  other bosses, and the magic-defence drain of the Eye of Ayak is permanent (Strat). Rate and rule are **OPEN-AK17**. Eye
+  other bosses, and the magic-defence drain of the Eye of Ayak is permanent (Strat). Main (25 Jun 2025): drained stats are **fully restored at the end of a boss fight**. Rate during the fight is **OPEN-AK17**. Eye
   of Ayak attacks no longer turn Akkha (or the shadows) invisible (14 Jan 2026).
 - **AK14 Death and rewards.** Drops: Het's capture (once, only if not banked) and Eldritch ashes (obj 27223, only to the
   player who dealt the most damage) (Page). No NPC point multiplier is listed for Akkha (Drops lists 0.5x for three scarabs and
-  2.5x for the Het obelisk), so 1x is assumed; the per-room cap is 20,000 room points (Main).
+  2.5x for the Het obelisk), so 1x is assumed; the per-room cap is 20,000 room points (Drops; PT
+  clamps room points at 20,000).
+- **AK15 AoE stacking.** Since 1 Sep 2022 fewer AoE mechanics stack: the post's example is a Kephri bomb on a tile where two players
+  stood, which no longer deals double damage (the post lists no Akkha example; whether quadrant hits, Detonate and orbs stack is
+  **OPEN-AK22**). MT agrees for quadrants ("ALL players on that tile are affected", one hit per tile).
+- **AK16 Remnant of Akkha.** Obtained from the reward chest only at raid level **450+**, **zero deaths for all party members**, **all
+  Akkha invocations enabled** (Double Trouble, Keep Back, Stay Vigilant, Feeling Special?) and Akkha defeated at **path level 4 or
+  higher** (Remnant page, Main). Priority among remnants: Akkha, Zebak, Ba-Ba, Kephri, Tumeken, Ancient (Mod Ash, 25 Jul 2023).
 
 ## Attack reference
 
@@ -195,7 +205,7 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
 | Memory Blast | 9784 / 9786 disappear, 9785 / 9787 appear | 2256-2259 per quadrant | 4 ticks between bursts, 2 with Feeling Special? | heavy + effect | none | glow anim 9759, message, Akkha vanishes |
 | Trailing Orbs | not stated | orb NPCs 11800-11803, 2256-2259 | "minor delay" | heavy (darkness: low, rapid) | none | message, orbs on the floor |
 | Shadow slam | shadow anim not stated | 2256-2259 | OPEN-AK15 | heavy + effect | none | hourglass 46064-46067 full, head bar |
-| Unstable Orb | 9794 idle | pop 2260 | moves in one direction (arrow), speed OPEN-AK16 | up to 25 | Magic -25% before cap | arrow under the orb |
+| Unstable Orb | 9794 `FX_ORB_DUST_IDLE` is the cache stand anim of the orb NPCs; no source ties it to this attack | pop 2260 | moves in one direction (arrow), speed OPEN-AK16 | up to 25 | Magic -25% before cap | arrow under the orb |
 | Stomp | 9788 / 9789 | none | not stated | not stated | not stated | cache name only (OPEN-AK3) |
 
 ## What the RuneLite plugins time or detect
@@ -236,7 +246,7 @@ the Path +50; cache structs 428-433); their raid-wide rules belong to the missin
 - **OPEN-AK3** which animation (spear / sword, magic 01-04, stomp 9788 / 9789, idle 15156, attack 15157) plays when. Assumption:
   spear set by default; stomp unused. Flag `toa.akkha.anim_set`.
 - **OPEN-AK4** which hourglass loc belongs to which quadrant; hourglass fill time.
-- **OPEN-AK5** Het's capture obj id and drop-rule wiring (use the Page: once, if not banked).
+- **OPEN-AK5** resolved: Het's capture is obj 27302 (see Data); the drop rule is the Page's (once, if not banked).
 - **OPEN-AK6** Memory Blast base iteration count; unstable-orb damage per path level; Detonate speed-up per path level.
 - **OPEN-AK7** whether the party formula applies to Akkha's 400 HP and to accuracy / damage, and the rounding.
 - **OPEN-AK8** what damage a hit with the prayed-against style does (0 versus a reduction).
@@ -251,11 +261,14 @@ the Path +50; cache structs 428-433); their raid-wide rules belong to the missin
 - **OPEN-AK15** shadow slam: charge time, slam timing; no numeric damage reduction exists for shadows or Akkha during shadow
   phases (immunity only); whether phase transitions at 80 / 60 / 40 / 20 use current or max HP.
 - **OPEN-AK16** final stand: orb count, spawn pattern, speed, damage by raid and path level, Prayer drain amount.
-- **OPEN-AK17** stat restoration rate and the exact drain floor rule (flat versus percent).
+- **OPEN-AK17** stat restoration rate during the fight and the exact drain floor rule (flat versus percent); end-of-fight restore is stated.
 - **OPEN-AK18** Keep Back damage and area ("anyone next to him": which tiles).
-- **OPEN-AK19** the "unable to attack for more than a minute" timer: 60 s is 100 ticks; whether it counts ticks since his last attack or since the last style change.
+- **OPEN-AK19** the "unable to attack for more than a minute" timer: 60 s is 100 ticks; the Page puts it on his last attack, Main and the 1 Sep 2022 note on his last style change (conflict 7).
+- **OPEN-AK20** whether the special takes its own slot in the "every 7 (6) attacks" count (gap 42 or 48 ticks).
+- **OPEN-AK21** whether burn damage counts towards the three-hit swap counter (not stated for Akkha).
+- **OPEN-AK22** which Akkha AoE mechanics stack (quadrant hits, Detonate, orbs); only the Kephri bomb example is given.
 
-**19 open items.** Working assumptions sit behind named config flags (`toa.scaling.model`, `toa.akkha.*`).
+**21 open items (OPEN-AK5 resolved).** Working assumptions sit behind named config flags (`toa.scaling.model`, `toa.akkha.*`).
 
 ## Conflicts between sources
 
@@ -271,3 +284,6 @@ the Path +50; cache structs 428-433); their raid-wide rules belong to the missin
    (about 75% melee, 80-90% ranged / magic); Strat numbers used.
 6. **Enrage swap.** Page "three successful hits (+1 per player)"; Strat "three in solo, one more per player"; Main (30 Aug 2023)
    limits it to the player's own successful hits. All consistent.
+7. **60 second timer.** Page: since he was last unable to attack his target; Main and the 1 Sep 2022 note: since he last changed
+   style. Neither is verified; OPEN-AK19.
+8. **Melee while chasing.** Page: used if anyone is underneath him; Strat: if a non-target is in his path. OPEN, both recorded in AK5.

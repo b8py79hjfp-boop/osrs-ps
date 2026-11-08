@@ -1199,3 +1199,21 @@ means is not known.
   rules all 26 patterns share (floor 1 opens with S or F; floor 2 opens with C or P and ends with F; no P after P).
   `tp.cox.largePoolGenerated=false` draws from the regular pool instead.
 
+
+## D-084 Tombs of Amascut structure on this server (2026-11-08)
+
+- **Instance:** one per run, the 12 raid squares (Nexus 14160, tomb 14672, Wardens 15184 / 15696, the four puzzles and
+  four bosses) as unrotated whole-square copies in a 7 x 5 square box, because RuneLite's ToA plugins read template region
+  ids and fixed scene coordinates (toa/runelite-timings.md section 10). The pyramid and lobby are the real map.
+- **Rooms:** raids-core rooms `nexus`, the eight path rooms, `wardens`, `tomb`; `ToaFlow` drives them with `enterRoom`
+  (any path order). The puzzle's flame barrier on the continue-door side opens only once the puzzle is done; a boss
+  room's exit returns to the Nexus once the boss is dead; the static Nexus door 46167 becomes 46168 "Entry" when all four
+  paths are done; the run completes when the burial chamber starts, timed at the Wardens' final blow (as ToB).
+- **Wipes:** new `WipePolicy.ByRun` decides per wipe: retry the room, or fail with the reclaim store once the attempts
+  invocation's count is used up (TA42-TA44).
+- **Scaling:** HP by the wiki DPS calculator's order and NPC sets; raid-level defence, accuracy and damage as per-mille
+  attrs (`SharedAttrs.RAID_DEFENCE/ACCURACY/DAMAGE_PERMILLE`) applied by the combat formulas, since ToA scales the rolls,
+  not the levels (TA31).
+- **Invocations:** read from the cache (enum 4664 structs) and kept as script 6729's three words in the party settings.
+- **Pinned config ids:** `cache-pack` inventories accept `num = <id>`; ToB's reclaim inventory stays 1036 and ToA's is
+  1037, because player saves key inventories by id and name-ordered allocation would shift them when packs are added.

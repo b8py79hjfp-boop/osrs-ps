@@ -265,7 +265,7 @@ internal object BossCombat {
                 CombatStyle.RANGED -> Formulas.npcDefenceRoll(npc.level(NpcStat.RANGED), def?.rangedAttack ?: 0)
                 CombatStyle.MAGIC -> Formulas.npcDefenceRoll(npc.level(NpcStat.MAGIC), def?.magicAttack ?: 0)
             }
-        return Formulas.hits(attack, Attacks.defenceRoll(victim, type), npc::random)
+        return Formulas.hits(RaidScale.accuracy(npc, attack), Attacks.defenceRoll(victim, type), npc::random)
     }
 
     /** Uniform damage in [min]..[max]. */

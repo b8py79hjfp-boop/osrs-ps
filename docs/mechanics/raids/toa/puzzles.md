@@ -33,7 +33,7 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 
 - Template region ids used by RuneLite (LD `RaidRoom`, PT `ToARegion`, PHp): Nexus **14160**, lobby **13454**, tomb (chest)
   **14672**; Apmeken puzzle **15186**, Ba-Ba **15188**; Crondis puzzle **15698**, Zebak **15700**; Het puzzle **14674**,
-  Akkha **14676**; Scabaras puzzle **14162**, Kephri **14164**; Wardens **15184** / **15696**. RuneLite recognises the room from
+  Akkha **14676**; Scabaras puzzle **14162**, Kephri **14164**; Wardens **15184** / **15696**; PHp also lists 15444, 15955, 13906, 15954 and 15953 as "ToA instance ids" (rooms not named). RuneLite recognises the room from
   the region of the player's instance template, so the instance must be built from those template regions.
 - Nexus doors (loc, cache names agree with the wiki "Normal / Started / Completed" ids; all 3x3 or 3x2): Scabaras
   **46155** (`TOA_NEXUS_SCABARAS_DOOR`, ops Enter / Quick-Enter) / **46156** (`_UNSELECTED`, same ops; another path started,
@@ -46,17 +46,25 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   Quick-Pass, seq 9495), shared by the four rooms (LD: it is the Crondis room's entry gate, and in Scabaras two copies mark the
   two halves). Crondis `TOA_CRONDIS_EXIT` **45453** (name "Exit", op Leave, 5x2) and `_EXIT_TOP` **45454**. Other door symbols
   (`TOA_DOOR_EXIT` 45128, `_EXIT_WARDENS` 45129, `_EXIT_SMALL` 45130, `_TOP` 45132, `_TOP02` 45133, `_TOP02_NEXUS` 45134): the
-  room each belongs to is not stated (**OPEN-PZ1**).
+  placements below show `TOA_DOOR_EXIT` 45128 as the plain door at the entry side of the Apmeken, Het and Scabaras rooms; the others
+  are **OPEN-PZ1**.
+- Flame barrier 45135 and door placements per room (cache map, `find-locs`; region squares Scabaras (55, 82), Het (57, 82), Apmeken
+  (59, 82), Crondis (61, 82); sides are derived from the coordinates, see PC7): Apmeken barriers at x 3796 and 3820 (z 5279-5281,
+  3 tiles each), door 45128 at (3791, 5278), continue 45500 at (3825, 5279); Het barriers x 3669 and 3691 (z 5279-5281), door 45128
+  at (3699, 5278), continue 45131 at (3659, 5278); Crondis barriers x 3922 and 3950 (z 5279-5281), exit loc 45453 at (3955, 5278),
+  continue 45397 at (3916, 5279); Scabaras two single barriers at (3532, 5274) and (3532, 5286), door 45128 at (3521, 5278),
+  continue 45337 at (3582, 5279).
 - Client / HUD state (symbols): varbits `TOA_CLIENT_CRONDIS_LEVEL` **14376**, `_SCABARAS_LEVEL` **14377**, `_HET_LEVEL`
   **14378**, `_APMEKEN_LEVEL` **14379**, `TOA_CLIENT_RAID_LEVEL` **14380**, `TOA_CLIENT_CURRENT_PATH` **14381**,
   `TOA_CLIENT_P0..P7` **14346-14353**, `TOA_DAMAGE_DONE` 14325, `TOA_DAMAGE_TAKEN` 14323, `TOA_PICKAXE_STORED` **14440**,
   `TOA_PICKAXE_CHARGES` **14439**; varps `TOA_PERSONAL_CONTRIBUTION` **3606**, `TOA_PICKAXE_STORAGE` **3635**. LD reads the
   path level of the room's path from interface `TOA_HUD` (`PATHS_LEVEL` text, `NEXUS_*_LEVEL` texts in the Nexus), so the HUD
   must show the level inside the puzzle room as well as the boss room (LD `PathLevelTracker`).
-- Chat messages the plugins match: "Challenge started: Path of Het." and "Challenge complete: Path of Het." (LD, MT); the
+- Chat messages the plugins match: "Challenge started: Path of Het." and "Challenge complete: Path of Het." (LD `BeamTimerTracker`
+  only; MT matches none of them); the
   completion line is `Challenge complete: Path of <Name>.` followed by `Duration` and `Total` times (LD `SplitsTracker` regex
   `Challenge complete: (?:Path of )?([A-Za-z-]+).*Total:.*?([0-9]+:[.0-9]+).*`); failure "Your party failed to complete the
-  challenge" (LD, MT; they reset every solver and wave counter on it); "violently!" suffix (LD `HetSolver`; used to clear the
+  challenge" (LD and MT; LD resets every solver and wave counter on it, MT uses it as the wipe signal); "violently!" suffix (LD `HetSolver`; used to clear the
   Het solver, the full line is not shown); "You hear a mysterious rumbling coming from the Path of <god>." when Walk the Path
   levels an uncompleted path (Strat).
 
@@ -78,8 +86,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   | 11718 | `..THRALL` | Baboon Thrall | 52 | **2** | 40 / 12 / 40 / 40 / 40 | crush | 4 | 5 | 0 / 0 / 0 / 0 |
 
   Cache `param 26` values 2 / 4 / 5 match crush / ranged / magic on every baboon. The ranged defence bonus is not in the cache
-  params (no param holds it for the mage or thrower), so the wiki values stand: Mage ranged defence **-50**, Thrower
-  ranged **900** (Mage, Thrower infoboxes; **OPEN-PZ2**). Attack bonus 20 (level 56 and thrall) / 25 (level 68, shaman,
+  params, so the infobox values are used (all seven infoboxes state it): ranged defence Brawler **900**, Thrower **900**, Mage
+  **-50**, Shaman **-50**, Volatile **-50**, Cursed **-50**, Thrall **0**. Attack bonus 20 (level 56 and thrall) / 25 (level 68, shaman,
   volatile, cursed) for melee, magic and ranged (infoboxes). Poison and venom: Shaman resistance **0** (vulnerable), every other
   baboon 100 (infoboxes); Cursed and Volatile pages: Cursed immune to thralls (`immunethrall = Yes`). All immune to cannons.
   Level 56 / 68 are the "small" / "large" variants (Strat table: "25 (small) / 30 (large)"); which variant spawns when is
@@ -170,8 +178,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   after "Challenge started: Path of Het."; the timer is cleared (-1) while the seal is weakened (NPC change 11706 -> 11707) and
   restarted at +10 ticks when it changes back (11707 -> 11706).
 - Puzzle space (LD `HetSolver`): a 21x21 grid whose origin is the shielded statue's south-west scene tile shifted by (-12, -9);
-  the plugin carries **nine** solution layouts (3 or 4 mirror positions each, plus the tiles that must be clear; first mirror
-  tile in puzzle space (5, 10) or the neighbours (4, 10), (3, 10)).
+  the plugin carries **nine** solution layouts (3 or 4 mirror positions each, plus the tiles that must be clear; solutions
+  start at puzzle-space (5, 10), (4, 10), (3, 10) or (2, 10) (`SOLUTION_5` starts at (2, 10))).
 
 ### Path of Scabaras
 
@@ -246,22 +254,36 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   the team wipes during this room, the statue progress is reset, along with a new puzzle being drafted" (Strat). The Apmeken
   wave counter and the Scabaras solvers reset on "Your party failed to complete the challenge" (LD). Disconnect outcomes (rejoin, eject, wipe)
   are raid-wide (Main); Main notes that disconnecting during the Kephri (Scabaras) puzzle does not eject a player. After each cleared challenge poison and venom are removed (Strat, "Nexus" section).
-- **PC5 Points (unverified; the wiki states none for the rooms):** plugin-side estimates only (LD `PointsTracker` comments,
-  PT): each damage hitsplat on an NPC adds `damage x factor` to the personal and room totals; factors **1.2** for every
-  Apmeken baboon incl. thralls and volatile (LD, PT), **2.5** for the weakened Het's Seal 11707 (LD, PT), **1.0** default;
-  PT also uses **2.0** for the palm (LD has a TODO "tree is 2"). Room cap **20,000**, raid cap **64,000**, base 5,000, death
-  -20% with a 1,000 minimum (LD, PT, also the raids brief). Non-damage points (LD TODO comments, "insider knowledge",
-  unconfirmed): 50 per puzzle completed and 50 to each player in the lane on completion; memory puzzle 100 per matched tile,
-  only to the second player; Apmeken 25 per pillar repaired and 25 per vent neutralised, -25 for a mistimed repair or pour,
-  25 to the sight holder on a corruption clear and -25 on a fail, 25 to the healer on a cure; per-room completion estimates
-  Scabaras 300, Apmeken 450, Crondis 400 (personal) and 300 team MVP on leaving each puzzle for its boss (PT, LD; Het has no
-  personal estimate). All of it is **OPEN-PZ10**.
+- **PC5 Points:** the **Chest (Tombs of Amascut)** page states the damage rule (Chest): "Room points are awarded per damage dealt to every
+  NPC in the raid. For most NPCs, 1 damage dealt equates to 1 room point"; room points cap at **20,000**, total reward points at
+  **64,000** on room completion; multipliers: Apmeken's path baboons **1.2x**, Ba-Ba **2x**, Zebak **1.5x**, Kephri's scarabs
+  **0.5x**, Het's Seal **2.5x**, Obelisk **1.5x**, Wardens P2 **2x**, P3 **2.5x**, Warden's Core **0x**; the room's top scorer gets an
+  MVP bonus of `300 x TeamSize` on completion. Death -20% with a 1,000 minimum and base 5,000 are from LD / PT and the raids brief.
+  The puzzle-room multipliers therefore are: baboons (all of 11709-11718 incl. thralls and volatile) 1.2, Seal 2.5 (LD / PT apply it to the
+  weakened Seal 11707 only; the Chest page does not say whether the protected form counts, **OPEN-PZ10**), crocodile 1 by default,
+  Palm **2.0** (PT only; LD has a TODO "tree is 2"; PT also splits palm points by group size and caps them at 10,000 in groups and
+  20,000 solo; LD caps Zebak at 10,000 and Wardens at 60,000). The puzzle scarab 11697 and the obelisk 11698 (puzzle) are not
+  listed, so 1.0 by default (the Chest "Obelisk" row is the Wardens' obelisk). Non-damage points (LD TODO comments, "insider
+  knowledge", unconfirmed): 50 per puzzle completed and 50 to each player in the lane on completion; memory puzzle 100 per matched
+  tile, only to the second player; Apmeken 25 per pillar repaired and 25 per vent neutralised, -25 for a mistimed repair or pour,
+  25 to the sight holder on a corruption clear and -25 on a fail, 25 to the healer on a cure. Plugin completion estimates when leaving
+  a puzzle for its boss: Scabaras +300, Apmeken +450, Crondis +400 to the personal total (PT, LD) and +300 in LD's `nonPartyPoints`
+  (PT calls the 300 an MVP assumption; Chest says `300 x TeamSize` for the top scorer); Het has no personal estimate. Everything
+  except the Chest rules is **OPEN-PZ10**.
 - **PC6 Combat Achievements that read these rooms** (CA pages; all need raid level **150+**): Perfect Apmeken (group of 2+,
   no danger allowed to trigger, nobody stands in venom or is hit by a volatile, room cleared in under **3 minutes** = 300
   ticks), Perfect Crondis (no crocodile reaches the tree, nobody loses water, under **1 minute** = 100 ticks), Perfect
   Scabaras (under 1 minute, nobody takes puzzle damage), Perfect Het (no light-beam or orb damage, Seal destroyed in one cycle).
   The Raid Summary titles "The Moth" (died to a light beam in Het) and "The Entomophobe" (killed the most scarabs) read the
   same events (Main). The server must keep these as events, **OPEN-PZ10**.
+
+- **PC7 Flame barrier sides (map-derived; the wiki gives no layout):** in all four rooms two barrier pairs gate the challenge area.
+  Apmeken and Scabaras are entered from the **west** (door 45128 at the west edge) and left through the continue loc on the **east**;
+  Het and Crondis are entered from the **east** (Het door 45128 at x 3699, Crondis exit loc 45453 at x 3955) and left through the
+  continue loc on the **west**. The barrier nearest the entry door is the challenge-area entry gate (LD for Crondis), the one nearest
+  the continue loc closes the challenge area on the exit side: Apmeken entry x 3796, exit x 3820; Het entry x 3691, exit x 3669;
+  Crondis entry x 3950, exit x 3922; Scabaras has two single barriers at x 3532 (z 5274 and 5286) near the west door, one per half
+  (LD calls z 5286 the upper half). Which barrier opens when, and whether they stay shut after a wipe, is **OPEN-PZ1**.
 
 ## Path of Apmeken (baboon waves and Apmeken's Sight)
 
@@ -293,8 +315,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   "Your group is overwhelmed by Amascut's corruption!" (MT). The damage amounts, the countdown from the warning to the
   failure, and the penalty for a wrong action are **OPEN-PZ12**. MT counts the failure on every raider for the tick the message
   is received.
-- **AP7 Waves:** eight waves must be cleared (Strat; PA changelog: waves 2 and 3 were merged on 2 Sep 2022 and two waves were
-  removed on 25 Jun 2025; the LD overlay also lists 8). The table is for a **solo** raid; in a group "an extra combat baboon is
+- **AP7 Waves:** eight waves must be cleared (Strat; PA changelog: waves 2 and 3 were merged on 2 Sep 2022; Main and the 25 Jun 2025 "Summer Sweep Up: Combat" post: two waves
+  removed; the LD overlay also lists 8). The table is for a **solo** raid; in a group "an extra combat baboon is
   added into the mix" (the type is **OPEN-PZ13**). "Special" stands for the "specialist baboons"
   (shaman, volatile, cursed; inferred from the Strat table); how the Special slots are chosen is **OPEN-PZ13**.
 
@@ -318,8 +340,9 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   ranged and magic (defence 0), Volatile and Cursed weak to ranged and magic (Strat table; cache defence bonuses agree: the
   weak slot is -50 / -60, every other slot 900, thrall 0). A hit with the **weak** style **always deals the player's maximum
   hit regardless of accuracy**: Brawler by magic, Thrower by melee, Mage by ranged (29 May 2024); Shaman and Cursed by ranged
-  (25 Jun 2025); Strat: "for the specialist baboons, using a ranged weapon will guarantee a maximum hit". Whether Volatile also
-  gets it, and whether the Thrall does, is **OPEN-PZ14**. Brawler magic accuracy uses the **Defence level**, not the Magic level (Brawler, Mod Ash 10 Aug 2023); that sentence names
+  (25 Jun 2025); Strat: "for the specialist baboons, using a ranged weapon will guarantee a maximum hit". Strat also says the
+  triangle rule "only applies to the brawler, thrower and mages", so the Thrall is excluded; whether the Volatile counts as a
+  "specialist baboon" (ranged guarantee) is **OPEN-PZ14**. Brawler magic accuracy uses the **Defence level**, not the Magic level (Brawler, Mod Ash 10 Aug 2023); that sentence names
   only the brawler (the other baboons are **OPEN-PZ14**).
   Magic damage against a brawler "equal to the player's maximum hit" (Brawler).
 - **AP9 Baboon attacks:** Brawler melee, Thrower ranged, Mage magic; attack speed 4; max hit 5 (level 56) / 7 (level 68); "moderately
@@ -348,7 +371,7 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 - **AP14 Status effects:** the Shaman is the only poison-vulnerable baboon (Shaman page, resistance 0; 30 Aug 2023). Perfect
   Apmeken advises "Freeze any Cursed Baboons", so ice spells work on at least that baboon; freeze and bind values for the others
   are **OPEN-PZ14**.
-- **AP15 Completion and reset:** all eight waves dead -> a "Challenge complete: Path of Apmeken." line (format from the LD / MT patterns; the Apmeken text itself is not shown), the hammer
+- **AP15 Completion and reset:** all eight waves dead -> a "Challenge complete: Path of Apmeken." line (format from the LD `SplitsTracker` pattern; the Apmeken text itself is not shown), the hammer
   is removed, the continue loc 45500 opens and the room's fire is gone; on a wipe the room restarts at wave 1 (LD resets its
   counter on the failure message, PC4). Reward / Helpful Spirit after two cleared paths is raid-wide.
 - **AP16 Per-level differences:** none stated for waves (same eight in every mode); baboon HP identical at every raid level;
@@ -364,14 +387,14 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 - **CR2 Water needed:** Strat: "**175 units** of water, with an additional **125** for every additional player"; the 25 Jun 2025
   change (listed under Zebak) says "The amount of water required for the Palm of Resourcefulness **no longer scales linearly**
   with the number of players". The two statements conflict (conflict 4): the old formula gives 175 / 300 / 425 / 550 /
-  675 / 800 / 925 / 1,050 for 1-8 players; the new curve is not given (**OPEN-PZ18**). A container holds **100 units** when full (MT: a palm "water up" hitsplat is
-  at most 100, below 100 = a spilled container). Growth stages 0 / 25 / 50 / 75 / 100% map to NPCs 11700-11704; the thresholds are
+  675 / 800 / 925 / 1,050 for 1-8 players; the new curve is not given (**OPEN-PZ18**). A container holds **100 units** when full (inferred, not stated: MT's a palm "water up" hitsplat is
+  capped at 100 via `MAX_WATER_HITSPLAT_UP_AMOUNT`, and below 100 counts as a spilled container). Growth stages 0 / 25 / 50 / 75 / 100% map to NPCs 11700-11704; the thresholds are
   derived from the stage names only (**OPEN-PZ18**). Watering with a normal watering can or Gricoller's can adds only
   **1 hitpoint** of growth and a Gricoller's can uses **10** charges per pour (Palm).
 - **CR3 Water containers:** one is picked up from the ground (item 27295; "Another will be nearby" if destroyed), filled
   with "Fill" on a waterfall (45398; the waterfall goes dry, 45399, and refills later; the refill time is shortened by the
   8 Sep 2022 change and "respawns accordingly to team size" but is **OPEN-PZ19**), and emptied with "Water" on the palm
-  (MT sees player animation 827 on those tiles). Humidify does nothing to it (Container).
+  (MT sees player animation 827 both when filling at a waterfall tile and when watering from a palm tile). Humidify does nothing to it (Container).
 - **CR4 Traps:** statues around each waterfall fire **retracting spikes** from the sides (45414-45416) and the statue in front
   of the waterfall discharges **poison clouds** on the tiles in front of it which flow along the path (45418-45420); only the
   darker cloud damages, the lighter cloud is a warning (Strat); the traps run on a fixed sequence (Strat: "traps being on a
@@ -380,6 +403,10 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   spike line geometry are **OPEN-PZ20**. Container loss: **50% of the current amount** per hit, with a small chance of **16%**
   instead; "stacks effectively infinitely", never below **1%**; a crocodile bite also takes 50%, but once the container is under
   **15%** a bite takes **10%** (Container). The chance of the 16% case is **OPEN-PZ20**.
+  Tile-skipping (Strat): spikes can be skipped entirely by starting one tile north or south of the first statue and running past
+  without stopping; this needs a **moving start** (a spike cannot be tile-skipped if the player stood on the start tile longer than
+  one tick); the poison clouds can be dodged within the **2 closest rows** to the statues. The traps' timing must therefore
+  be tick-deterministic; the exact cycle is **OPEN-PZ20**.
 - **CR5 Crocodiles:** red crocodiles spawn "periodically" from the **corners** of the room; their number depends on the player count;
   **at most eight alive** at once (Strat, Croc). The first ones need about **40 s** (about 67 ticks) from the start of the
   challenge to reach the palm; a team that waters before that can ignore them (Strat). Spawn period, count by team size, spawn
@@ -397,7 +424,7 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   container, every successful bite also costs water (CR4). Whether a missed attack drains anything, the Quiet Prayers
   interaction, and how bites shrink the palm are **OPEN-PZ23**. The crocodile is a level 71 NPC with 30 HP; players can kill it.
 - **CR8 Completion and failure:** the room completes when the palm reaches 100% (11704, no more "Water" op); crocodiles are then
-  removed (not stated, **OPEN-PZ21**). There is **no room timer** beyond the raid-wide limit invocations; the pressure is the
+  removed (not stated, **OPEN-PZ21**). No room timer is stated (none found in Strat, PC or Palm; only the raid-wide limit invocations); the pressure is the
   crocodiles shrinking the palm. A wipe restarts the room (PC4). The palm is shrunk by bites when it has growth (Strat).
 - **CR9 Fastest solo route (Strat, for timing validation):** 34.8 s = **58 ticks**, or 32.4 s = **54 ticks** using "use the
   container on the palm and waterfalls" instead of left-click, saving 1 tick per interaction (4 ticks in total); the route needs
@@ -405,7 +432,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   (200 units) cover the solo requirement of 175 (derived).
 - **CR10 Per-level differences:** crocodile damage fixed at 18 / 36 for every raid level (Strat); crocodile stats do not scale
   with raid level (Strat); water needed per CR2; path level: PC2 (only the Zebak boss is described). Perfect Crondis (PC6) needs
-  no croc at the palm, no water lost and < 100 ticks.
+  no croc at the palm, no water lost and < 100 ticks; a player who dies gets the water container back in the inventory (CA page
+  strategy), so the container must be re-issued on death inside the room.
 - **CR11 Tick timeline (stated only):** croc attack every 7 ticks; trap-hit memory 50 ticks; first croc at the palm after
   about 67 ticks; the Perfect Crondis limit is 100 ticks; trap period and the waterfall refill are not stated.
 
@@ -426,8 +454,9 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   Rotate-clockwise / Rotate-anticlockwise / Push); the other mirrors in the room are fixed; "in group encounters, some of these
   are dirty and must be cleaned first" (loc 45457 op "Clean"). Undamaged stone barriers block the beam; "worn" barriers (op
   "Break", 45462 / 45464) are broken with a pickaxe (rubble 45466, mirror rubble 45467). "The light can always be reflected
-  correctly using 1-3 mirrors, with the removal of some barriers." Orbs can make a fixed mirror dirty "in group encounters"
-  (Strat). Fixes: 24 Aug 2022 two mirrors placed on one tile no longer cost a mirror; pushing a mirror into a wall no longer traps
+  correctly using 1-3 mirrors, with the removal of some barriers." Strat: "In group encounters orbs may cause mirrors they collide with to become dirty"; LD's comment
+  says movable and already-fixed mirrors can both end up dirty ("black orbs hitting mirrors"), so which mirrors can be dirtied is
+  **OPEN-PZ25**. Fixes: 24 Aug 2022 two mirrors placed on one tile no longer cost a mirror; pushing a mirror into a wall no longer traps
   it; 19 Oct 2022 no more smuggling mirrors between phases. How the layout (which walls are worn, where fixed and dirty mirrors
   are, which of the nine solution shapes) is chosen for a given raid, and whether it depends on team size, is **OPEN-PZ25**. Mirror
   push distance, rotation steps (4 diagonals, LD) and whether a carried mirror can be dropped are **OPEN-PZ25**.
@@ -463,7 +492,9 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   | 85-98 | 17-19 | 15-17 | 12-14 (page prints 12-15, conflict 7) |
   | 1-84 | 10-12 | 8-10 | 5-7 |
 
-  A Dragon pickaxe special can lift a level 82+ player into the 85 bracket (Strat; the boost size is not stated). Which tier
+  Seal page, 84 Mining or lower: a Dragon pickaxe's max of 12 "will always guarantee a two-cycle in a solo run" with the 8-hit method,
+  a rune pickaxe's max of 10 may force a three-cycle on low rolls (Seal). Perfect Het strategy: "a boosted Mining level of 100 or
+  higher" removes the need for the early click (a third threshold statement, conflict 14). A Dragon pickaxe special can lift a level 82+ player into the 85 bracket (Strat; the boost size is not stated). Which tier
   class the gilded, infernal, trailblazer, trailblazer reloaded and Echo pickaxes fall in, and whether the Seal damage uses the
   pickaxe in the inventory or equipped, is **OPEN-PZ29**. Mining XP: 35 per hit (Seal). The Seal's example claims: 85+ Mining
   with a Dragon pickaxe one-cycles by hitting 7 times; Mining 99+ one-cycles without the early click; 82 with a Dragon spec boost
@@ -471,8 +502,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 - **HE9 Completion:** when the Seal dies it becomes the Broken seal (loc 45489) and the room completes ("Challenge complete: Path of
   Het." with duration; LD stops the solver on it); Perfect Het needs the Seal destroyed in **one** cycle without light-beam or orb
   damage (CA page). The continue loc 45131 opens.
-- **HE10 Failure:** a wipe resets the statue progress and drafts a new puzzle (PC4); damage taken only subtracts hit points; the
-  Seal weakened state is lost.
+- **HE10 Failure:** a wipe resets the statue progress and drafts a new puzzle (Strat, PC4); damage taken only subtracts hit points.
+  Whether the Seal returns to its protected state and the beam timer restarts is not stated (assumed, **OPEN-PZ28**).
 - **HE11 Per-level differences:** none for the room: Seal HP scales with players only; the orbs and beam damage may scale with
   raid level (**OPEN-PZ7**); path level (PC2) lists only Akkha's mechanics.
 - **HE12 Tick timeline (stated only):** window 15 ticks (9 s) after the beam hits the shielded statue; XP tick 3; beam period 9
@@ -482,8 +513,8 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 
 - **SC1 Structure:** "five puzzles to complete between two branched paths"; the players "must complete the puzzles in both paths
   before moving forward" (Strat). Solo: after the first puzzle is cleared the player takes the shortcuts between the rooms, passes the opened door and does
-  the next puzzle on the other side; "solo raiders should always avoid the pillar room" (the obelisk puzzle) because it is
-  random (Strat). Cache locs that look like the shortcuts (roles inferred from names only): "Passage" (op Crawl-through, 45343), "Platform"
+  the next puzzle on the other side; "solo raiders should always avoid the pillar room" because it is random (Strat; that this is the
+  obelisk puzzle is inferred from the randomness and the obelisks being the "pillars"). Cache locs that look like the shortcuts (roles inferred from names only): "Passage" (op Crawl-through, 45343), "Platform"
   (op Jump-to, 45396), flame barriers 45135 and Scabaras barriers 45336. The room-to-room geometry and which puzzle is on which side is **OPEN-PZ30**; LD's skip rule: the
   obelisk puzzle is in one of the four slots, and the upper or lower flame barrier is the one to pass to avoid it
   (obelisk at top-left or bottom-right -> use the lower flame; top-right or bottom-left -> use the upper flame).
@@ -497,8 +528,9 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   (spot anim 302) on a plate as a failed attempt. The button can be pressed again
   for another order if the player forgot (Strat). Plate objects: 45340 (idle), 45341 (lit), 45342 (stepped on). The damage per wrong step, the
   lit time per plate, the delay before input, and whether the new order replaces the old are **OPEN-PZ32**.
-- **SC4 Puzzle 2, obelisks:** five obelisks (NPC 11698, op "Hit"); the players must hit them in a **specific order** with ranged or
-  magic (a weapon with attack range **10** is needed to stand safely; Strat). A correct hit lights the obelisk (11699); a wrong
+- **SC4 Puzzle 2, obelisks:** five obelisks (NPC 11698, op "Hit"); the players must hit them in a **specific order** with a ranged
+  weapon (Strat: "requires a weapon with an attack range of 10" to stand on the lower step; magic is implied by the 4 Sep 2024
+  note that spell XP on the obelisks was removed, melee is not mentioned; **OPEN-PZ33**). A correct hit lights the obelisk (11699); a wrong
   one makes the lit ones revert to the base NPC 11698 (LD relies on that) and drops **rocks from the ceiling** (dust anim
   9498), avoidable; at the **lower step of the stairs** no rocks target the player (Strat). The sequence is a random
   permutation of 5: 5P5 = 120 orders, 1/120 per first try (Strat). Spell XP on the obelisks was removed (4 Sep 2024). Rock
@@ -540,7 +572,7 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
 - **Crondis:** palm NPC name "Palm of Resourcefulness", animation 827 on waterfall and palm tiles, hitsplat types 11 / 15, palm hitsplat < 100
   = a lost-water mistake, the TOA_PATH_BARRIER 45135 "Pass" on the entrance (LD, MT).
 - **Het:** caster 45486, shielded statue 45485, mirror locs 45455-45457, barrier locs 45458-45466, null 29733, seal NPCs 11706 /
-  11707, beam graphics 2064 / 2114 / 2120, orb graphic 379, the challenge messages, varbit 14440 (pickaxe stored), 9-tick beam period
+  11707, beam graphics 2064 / 2114 / 2120, orb graphic 379, the start / complete messages (LD only), varbit 14440 (pickaxe stored), 9-tick beam period
   (LD, MT).
 - **Scabaras:** obelisk NPCs 11698 / 11699, plate objects 45340-45342, light-plate object 45384 and unlit plate 45344, addition tiles
   45345-45353 and tablet message, memory tiles 45365-45373 and matched markers 45386-45395, roof-collapse spot anim 302, flame
@@ -549,6 +581,10 @@ they are recorded in the Data section and SC11 so nothing is lost, but they neve
   "Quick-Enter / Quick-Pass" ops on the doors and barriers (`QuickProceedSwaps`).
 
 ## Changes up to 2026-11-03 that matter
+
+Also: 13 Dec 2022 Crondis "purgatory" mapping fixed; 11 Oct 2022 Scabaras puzzle corner tiles made easier to step on with the camera facing
+east; 21 Sep 2022 Seal max-hit threshold 102 -> 100 Mining; 2 Sep 2022 (Seal) the extra early-click hit is deliberate ("attentive
+players are rewarded with an opportunity to slip in an extra hit", balance post, quoted from the verifier note, not re-read here).
 
 20 May 2026 Het's Seal HP 122 -> 119; 2 Jul 2025 shaman HP 50 -> 40 and cursed 30 -> 20; 25 Jun 2025 shaman and cursed always take
 a max hit from ranged (HP raised), two Apmeken waves removed, croc earth weakness 40%, puzzle scarab fire weakness 40%, Seal max-hit
@@ -561,14 +597,14 @@ Aug 2022 venom pool 30 s -> 20 s, Seal damage scales with tier; 24 Aug 2022 mirr
 
 ## Open list
 
-OPEN-PZ1 which room the remaining door symbols (`TOA_DOOR_EXIT*`, `TOA_DOOR_TOP*`) and the Crondis exit loc serve; OPEN-PZ2 ranged
-defence bonuses of baboons (cache lacks them); OPEN-PZ3 level 56 vs 68 baboon variant selection; OPEN-PZ4 animation-to-baboon mapping,
+OPEN-PZ1 which room the remaining door symbols (`TOA_DOOR_EXIT*`, `TOA_DOOR_TOP*`) and the Crondis exit loc serve; OPEN-PZ2 withdrawn (ranged
+defence is given by the infoboxes, Data); OPEN-PZ3 level 56 vs 68 baboon variant selection; OPEN-PZ4 animation-to-baboon mapping,
 role of transition locs 45501 / 45502 and spot anims 2134-2136; OPEN-PZ5 which poison tile id is the dark (damaging) cloud; OPEN-PZ6
 corner beam graphic ids; OPEN-PZ7 whether raid level scales accuracy / damage / defence of baboons, croc, orbs, beam and scarabs;
 OPEN-PZ8 whether path level +8% / +5% applies to puzzle NPCs and what "completing a path" means for Walk the Path; OPEN-PZ9 Deadly
 Prayers vs trap damage, Overly Draining vs the pickaxe special; OPEN-PZ10 puzzle points and CA tracking; OPEN-PZ11 Sight cycle rule
 and interval; OPEN-PZ12 Apmeken danger schedule, pillar / vent counts, failure damage and countdown; OPEN-PZ13 wave advance thresholds,
-extra group baboon, Special slot choice, challenge-complete trigger; OPEN-PZ14 max-hit rule for volatile and thrall, Defence-level
+extra group baboon, Special slot choice, challenge-complete trigger; OPEN-PZ14 max-hit guarantee for the Volatile, Defence-level
 magic defence for non-brawlers, freeze / bind immunity; OPEN-PZ15 shaman and thrall details (cap 4 or 5, drain percent, blocked
 hits, summon rate); OPEN-PZ16 volatile damage, fuse and retarget; OPEN-PZ17 cursed baboon pool rate, damage and venom;
 OPEN-PZ18 water needed per team size and the palm stage thresholds; OPEN-PZ19 waterfall refill time; OPEN-PZ20 trap damage, cycle
@@ -577,7 +613,7 @@ crocodile target priority order and aggression range; OPEN-PZ23 crocodile bite e
 OPEN-PZ24 pickaxe storage rules; OPEN-PZ25 Het layout generation, mirror push and carry rules; OPEN-PZ26 beam period (only LD's 9 ticks; the wiki gives none); OPEN-PZ27 beam and orb damage, orb spawn pattern and speed; OPEN-PZ28 Seal hit cadence vs 15-tick window; OPEN-PZ29 pickaxe tier
 classes and Seal damage source; OPEN-PZ30 Scabaras room geometry and completion trigger; OPEN-PZ31 scarab count, rate, cap and
 scaling; OPEN-PZ32 sequence puzzle numbers; OPEN-PZ33 obelisk rock damage and targeting; OPEN-PZ34 lights start layouts and damage;
-OPEN-PZ35 addition grid, target roll and overshoot damage; OPEN-PZ36 matching board and mismatch rule. **36 open items.**
+OPEN-PZ35 addition grid, target roll and overshoot damage; OPEN-PZ36 matching board and mismatch rule. **35 open items** (PZ2 withdrawn).
 Suggested config flags: `toa.apmeken.waveThreshold`, `toa.crondis.waterPerPlayer`, `toa.het.beamPeriodTicks` (default 9),
 `toa.het.sealHitIntervalTicks`, `toa.scabaras.scarabRate`, `toa.puzzles.pathLevelAppliesToPuzzleNpcs`.
 
@@ -599,6 +635,9 @@ Suggested config flags: `toa.apmeken.waveThreshold`, `toa.crondis.waterPerPlayer
 10. Scabaras puzzle count: request says four, the wiki says five (SC1). The wiki is used.
 11. Arcane Scarab: "reduced by Protect from Magic" (Arcane) vs "attacks can hit through protection prayers" (Spitting). Kephri's
     fight; not resolved here.
+14. Seal top Mining bracket: Mod Ash 100+, Seal page and Strat 99+, Perfect Het "boosted Mining level of 100 or higher". Seal / Strat used (99).
+15. Pickaxe statue locs: wiki Statue infobox "Bronze" 45469 / 45470 and "Empty (unused)" 45468 vs cache symbols 45469 `_EMPTY01`
+    and 45468 `_PARENT` (multi-loc). The cache is used.
 12. Banana peels: attributed to "baboons" (Baboon, Peel); the Peel page limits them to the Ba-Ba fight, so none in the Apmeken room.
 13. Volatile explosion graphic: MT matches spot anim 131, the cache has `SPOTANIM_MANDRILL_EXPLODE` 2249. Both listed; the
     server should send 2249 (cache name) until a capture shows otherwise (**OPEN-PZ16**).

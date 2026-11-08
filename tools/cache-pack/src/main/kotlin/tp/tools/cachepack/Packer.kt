@@ -134,8 +134,20 @@ internal object Packer {
             interfaceId++
         }
 
-        var invId = nextConfigId(source, ConfigPacker.GROUP_INV, symbols.tables["inv"])
-        for (d in configs.invs.sortedBy { it.name }) custom.add("inv", d.name, invId++, d.attributes)
+        val firstInv = nextConfigId(source, ConfigPacker.GROUP_INV, symbols.tables["inv"])
+        // Explicit ids first (they never move: player saves key inventories by id), then the rest in name order.
+        val pinned = configs.invs.filter { it.num > 0 }
+        for (d in pinned) {
+            if (d.num < firstInv) throw IOException("inv ${d.name}: num ${d.num} is below the first free id $firstInv")
+            if (pinned.count { it.num == d.num } > 1) throw IOException("inv ${d.name}: num ${d.num} is used twice")
+            custom.add("inv", d.name, d.num, d.attributes)
+        }
+        val taken = pinned.map { it.num }.toSet()
+        var invId = firstInv
+        for (d in configs.invs.filter { it.num == 0 }.sortedBy { it.name }) {
+            while (invId in taken) invId++
+            custom.add("inv", d.name, invId++, d.attributes)
+        }
         var varpId = nextConfigId(source, ConfigPacker.GROUP_VARP, symbols.tables["varp"])
         for (d in configs.varps.sortedBy { it.name }) custom.add("varp", d.name, varpId++, d.attributes)
         var varbitId = nextConfigId(source, ConfigPacker.GROUP_VARBIT, symbols.tables["varbit"])
