@@ -11,6 +11,8 @@ import tp.plugin.LocRef
 import tp.plugin.PlayerRef
 import tp.protocol.api.ClientCommand
 import tp.symbols.Locs
+import tp.symbols.Varbits
+import tp.symbols.Varps
 import tp.tools.scenario.Scenario
 import tp.tools.scenario.ScenarioPlayer
 
@@ -50,6 +52,22 @@ class CoxSmokeScenario {
             if (last) break
         }
         assertEquals(CoxRaid.OLM, (run.state as? RunState.InRoom)?.room?.id, "seed $seed: the Olm room started")
+        s.tick()
+        // HUD 513 (client-contract 2.2): in the dungeon, progress 4 in the Olm's room, the timer started.
+        assertEquals(1, ra.varbit(Varbits.RAIDS_CLIENT_INDUNGEON))
+        assertEquals(4, ra.varbit(Varbits.RAIDS_CLIENT_PROGRESS), "seed $seed: progress in the Olm room")
+        assertTrue(ra.varbit(Varbits.RAIDS_TIMER) > 0, "seed $seed: the raid timer runs")
+        assertTrue(a.messages.contains(CoxFlow.RAID_BEGUN), "seed $seed: start message")
+        assertTrue(
+            a.messages.any { "Upper level complete!" in it } && a.messages.any { "Lower level complete!" in it },
+            "seed $seed: floor lines",
+        )
+        // CX21 / CX30: points show on the HUD; a death costs 40% of them.
+        CoxPoints.award(run, "a", POINTS)
+        s.tick()
+        assertEquals(POINTS.toInt(), ra.varp(Varps.RAIDS_PLAYERSCORE))
+        assertEquals(POINTS.toInt(), ra.varbit(Varbits.RAIDS_CLIENT_PARTYSCORE))
+        assertEquals(POINTS * DEATH_SHARE, CoxPoints.deathPenalty(requireNotNull(run.member("a")), run))
         assertTrue(CoxMap.inOlm(run, a.coord), "seed $seed: in the Olm square at ${a.coord}")
         // CX34 (Strat): a death now respawns at the end of the last generated floor.
         val respawn = requireNotNull(CoxFlow.respawn(run, ra))
@@ -139,5 +157,7 @@ class CoxSmokeScenario {
         const val WALK = 10
         const val WALK_LIMIT = 60
         const val MID = 16
+        const val POINTS = 1000.0
+        const val DEATH_SHARE = 0.4
     }
 }

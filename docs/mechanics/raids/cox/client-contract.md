@@ -201,7 +201,7 @@ Nothing here is validated by the client; every setting is a server decision [R].
   | 4 | "Your party has reached the bottom..." (the Olm room) |
   | 5-7 | "Get out! Get out!<br>GET OUT!" (the raid is over / the countdown); **the HUD timer stops at ≥ 5** |
 
-  Which value a floor writes under Small / Large layouts (two floors) is [?]: 2 and 3 both read "lower" there, so a two-floor run probably uses 1, 2 and 4 or 1, 3 and 4 [I].
+  Which value a floor writes under Small / Large layouts (two floors) is [?]: 2 and 3 both read "lower" there, so a two-floor run probably uses 1, 2 and 4 or 1, 3 and 4 [I]. This server writes 1, 3, 4 (`CoxHud.progress`) and 5 once the Olm is dead.
 - **Fade**: **1512** fades the screen to black (transparency of the rectangle 513:1 goes 255 → 0 over 25 client cycles, i.e. 0.5 s, and it is shown) and **1513** fades it back (0 → 255, hidden at 255), both via 1515; no arguments. Server-run (no client caller) [R]. Where the server uses them (room changes, death, the Olm entrance) is [?].
 - **Buff icons**: 5923 draws prayer-enhance (tier from 12397 = 1..3, timer 5417, rate 5419) and overload (tier 5420, timer 5418) buff-bar entries. Overload cycles are 25 ticks (plugin fact, `runelite-timings.md`).
 - **Helper panel 710 (mobile)**: 710:2 onLoad 4690 → 4691 draws the frame. The server calls **4653(string rows, int hide)** (no client caller): `hide == 1` hides 710:5; else 710:5 gets the "Show more / Show less" op (varbit 12348 toggled client-side

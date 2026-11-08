@@ -43,6 +43,53 @@ internal object CoxRaid {
     /** By the reward crystal 30027 (3233, 5751) north of the arena. */
     val REWARD_ENTRY = CoordGrid(3233, 5753)
 
+    /** CX54 / OPEN-CX30 (the brief's buckets): Solo, 2-10, 11-15, 16-23, 24+. */
+    fun pbBucket(size: Int): String =
+        when {
+            size <= 1 -> "solo"
+            size <= BUCKET_SMALL -> "2-10"
+            size <= BUCKET_MID -> "11-15"
+            size <= BUCKET_LARGE -> "16-23"
+            else -> "24+"
+        }
+
+    /** CX53: the team size as the completion line writes it (RL's pattern: `Solo`, `N players`, `A-B players`, `N+ players`). */
+    fun teamSize(size: Int): String =
+        when {
+            size <= 1 -> "Solo"
+            size <= BUCKET_SMALL -> "$size players"
+            size <= BUCKET_MID -> "11-15 players"
+            size <= BUCKET_LARGE -> "16-23 players"
+            else -> "24+ players"
+        }
+
+    /** CX53 (exact string, stray `</col>` tags included; OPEN-CX29). */
+    fun completion(team: String, time: String, pb: String?, newBest: Boolean): String {
+        val tail = if (newBest || pb == null) " (new personal best)</col>" else " Personal best: </col><col=ff0000>$pb</col>"
+        return "<col=ef20ff>Congratulations - your raid is complete!</col><br>Team size: <col=ff0000>$team</col> Duration:</col> " +
+            "<col=ff0000>$time</col>$tail"
+    }
+
+    /** Raid times as `m:ss` (`h:mm:ss` past an hour), `m:ss.cc` with the precise-timing option 11866 (CX53). */
+    fun formatTime(p: tp.plugin.PlayerRef, ticks: Long): String {
+        val precise = p.varbit(tp.symbols.Varbits.OPTION_PRECISE_TIMING) == 1
+        val centis = ticks * CENTIS_PER_TICK
+        val totalSeconds = centis / CENTIS
+        val h = totalSeconds / SECONDS_PER_HOUR
+        val m = (totalSeconds / SECONDS_PER_MINUTE) % SECONDS_PER_MINUTE
+        val sec = totalSeconds % SECONDS_PER_MINUTE
+        val base = if (h > 0) "%d:%02d:%02d".format(h, m, sec) else "%d:%02d".format(m, sec)
+        return if (precise) base + ".%02d".format(centis % CENTIS) else base
+    }
+
+    private const val BUCKET_SMALL = 10
+    private const val BUCKET_MID = 15
+    private const val BUCKET_LARGE = 23
+    private const val CENTIS_PER_TICK = 60L
+    private const val CENTIS = 100L
+    private const val SECONDS_PER_MINUTE = 60L
+    private const val SECONDS_PER_HOUR = 3600L
+
     /** Room ids are not template tiles here: every entry comes from [RoomDef.entryAt]. */
     private val NOWHERE = CoordGrid(3296, 5184)
 
@@ -58,23 +105,18 @@ internal object CoxRaid {
             // CX36: a logout is not a death (OPEN-CX19: the Olm-room logout penalty).
             disconnect = DisconnectPolicy.REJOIN
             claimInv = Invs.RAIDS_REWARDS
-            contribution = ContributionRules(normalisedRooms = false)
+            // CX21-CX22: damage adds points directly; CX30: a death costs 40%.
+            contribution =
+                ContributionRules(
+                    normalisedRooms = false,
+                    multiplier = { type -> CoxPoints.multiplier(type) },
+                    deathPenalty = { m, run -> CoxPoints.deathPenalty(m, run) },
+                )
             records =
                 RecordsDef(
                     kcVarp = Varps.TOTAL_COMPLETED_XERICCHAMBERS,
                     kcMessage = { "Your completed Chambers of Xeric count is: <col=ff0000>$it</col>." },
-                    // CX53 (OPEN-CX29): the team size line is added by the records driver (milestone 2).
-                    timeMessage = { t, pb, newBest ->
-                        val tail =
-                            if (newBest ||
-                                pb == null
-                            ) {
-                                " (new personal best)</col>"
-                            } else {
-                                " Personal best: </col><col=ff0000>$pb</col>"
-                            }
-                        "<col=ef20ff>Congratulations - your raid is complete!</col><br>Duration:</col> <col=ff0000>$t</col>$tail"
-                    },
+                    timeMessage = { t, pb, newBest -> completion("Solo", t, pb, newBest) },
                     pbKey = "raids.cox.pb",
                     kcVarpByMode =
                         mapOf(
@@ -89,6 +131,9 @@ internal object CoxRaid {
                             "Your completed Chambers of Xeric count is: <col=ff0000>$kc</col>."
                         }
                     },
+                    pbBucket = { size -> pbBucket(size) },
+                    teamTimeMessage = { size, t, pb, newBest -> completion(teamSize(size), t, pb, newBest) },
+                    formatTime = { p, ticks -> formatTime(p, ticks) },
                 )
             driver = RaidDriver { run -> CoxFlow.sync(run) }
             autoAdvance = false

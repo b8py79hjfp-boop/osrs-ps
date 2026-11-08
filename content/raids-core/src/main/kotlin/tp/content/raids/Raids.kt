@@ -391,11 +391,16 @@ public class Raids internal constructor() {
             val kc = player.varp(varp) + 1
             player.setVarp(varp, kc)
             val ticks = run.endedTick - run.startedTick
-            val key = if (r.kcVarpByMode.isEmpty()) "${r.pbKey}.${run.scaling.partySize}" else "${r.pbKey}.$mode.${run.scaling.partySize}"
+            val size = run.scaling.partySize
+            val bucket = r.pbBucket?.invoke(size) ?: size.toString()
+            val key = if (r.kcVarpByMode.isEmpty()) "${r.pbKey}.$bucket" else "${r.pbKey}.$mode.$bucket"
             val best = player.saved(key)
             val newBest = best == null || ticks < best
             if (newBest) player.setSaved(key, ticks)
-            player.message(r.timeMessage(formatTicks(ticks), best?.let { formatTicks(it) }, newBest))
+            val format = r.formatTime ?: { _, t -> formatTicks(t) }
+            val time = format(player, ticks)
+            val pb = best?.let { format(player, it) }
+            player.message(r.teamTimeMessage?.invoke(size, time, pb, newBest) ?: r.timeMessage(time, pb, newBest))
             player.message(r.kcMessageByMode?.invoke(mode, kc) ?: r.kcMessage(kc))
         }
 

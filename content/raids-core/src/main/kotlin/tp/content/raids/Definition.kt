@@ -144,6 +144,12 @@ public class RecordsDef(
     public val kcVarpByMode: Map<String, Int> = emptyMap(),
     /** The KC message for a mode; null = [kcMessage]. */
     public val kcMessageByMode: ((mode: String, kc: Int) -> String)? = null,
+    /** The personal-best bucket of a party size (CoX: Solo, 2-10, 11-15, ...); null = one per size. */
+    public val pbBucket: ((partySize: Int) -> String)? = null,
+    /** The completion line naming the team size (CoX); null = [timeMessage]. */
+    public val teamTimeMessage: ((partySize: Int, time: String, personalBest: String?, newBest: Boolean) -> String)? = null,
+    /** How a time is written for [player] (CoX honours the precise-timing option); null = `m:ss.cc`. */
+    public val formatTime: ((player: PlayerRef, ticks: Long) -> String)? = null,
 )
 
 /** Maps run state to a raid's HUD and party varbits (brief 3.15); called at the end of a tick when the run changed. */

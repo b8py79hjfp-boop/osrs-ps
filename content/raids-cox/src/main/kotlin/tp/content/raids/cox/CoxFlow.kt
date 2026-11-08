@@ -1,6 +1,7 @@
 package tp.content.raids.cox
 
 import tp.content.raids.PartyState
+import tp.content.raids.RaidEvent
 import tp.content.raids.RaidLayout
 import tp.content.raids.RaidRun
 import tp.content.raids.Raids
@@ -27,6 +28,19 @@ internal class CoxState(val plan: CoxLayoutPlan) {
 
     /** Passages spawned where a template has none (OPEN-CX31): tile -> the cell side they stand on. */
     val spawnedPassages = HashMap<CoordGrid, Int>()
+
+    /** Team-only point changes (CX30's 5% case, CX32's Challenge Mode bonus). */
+    var teamAdjust = 0.0
+
+    /** The tick the Great Olm died (the raid time ends there), or -1. */
+    var olmDeadTick = -1L
+
+    /** Floors whose completion line was sent. */
+    val floorsAnnounced = BooleanArray(MAX_FLOORS + 1)
+
+    private companion object {
+        const val MAX_FLOORS = 3
+    }
 }
 
 /** What a room needs from its content: started when the first player walks in; it calls [CoxFlow.roomDone]. */
@@ -43,7 +57,11 @@ internal fun interface CoxRoomScript {
  */
 public class CoxFlow : ContentPlugin {
     override fun ContentScope.register() {
-        onWorldStart { Raids.of(this).register(CoxRaid.DEFINITION) }
+        var world: tp.plugin.WorldRef? = null
+        onWorldStart {
+            world = this
+            Raids.of(this).register(CoxRaid.DEFINITION)
+        }
         onOpLoc(Locs.RAIDS_ENTRANCE_STEPS, OP1) { enterChambers(player) }
         onOpLoc(Locs.RAIDS_DOORWAY, OP1) { loc -> passage(player, loc) }
         for (hole in FLOOR_HOLES) onOpLoc(hole, OP1) { descend(player) }
@@ -51,6 +69,8 @@ public class CoxFlow : ContentPlugin {
         onOpLoc(Locs.RAIDS_BOSSENTRANCE, OP1) { toOlm(player) }
         onOpLoc(Locs.RAIDS_BOSSEXIT, OP1) { fromOlm(player) }
         onOpLoc(Locs.RAIDS_OLM_BARRIER, OP1) { loc -> passBarrier(player, loc) }
+        onWorldTick { CoxHud.tick(this) }
+        events.on<RaidEvent.Left> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let(CoxHud::leave) }
     }
 
     /**
@@ -153,6 +173,7 @@ public class CoxFlow : ContentPlugin {
         val st = state(run) ?: return
         val cell = CoxMap.cellAt(st.plan, run, player.coord) ?: return
         val next = st.plan.next(cell)?.takeIf { it.kind == CoxKind.START } ?: return
+        floorComplete(run, st, player, cell.floor)
         player.teleport(CoxMap.freeNear(player, CoxMap.tile(run, next, ROPE_X, ROPE_Z)))
         st.floorReached = maxOf(st.floorReached, next.floor)
         enterCell(run, st, next, player)
@@ -172,6 +193,14 @@ public class CoxFlow : ContentPlugin {
         val run = runOf(player) ?: return
         val st = state(run) ?: return
         if ((run.state as? RunState.InRoom)?.room?.id == CoxRaid.CHAMBERS) {
+            floorComplete(
+                run,
+                st,
+                player,
+                st.plan.cells
+                    .last()
+                    .floor,
+            )
             Raids.roomCleared(player, run)
             Raids.advance(player, run, CoxRaid.OLM)
         }
@@ -306,9 +335,30 @@ public class CoxFlow : ContentPlugin {
             }
         }
 
-        /** The run's driver (HUD 513 and the points ledger come with milestone 2). */
-        fun sync(run: RaidRun) {
-            state(run) ?: return
+        /** The run's driver: HUD 513 is rebuilt every world tick by [CoxHud.tick] (a run alone reaches no player). */
+        fun sync(
+            @Suppress("UNUSED_PARAMETER") run: RaidRun,
+        ) {
+            // Intentionally empty: see the KDoc.
+        }
+
+        /**
+         * CX53 (OPEN-CX29): the first member to leave a floor tells the party it is complete, with the time since the
+         * start; the words follow the progress names (client-contract 2.2).
+         */
+        fun floorComplete(run: RaidRun, st: CoxState, any: EntityRef, floor: Int) {
+            if (floor !in 0 until st.plan.floors || st.floorsAnnounced[floor]) return
+            st.floorsAnnounced[floor] = true
+            val word =
+                when {
+                    floor == 0 -> "Upper"
+                    floor == st.plan.floors - 1 -> "Lower"
+                    else -> "Middle"
+                }
+            val ticks = CoxHud.elapsed(run, st, any.tick).toLong()
+            for (p in run.presentPlayers(any)) {
+                p.message("<col=ef20ff>$word level complete!</col> Duration: <col=ff0000>${CoxRaid.formatTime(p, ticks)}</col>")
+            }
         }
 
         /**
