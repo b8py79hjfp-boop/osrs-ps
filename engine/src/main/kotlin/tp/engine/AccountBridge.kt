@@ -144,12 +144,24 @@ interface AccountBridge {
     }
 
     /** `::alts` / `::checkip` (administrators, audited): [reply] gets an error, or the lines. */
-    fun investigate(player: Player, target: String, kind: String, reply: (String?, List<String>) -> Unit) {
+    fun investigate(player: Player, target: String, kind: String, filter: String, reply: (String?, List<String>) -> Unit) {
         reply("Moderation needs the account server.", emptyList())
     }
 
-    /** `::broadcast --all`, `::update` (commands brief §6): to every world through the hub. */
+    /** `::broadcast --all` (commands brief §6): to every world through the hub. */
     fun broadcastAll(player: Player, text: String) {}
+
+    /** `::update` / `::cancelupdate` (owner): every world's system-update timer through the hub ([seconds] < 0 cancels). */
+    fun systemUpdateAll(player: Player, seconds: Int) {}
+
+    /** `::setrank` / `::rename` (owner): [reply] gets null on success, else the reason (world thread). */
+    fun setRank(player: Player, target: String, rank: tp.util.Rank, reply: (String?) -> Unit) {
+        reply("Ranks need the account server.")
+    }
+
+    fun rename(player: Player, target: String, newName: String, reply: (String?) -> Unit) {
+        reply("Renames need the account server.")
+    }
 
     /** `::lookup`: [reply] gets an error, or the card. */
     fun lookup(player: Player, target: String, reply: (String?, tp.util.PlayerCard?) -> Unit) {

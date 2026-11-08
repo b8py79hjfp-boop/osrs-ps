@@ -3,6 +3,7 @@ package tp.plugin.commands
 import tp.util.Rank
 import tp.util.commands.CommandOverride
 import tp.util.commands.CommandsConfig
+import tp.util.commands.Impact
 
 /**
  * Every command of one world's content (commands brief §3): one source of truth for dispatch, the `::commands`
@@ -57,14 +58,16 @@ public class CommandRegistry {
     public fun effectiveRank(def: CommandDef, config: CommandsConfig): Rank? =
         when (val o = config.overrides[def.name]) {
             null -> def.rank
-            is CommandOverride.Disabled -> null
+            is CommandOverride.Disabled -> if (def.name in config.runtimeEnabled) def.rank else null
             is CommandOverride.MinRank -> if (def.rank.isStaff && !o.rank.isStaff) Rank.MODERATOR else o.rank
         }
 
     /** Whether [viewer] may see and run [def] on this world: rank, override and the world's impact policy (§3). */
     public fun usable(def: CommandDef, viewer: Rank, config: CommandsConfig): Boolean {
         val needed = effectiveRank(def, config) ?: return false
-        return viewer.atLeast(needed) && config.allows(def.impact) && def.available(config)
+        // `::command enable` lifts a world's impact switch, never ECONOMY's (§3: only the file allows that).
+        val impactOk = config.allows(def.impact) || (def.name in config.runtimeEnabled && def.impact != Impact.ECONOMY)
+        return viewer.atLeast(needed) && impactOk && def.available(config)
     }
 
     /** The commands [viewer] may use here, by name. */

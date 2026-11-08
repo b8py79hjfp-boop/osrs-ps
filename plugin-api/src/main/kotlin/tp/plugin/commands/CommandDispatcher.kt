@@ -36,7 +36,7 @@ public class CommandDispatcher internal constructor(
         if (tokens.isEmpty()) return Outcome.Unknown
         val name = tokens[0].lowercase()
         val world = player.p.world
-        val config = world.config.commands
+        val config = world.commands
         if (!allowedByRate(player, world.tick, config)) return Outcome.Dropped
         val def = registry.find(name)
         if (def == null || !registry.usable(def, player.rank, config)) {

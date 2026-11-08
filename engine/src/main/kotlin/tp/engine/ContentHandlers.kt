@@ -18,6 +18,9 @@ interface ContentHandlers {
     /** The hub changed [player]'s sanctions (commands brief §7); [before] is what was in force. World thread. */
     fun onSanctionsChanged(player: Player, before: tp.util.Sanctions) {}
 
+    /** `::setrank` changed [player]'s rank live (commands brief §8); [before] was the old one. World thread. */
+    fun onRankChanged(player: Player, before: tp.util.Rank) {}
+
     /** `::warn` arrived for [player] (commands brief §6). World thread. */
     fun onWarned(player: Player, reason: String) {}
 

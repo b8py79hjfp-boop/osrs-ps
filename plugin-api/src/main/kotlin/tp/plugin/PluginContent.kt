@@ -113,6 +113,10 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         h.events.publish(tp.plugin.commands.SanctionsChanged(ref(player), before))
     }
 
+    override fun onRankChanged(player: Player, before: tp.util.Rank) {
+        h.events.publish(tp.plugin.commands.RankChanged(ref(player), before))
+    }
+
     override fun onWarned(player: Player, reason: String) {
         h.events.publish(tp.plugin.commands.Warned(ref(player), reason))
     }

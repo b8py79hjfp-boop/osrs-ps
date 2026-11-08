@@ -228,6 +228,8 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 if (!NAME.matches(username)) return "Names are 1-12 letters, numbers, spaces, - or _."
                 if (password.length !in MIN_PASSWORD..MAX_PASSWORD) return "Passwords are $MIN_PASSWORD-$MAX_PASSWORD characters."
                 if (db { store.ipBanned(ip) }) return "Registration is not available."
+                // A `::rename`d display name is taken too, so two accounts never show the same name.
+                if (db { store.accountByDisplayName(username) } != null) return "That name is taken."
                 val row =
                     db { store.createAccount(username, hashing { Passwords.hash(password) }, Rank.PLAYER) }
                         ?: return "That name is taken."
@@ -426,7 +428,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
             override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, durationMs: Long, reason: String): String? {
                 val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
                 if (!staff.rights.atLeast(sanction.minRank)) return "You don't have permission to do that."
-                val row = db { store.account(target) } ?: return "There is no account called $target."
+                val row = db { store.accountByName(target) } ?: return "There is no account called $target."
                 // Commands brief §1: checked here against the stored rank, so offline targets obey it too.
                 if (row.id != staff.id && !staff.rights.canTarget(row.rights)) return "You can't do that to ${row.displayName}."
                 val now = System.currentTimeMillis()
@@ -506,7 +508,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
             override suspend fun history(staffAccount: Long, target: String): ModAnswer<List<ModRecord>> {
                 val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
                 if (!staff.rights.isStaff) return ModAnswer("You don't have permission to do that.", null)
-                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val row = db { store.accountByName(target) } ?: return ModAnswer("There is no account called $target.", null)
                 val records = db { store.records(row.id) }
                 val admin = staff.rights.atLeast(Rank.ADMINISTRATOR)
                 // §8: IP addresses and device ids are for administrators only, and every view of them is audited.
@@ -526,11 +528,12 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                 return ModAnswer(null, shown)
             }
 
-            override suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> {
+            override suspend fun investigate(staffAccount: Long, target: String, kind: String, filter: String): ModAnswer<List<String>> {
                 val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
                 // §8: IP addresses, device ids and alt links are administrator and above, and every view is audited.
                 if (!staff.rights.atLeast(Rank.ADMINISTRATOR)) return ModAnswer("You don't have permission to do that.", null)
-                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                if (kind == "audit") return auditLog(staff, target, filter)
+                val row = db { store.accountByName(target) } ?: return ModAnswer("There is no account called $target.", null)
                 val lines =
                     db {
                         when (kind) {
@@ -541,6 +544,56 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     } ?: return ModAnswer("Unknown investigation.", null)
                 db { store.audit(staff.displayName, "view-$kind", row.displayName, "${lines.size} rows") }
                 return ModAnswer(null, lines)
+            }
+
+            /** `::audit [player|staff] [filter]` (owner): the newest matching rows; viewing is itself audited. */
+            private suspend fun auditLog(staff: AccountRow, who: String, filter: String): ModAnswer<List<String>> {
+                if (!staff.rights.atLeast(Rank.OWNER)) return ModAnswer("You don't have permission to do that.", null)
+                val rows = db { store.auditQuery(who, filter, AUDIT_ROWS) }
+                db { store.audit(staff.displayName, "view-audit", who.ifBlank { "-" }, filter) }
+                return ModAnswer(null, rows)
+            }
+
+            override suspend fun setRank(staffAccount: Long, target: String, rank: Rank): String? {
+                val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
+                val row = db { store.accountByName(target) } ?: return "There is no account called $target."
+                if (row.id == staff.id) return "You can't change your own rank."
+                // §1: owners set up to administrator on lower ranks; developers set any rank on non-developers.
+                if (!staff.rights.canSetRank(row.rights, rank)) return "You can't give ${row.displayName} that rank."
+                if (row.rights == rank) return "${row.displayName} is already ${rank.name.lowercase()}."
+                db {
+                    store.setRights(row.id, rank)
+                    store.audit(staff.displayName, "set-rank", row.displayName, "${row.rights.stored} -> ${rank.stored}")
+                }
+                // §8: rank changes take effect at once, on the player's world and in every world's presence.
+                online[row.id]?.let { world ->
+                    deliver(world, SocialEvent.RankChanged(row.id, rank))
+                    presence[row.id]?.let { e ->
+                        val updated = PresenceEntry(e.accountId, e.name, e.worldId, rank, e.invisible)
+                        presence[row.id] = updated
+                        presenceChanged(online = listOf(updated))
+                    }
+                }
+                return null
+            }
+
+            override suspend fun rename(staffAccount: Long, target: String, newName: String): String? {
+                val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
+                if (!staff.rights.atLeast(Rank.OWNER)) return "You don't have permission to do that."
+                val row = db { store.accountByName(target) } ?: return "There is no account called $target."
+                val name = newName.trim()
+                if (!NAME.matches(name)) return "Names are 1-12 letters, numbers, spaces, - or _."
+                val taken = db { (store.account(name) ?: store.accountByDisplayName(name))?.takeIf { it.id != row.id } }
+                if (taken != null) return "The name $name is taken."
+                val now = System.currentTimeMillis()
+                db {
+                    store.setDisplayName(row.id, name)
+                    store.addRecord(ModRecord(0, row.id, RecordType.RENAME, staff.displayName, "${row.displayName} -> $name", now, 0))
+                    store.audit(staff.displayName, "rename", row.displayName, name)
+                }
+                // The client shows the name it logged in with: a relog shows the new one.
+                online[row.id]?.let { world -> kickSinks[world]?.forEach { runCatching { it(row.id) } } }
+                return null
             }
 
             /** Accounts sharing an IP or a device with [accountId]. Blocking (inside db). */
@@ -554,7 +607,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
             override suspend fun lookup(staffAccount: Long, target: String): ModAnswer<PlayerCard> {
                 val staff = db { store.account(staffAccount) } ?: return ModAnswer("Unknown staff account.", null)
                 if (!staff.rights.isStaff) return ModAnswer("You don't have permission to do that.", null)
-                val row = db { store.account(target) } ?: return ModAnswer("There is no account called $target.", null)
+                val row = db { store.accountByName(target) } ?: return ModAnswer("There is no account called $target.", null)
                 val now = System.currentTimeMillis()
                 val records = db { store.records(row.id) }
                 val admin = staff.rights.atLeast(Rank.ADMINISTRATOR)
@@ -626,6 +679,9 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         const val MAX_TOP = 100
         const val MS_PER_MINUTE = 60_000L
         val NAME = Regex("[A-Za-z0-9 _-]{1,12}")
+
+        /** `::audit`: rows returned per query. */
+        const val AUDIT_ROWS = 100
 
         /** account_seen kinds. */
         const val SEEN_IP = "ip"

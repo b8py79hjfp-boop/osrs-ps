@@ -1334,3 +1334,14 @@ means is not known.
   "private" lists, which are never shown in chat. Until the staff interface lands, the command says to open it.
 - **Hidden mode** hides the avatar from everyone (OPEN-CMD7: RSProt's flag is global).
 - **`::npc` is ECONOMY.** A spawned NPC can be killed for its drops.
+
+## D-091 Owner suite (2026-11-08)
+
+- **Rank changes** (`::setrank`) are checked with `Rank.canSetRank` at the hub, audited (`set-rank old -> new`) and
+  pushed live: `SocialEvent.RankChanged` updates the player and every world's presence. A demotion closes the
+  player's modal; staff list views listen for `RankChanged`.
+- **Runtime policy.** `World.commands` is now the live copy of the world's `CommandsConfig`. `::command` and
+  `::config` replace it until restart. ECONOMY can never be enabled at runtime (§3).
+- **Renames** keep the login username (CMD11).
+- **Update and shutdown** exit the node once its worlds are empty (CMD12).
+- **Removed:** StaffCommands is gone; every staff action now goes through the registry.

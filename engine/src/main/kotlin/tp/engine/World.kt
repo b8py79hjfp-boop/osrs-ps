@@ -1122,6 +1122,12 @@ class World(
      * player is logged out with a final save (durable at the hub before their accounts free up).
      */
     fun systemUpdate(seconds: Int) {
+        if (seconds < 0) {
+            // `::cancelupdate` (commands brief §6): a zero timer clears the client countdown (commands.md OPEN-CMD9).
+            systemUpdateAt = -1
+            forEachPlayer { it.session.send(ServerMessage.SystemUpdate(0)) }
+            return
+        }
         val ticks = (seconds * MS_PER_SECOND / TICK_MS).toInt()
         systemUpdateAt = tick + ticks
         forEachPlayer { it.session.send(ServerMessage.SystemUpdate(ticks)) }
@@ -1130,7 +1136,21 @@ class World(
     private fun checkSystemUpdate() {
         if (systemUpdateAt < 0 || tick < systemUpdateAt) return
         forEachPlayer { requestLogout(it) }
+        if (playerCount == 0 && !updateDone) {
+            updateDone = true
+            onUpdateDone?.invoke()
+        }
     }
+
+    /** Runs once when a system update or `::shutdown` has logged everyone out (the node then stops; brief §12). */
+    var onUpdateDone: (() -> Unit)? = null
+    private var updateDone = false
+
+    /** `::lockworld` (commands brief §6): only staff may log in while set. */
+    var staffOnly: Boolean = false
+
+    /** This world's commands policy: the config's, changed at runtime by `::config` (safe keys only). */
+    var commands: tp.util.commands.CommandsConfig = config.commands
 
     /** Grand Exchange guide prices (obj -> coins), refreshed from the hub by the world node; empty without a hub. */
     @Volatile var guidePrices: Map<Int, Int> = emptyMap()
@@ -1288,6 +1308,7 @@ class World(
         if (!request.crcValid) return request.reject(LoginRejection.OUT_OF_DATE)
         if (systemUpdateAt >= 0) return request.reject(LoginRejection.UPDATE_IN_PROGRESS)
         if (request.username.isBlank()) return request.reject(LoginRejection.INVALID_CREDENTIALS)
+        if (staffOnly && !(profile?.rank ?: tp.util.Rank.PLAYER).isStaff) return request.reject(LoginRejection.WORLD_FULL)
         if (players.any { it?.username.equals(request.username, ignoreCase = true) }) return request.reject(LoginRejection.ALREADY_ONLINE)
         val slot = (1 until MAX_PLAYERS).firstOrNull { players[it] == null } ?: return request.reject(LoginRejection.WORLD_FULL)
         val session =

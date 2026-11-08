@@ -152,6 +152,7 @@ message SocialEvent {
     ClanInvite clan_invite = 11;
     SanctionsPb sanctioned = 12;
     Warned warned = 13;
+    RankChanged rank_changed = 14;
   }
 }
 
@@ -497,7 +498,24 @@ message SanctionRequest {
 message ModQuery {
   int64 staff_account = 1;
   string target = 2;
-  string kind = 3; // investigate: "alts" or "ips"
+  string kind = 3; // investigate: "alts", "ips" or "audit"
+  string filter = 4; // investigate "audit": text the row must contain
+}
+
+message SetRankRequest {
+  int64 staff_account = 1;
+  string target = 2;
+  string rank = 3; // tp.util.Rank stored value
+}
+
+message RenameRequest {
+  int64 staff_account = 1;
+  string target = 2;
+  string new_name = 3;
+}
+
+message RankChanged {
+  string rank = 1;
 }
 
 message LinesReply {
@@ -551,6 +569,8 @@ service Moderation {
   rpc History(ModQuery) returns (HistoryReply);
   rpc Lookup(ModQuery) returns (LookupReply);
   rpc Investigate(ModQuery) returns (LinesReply);
+  rpc SetRank(SetRankRequest) returns (ErrorReply);
+  rpc Rename(RenameRequest) returns (ErrorReply);
   // Commands brief §4: a command execution for the append-only audit log.
   rpc Audit(AuditRequest) returns (Empty);
   rpc SubscribeKicks(WorldRef) returns (stream Kick);

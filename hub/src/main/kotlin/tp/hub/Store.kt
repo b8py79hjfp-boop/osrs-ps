@@ -36,6 +36,18 @@ interface HubStore : AutoCloseable {
 
     fun setRights(id: Long, rights: Rank)
 
+    /** The account whose display name is [name] (case-insensitive), if any (`::rename`d accounts keep their login). */
+    fun accountByDisplayName(name: String): AccountRow?
+
+    /** Changes the display name; the login username stays (commands brief §6 `::rename`). */
+    fun setDisplayName(id: Long, name: String)
+
+    /** Audit rows (newest first) whose actor or target is [who] (any when blank) and that contain [filter]. */
+    fun auditQuery(who: String, filter: String, limit: Int): List<String>
+
+    /** By login username, else by display name: how staff commands find an account. */
+    fun accountByName(name: String): AccountRow? = account(name) ?: accountByDisplayName(name)
+
     fun setMuted(id: Long, until: Long)
 
     fun setBanned(id: Long, until: Long)

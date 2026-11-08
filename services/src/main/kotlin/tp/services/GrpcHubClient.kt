@@ -373,6 +373,10 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                             sink(SocialEvent.Sanctioned(e.toAccount, e.sanctioned.toSanctions()))
                         }
 
+                        e.hasRankChanged() -> {
+                            sink(SocialEvent.RankChanged(e.toAccount, Rank.parseOrPlayer(e.rankChanged.rank)))
+                        }
+
                         e.hasWarned() -> {
                             sink(SocialEvent.Warned(e.toAccount, e.warned.reason))
                         }
@@ -642,10 +646,43 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                 return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.toCard())
             }
 
-            override suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> {
-                val r = moderationStub.investigate(modQuery(staffAccount, target).toBuilder().setKind(kind).build())
+            override suspend fun investigate(staffAccount: Long, target: String, kind: String, filter: String): ModAnswer<List<String>> {
+                val r =
+                    moderationStub.investigate(
+                        modQuery(staffAccount, target)
+                            .toBuilder()
+                            .setKind(kind)
+                            .setFilter(filter)
+                            .build(),
+                    )
                 return if (r.error.isNotEmpty()) ModAnswer(r.error, null) else ModAnswer(null, r.linesList)
             }
+
+            override suspend fun setRank(staffAccount: Long, target: String, rank: Rank): String? =
+                err(
+                    moderationStub
+                        .setRank(
+                            tp.services.grpc.SetRankRequest
+                                .newBuilder()
+                                .setStaffAccount(staffAccount)
+                                .setTarget(target)
+                                .setRank(rank.stored)
+                                .build(),
+                        ).error,
+                )
+
+            override suspend fun rename(staffAccount: Long, target: String, newName: String): String? =
+                err(
+                    moderationStub
+                        .rename(
+                            tp.services.grpc.RenameRequest
+                                .newBuilder()
+                                .setStaffAccount(staffAccount)
+                                .setTarget(target)
+                                .setNewName(newName)
+                                .build(),
+                        ).error,
+                )
 
             private fun modQuery(staffAccount: Long, target: String) =
                 tp.services.grpc.ModQuery

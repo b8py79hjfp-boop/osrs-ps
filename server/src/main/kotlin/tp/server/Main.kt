@@ -96,6 +96,14 @@ fun main(args: Array<String>) {
             )
         }
     val links = worlds.mapIndexed { i, w -> WorldLinks(w, hub, node.hostOf(i), node.portOf(i)).start() }
+    // Commands brief §6 `::update` / `::shutdown`: once every world here has logged everyone out (final saves queued),
+    // the node exits; the shutdown hook below waits for the saves, and the supervisor restarts it.
+    val done =
+        java.util.concurrent.atomic
+            .AtomicInteger()
+    for (w in worlds) {
+        w.onUpdateDone = { if (done.incrementAndGet() == worlds.size) Thread { exitProcess(0) }.start() }
+    }
     val http = embeddedHub?.let { worldListServer(it, worlds, node::hostOf, node.httpPort, node.firstWorld) }
     val ops = Ops(worlds, options["--ops-port"]?.toIntOrNull() ?: Ops.DEFAULT_PORT).start()
     Runtime.getRuntime().addShutdownHook(

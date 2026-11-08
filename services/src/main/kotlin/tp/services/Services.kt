@@ -89,6 +89,9 @@ sealed interface SocialEvent {
     /** The account's sanctions changed (commands brief §7: applied at once on the world it is on). */
     class Sanctioned(override val toAccount: Long, val sanctions: tp.util.Sanctions) : SocialEvent
 
+    /** `::setrank` changed the account's rank (commands brief §8: takes effect at once). */
+    class RankChanged(override val toAccount: Long, val rank: Rank) : SocialEvent
+
     /** `::warn`: shown to the player with the reason (commands brief §6). */
     class Warned(override val toAccount: Long, val reason: String) : SocialEvent
 
@@ -371,7 +374,14 @@ interface ModerationService {
      * Administrator investigations (commands brief §6, §8; audited): [kind] "alts" lists accounts sharing an IP or
      * device with [target]; "ips" lists the IPs [target] logged in from.
      */
-    suspend fun investigate(staffAccount: Long, target: String, kind: String): ModAnswer<List<String>> = ModAnswer("Not available.", null)
+    suspend fun investigate(staffAccount: Long, target: String, kind: String, filter: String = ""): ModAnswer<List<String>> =
+        ModAnswer("Not available.", null)
+
+    /** `::setrank` (commands brief §1, §6): checked with [Rank.canSetRank], audited, and applied live. */
+    suspend fun setRank(staffAccount: Long, target: String, rank: Rank): String? = "Not available."
+
+    /** `::rename` (owner): a new display name, kept in the history; the login name stays. */
+    suspend fun rename(staffAccount: Long, target: String, newName: String): String? = "Not available."
 
     /** `::lookup`: [target]'s player card. */
     suspend fun lookup(staffAccount: Long, target: String): ModAnswer<tp.util.PlayerCard> = ModAnswer("Not available.", null)

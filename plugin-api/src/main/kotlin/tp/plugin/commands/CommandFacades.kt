@@ -11,7 +11,12 @@ import tp.util.commands.CommandsConfig
 // What command handlers reach beyond the usual PlayerRef API: hub presence, yell, hidden mode, passwords and URLs.
 
 /** This world's commands policy (config/server.toml, commands brief §9). */
-public val PlayerRef.commandsConfig: CommandsConfig get() = p.world.config.commands
+public val PlayerRef.commandsConfig: CommandsConfig get() = p.world.commands
+
+/** Replaces this world's commands policy until restart (`::command`, `::config`; commands brief §6). */
+public fun PlayerRef.setCommandsConfig(config: CommandsConfig) {
+    p.world.commands = config
+}
 
 /** This world's id. */
 public val PlayerRef.worldId: Int get() = p.world.config.id
@@ -123,9 +128,14 @@ public fun PlayerRef.lookupPlayer(target: String, reply: PlayerRef.(String?, tp.
 }
 
 /** `::alts` ("alts") / `::checkip` ("ips"): administrators only, audited by the hub (commands brief §8). */
-public fun PlayerRef.investigate(target: String, kind: String, reply: PlayerRef.(String?, List<String>) -> Unit) {
+public fun PlayerRef.investigate(
+    target: String,
+    kind: String,
+    filter: String = "",
+    reply: PlayerRef.(String?, List<String>) -> Unit,
+) {
     val accounts = p.world.accounts ?: return reply("Moderation needs the account server.", emptyList())
-    accounts.investigate(p, target, kind) { e, lines -> this.reply(e, lines) }
+    accounts.investigate(p, target, kind, filter) { e, lines -> this.reply(e, lines) }
 }
 
 /** A game broadcast on this world, or on every world through the hub ([everywhere]). */
@@ -137,4 +147,46 @@ public fun PlayerRef.broadcast(text: String, everywhere: Boolean) {
     } else {
         world.forEachPlayer { it.session.send(ServerMessage.GameMessage(text)) }
     }
+}
+
+/** `::setrank` through the hub; [reply] gets null on success, else the reason. */
+public fun PlayerRef.setRank(target: String, rank: Rank, reply: PlayerRef.(String?) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Ranks need the account server.")
+    accounts.setRank(p, target, rank) { r -> this.reply(r) }
+}
+
+/** `::rename` through the hub; [reply] gets null on success, else the reason. */
+public fun PlayerRef.rename(target: String, newName: String, reply: PlayerRef.(String?) -> Unit) {
+    val accounts = p.world.accounts ?: return reply("Renames need the account server.")
+    accounts.rename(p, target, newName) { r -> this.reply(r) }
+}
+
+/** `::update` / `::cancelupdate` (owner): every world through the hub, or this world without one. [seconds] < 0 cancels. */
+public fun PlayerRef.systemUpdate(seconds: Int) {
+    val accounts = p.world.accounts
+    if (accounts != null) accounts.systemUpdateAll(p, seconds) else p.world.systemUpdate(seconds)
+}
+
+/** `::shutdown` (owner): this world only; the node stops once everyone is logged out and saved. */
+public fun PlayerRef.shutdownWorld(seconds: Int) {
+    p.world.systemUpdate(seconds)
+}
+
+/** `::saveall` (owner): every player on this world now (not final). */
+public fun PlayerRef.saveAll() {
+    p.world.saveAll(final = false)
+}
+
+/** `::lockworld` (owner): only staff may log in while on. */
+public var PlayerRef.worldLocked: Boolean
+    get() = p.world.staffOnly
+    set(value) {
+        p.world.staffOnly = value
+    }
+
+/** Every player on this world (owner tools such as `::kickall`). */
+public fun PlayerRef.worldPlayers(): List<PlayerRef> {
+    val out = ArrayList<PlayerRef>()
+    p.world.forEachPlayer { out += tp.plugin.refOf(it) }
+    return out
 }

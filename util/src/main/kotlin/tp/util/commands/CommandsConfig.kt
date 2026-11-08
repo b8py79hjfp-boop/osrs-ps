@@ -48,6 +48,11 @@ data class CommandsConfig(
     val overrides: Map<String, CommandOverride> = emptyMap(),
     /** `::jail` (commands brief §7): where jailed players are kept. */
     val jail: JailArea = JailArea.DEFAULT,
+    /**
+     * `::command enable` (commands brief §6), until restart: these commands ignore a `disabled` override and an impact
+     * class the world turned off, except ECONOMY, which only the file can allow (§3).
+     */
+    val runtimeEnabled: Set<String> = emptySet(),
 ) {
     /**
      * Whether [impact] may run on this world (§3): enabled in the file, and ECONOMY never on a live world unless the

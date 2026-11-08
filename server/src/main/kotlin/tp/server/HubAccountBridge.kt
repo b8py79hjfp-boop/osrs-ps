@@ -299,11 +299,11 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
-    override fun investigate(player: Player, target: String, kind: String, reply: (String?, List<String>) -> Unit) {
+    override fun investigate(player: Player, target: String, kind: String, filter: String, reply: (String?, List<String>) -> Unit) {
         val account = player.accountId
         if (account == 0L) return reply("Unknown account.", emptyList())
         io.execute {
-            val a = call("investigate") { hub.moderation.investigate(account, target, kind) }
+            val a = call("investigate") { hub.moderation.investigate(account, target, kind, filter) }
             world.execute {
                 if (world.playerByAccount(account) ===
                     player
@@ -316,6 +316,27 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
 
     override fun broadcastAll(player: Player, text: String) {
         io.execute { call("broadcast") { hub.broadcasts.broadcast(text) } }
+    }
+
+    override fun systemUpdateAll(player: Player, seconds: Int) {
+        io.execute { call("update") { hub.broadcasts.systemUpdate(seconds) } }
+    }
+
+    override fun setRank(player: Player, target: String, rank: tp.util.Rank, reply: (String?) -> Unit) =
+        answer(player, "set rank", reply) { hub.moderation.setRank(it, target, rank) }
+
+    override fun rename(player: Player, target: String, newName: String, reply: (String?) -> Unit) =
+        answer(player, "rename", reply) { hub.moderation.rename(it, target, newName) }
+
+    /** One hub call that answers null or a reason, delivered to [player] on the world thread if still online. */
+    private fun answer(player: Player, what: String, reply: (String?) -> Unit, block: suspend (Long) -> String?) {
+        val account = player.accountId
+        if (account == 0L) return reply("Unknown account.")
+        io.execute {
+            val a = call(what) { listOf(block(account)) }
+            val result = if (a == null) "The hub did not answer." else a[0]
+            world.execute { if (world.playerByAccount(account) === player) reply(result) }
+        }
     }
 
     override fun lookup(player: Player, target: String, reply: (String?, PlayerCard?) -> Unit) {

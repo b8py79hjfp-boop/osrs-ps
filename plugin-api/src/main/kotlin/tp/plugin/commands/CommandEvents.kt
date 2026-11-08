@@ -40,3 +40,6 @@ public class SanctionsChanged(public val player: PlayerRef, public val before: t
 
 /** A moderator's `::warn` reached [player] (commands brief §6). */
 public class Warned(public val player: PlayerRef, public val reason: String) : Event
+
+/** [player]'s rank changed live (commands brief §8); [before] was the old one. A demotion closes staff views. */
+public class RankChanged(public val player: PlayerRef, public val before: tp.util.Rank) : Event

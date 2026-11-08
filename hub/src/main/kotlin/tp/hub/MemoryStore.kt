@@ -51,6 +51,28 @@ class MemoryStore : HubStore {
             AccountRow(it.id, it.username, it.displayName, hash, it.rights, it.mutedUntil, it.bannedUntil)
         }
 
+    override fun accountByDisplayName(name: String): AccountRow? =
+        byId.values.firstOrNull {
+            it.displayName.equals(
+                name,
+                ignoreCase = true,
+            )
+        }
+
+    override fun setDisplayName(id: Long, name: String) =
+        update(id) {
+            AccountRow(it.id, it.username, name, it.passwordHash, it.rights, it.mutedUntil, it.bannedUntil)
+        }
+
+    override fun auditQuery(who: String, filter: String, limit: Int): List<String> =
+        synchronized(auditLog) { auditLog.toList() }
+            .asReversed()
+            .filter { line ->
+                val f = line.split(' ', limit = AUDIT_FIELDS)
+                (who.isBlank() || f.getOrNull(1).equals(who, true) || f.getOrNull(AUDIT_TARGET).equals(who, true)) &&
+                    (filter.isBlank() || line.contains(filter, ignoreCase = true))
+            }.take(limit)
+
     override fun setRights(id: Long, rights: Rank) =
         update(id) {
             AccountRow(it.id, it.username, it.displayName, it.passwordHash, rights, it.mutedUntil, it.bannedUntil)
@@ -316,3 +338,7 @@ internal object Levels {
 
     private const val MAX = 99
 }
+
+/** Memory audit rows are "ms actor action target detail". */
+private const val AUDIT_FIELDS = 5
+private const val AUDIT_TARGET = 3

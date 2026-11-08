@@ -296,6 +296,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 awaitClose { handle.close() }
             }
 
+        @Suppress("LongMethod") // one branch per social event type, each a plain field copy
         private fun socialPb(e: tp.services.SocialEvent): PbSocialEvent {
             val b = PbSocialEvent.newBuilder().setToAccount(e.toAccount)
             when (e) {
@@ -373,6 +374,14 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
 
                 is tp.services.SocialEvent.Sanctioned -> {
                     b.setSanctioned(e.sanctions.toPb())
+                }
+
+                is tp.services.SocialEvent.RankChanged -> {
+                    b.setRankChanged(
+                        tp.services.grpc.RankChanged
+                            .newBuilder()
+                            .setRank(e.rank.stored),
+                    )
                 }
 
                 is tp.services.SocialEvent.Warned -> {
@@ -494,7 +503,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
         }
 
         override suspend fun investigate(request: tp.services.grpc.ModQuery): tp.services.grpc.LinesReply {
-            val a = hub.moderation.investigate(request.staffAccount, request.target, request.kind)
+            val a = hub.moderation.investigate(request.staffAccount, request.target, request.kind, request.filter)
             val b =
                 tp.services.grpc.LinesReply
                     .newBuilder()
@@ -502,6 +511,14 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
             a.value?.let(b::addAllLines)
             return b.build()
         }
+
+        override suspend fun setRank(request: tp.services.grpc.SetRankRequest): ErrorReply {
+            val rank = tp.util.Rank.parse(request.rank) ?: return error("Unknown rank.")
+            return error(hub.moderation.setRank(request.staffAccount, request.target, rank))
+        }
+
+        override suspend fun rename(request: tp.services.grpc.RenameRequest): ErrorReply =
+            error(hub.moderation.rename(request.staffAccount, request.target, request.newName))
 
         override suspend fun lookup(request: tp.services.grpc.ModQuery): tp.services.grpc.LookupReply {
             val a = hub.moderation.lookup(request.staffAccount, request.target)

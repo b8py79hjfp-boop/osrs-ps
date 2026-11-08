@@ -44,6 +44,9 @@ enum class RecordType {
     BAN,
     IP_BAN,
     DEVICE_BAN,
+
+    /** `::rename` (commands brief §6: with history); the reason holds "old -> new". */
+    RENAME,
     ;
 
     /** Whether the record stays in force until it expires or is lifted (a kick, warning or note is a moment). */

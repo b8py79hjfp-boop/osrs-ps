@@ -86,6 +86,37 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
 
     override fun setPasswordHash(id: Long, hash: String) = exec("UPDATE accounts SET password_hash = ? WHERE id = ?", hash, id)
 
+    override fun accountByDisplayName(name: String): AccountRow? =
+        one("SELECT * FROM accounts WHERE lower(display_name) = ? LIMIT 1", name.lowercase())
+
+    override fun setDisplayName(id: Long, name: String) = exec("UPDATE accounts SET display_name = ? WHERE id = ?", name, id)
+
+    @Suppress("MagicNumber") // JDBC column / parameter indexes
+    override fun auditQuery(who: String, filter: String, limit: Int): List<String> =
+        sql { c ->
+            val q =
+                "SELECT at, actor, action, target, detail FROM audit_log WHERE (? = '' OR lower(actor) = ? OR lower(target) = ?) " +
+                    "AND (? = '' OR (actor || ' ' || action || ' ' || target || ' ' || detail) ILIKE ?) ORDER BY id DESC LIMIT ?"
+            c.prepareStatement(q).use { ps ->
+                val w = who.lowercase()
+                ps.setString(1, w)
+                ps.setString(2, w)
+                ps.setString(3, w)
+                ps.setString(4, filter)
+                ps.setString(5, "%$filter%")
+                ps.setInt(6, limit)
+                ps.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            add(
+                                "${rs.getTimestamp(1).time} ${rs.getString(2)} ${rs.getString(3)} ${rs.getString(4)} ${rs.getString(5)}",
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
     override fun setRights(id: Long, rights: Rank) = exec("UPDATE accounts SET rights = ? WHERE id = ?", rights.stored, id)
 
     override fun setMuted(id: Long, until: Long) = exec("UPDATE accounts SET muted_until = ? WHERE id = ?", until, id)

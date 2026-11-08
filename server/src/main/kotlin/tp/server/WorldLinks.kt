@@ -125,6 +125,12 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
                 world.content.onSanctionsChanged(player, before)
             }
 
+            is SocialEvent.RankChanged -> {
+                val before = player.rank
+                player.rank = e.rank
+                world.content.onRankChanged(player, before)
+            }
+
             is SocialEvent.Warned -> {
                 world.content.onWarned(player, e.reason)
             }

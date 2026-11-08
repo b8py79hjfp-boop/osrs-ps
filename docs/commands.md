@@ -71,6 +71,22 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::unfreeze` | `::unfreeze <player>` | — | MODERATION | yes | Lets a frozen player move again. |
 | `::unipban` | `::unipban <player> [reason…]` | — | MODERATION | yes | Lifts an IP ban. (cross-world) |
 
+## Owner
+
+| Command | Usage | Aliases | Impact | Target | Does |
+|---|---|---|---|---|---|
+| `::audit` | `::audit [player\|staff filter…]` | — | OPERATIONS | — | Shows the audit log: a player's or staff member's rows, optionally filtered. |
+| `::cancelupdate` | `::cancelupdate` | — | OPERATIONS | — | Cancels the system-update timer on every world. |
+| `::command` | `::command <enable\|disable> <command…>` | — | OPERATIONS | — | Enables or disables a command on this world until restart (never ECONOMY on). |
+| `::config` | `::config <rate_limit_per_second\|rate_limit_per_minute\|confirm_timeout_seconds\|yell_cooldown_player\|yell_cooldown_moderator> [value]` | — | OPERATIONS | — | Shows or changes a runtime-safe config key on this world until restart. |
+| `::kickall` | `::kickall [reason…]` | — | OPERATIONS | — | Kicks everyone on this world except staff. (confirmation) |
+| `::lockworld` | `::lockworld <on\|off>` | — | OPERATIONS | — | Staff-only logins on this world, for maintenance. |
+| `::rename` | `::rename <player> <new name…>` | — | OPERATIONS | yes | Changes a player's display name, kept in their history; their login name stays. (cross-world) |
+| `::saveall` | `::saveall` | — | OPERATIONS | — | Saves every player on this world now. |
+| `::setrank` | `::setrank <player> <rank>` | — | OPERATIONS | yes | Sets a player's rank (owners: up to administrator). (cross-world) |
+| `::shutdown` | `::shutdown [seconds]` | — | OPERATIONS | — | Stops this world gracefully, saving everyone first. (confirmation) |
+| `::update` | `::update <seconds> [message…]` | — | OPERATIONS | — | Starts the system-update timer on every world, then a graceful restart. |
+
 ## Developer
 
 | Command | Usage | Aliases | Impact | Target | Does |
