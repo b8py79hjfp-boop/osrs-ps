@@ -124,6 +124,21 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         return true
     }
 
+    /** The registry and pipeline (commands brief §3, §4); the interface runs invocations through the same object. */
+    public val registry: tp.plugin.commands.CommandRegistry get() = h.registry
+
+    public val dispatcher: tp.plugin.commands.CommandDispatcher =
+        tp.plugin.commands.CommandDispatcher(h.registry) { p, name, args ->
+            val handler = h.commands[name]
+            if (handler == null) false else true.also { p.handler(args) }
+        }
+
+    override fun onCommandLine(player: Player, line: String): Boolean {
+        // Every line is answered by the pipeline (unknown included), so the engine's own reply never shows.
+        dispatcher.dispatch(ref(player), line)
+        return true
+    }
+
     override fun opLoc(locId: Int, option: Int): Script<Player>? =
         (h.opLoc[key(locId, option)] ?: opLocResolved[key(locId, option)] ?: h.opLocFallback[key(locId, option)])?.let(::locScript)
 
@@ -394,7 +409,16 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         public fun of(plugins: List<ContentPlugin>): PluginContent {
             val handlers = Handlers()
             val scope = ContentScope(handlers)
-            for (plugin in plugins) with(plugin) { scope.register() }
+            for (plugin in plugins) {
+                handlers.owner = plugin.javaClass.simpleName
+                with(plugin) { scope.register() }
+            }
+            handlers.owner = "core"
+            tp.plugin.commands.CoreCommands
+                .register(scope)
+            // Commands brief §3: a bad registry fails the boot (CI's boot check included).
+            val problems = handlers.registry.validate()
+            check(problems.isEmpty()) { "command registry: ${problems.joinToString("; ")}" }
             return PluginContent(handlers)
         }
     }

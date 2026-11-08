@@ -18,6 +18,15 @@ interface ContentHandlers {
     /** `::command` typed in chat. Return false if unknown. */
     fun onCommand(player: Player, command: String, args: List<String>): Boolean = false
 
+    /**
+     * The whole `::` line as typed (commands brief §2: quotes group words, so content tokenizes it). Return false if
+     * unknown; the default splits on whitespace for [onCommand].
+     */
+    fun onCommandLine(player: Player, line: String): Boolean {
+        val parts = line.trim().split(Regex("\\s+"))
+        return parts.isNotEmpty() && parts[0].isNotEmpty() && onCommand(player, parts[0].lowercase(), parts.drop(1))
+    }
+
     /** Interaction scripts by target type, config id and option (1-based). Null = none registered (engine default). */
     fun opLoc(locId: Int, option: Int): Script<Player>? = null
 

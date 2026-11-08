@@ -123,7 +123,27 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.logout += handler
     }
 
-    /** `::name args` typed in the chatbox. */
+    /**
+     * Declares a command on the registry (commands brief §3): name, minimum rank, category and impact class, then the
+     * DSL for aliases, description, examples and signatures. Rank, targeting, world policy, rate limits,
+     * confirmation and audit are applied by the pipeline, never by the handler.
+     */
+    public fun command(
+        name: String,
+        rank: tp.util.Rank,
+        category: tp.plugin.commands.Category,
+        impact: tp.engine.commands.Impact,
+        block: tp.plugin.commands.CommandBuilder.() -> Unit,
+    ) {
+        val builder = tp.plugin.commands.CommandBuilder(name, rank, category, impact, ownerName())
+        builder.block()
+        handlers.registry.add(builder.build())
+    }
+
+    /** The plugin class registering now (registry messages name it). */
+    private fun ownerName(): String = handlers.owner
+
+    /** `::name args` typed in the chatbox (legacy: unchecked; moving onto [command]). */
     public fun onCommand(name: String, handler: PlayerRef.(args: List<String>) -> Unit) {
         handlers.put(handlers.commands, name.lowercase(), handler, "command ::$name")
     }
@@ -281,6 +301,10 @@ internal class Handlers {
     val modalClosed = HashMap<Int, MutableList<PlayerRef.() -> Unit>>()
     var npcHunt: (NpcRef.() -> Unit)? = null
     val commands = HashMap<String, PlayerRef.(List<String>) -> Unit>()
+    val registry = tp.plugin.commands.CommandRegistry()
+
+    /** The plugin whose `register()` is running (registry messages). */
+    var owner: String = ""
     val opLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opLocNamed = HashMap<String, suspend PlayerScript.(LocRef) -> Unit>()
     val opLocFallback = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()

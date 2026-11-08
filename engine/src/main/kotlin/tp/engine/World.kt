@@ -456,9 +456,9 @@ class World(
             }
 
             is ClientCommand.Cheat -> {
-                val parts = command.text.trim().split(WHITESPACE)
-                val handled = parts.isNotEmpty() && content.onCommand(player, parts[0].lowercase(), parts.drop(1))
-                if (!handled) player.session.send(ServerMessage.GameMessage("Unknown command: ${command.text}"))
+                // Commands brief §2: the same reply whether a command does not exist or the player may not use it.
+                val handled = content.onCommandLine(player, command.text)
+                if (!handled) player.session.send(ServerMessage.GameMessage(UNKNOWN_COMMAND))
             }
 
             ClientCommand.MapBuildComplete -> {
@@ -1469,7 +1469,9 @@ class World(
 
         /** FNV-1a 64-bit prime, for [stateHash]. */
         private const val HASH_PRIME = 0x100000001b3L
-        private val WHITESPACE = Regex("\\s+")
+
+        /** Commands brief §2: the reply to an unknown (or not permitted) command. */
+        const val UNKNOWN_COMMAND = "Unknown command. Type ::commands for a list."
 
         /** Loc/NPC/obj ops 1..5 (op6 = examine, handled separately). */
         private val OP_RANGE = 1..5

@@ -350,6 +350,12 @@ interface ModerationService {
     /** Applies [sanction] to [target] (duration in minutes, 0 = permanent). Every action is audit-logged. */
     suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String?
 
+    /**
+     * Commands brief §4: one command execution in the append-only audit log. [actor] is the display name; [detail]
+     * carries rank, world, tick, outcome, source and the (redacted where needed) arguments.
+     */
+    suspend fun audit(actor: String, action: String, target: String, detail: String) {}
+
     /** Pending kicks for players on [worldId] (stream): account ids. */
     fun subscribeKicks(worldId: Int, sink: (Long) -> Unit): AutoCloseable
 }

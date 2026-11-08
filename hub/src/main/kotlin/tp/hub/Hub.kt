@@ -358,6 +358,10 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
 
     override val moderation: ModerationService =
         object : ModerationService {
+            override suspend fun audit(actor: String, action: String, target: String, detail: String) {
+                db { store.audit(actor, action, target, detail) }
+            }
+
             override suspend fun apply(staffAccount: Long, target: String, sanction: Sanction, minutes: Int, reason: String): String? {
                 val staff = db { store.account(staffAccount) } ?: return "Unknown staff account."
                 if (staff.rights == Rank.PLAYER) return "You don't have permission to do that."

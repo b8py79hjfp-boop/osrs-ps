@@ -130,6 +130,9 @@ interface AccountBridge {
      */
     fun staff(player: Player, command: String, args: List<String>) {}
 
+    /** Commands brief §4: one command execution for the hub's append-only audit log (off the world thread). */
+    fun audit(actor: String, action: String, target: String, detail: String) {}
+
     /**
      * Reads [player]'s own friends chat settings, or stores [update] first if given; [reply] runs on the world thread
      * with the current settings (null: hub unavailable).

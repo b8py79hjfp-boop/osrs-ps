@@ -608,6 +608,18 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         ).error,
                 )
 
+            override suspend fun audit(actor: String, action: String, target: String, detail: String) {
+                moderationStub.audit(
+                    tp.services.grpc.AuditRequest
+                        .newBuilder()
+                        .setActor(actor)
+                        .setAction(action)
+                        .setTarget(target)
+                        .setDetail(detail)
+                        .build(),
+                )
+            }
+
             override fun subscribeKicks(worldId: Int, sink: (Long) -> Unit): AutoCloseable =
                 stream({ moderationStub.subscribeKicks(WorldRef.newBuilder().setWorldId(worldId).build()) }) { sink(it.accountId) }
         }

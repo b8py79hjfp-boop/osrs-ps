@@ -235,6 +235,10 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         }
     }
 
+    override fun audit(actor: String, action: String, target: String, detail: String) {
+        io.execute { call("audit") { hub.moderation.audit(actor, action, target, detail) } }
+    }
+
     override fun staff(player: Player, command: String, args: List<String>) {
         val account = player.accountId
         if (account == 0L) return

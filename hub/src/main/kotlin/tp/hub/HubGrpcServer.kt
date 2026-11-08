@@ -480,6 +480,12 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                 ),
             )
 
+        override suspend fun audit(request: tp.services.grpc.AuditRequest): tp.services.grpc.Empty {
+            hub.moderation.audit(request.actor, request.action, request.target, request.detail)
+            return tp.services.grpc.Empty
+                .getDefaultInstance()
+        }
+
         override fun subscribeKicks(request: WorldRef): Flow<Kick> =
             callbackFlow {
                 val handle = hub.moderation.subscribeKicks(request.worldId) { trySend(Kick.newBuilder().setAccountId(it).build()) }

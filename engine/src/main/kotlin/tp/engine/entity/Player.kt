@@ -56,6 +56,9 @@ class Player internal constructor(
 
     /** Staff rank (commands brief §1), set at login and changed live through the hub. */
     var rank: tp.util.Rank = tp.util.Rank.PLAYER
+
+    /** Hidden staff (`::invisible`, commands brief §1): left out of player lists for lower ranks. */
+    var invisible: Boolean = false
         internal set
 
     /** Muted until (epoch ms); 0 = not muted, negative = permanently (hub moderation; set live by the world node). */
