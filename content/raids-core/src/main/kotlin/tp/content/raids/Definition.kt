@@ -35,6 +35,8 @@ public class RaidDefinition internal constructor(
     public val driver: RaidDriver,
     /** After a room clears, a single-room next slot starts at once (else content calls [Raids.advance], e.g. a passage). */
     public val autoAdvance: Boolean,
+    /** Levels copied from level 0 for a square (default all four); TFA's nexus keeps its other levels as states. */
+    public val squareLevels: Map<Pair<Int, Int>, Int>,
 ) {
     internal val instanceWidth: Int = squares.maxOf { it.first } - squares.minOf { it.first } + 1
     internal val instanceLength: Int = squares.maxOf { it.second } - squares.minOf { it.second } + 1
@@ -53,7 +55,8 @@ public class RoomDef(
     public val contribution: Int = 0,
     /** Where a dead player waits while teammates fight on (template); null = [entry]. */
     public val waitAt: CoordGrid? = null,
-    public val onStart: (RaidRun) -> Unit = {},
+    /** Runs when the room starts, with an entity of the run's world (spawns, messages). */
+    public val onStart: (RaidRun, tp.plugin.EntityRef) -> Unit = { _, _ -> },
 )
 
 /** Death rules (brief 3.9). */
@@ -140,6 +143,7 @@ public class RaidBuilder internal constructor(private val id: String) {
     public var records: RecordsDef? = null
     public var driver: RaidDriver = RaidDriver { }
     public var autoAdvance: Boolean = true
+    public var squareLevels: Map<Pair<Int, Int>, Int> = emptyMap()
     private val rooms = LinkedHashMap<String, RoomDef>()
     private val slots = ArrayList<List<String>>()
 
@@ -178,6 +182,7 @@ public class RaidBuilder internal constructor(private val id: String) {
             requireNotNull(records) { "raid $id: records" },
             driver,
             autoAdvance,
+            squareLevels,
         )
     }
 }

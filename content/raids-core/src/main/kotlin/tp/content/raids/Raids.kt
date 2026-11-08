@@ -95,7 +95,11 @@ public class Raids internal constructor() {
             party.state = PartyState.Locked(run)
             raids.addRun(run)
             val entering = if (enterNow) players else listOf(leader)
-            val squares = def.squares.map { (x, z) -> InstanceSquare(x, z, x - def.originSquareX, z - def.originSquareZ) }
+            val squares =
+                def.squares.map { (x, z) ->
+                    val levels = def.squareLevels[x to z] ?: ALL_LEVELS
+                    InstanceSquare(x, z, x - def.originSquareX, z - def.originSquareZ, levels = levels)
+                }
             leader.buildInstance(def.instanceWidth, def.instanceLength, squares) { inst ->
                 run.instance = inst
                 for (p in entering) admit(p, run)
@@ -139,7 +143,7 @@ public class Raids internal constructor() {
             }
             for (p in run.presentPlayers(any)) p.teleport(run.at(room.entry))
             run.dirty = true
-            room.onStart(run)
+            room.onStart(run, any)
             any.events.publish(RaidEvent.RoomStarted(run, room))
         }
 
@@ -371,6 +375,9 @@ public class Raids internal constructor() {
         }
 
         private const val COMBAT_STATS = 6
+
+        /** The map's four levels (0-3). */
+        private const val ALL_LEVELS = 4
         private val RAID_ITEM_INVS = intArrayOf(tp.symbols.Invs.INV, tp.symbols.Invs.WORN)
         private const val CENTIS_PER_TICK = 60L
         private const val CENTIS_PER_SECOND = 100L

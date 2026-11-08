@@ -32,6 +32,7 @@ public class Combat : ContentPlugin {
             DeathRules.dropItems(r.player, null, r.graveAt)
             r.done = true
         }
+        events.on<tp.plugin.PrayersOffRequest> { r -> r.player.deactivateAllPrayers() }
         // SE10: finishing items used on their monster.
         for ((item, npc, finish) in SlayerGear.finishUses()) {
             onUseOnNpc(item, npc) { target -> SlayerGear.use(player, target, finish, item) }

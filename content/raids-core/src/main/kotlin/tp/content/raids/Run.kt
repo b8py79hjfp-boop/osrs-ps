@@ -117,6 +117,9 @@ public class RaidRun internal constructor(
     public var endedTick: Long = -1
         internal set
 
+    /** The raid's own per-run state (one value per run, owned by the raid's content module). */
+    public var content: Any? = null
+
     public fun member(name: String): RaidMember? = members.entries.firstOrNull { it.key.equals(name, ignoreCase = true) }?.value
 
     /** The instance tile of template tile [template]. */

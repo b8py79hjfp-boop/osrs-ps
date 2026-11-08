@@ -194,3 +194,6 @@ public class DeathPolicyRequest(public val player: PlayerRef, public val killer:
 public class DeathItemsRequest(public val player: PlayerRef, public val graveAt: tp.util.CoordGrid) : Event {
     public var done: Boolean = false
 }
+
+/** Turns all of [player]'s prayers off (content rules such as a raid room ending). Combat handles it. */
+public class PrayersOffRequest(public val player: PlayerRef) : Event
