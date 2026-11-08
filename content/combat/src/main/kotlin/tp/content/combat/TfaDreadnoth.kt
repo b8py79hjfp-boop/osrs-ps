@@ -4,6 +4,7 @@ import tp.plugin.AttrKey
 import tp.plugin.EntityRef
 import tp.plugin.HitStyle
 import tp.plugin.NpcRef
+import tp.plugin.PlayerRef
 import tp.symbols.Locs
 import tp.symbols.Npcs
 import tp.symbols.Seqs
@@ -11,189 +12,289 @@ import tp.symbols.SpotAnims
 import tp.util.CoordGrid
 
 /**
- * Dreadnoth the Jellied, TFA room 3 east (docs/mechanics/raids/tfa/dreadnoth.md DR1-DR4): melee on everyone around
- * him; at 85%, 65% and 45% one, two and three arena slams each followed by three ranged attacks, leaving floor jelly
- * and spawning jellies he can absorb; below 25% he jumps on random players; he bursts into jellies on death.
+ * Dreadnoth the Jellied, TFA room 3 east (docs/mechanics/raids/tfa/dreadnoth.md DR1-DR4; rotation and numbers from
+ * the live-game captures (capture-values.md), timings from RuneLite (D-080)).
+ *
+ * He crawls a tile every 2 ticks and melees everyone within a tile of his 5x5 on a 4-tick clock. At 85 / 65 / 45% a
+ * slam phase: k slams 6 ticks apart, each a jump (seq 14777) that lands 6 ticks later hitting every raider, with three
+ * shots and blood tiles; the phase's jellies (min(12, 3 x raiders x k)) hatch 8 ticks after the last. Blood tiles
+ * (loc 62609) stay all fight. Below ~25% ("*glub glub*") he leaps at his target every 8 ticks (4 to land, RuneLite),
+ * healing what the landing deals and crushing jellies for their HP. He bursts into seven jellies.
  */
 internal object TfaDreadnoth : Boss(Npcs.TFA_JELLY_BOSS) {
     private class State {
-        var slamsDone = 0
-        var queuedSlams = 0
-        var rangedLeft = 0
+        var phasesDone = 0
         var enraged = false
+        var busyUntil = -1L
+        val blood = HashSet<CoordGrid>()
+        val bloodHit = HashMap<String, Long>()
     }
 
     private val STATE = AttrKey<State>("tfa_dreadnoth")
 
     private fun state(npc: NpcRef): State {
         TfaKit.scale(npc, HP)
-        return npc[STATE] ?: State().also { npc[STATE] = it }
+        return npc[STATE] ?: State().also {
+            npc[STATE] = it
+            crawlLoop(npc, it)
+        }
     }
 
     override fun spawned(npc: NpcRef) {
         npc.huntRange = HUNT
     }
 
+    /** Capture: freeze resistance: he holds floor(n x 0.6) of a freeze. */
+    override val freezeHold: Double = HOLD
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         val s = state(npc)
-        when {
-            s.enraged -> {
-                jump(npc)
-            }
-
-            s.queuedSlams > 0 -> {
-                s.queuedSlams--
-                slam(npc)
-                s.rangedLeft += RANGED_AFTER_SLAM
-            }
-
-            s.rangedLeft > 0 -> {
-                s.rangedLeft--
-                ranged(npc, victim)
-            }
-
-            else -> {
-                melee(npc, victim)
-            }
-        }
-    }
-
-    /** DR1: melee hits everyone around him. */
-    private fun melee(npc: NpcRef, victim: EntityRef) {
-        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
-        for (p in TfaKit.arena(npc, npc.size + 1)) if (TfaKit.gap(npc, p) <= 1) BossCombat.strike(npc, p, AttackType.CRUSH, MAX_HIT, 0)
-    }
-
-    /** RuneLite (LU Dreadnoth.java:47-52): a blood blob (projectile 4211/4212) aimed at a player is his ranged attack. */
-    private fun ranged(npc: NpcRef, victim: EntityRef) {
-        CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
-        val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
-        BossCombat.projectile(npc, victim, SpotAnims.VFX_DREADNOTH_RANGED_PROJ01, delay)
-        BossCombat.strike(npc, victim, AttackType.RANGED, MAX_HIT, delay)
-    }
-
-    /**
-     * DR2: an arena-wide slam (Protect from Melee) that leaves floor jelly (6-8 per tick) and spawns jellies.
-     * OPEN-DR1: one jelly per two players; OPEN-DR3: slam max 45, jelly puddles 3x3 under each player for 10 ticks.
-     */
-    private fun slam(npc: NpcRef) {
-        // RuneLite (LU Dreadnoth.java:61-67): a slam is a jump (seq 14777) that lands 6 ticks later.
-        npc.anim(Seqs.DREADNOTH_JUMP01)
-        npc.setAttackClock(npc.tick + JUMP_LAND_SLOW)
-        npc.queueHit(JUMP_LAND_SLOW) {
-            if (!npc.isInWorld) return@queueHit
-            npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
-            val players = TfaKit.arena(npc)
-            for (p in players) BossCombat.strike(npc, p, AttackType.CRUSH, MAX_HIT, 0)
-            for (p in players) splatter(npc, p.coord)
-            repeat(maxOf(1, players.size / 2)) {
-                val at = BossCombat.randomTile(npc, npc.coord, JELLY_SPREAD)
-                Bosses.summon(npc, Npcs.TFA_JELLY_MINION, at)
-            }
-        }
-    }
-
-    /**
-     * RuneLite (LU Dreadnoth.java:223-241): a blob aimed at a tile leaves floor jelly, loc 62609
-     * `TFA_JELLY_BOSS_DAMAGE_TILE` (6-8 per tick, DR2); OPEN-DR3: one tile per player for 10 ticks.
-     */
-    private fun splatter(npc: NpcRef, at: CoordGrid) {
-        npc.queueHit(BLOB_FLIGHT) {
-            if (!npc.isInWorld) return@queueHit
-            npc.addLoc(Locs.TFA_JELLY_BOSS_DAMAGE_TILE, at, FLOOR_SHAPE, 0, PUDDLE_TICKS)
-            for (t in 1..PUDDLE_TICKS) {
-                npc.queueHit(t) {
-                    if (!npc.isInWorld) return@queueHit
-                    for (v in BossCombat.playersOn(
-                        npc,
-                        at,
-                    )) {
-                        CombatSystem.applyHit(v, npc, BossCombat.roll(npc, PUDDLE_MIN, PUDDLE_MAX), HitStyle.TYPELESS)
-                    }
-                }
-            }
-        }
-    }
-
-    /** DR3: jumps on a random player, healing ~30-40 if they are underneath, then one ranged attack (OPEN-DR4: heal 35). */
-    private fun jump(npc: NpcRef) {
-        // DR1: a root (the scorching bow's special binds demons for 20 ticks, SP55) holds him in place.
-        if (npc.isFrozen) {
-            ranged(npc, TfaKit.arena(npc).firstOrNull() ?: return)
+        if (npc.tick < s.busyUntil) return
+        if (s.enraged) {
+            leap(npc, s, victim)
             return
         }
+        // Capture: melee on a 4-tick clock whenever anyone is within a tile of his 5x5; never on a step tick.
+        val near = TfaKit.arena(npc).filter { TfaKit.gap(npc, it) <= 1 }
+        if (near.isNotEmpty()) {
+            CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+            for (p in near) {
+                val raw = BossCombat.roll(npc, 0, MELEE_MAX)
+                CombatSystem.queueHit(p, npc, if (p.protects(CombatStyle.MELEE)) raw * 2 / 3 else raw, HitStyle.MELEE, 0)
+            }
+        }
+        npc.setAttackClock(npc.tick + ATTACK_SPEED)
+    }
+
+    /** Capture: he crawls one tile every 2 ticks (held still on alternate ticks). */
+    private fun crawlLoop(npc: NpcRef, s: State) {
+        npc.queueHit(1, strong = false) {
+            if (!npc.isInWorld) return@queueHit
+            if (npc.tick % CRAWL_EVERY == 0L) npc.frozenUntil = maxOf(npc.frozenUntil, npc.tick + 1)
+            bloodTick(npc, s)
+            crawlLoop(npc, s)
+        }
+    }
+
+    /** Capture: a blood tile hits 7 or 8 on the first tick a raider starts on it, then every 2nd tick. */
+    private fun bloodTick(npc: NpcRef, s: State) {
+        for (p in TfaKit.arena(npc)) {
+            if (p.coord !in s.blood) {
+                s.bloodHit.remove(p.username)
+                continue
+            }
+            val last = s.bloodHit[p.username]
+            if (last == null || npc.tick - last >= BLOOD_EVERY) {
+                s.bloodHit[p.username] = npc.tick
+                CombatSystem.applyHit(p, npc, BossCombat.roll(npc, BLOOD_MIN, BLOOD_MAX), HitStyle.TYPELESS)
+            }
+        }
+    }
+
+    private fun blood(npc: NpcRef, s: State, at: CoordGrid) {
+        if (!s.blood.add(at)) return
+        npc.addLoc(Locs.TFA_JELLY_BOSS_DAMAGE_TILE, at, FLOOR_SHAPE, 0)
+    }
+
+    /**
+     * Capture: slam phase k: k slams 6 ticks apart; each is a jump J that hits every raider at landing (22..44, 0 under
+     * Protect from Melee) and fires three shots (projectile 4211, 1..33, 0 under Protect from Missiles) plus 1-3 blood
+     * tiles; the phase's jellies (min(12, 3 x living raiders x k), at most 3 a raider) hatch at the last landing + 8.
+     * RuneLite (LU): a jump lands 6 ticks after it starts.
+     */
+    private fun slamPhase(npc: NpcRef, s: State, k: Int) {
+        val span = (k - 1) * SLAM_GAP + JUMP_LAND_SLOW
+        s.busyUntil = npc.tick + span + HATCH_AFTER
+        npc.setAttackClock(s.busyUntil)
+        for (i in 0 until k) {
+            npc.queueHit(i * SLAM_GAP) {
+                if (!npc.isInWorld) return@queueHit
+                npc.anim(Seqs.DREADNOTH_JUMP01)
+                npc.queueHit(JUMP_LAND_SLOW) { if (npc.isInWorld) slamLands(npc, s) }
+            }
+        }
         val players = TfaKit.arena(npc)
-        val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
-        val at = p.coord
+        val jellies = minOf(MAX_JELLIES, JELLIES_PER * players.size * k)
+        npc.queueHit(span + HATCH_AFTER) {
+            if (!npc.isInWorld) return@queueHit
+            val targets = TfaKit.arena(npc)
+            for (j in 0 until jellies) {
+                val near = targets.getOrNull(j % maxOf(1, targets.size))?.coord ?: npc.coord
+                Bosses.summon(npc, Npcs.TFA_JELLY_MINION, BossCombat.randomTile(npc, near, JELLY_SPREAD))
+            }
+        }
+    }
+
+    private fun slamLands(npc: NpcRef, s: State) {
+        npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
+        val players = TfaKit.arena(npc)
+        for (p in players) {
+            val dmg = if (p.protects(CombatStyle.MELEE)) 0 else BossCombat.roll(npc, SLAM_MIN, SLAM_MAX)
+            CombatSystem.applyHit(p, npc, dmg, HitStyle.MELEE)
+        }
+        repeat(SLAM_SHOTS) { k ->
+            val p = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return@repeat
+            val flight = SHOT_FIRST + k
+            BossCombat.projectile(npc, p, SpotAnims.VFX_DREADNOTH_RANGED_PROJ01, flight)
+            CombatSystem.queueHit(
+                p,
+                npc,
+                if (p.protects(CombatStyle.RANGED)) 0 else BossCombat.roll(npc, 1, SHOT_MAX),
+                HitStyle.RANGED,
+                flight,
+            )
+        }
+        repeat(1 + npc.random(SLAM_BLOOD)) { blood(npc, s, BossCombat.randomTile(npc, npc.coord, BLOOD_SPREAD)) }
+    }
+
+    /**
+     * Capture: the enrage leap (seq 14780) every 8 ticks: centred on his target if within 5 tiles each way, else 5
+     * tiles in the nearest of 8 ways; RuneLite: it lands 4 ticks later. Under his 5x5 25..44 and he heals what he deals;
+     * within a tile of it 16..38 (0 under Protect from Melee); 1-5 blood tiles (projectile 4212); jellies under him are
+     * crushed and he heals their HP. A root (e.g. the scorching bow's special) stops the leap (DR1).
+     */
+    private fun leap(npc: NpcRef, s: State, victim: EntityRef) {
+        npc.setAttackClock(npc.tick + LEAP_EVERY)
+        if (npc.isFrozen) return
+        val cx = npc.coord.x + npc.size / 2
+        val cz = npc.coord.z + npc.size / 2
+        val dx = victim.coord.x - cx
+        val dz = victim.coord.z - cz
+        val to =
+            if (kotlin.math.abs(dx) <= LEAP_REACH && kotlin.math.abs(dz) <= LEAP_REACH) {
+                CoordGrid(victim.coord.x - npc.size / 2, victim.coord.z - npc.size / 2, npc.coord.level)
+            } else {
+                CoordGrid(npc.coord.x + Integer.signum(dx) * LEAP_REACH, npc.coord.z + Integer.signum(dz) * LEAP_REACH, npc.coord.level)
+            }
         npc.anim(Seqs.DREADNOTH_JUMP02)
-        npc.say("*glub glub*")
-        // RuneLite (LU Dreadnoth.java:65-72): after "glub glub" (or below 25%) a jump lands in 4 ticks and he waits 4
-        // more before the next.
-        npc.setAttackClock(npc.tick + JUMP_LAND + JUMP_COOLDOWN)
         npc.queueHit(JUMP_LAND) {
             if (!npc.isInWorld) return@queueHit
-            npc.teleport(CoordGrid(at.x - npc.size / 2, at.z - npc.size / 2, at.level))
+            npc.teleport(to)
             npc.spotAnim(SpotAnims.TFA_BOSS_JELLY_5X5_JUMP)
-            for (v in TfaKit.arena(npc, npc.size + 1)) {
-                if (TfaKit.gap(npc, v) == 0) {
-                    BossCombat.strike(npc, v, AttackType.CRUSH, MAX_HIT, 0)
-                    npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + JUMP_HEAL)
+            var healed = 0
+            for (p in TfaKit.arena(npc, npc.size + 2)) {
+                val gap = TfaKit.gap(npc, p)
+                if (gap == 0) {
+                    val dmg = BossCombat.roll(npc, LAND_MIN, LAND_MAX)
+                    healed += dmg
+                    CombatSystem.applyHit(p, npc, dmg, HitStyle.MELEE)
+                } else if (gap == 1 && !p.protects(CombatStyle.MELEE)) {
+                    CombatSystem.applyHit(p, npc, BossCombat.roll(npc, SPLASH_MIN, SPLASH_MAX), HitStyle.MELEE)
                 }
             }
-            ranged(npc, p)
+            for (j in Bosses.minions(npc, Npcs.TFA_JELLY_MINION)) {
+                if (TfaKit.under(npc, j.coord)) {
+                    healed += j.hitpoints
+                    j.despawn()
+                }
+            }
+            npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + healed)
+            repeat(1 + npc.random(LAND_BLOOD)) { blood(npc, s, BossCombat.randomTile(npc, npc.coord, BLOOD_SPREAD + npc.size)) }
         }
     }
 
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
         val s = state(npc)
         val pct = npc.hitpoints * PERCENT / maxOf(1, npc.maxHitpoints)
-        while (s.slamsDone < SLAM_AT.size && pct <= SLAM_AT[s.slamsDone]) {
-            s.slamsDone++
-            s.queuedSlams += s.slamsDone
+        if (s.phasesDone < SLAM_AT.size && pct <= SLAM_AT[s.phasesDone] && npc.tick >= s.busyUntil) {
+            s.phasesDone++
+            slamPhase(npc, s, s.phasesDone)
         }
-        if (!s.enraged && pct <= ENRAGE_AT) s.enraged = true
-        absorb(npc)
+        if (!s.enraged && pct <= ENRAGE_AT) {
+            s.enraged = true
+            npc.say("*glub glub*")
+            npc.setAttackClock(npc.tick + FIRST_LEAP)
+        }
     }
 
-    /** DR2: he absorbs jellies he lands on and heals (OPEN-DR5: their remaining HP). */
-    private fun absorb(npc: NpcRef) {
-        for (j in Bosses.minions(npc, Npcs.TFA_JELLY_MINION)) {
-            if (TfaKit.under(npc, j.coord)) {
-                npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + j.hitpoints)
-                j.despawn()
+    /** Capture: seven jellies jump out 3 ticks after his death, on seven distinct tiles of his 5x5, never the middle. */
+    override fun died(npc: NpcRef, killer: EntityRef?) {
+        val tiles =
+            (0 until npc.size)
+                .flatMap { x ->
+                    (0 until npc.size).map { z -> x to z }
+                }.filter { it != MIDDLE to MIDDLE }
+                .toMutableList()
+        val origin = npc.coord
+        npc.queueHit(DEATH_JELLY_DELAY) {
+            repeat(DEATH_JELLIES) {
+                val (x, z) = tiles.removeAt(npc.random(tiles.size))
+                val j = npc.spawnNpc(Npcs.TFA_JELLY_MINION, CoordGrid(origin.x + x, origin.z + z, origin.level), wanderRange = 0)
+                j.huntRange = HUNT
             }
         }
     }
 
-    /** DR4 / OPEN-DR2: he bursts into seven jellies (the jelly page's "always 7"). */
-    override fun died(npc: NpcRef, killer: EntityRef?) {
-        repeat(DEATH_JELLIES) {
-            val at = BossCombat.randomTile(npc, npc.coord, JELLY_SPREAD)
-            val j = npc.spawnNpc(Npcs.TFA_JELLY_MINION, at, wanderRange = 0)
-            j.huntRange = HUNT
-        }
-    }
-
-    /** dreadnoth.md data: HP for 2..8 players. */
+    /** dreadnoth.md data (capture-confirmed): HP for 2..8 players. */
     private val HP = intArrayOf(2100, 3050, 3930, 4810, 5690, 6570, 7460)
 
-    /** DR2: slams at 85%, 65% and 45% HP. */
+    /** DR2: slam phases at 85%, 65% and 45% HP. */
     private val SLAM_AT = intArrayOf(85, 65, 45)
 
     private const val HUNT = 20
-    private const val MAX_HIT = 45
-    private const val RANGED_AFTER_SLAM = 3
-    private const val JELLY_SPREAD = 5
-    private const val PUDDLE_TICKS = 10
-    private const val PUDDLE_MIN = 6
-    private const val PUDDLE_MAX = 8
-    private const val JUMP_LAND = 4
-    private const val JUMP_COOLDOWN = 4
-    private const val JUMP_LAND_SLOW = 6
-    private const val BLOB_FLIGHT = 2
+    private const val HOLD = 0.6
+    private const val ATTACK_SPEED = 4
+    private const val MELEE_MAX = 45
+    private const val CRAWL_EVERY = 2
+    private const val BLOOD_EVERY = 2
+    private const val BLOOD_MIN = 7
+    private const val BLOOD_MAX = 8
     private const val FLOOR_SHAPE = 22
-    private const val JUMP_HEAL = 35
+    private const val SLAM_GAP = 6
+    private const val JUMP_LAND_SLOW = 6
+    private const val HATCH_AFTER = 8
+    private const val MAX_JELLIES = 12
+    private const val JELLIES_PER = 3
+    private const val JELLY_SPREAD = 2
+    private const val SLAM_MIN = 22
+    private const val SLAM_MAX = 44
+    private const val SLAM_SHOTS = 3
+    private const val SHOT_FIRST = 3
+    private const val SHOT_MAX = 33
+    private const val SLAM_BLOOD = 3
+    private const val BLOOD_SPREAD = 4
+    private const val LEAP_EVERY = 8
+    private const val FIRST_LEAP = 5
+    private const val LEAP_REACH = 5
+    private const val JUMP_LAND = 4
+    private const val LAND_MIN = 25
+    private const val LAND_MAX = 44
+    private const val SPLASH_MIN = 16
+    private const val SPLASH_MAX = 38
+    private const val LAND_BLOOD = 5
     private const val ENRAGE_AT = 25
     private const val PERCENT = 100
     private const val DEATH_JELLIES = 7
+    private const val DEATH_JELLY_DELAY = 3
+    private const val MIDDLE = 2
+}
+
+/** A Dreadnoth jelly (capture): 75 HP (cache), first swing 2 ticks after hatching then every 3, 5..10; holds 0.8 of a freeze. */
+internal object TfaJelly : Boss(Npcs.TFA_JELLY_MINION) {
+    private val HATCHED = AttrKey<Long>("tfa_jelly_hatched")
+
+    override val freezeHold: Double = HOLD
+
+    override fun spawned(npc: NpcRef) {
+        npc.huntRange = HUNT
+        TfaKit.setPool(npc, HP)
+        npc[HATCHED] = npc.tick
+        npc.setAttackClock(npc.tick + FIRST_SWING)
+    }
+
+    override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
+        if (distance) return
+        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
+        val dmg = if (victim is PlayerRef && victim.protects(CombatStyle.MELEE)) 0 else BossCombat.roll(npc, MIN_HIT, MAX_HIT)
+        CombatSystem.queueHit(victim, npc, dmg, HitStyle.MELEE, 0)
+        npc.setAttackClock(npc.tick + SWING_EVERY)
+    }
+
+    private const val HUNT = 16
+    private const val HP = 75
+    private const val HOLD = 0.8
+    private const val FIRST_SWING = 2
+    private const val SWING_EVERY = 3
+    private const val MIN_HIT = 5
+    private const val MAX_HIT = 10
 }

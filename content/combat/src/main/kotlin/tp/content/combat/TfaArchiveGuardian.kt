@@ -13,10 +13,15 @@ import tp.symbols.SpotAnims
 import tp.util.CoordGrid
 
 /**
- * The Archive Guardian, TFA room 1 (docs/mechanics/raids/tfa/archive-guardian.md AG0-AG6). Phase 1 flies behind a
- * shield (the flying HP pool) with rock throws, a step-under slam and mushrooms; breaking the shield (damage or the
- * four Inert Guardian batteries) grounds it for 34 ticks of tendrils; at 33% of its grounded HP it flies again for
- * phase 2 (mushrooms and the laser). Defence falls and Magic rises with damage taken (Strat).
+ * The Archive Guardian, TFA room 1 (docs/mechanics/raids/tfa/archive-guardian.md AG0-AG6; timings from RuneLite
+ * (runelite-timings.md), numbers and rotations from the live-game captures (capture-values.md), precedence per D-080).
+ * - Flying, shielded: one 5-tick attack clock; four ranged rocks then the mushroom special; a slam on anyone under its
+ *   5x5 when an attack comes due. Three batteries (the south-east one is inert) each take 40% of the shield when
+ *   destroyed.
+ * - Shield at 0: 3 ticks later it crashes (grounded 1,100 HP pool): 35 ticks the first time, 40 later (LU); vines from
+ *   the landing +5, then every 3 ticks, one per living raider; under 34% HP it lifts 3 ticks later and enrages.
+ * - Enrage: every 20 ticks the blast (one roll of 42-49 split between the raiders, x1.5 off Protect from Magic) and,
+ *   5 ticks later, the next battery overloads.
  */
 internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSHIELDED) {
     private enum class Phase { SHIELDED, GROUNDED, FINAL }
@@ -25,40 +30,32 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         var phase = Phase.SHIELDED
         val groundMax = GROUNDED_HP[index(size)]
         var groundHp = groundMax
-        var attacks = 0
+        var slots = 0
         var groundedAt = -1L
         var downs = 0
         var damage = 0
         var lowestDefence = BASE_DEFENCE
+        var overloads = 0
+        val mushrooms = ArrayList<Mushroom>()
+    }
+
+    /** A mushroom (loc 62578 -> 62579 active -> 62580 burst): it stays all fight until it bursts. */
+    private class Mushroom(val at: CoordGrid, val activeAt: Long) {
+        var armedAt = -1L
     }
 
     private val STATE = AttrKey<State>("tfa_guardian")
 
-    /** AG2: the battery only the laser can charge. */
-    val LASER_ONLY = AttrKey<Boolean>("tfa_guardian_laser_battery")
-
+    /** The inert south-east battery's NPC is the INACTIVE type; the other three are active (capture: SE ops 0 all fight). */
     private fun state(npc: NpcRef): State =
         npc[STATE] ?: State(npc[SharedAttrs.RAID_SCALE] ?: MIN_SCALE).also {
             npc[STATE] = it
             setPool(npc, FLYING_HP[index(it.size)])
             batteries(npc)
+            mushroomLoop(npc, it)
             // AG0: it targets the first player in orb order (the party leader should start the fight).
             TfaKit.firstInOrbOrder(npc)?.let { first -> NpcCombat.engage(npc, first) }
         }
-
-    /**
-     * AG2: four Inert Guardian batteries on their bases (cache: battery bases at x 4114 / 4139, z 5591 / 5604 on every
-     * nexus level, i.e. these offsets from the Guardian's south-west tile (4125, 5597)). OPEN-AG8: they are taken to be
-     * chargeable (active) whenever the shield is up; the north-east one is the laser-only battery.
-     */
-    private fun batteries(npc: NpcRef) {
-        Bosses.dismissMinions(npc)
-        for ((k, offset) in BATTERY_OFFSETS.withIndex()) {
-            val at = CoordGrid(npc.coord.x + offset.first, npc.coord.z + offset.second, npc.coord.level)
-            val battery = Bosses.summon(npc, Npcs.TFA_GUARDIAN_BATTERY_ACTIVE, at, huntRange = 0)
-            if (k == LASER_BATTERY) battery[LASER_ONLY] = true
-        }
-    }
 
     private fun index(size: Int) = size.coerceIn(MIN_SCALE, MAX_SCALE) - MIN_SCALE
 
@@ -70,6 +67,26 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         npc.hitpoints = hp
     }
 
+    /**
+     * AG2 / capture: the four battery bases (4114 / 4139, 5592 / 5605) as offsets from the Guardian's south-west tile
+     * (4125, 5597); the south-east one (4139, 5592) is inert; the others are 180 HP solo (capture; OPEN-AG8: +55 a
+     * raider beyond two for the "180..400 by party").
+     */
+    private fun batteries(npc: NpcRef) {
+        Bosses.dismissMinions(npc)
+        val s = npc[STATE]
+        for ((k, offset) in BATTERY_OFFSETS.withIndex()) {
+            val at = CoordGrid(npc.coord.x + offset.first, npc.coord.z + offset.second, npc.coord.level)
+            val type = if (k == INERT_BATTERY) Npcs.TFA_GUARDIAN_BATTERY_INACTIVE else Npcs.TFA_GUARDIAN_BATTERY_ACTIVE
+            val battery = Bosses.summon(npc, type, at, huntRange = 0)
+            if (type == Npcs.TFA_GUARDIAN_BATTERY_ACTIVE &&
+                s != null
+            ) {
+                TfaKit.setPool(battery, BATTERY_HP + BATTERY_PER_RAIDER * (s.size - MIN_SCALE))
+            }
+        }
+    }
+
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         val s = state(npc)
         when (s.phase) {
@@ -78,107 +95,197 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
             }
 
             Phase.SHIELDED -> {
-                s.attacks++
+                s.slots++
+                // Capture: the special every 5th slot, four ranged between; a slam when anyone is under its 5x5.
                 when {
-                    s.attacks % MUSHROOM_EVERY == 0 -> mushrooms(npc)
-                    under(npc, victim) -> slam(npc, victim)
+                    s.slots % SPECIAL_EVERY == 0 -> mushrooms(npc, s)
+                    TfaKit.arena(npc).any { TfaKit.under(npc, it.coord) } -> slam(npc)
                     else -> rock(npc, victim)
                 }
-                tendrilsBehind(npc, victim)
             }
 
             Phase.FINAL -> {
-                s.attacks++
-                if (s.attacks % 2 == 0) mushrooms(npc) else laser(npc)
+                // Between enrage blasts it keeps throwing rocks (OPEN-AG10: the capture records the 20-tick cycle only).
+                if (TfaKit.arena(npc).any { TfaKit.under(npc, it.coord) }) slam(npc) else rock(npc, victim)
             }
         }
     }
 
-    // ---- phase 1 attacks (AG1)
+    // ---- shielded attacks (AG1)
 
+    /**
+     * Capture: the rock (projectile 4201, client cycles 48 -> 116) lands 4 ticks after the throw: max 41 solo unprayed,
+     * Protect from Missiles takes 75% off (max 10). OPEN-AG11: in parties the max grows (44..54 at 4-5): +5 a raider
+     * beyond three.
+     */
     private fun rock(npc: NpcRef, victim: EntityRef) {
         npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_RANGE_ATTACK01)
         npc.spotAnim(SpotAnims.VFX_GUARDIAN_RANGED_SPOTANIM01)
         CombatSystem.announceAttack(npc, victim, CombatStyle.RANGED)
-        val delay = BossCombat.delay(npc, victim, CombatStyle.RANGED)
-        BossCombat.projectile(npc, victim, SpotAnims.VFX_GUARDIAN_RANGED_PROJANIM01, delay)
-        BossCombat.strike(npc, victim, AttackType.RANGED, MAX_HIT, delay) {
+        BossCombat.projectile(npc, victim, SpotAnims.VFX_GUARDIAN_RANGED_PROJANIM01, ROCK_FLIGHT)
+        val max = ROCK_MAX + ROCK_PER_RAIDER * maxOf(0, TfaKit.arena(npc).size - ROCK_SCALE_FROM)
+        npc.queueHit(ROCK_FLIGHT) {
+            if (!npc.isInWorld || victim !is PlayerRef || victim.isDying) return@queueHit
+            val raw = if (BossCombat.rolls(npc, victim, AttackType.RANGED)) BossCombat.roll(npc, 0, max) else 0
+            val dmg = if (victim.protects(CombatStyle.RANGED)) minOf(ROCK_PRAYED_MAX, raw * PRAYED_KEEP / PERCENT) else raw
             victim.spotAnim(SpotAnims.VFX_GUARDIAN_RANGED_HITANIM01)
+            CombatSystem.applyHit(victim, npc, dmg, HitStyle.RANGED)
+        }
+    }
+
+    /** Capture: the slam (seq 14752) lands 1 tick later on whoever is still under its 5x5 (0..48; low confidence). */
+    private fun slam(npc: NpcRef) {
+        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_MELEE_ATTACK01)
+        npc.queueHit(1) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(
+                npc,
+            )) {
+                if (TfaKit.under(npc, p.coord)) CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, SLAM_MAX), HitStyle.MELEE)
+            }
+        }
+    }
+
+    // ---- mushrooms (AG5)
+
+    /**
+     * Capture / RuneLite: the special (seq 14754, shared with the enrage blast) puts two mushrooms by every raider: one
+     * on a tile beside where they stood the tick before, one exactly 3 tiles out; never on a wall or a live mushroom; at
+     * most 39 alive; they stay all fight. Each is active 3 ticks after it appears (loc 62578 -> 62579).
+     */
+    private fun mushrooms(npc: NpcRef, s: State) {
+        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
+        npc.queueHit(MUSHROOM_APPEAR) {
+            if (!npc.isInWorld) return@queueHit
+            for (p in TfaKit.arena(npc)) {
+                for (reach in intArrayOf(1, MUSHROOM_FAR)) {
+                    if (s.mushrooms.size >= MAX_MUSHROOMS) return@queueHit
+                    val (dx, dz) = DIRS[npc.random(DIRS.size)]
+                    val at = CoordGrid(p.coord.x + dx * reach, p.coord.z + dz * reach, p.coord.level)
+                    if (!npc.isWalkable(at) || s.mushrooms.any { it.at == at }) continue
+                    s.mushrooms += Mushroom(at, npc.tick + MUSHROOM_ARM)
+                    npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_SPAWN, at, LOC_SHAPE, 0, MUSHROOM_ARM)
+                    npc.queueHit(MUSHROOM_ARM) { if (npc.isInWorld) npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_ACTIVE, at, LOC_SHAPE, 0) }
+                }
+            }
         }
     }
 
     /**
-     * AG1: "tendrils behind it deal typeless damage": players on the far side of the Guardian from its target, within 2
-     * tiles of its body, are lashed (OPEN-AG9: 0-10 with each attack).
+     * Capture: a mushroom bursts on T+1, where T is the first tick at or after active + 1 that a raider stands within 1
+     * of it; raiders still within 1 at the burst are poisoned (10, decaying every 30 ticks) and "too drowsy to run" for
+     * 17 ticks. A serpentine helm stops both (AG5).
      */
-    private fun tendrilsBehind(npc: NpcRef, victim: EntityRef) {
-        val cx = npc.coord.x + npc.size / 2
-        val cz = npc.coord.z + npc.size / 2
-        val vx = Integer.signum(victim.coord.x - cx)
-        val vz = Integer.signum(victim.coord.z - cz)
-        for (p in arenaPlayers(npc)) {
-            if (p == victim || TfaKit.gap(npc, p) > BEHIND_REACH) continue
-            val behind = (vx != 0 && Integer.signum(p.coord.x - cx) == -vx) || (vz != 0 && Integer.signum(p.coord.z - cz) == -vz)
-            if (behind) CombatSystem.applyHit(p, npc, BossCombat.roll(npc, 0, BEHIND_MAX), HitStyle.TYPELESS)
+    private fun mushroomLoop(npc: NpcRef, s: State) {
+        npc.queueHit(1, strong = false) {
+            if (!npc.isInWorld) return@queueHit
+            val players = TfaKit.arena(npc)
+            for (m in s.mushrooms.toList()) {
+                if (npc.tick < m.activeAt + 1) continue
+                if (m.armedAt < 0 && players.any { near(it.coord, m.at) }) {
+                    m.armedAt = npc.tick
+                } else if (m.armedAt >= 0) {
+                    s.mushrooms.remove(m)
+                    npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_DESPAWN, m.at, LOC_SHAPE, 0, MUSHROOM_FADE_TICKS)
+                    for (p in players) if (near(p.coord, m.at) && !Toxic.wearsSerpentineHelm(p)) spores(p)
+                }
+            }
+            mushroomLoop(npc, s)
         }
     }
 
-    /** AG1: "melee on a player standing underneath". */
-    private fun slam(npc: NpcRef, victim: EntityRef) {
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_MELEE_ATTACK01)
-        CombatSystem.announceAttack(npc, victim, CombatStyle.MELEE)
-        BossCombat.strike(npc, victim, AttackType.CRUSH, MAX_HIT, 0)
-    }
+    private fun near(a: CoordGrid, b: CoordGrid) = a.level == b.level && kotlin.math.abs(a.x - b.x) <= 1 && kotlin.math.abs(a.z - b.z) <= 1
 
-    private fun under(npc: NpcRef, e: EntityRef): Boolean =
-        e.coord.level == npc.coord.level && e.coord.x - npc.coord.x in 0 until npc.size && e.coord.z - npc.coord.z in 0 until npc.size
+    private fun spores(p: PlayerRef) {
+        Poison.poison(p, MUSHROOM_POISON)
+        p.message("You're too drowsy to run!")
+        for (t in 0 until DROWSY_TICKS) p.queueHit(t, strong = false) { if (p.runMode) p.runMode = false }
+    }
 
     // ---- grounded (AG3)
 
     private fun ground(npc: NpcRef, s: State) {
         s.phase = Phase.GROUNDED
-        s.groundedAt = npc.tick
         s.downs++
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_IDLE_TO_GROUND01)
-        npc.spotAnim(SpotAnims.VFX_GUARDIAN_IDLETOGROUND_SPOTANIM01)
-        npc.transform(Npcs.TFA_GUARDIAN_UNSHIELDED, restoreStats = false)
-        setPool(npc, s.groundMax)
-        npc.hitpoints = s.groundHp
-        // AG3: tendrils start 6 ticks after the crash, then every 3 ticks.
-        npc.setAttackClock(npc.tick + TENDRIL_DELAY)
+        npc.queueHit(CRASH_DELAY) {
+            if (!npc.isInWorld) return@queueHit
+            s.groundedAt = npc.tick
+            npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_IDLE_TO_GROUND01)
+            npc.spotAnim(SpotAnims.VFX_GUARDIAN_IDLETOGROUND_SPOTANIM01)
+            npc.transform(Npcs.TFA_GUARDIAN_UNSHIELDED, restoreStats = false)
+            setPool(npc, s.groundMax)
+            npc.hitpoints = s.groundHp
+            // Capture: a raider 1 tile from its 5x5 as it lands is smashed (24..28).
+            for (p in arenaPlayers(npc)) {
+                if (TfaKit.gap(npc, p) ==
+                    1
+                ) {
+                    CombatSystem.applyHit(p, npc, BossCombat.roll(npc, SMASH_MIN, SMASH_MAX), HitStyle.MELEE)
+                }
+            }
+            npc.setAttackClock(npc.tick + VINE_FIRST)
+        }
+        npc.setAttackClock(npc.tick + CRASH_DELAY + VINE_FIRST)
     }
 
     private fun grounded(npc: NpcRef, s: State) {
-        // OPEN-AG5: the 34 ticks count from the crash.
-        if (npc.tick - s.groundedAt >= if (s.downs == 1) FIRST_GROUNDED_TICKS else LATER_GROUNDED_TICKS) {
-            fly(npc, s, Phase.SHIELDED)
+        val duration = if (s.downs == 1) FIRST_GROUNDED_TICKS else LATER_GROUNDED_TICKS
+        // Capture: under 34% HP a slot has no wave and it lifts 3 ticks later, enraged.
+        if (npc.hitpoints * PERCENT < s.groundMax * EARLY_LIFT_PERCENT) {
+            npc.queueHit(LIFT_DELAY) { if (npc.isInWorld) fly(npc, s, Phase.FINAL) }
+            npc.setAttackClock(npc.tick + LIFT_DELAY + 1)
             return
         }
-        for (p in arenaPlayers(npc)) tendril(npc, p)
-        npc.setAttackClock(npc.tick + TENDRIL_EVERY)
+        if (npc.tick - s.groundedAt >= duration) {
+            npc.queueHit(LIFT_DELAY) { if (npc.isInWorld) fly(npc, s, Phase.SHIELDED) }
+            npc.setAttackClock(npc.tick + LIFT_DELAY + 1)
+            return
+        }
+        for (p in arenaPlayers(npc)) vine(npc, p)
+        npc.setAttackClock(npc.tick + VINE_EVERY)
     }
 
     /**
-     * AG3: a tendril rises on the player's side opposite the boss and hits three times in a 3x3 (moderate melee;
-     * Protect from Melee caps it at 11).
+     * Capture: one vine per living raider each wave, on the tile one step past the raider away from its middle (else
+     * toward it, else the raider's tile); it attacks 3, 6 and 9 ticks after it appears and is gone at +12. Each beat
+     * hits every living raider exactly 1 tile from a vine, once however many reach: melee that never misses, 17-19, or 10
+     * under Protect from Melee.
      */
-    private fun tendril(npc: NpcRef, p: PlayerRef) {
+    private fun vine(npc: NpcRef, p: PlayerRef) {
         val dx = Integer.signum(p.coord.x - (npc.coord.x + npc.size / 2))
         val dz = Integer.signum(p.coord.z - (npc.coord.z + npc.size / 2))
-        val at = CoordGrid(p.coord.x + dx, p.coord.z + dz, p.coord.level)
+        val away = CoordGrid(p.coord.x + dx, p.coord.z + dz, p.coord.level)
+        val toward = CoordGrid(p.coord.x - dx, p.coord.z - dz, p.coord.level)
+        val at =
+            if (npc.isWalkable(away)) {
+                away
+            } else if (npc.isWalkable(toward)) {
+                toward
+            } else {
+                p.coord
+            }
         val vine = Bosses.summon(npc, Npcs.ARCHIVE_GUARDIAN_TENTACLE, at, huntRange = 0)
         vine.anim(Seqs.NPC_GUARDIAN_ARCHIVE_TENTACLE_SPAWN01)
-        for (i in 1..TENDRIL_HITS) {
-            vine.queueHit(i) {
-                if (!vine.isInWorld) return@queueHit
+        for (beat in 1..VINE_BEATS) {
+            vine.queueHit(beat * VINE_BEAT_GAP) {
+                if (!vine.isInWorld || !npc.isInWorld) return@queueHit
                 vine.anim(Seqs.NPC_GUARDIAN_ARCHIVE_TENTACLE_ATTACK01)
-                for (v in BossCombat.playersOn(npc, at, radius = 1)) {
-                    val raw = BossCombat.roll(npc, 0, TENDRIL_MAX)
-                    val dmg = if (v.protects(CombatStyle.MELEE)) minOf(raw, TENDRIL_PRAYED_CAP) else raw
+                for (v in arenaPlayers(npc)) {
+                    if (v.coord.level != at.level ||
+                        maxOf(kotlin.math.abs(v.coord.x - at.x), kotlin.math.abs(v.coord.z - at.z)) != 1
+                    ) {
+                        continue
+                    }
+                    if (v[VINE_HIT_AT] == npc.tick) continue
+                    v[VINE_HIT_AT] = npc.tick
+                    val dmg = if (v.protects(CombatStyle.MELEE)) VINE_PRAYED else BossCombat.roll(npc, VINE_MIN, VINE_MAX)
                     CombatSystem.applyHit(v, npc, dmg, HitStyle.MELEE)
                 }
-                if (i == TENDRIL_HITS) vine.despawn()
             }
+        }
+        vine.queueHit(VINE_GONE) {
+            vine.anim(Seqs.NPC_GUARDIAN_ARCHIVE_TENTACLE_DESPAWN01)
+            vine.despawn()
         }
     }
 
@@ -192,90 +299,48 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
             setPool(npc, FLYING_HP[index(s.size)])
             batteries(npc)
         } else {
-            // AG4: phase 2 fights on with the grounded HP; shield breaks now cost HP.
+            // AG4: phase 2 fights on with the grounded HP; the enrage cycle starts.
             npc.spotAnim(SpotAnims.VFX_GUARDIAN_ENRAGED_PHASE_SPOTANIM01)
             setPool(npc, s.groundMax)
             npc.hitpoints = s.groundHp
+            enrageCycle(npc, s)
         }
         npc.setAttackClock(npc.tick + ATTACK_SPEED)
     }
 
-    // ---- phase 2 laser (AG4) and mushrooms (AG5)
+    // ---- enrage (AG4)
 
     /**
-     * AG4: a magic laser at a random player, "fatal with more than 2 players alive unless reduced"; Protect from Magic
-     * reduces it slightly. OPEN-AG4: modelled as [LASER_PER_ALIVE] per living player, Protect from Magic -[LASER_PRAYER_PERCENT]%.
+     * Capture: every 20 ticks S: at S+5 the blast (seq 14754): one roll of 42-49 divided between the raiders in the room,
+     * x1.5 for anyone off Protect from Magic; at S+10 the next battery overloads (its HP as one hit), in the order
+     * (4139, 5592), (4139, 5605), (4114, 5592), (4114, 5605). RuneLite (LU): the blast lands 10 ticks after the animation
+     * (the capture's S+5 is the animation; it lands at the overload beat).
      */
-    private fun laser(npc: NpcRef) {
-        val players = arenaPlayers(npc)
-        val target = players.getOrNull(npc.random(maxOf(1, players.size))) ?: return
-        // RuneLite (LU): the laser and the mushroom attack share the special animation ENRAGED_PHASE01 (14754).
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
-        npc.spotAnim(SpotAnims.VFX_GUARDIAN_SPECIAL_ATTACK_SPOTANIM01)
-        CombatSystem.announceAttack(npc, target, CombatStyle.MAGIC)
-        var damage = LASER_PER_ALIVE * players.size
-        if (target.protects(CombatStyle.MAGIC)) damage = damage * (PERCENT - LASER_PRAYER_PERCENT) / PERCENT
-        // AG2: one battery can only be charged by the laser: a target standing by it lures the beam into it, and the
-        // battery takes the blast (OPEN-AG4: the player then takes 10).
-        val lure =
-            Bosses.minions(npc, Npcs.TFA_GUARDIAN_BATTERY_ACTIVE).firstOrNull {
-                it[LASER_ONLY] == true &&
-                    TfaKit.gap(it, target) <= LURE_RANGE
-            }
-        if (lure != null) {
-            CombatSystem.queueHit(lure, npc, lure.hitpoints, HitStyle.MAGIC, LASER_DELAY)
-            damage = LASER_LURED
-        }
-        CombatSystem.queueHit(target, npc, damage, HitStyle.MAGIC, LASER_DELAY)
-    }
-
-    /**
-     * AG5: two mushrooms near every player; 5 ticks later each explodes: 10 damage, poison and run off within 1 tile,
-     * 3-4 damage within 2 tiles. OPEN-AG6: drowsiness and the prayer drain are modelled as a 2-tick bind and -10 prayer.
-     */
-    private fun mushrooms(npc: NpcRef) {
-        // RuneLite (LU): same special animation; mushrooms appear within 2 ticks and the attack hits 5 ticks after it.
-        npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
-        val tiles = arenaPlayers(npc).flatMap { p -> List(MUSHROOMS_PER_PLAYER) { BossCombat.randomTile(npc, p.coord, MUSHROOM_SPREAD) } }
-        npc.queueHit(MUSHROOM_APPEAR) {
-            for (t in tiles) {
-                npc.addLoc(
-                    Locs.TFA_GUARDIAN_MUSHROOM_SPAWN,
-                    t,
-                    LOC_SHAPE,
-                    0,
-                    MUSHROOM_TICKS - MUSHROOM_APPEAR,
-                )
+    private fun enrageCycle(npc: NpcRef, s: State) {
+        npc.queueHit(BLAST_AT) {
+            if (!npc.isInWorld || s.phase != Phase.FINAL) return@queueHit
+            npc.anim(Seqs.NPC_ARCHIVE_GUARDIAN_ENRAGED_PHASE01)
+            npc.spotAnim(SpotAnims.VFX_GUARDIAN_SPECIAL_ATTACK_SPOTANIM01)
+            val players = arenaPlayers(npc)
+            val share = BossCombat.roll(npc, BLAST_MIN, BLAST_MAX) / maxOf(1, players.size)
+            for (p in players) {
+                val dmg = if (p.protects(CombatStyle.MAGIC)) share else share * UNPRAYED_NUM / UNPRAYED_DEN
+                CombatSystem.queueHit(p, npc, dmg, HitStyle.MAGIC, LASER_DELAY)
             }
         }
-        npc.queueHit(MUSHROOM_TICKS) {
-            if (!npc.isInWorld) return@queueHit
-            for (t in tiles) {
-                npc.addLoc(Locs.TFA_GUARDIAN_MUSHROOM_DESPAWN, t, LOC_SHAPE, 0, MUSHROOM_FADE_TICKS)
-                for (p in BossCombat.playersOn(npc, t, radius = MUSHROOM_OUTER)) {
-                    val inner = maxOf(kotlin.math.abs(p.coord.x - t.x), kotlin.math.abs(p.coord.z - t.z)) <= MUSHROOM_INNER
-                    if (inner) {
-                        CombatSystem.applyHit(p, npc, MUSHROOM_INNER_DAMAGE, HitStyle.TYPELESS)
-                        if (!Toxic.wearsSerpentineHelm(p)) {
-                            Poison.poison(p, MUSHROOM_POISON)
-                            p.runMode = false
-                            // AG5 / OPEN-AG6: the spores also sap prayer (10) and leave the player drowsy (bound 2 ticks).
-                            BossCombat.drainPrayer(p, SPORE_PRAYER)
-                            p.frozenUntil = maxOf(p.frozenUntil, p.tick + DROWSY_TICKS)
-                        }
-                    } else {
-                        CombatSystem.applyHit(p, npc, BossCombat.roll(npc, MUSHROOM_OUTER_MIN, MUSHROOM_OUTER_MAX), HitStyle.TYPELESS)
-                    }
-                }
-            }
+        npc.queueHit(OVERLOAD_AT) {
+            if (!npc.isInWorld || s.phase != Phase.FINAL) return@queueHit
+            val (dx, dz) = OVERLOAD_ORDER.getOrNull(s.overloads++) ?: return@queueHit
+            val at = CoordGrid(npc.spawn.x + dx, npc.spawn.z + dz, npc.coord.level)
+            Bosses.minions(npc).firstOrNull { it.coord == at }?.let { CombatSystem.applyHit(it, npc, it.hitpoints, HitStyle.TYPELESS) }
         }
+        npc.queueHit(ENRAGE_CYCLE) { if (npc.isInWorld && s.phase == Phase.FINAL) enrageCycle(npc, s) }
     }
 
     // ---- damage
 
     override fun afterHit(npc: NpcRef, source: EntityRef?) {
-        val s = state(npc)
-        if (s.phase == Phase.GROUNDED && npc.hitpoints * THIRDS <= s.groundMax) fly(npc, s, Phase.FINAL)
+        state(npc)
     }
 
     override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int {
@@ -285,17 +350,17 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         return damage
     }
 
-    /** Shield gone in phase 1: it crashes (the shield pool reaching 0 does not kill it). */
+    /** Shield gone: it crashes 3 ticks later (the shield pool reaching 0 does not kill it). */
     override fun onLethal(npc: NpcRef): Boolean {
         val s = state(npc)
         return when (s.phase) {
             Phase.SHIELDED -> {
+                npc.hitpoints = 1
                 ground(npc, s)
                 true
             }
 
             Phase.GROUNDED -> {
-                // Grounded damage past a third goes on into phase 2 with 1 HP rather than skipping the phase.
                 s.groundHp = 1
                 fly(npc, s, Phase.FINAL)
                 true
@@ -320,27 +385,34 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
         npc.setLevel(NpcStat.MAGIC, (BASE_MAGIC + MAGIC_SWING * frac).toInt())
     }
 
-    /** AG2: a charged battery breaks about 40% of the shield (OPEN-AG3); in phase 2 it costs HP instead. */
+    /** Capture: a destroyed battery takes 40% of the shield's max, capped at what is left, 3 ticks later. */
     fun batteryCharged(npc: NpcRef) {
         val s = state(npc)
-        val cut =
-            when (s.phase) {
-                Phase.SHIELDED -> FLYING_HP[index(s.size)] * BATTERY_PERCENT / PERCENT
-                Phase.FINAL -> s.groundMax * BATTERY_PERCENT / PERCENT
-                Phase.GROUNDED -> 0
-            }
-        if (cut > 0) CombatSystem.applyHit(npc, null, cut, HitStyle.TYPELESS)
+        if (s.phase != Phase.SHIELDED) return
+        val cut = FLYING_HP[index(s.size)] * BATTERY_PERCENT / PERCENT
+        npc.queueHit(BATTERY_DELAY) {
+            if (npc.isInWorld && s.phase == Phase.SHIELDED) CombatSystem.applyHit(npc, null, minOf(cut, npc.hitpoints), HitStyle.TYPELESS)
+        }
     }
 
     override fun died(npc: NpcRef, killer: EntityRef?) {
         Bosses.dismissMinions(npc)
+        npc[STATE]?.mushrooms?.clear()
     }
 
     private fun arenaPlayers(npc: NpcRef): List<PlayerRef> = npc.playersWithin(ARENA_RADIUS).filter { !it.isDying }
 
-    private val BATTERY_OFFSETS = listOf(-11 to -6, 14 to -6, -11 to 7, 14 to 7)
+    private val VINE_HIT_AT = AttrKey<Long>("tfa_guardian_vine_hit")
 
-    /** archive-guardian.md data: HP by players 1-2 .. 8, flying (shield) and grounded. */
+    /** Capture: battery bases (4114/4139, 5592/5605) from the Guardian's south-west tile (4125, 5597); SE first. */
+    private val BATTERY_OFFSETS = listOf(14 to -5, 14 to 8, -11 to -5, -11 to 8)
+    private const val INERT_BATTERY = 0
+
+    /** Capture: the enrage overload order, (4139,5592), (4139,5605), (4114,5592), (4114,5605). */
+    private val OVERLOAD_ORDER = listOf(14 to -5, 14 to 8, -11 to -5, -11 to 8)
+    private val DIRS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1, 1 to 1, -1 to -1, 1 to -1, -1 to 1)
+
+    /** archive-guardian.md data (capture-confirmed): HP by players 1-2 .. 8, flying (shield) and grounded. */
     private val FLYING_HP = intArrayOf(550, 800, 1030, 1260, 1490, 1720, 1950)
     private val GROUNDED_HP = intArrayOf(1100, 1600, 2060, 2520, 2980, 3440, 3910)
 
@@ -348,86 +420,63 @@ internal object ArchiveGuardian : Boss(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSH
     private const val MAX_SCALE = 8
     private const val NPC_STATS = 6
     private const val NPC_HITPOINTS = 3
-
-    /** Data: max hit 25; attack speed 5. */
-    private const val MAX_HIT = 25
     private const val ATTACK_SPEED = 5
+    private const val SPECIAL_EVERY = 5
+    private const val ROCK_FLIGHT = 4
+    private const val ROCK_MAX = 41
+    private const val ROCK_PER_RAIDER = 5
+    private const val ROCK_SCALE_FROM = 3
+    private const val ROCK_PRAYED_MAX = 10
+    private const val PRAYED_KEEP = 25
+    private const val SLAM_MAX = 48
+    private const val SMASH_MIN = 24
+    private const val SMASH_MAX = 28
+    private const val MUSHROOM_APPEAR = 1
+    private const val MUSHROOM_FAR = 3
+    private const val MAX_MUSHROOMS = 39
+    private const val MUSHROOM_ARM = 3
+    private const val MUSHROOM_FADE_TICKS = 2
+    private const val MUSHROOM_POISON = 10
+    private const val DROWSY_TICKS = 17
+    private const val LOC_SHAPE = 10
+    private const val BATTERY_HP = 180
+    private const val BATTERY_PER_RAIDER = 55
+    private const val BATTERY_PERCENT = 40
+    private const val BATTERY_DELAY = 3
+    private const val CRASH_DELAY = 3
 
-    /** AG1: mushrooms "about every four attacks" (OPEN-AG2). */
-    private const val MUSHROOM_EVERY = 4
-
-    /** AG3 timings. */
-    private const val TENDRIL_DELAY = 6
-    private const val TENDRIL_EVERY = 3
-
-    /**
-     * RuneLite (luuj/fracturedarchive ArchiveGuardian.java, "set in game"): grounded 35 ticks the first time and 40
-     * every later time, counted from the crash animation (the wiki's 34 is superseded; settles OPEN-AG5).
-     */
+    /** RuneLite (LU ArchiveGuardian.java, "set in game"): grounded 35 ticks the first time, 40 later (D-080). */
     private const val FIRST_GROUNDED_TICKS = 35
     private const val LATER_GROUNDED_TICKS = 40
-    private const val TENDRIL_HITS = 3
-
-    /** OPEN-AG7: "moderate" tendril damage; Protect from Melee caps it at 11 (AG3). */
-    private const val TENDRIL_MAX = 20
-    private const val TENDRIL_PRAYED_CAP = 11
-
-    /** OPEN-AG4: the laser model. */
-    private const val LASER_PER_ALIVE = 35
-    private const val LASER_PRAYER_PERCENT = 20
-
-    /** RuneLite (LU ArchiveGuardian.java:78): the laser hits 10 ticks after the special animation. */
-    private const val LASER_DELAY = 10
-    private const val BEHIND_REACH = 2
-    private const val BEHIND_MAX = 10
-    private const val SPORE_PRAYER = 10
-    private const val DROWSY_TICKS = 2
-    private const val LASER_LURED = 10
-    private const val LURE_RANGE = 2
-    private const val LASER_BATTERY = 3
-
-    /** AG5 numbers. */
-    private const val MUSHROOMS_PER_PLAYER = 2
-    private const val MUSHROOM_SPREAD = 2
-    private const val MUSHROOM_TICKS = 5
-
-    /** RuneLite (LU ArchiveGuardian.java:76): mushrooms appear within 2 ticks of the special animation. */
-    private const val MUSHROOM_APPEAR = 1
-    private const val MUSHROOM_FADE_TICKS = 2
-    private const val MUSHROOM_INNER = 1
-    private const val MUSHROOM_OUTER = 2
-    private const val MUSHROOM_INNER_DAMAGE = 10
-    private const val MUSHROOM_OUTER_MIN = 3
-    private const val MUSHROOM_OUTER_MAX = 4
-
-    /** OPEN-AG6: the poison's starting damage (normal poison, 4). */
-    private const val MUSHROOM_POISON = 4
-
-    /** Ground decoration shape (centrepiece, 10) for the mushroom locs. */
-    private const val LOC_SHAPE = 10
-
-    /** Strat's drift and TFA10's 60% cap. */
+    private const val VINE_FIRST = 5
+    private const val VINE_EVERY = 3
+    private const val VINE_BEATS = 3
+    private const val VINE_BEAT_GAP = 3
+    private const val VINE_GONE = 12
+    private const val VINE_MIN = 17
+    private const val VINE_MAX = 19
+    private const val VINE_PRAYED = 10
+    private const val LIFT_DELAY = 3
+    private const val EARLY_LIFT_PERCENT = 34
+    private const val ENRAGE_CYCLE = 20
+    private const val BLAST_AT = 5
+    private const val OVERLOAD_AT = 10
+    private const val BLAST_MIN = 42
+    private const val BLAST_MAX = 49
+    private const val UNPRAYED_NUM = 3
+    private const val UNPRAYED_DEN = 2
+    private const val LASER_DELAY = 5
     private const val BASE_DEFENCE = 260
     private const val DEFENCE_SWING = 130
     private const val DEFENCE_FLOOR = 156
     private const val BASE_MAGIC = 250
     private const val MAGIC_SWING = 125
-
-    /** AG2 / OPEN-AG3: about 40% per battery. */
-    private const val BATTERY_PERCENT = 40
     private const val PERCENT = 100
-    private const val THIRDS = 3
-
-    /** The nexus arena around the Guardian. */
     private const val ARENA_RADIUS = 16
 }
 
 /** AG2: an active battery; destroying it ("charging") breaks part of its Guardian's shield. */
 internal object GuardianBattery : Boss(Npcs.TFA_GUARDIAN_BATTERY_ACTIVE) {
-    /** AG2: "one hit only by the laser": players' hits do nothing to it. */
-    override fun incoming(npc: NpcRef, source: EntityRef?, damage: Int, style: HitStyle): Int =
-        if (npc[ArchiveGuardian.LASER_ONLY] == true && source is PlayerRef) 0 else damage
-
     override fun attack(npc: NpcRef, victim: EntityRef, distance: Boolean) {
         // Batteries never attack (cache: no combat level, only the "Attack" op on them).
     }

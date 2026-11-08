@@ -43,6 +43,9 @@ internal abstract class Boss(vararg ids: Int) {
     /** Whether the NPC may pick [player] when hunting (revenants: not bracelet wearers). */
     open fun hunts(npc: NpcRef, player: PlayerRef): Boolean = true
 
+    /** The fraction of a freeze the NPC holds (freeze resistance; 1.0 = none). */
+    open val freezeHold: Double = 1.0
+
     /** Whether a player's melee on the NPC always hits right now (a dazed Bork). */
     open fun meleeAlwaysHits(npc: NpcRef): Boolean = false
 
@@ -73,16 +76,20 @@ internal object Bosses {
             ArchiveGuardian,
             GuardianBattery,
             TfaEzekiel,
+            TfaEzekielSword,
             TfaBork,
             TfaSmorks,
             TfaMoia,
             TfaMoiaBinder,
             TfaDreadnoth,
+            TfaJelly,
             TfaDagonhai,
             TfaDagonhaiImp,
             TfaXarth,
             TfaXarthCorpse,
             TfaOcellus,
+            TfaOcellusRift,
+            TfaOcellusVine,
         )
         ) {
             for (id in boss.ids) byType[id] = boss

@@ -68,13 +68,13 @@ public class TfaBosses : ContentPlugin {
         private val ROOMS: Map<String, Room> =
             mapOf(
                 "guardian" to Room(emptyList(), setOf(Npcs.TFA_GUARDIAN, Npcs.TFA_GUARDIAN_UNSHIELDED)),
-                "ezekiel" to Room(listOf(Npcs.TFA_EZEKIEL to CoordGrid(4060, 5533)), setOf(Npcs.TFA_EZEKIEL)),
+                "ezekiel" to Room(listOf(Npcs.TFA_EZEKIEL to CoordGrid(4062, 5534)), setOf(Npcs.TFA_EZEKIEL)),
                 "bork" to
                     Room(
                         listOf(Npcs.TFA_BORK to CoordGrid(4189, 5599), Npcs.TFA_SMORK to CoordGrid(4195, 5604)),
                         setOf(Npcs.TFA_BORK, Npcs.TFA_SMORK),
                     ),
-                "moia" to Room(listOf(Npcs.TFA_MOIA to CoordGrid(4060, 5660)), setOf(Npcs.TFA_MOIA)),
+                "moia" to Room(listOf(Npcs.TFA_MOIA to CoordGrid(4055, 5662)), setOf(Npcs.TFA_MOIA)),
                 "dreadnoth" to Room(listOf(Npcs.TFA_JELLY_BOSS to CoordGrid(4190, 5662)), setOf(Npcs.TFA_JELLY_BOSS)),
                 "dagonhai" to
                     Room(
@@ -92,8 +92,8 @@ public class TfaBosses : ContentPlugin {
                             Npcs.TFA_DAGONHAI_MINION_2_UNSHIELDED,
                         ),
                     ),
-                "xarth" to Room(listOf(Npcs.TFA_XARTH to CoordGrid(4192, 5535)), setOf(Npcs.TFA_XARTH)),
-                "ocellus" to Room(listOf(Npcs.TFA_OCELLUS_P1 to CoordGrid(4126, 5672, 1)), setOf(Npcs.TFA_OCELLUS_P3)),
+                "xarth" to Room(listOf(Npcs.TFA_XARTH to CoordGrid(4190, 5534)), setOf(Npcs.TFA_XARTH)),
+                "ocellus" to Room(listOf(Npcs.TFA_OCELLUS_P1 to CoordGrid(4125, 5679, 1)), setOf(Npcs.TFA_OCELLUS_P3)),
             )
 
         /** The nexus arena: the Guardian hunts anyone in it. */

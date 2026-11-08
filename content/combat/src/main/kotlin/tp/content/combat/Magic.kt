@@ -231,6 +231,10 @@ internal object Freezes {
     fun freeze(target: EntityRef, caster: EntityRef, ticks: Int, fade: Boolean = false) {
         val now = target.tick
         if (target.isFrozen || (target[Attr.FREEZE_IMMUNE_UNTIL] ?: 0L) > now) return
+        // A boss's freeze resistance shortens the hold (e.g. Dreadnoth holds floor(n x 0.6)).
+        val hold = (target as? NpcRef)?.let { Bosses.of(it.type)?.freezeHold } ?: 1.0
+        val ticks = (ticks * hold).toInt()
+        if (ticks <= 0) return
         target.frozenUntil = now + ticks
         target[Attr.FREEZE_IMMUNE_UNTIL] = now + ticks + IMMUNITY
         target[Attr.FROZEN_BY] = caster
