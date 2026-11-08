@@ -20,12 +20,19 @@ public class Login : ContentPlugin {
         message("Welcome to world $worldId.")
         // Chat input is locked until the client knows the display name (RS Mod `chatboxUnlocked`).
         setVarbit(Varbits.HAS_DISPLAYNAME_TRANSMITTER, 1)
-        setVarbit(Varbits.OPTION_HIDE_ROOFTOPS, 1)
+        // New-account defaults only: a setting the player changed later is saved with their varps and kept.
+        if (saved(DEFAULTS_KEY) == null) {
+            setVarbit(Varbits.OPTION_HIDE_ROOFTOPS, 1)
+            setSaved(DEFAULTS_KEY, 1L)
+        }
         transmitInv(Invs.INV)
         transmitInv(Invs.WORN)
         clientScript(CS_2498, 1, 0, 0)
         clientScript(CS_828, 1)
         clientScript(CS_5141)
+        // CS 626: sets the camera zoom limits (varcs 1338-1341 = 128..896) that CS 42 `camera_do_zoom` clamps to;
+        // without it the scroll wheel cannot zoom (RS Mod / OpenRune `LoginScript` sends it at login).
+        clientScript(CS_ZOOM_LIMITS)
         playerOp(PLAYER_OP_FOLLOW, "Follow")
         playerOp(PLAYER_OP_TRADE, "Trade with")
         playerOp(PLAYER_OP_REPORT, "Report")
@@ -37,6 +44,10 @@ public class Login : ContentPlugin {
         const val CS_2498 = 2498
         const val CS_828 = 828
         const val CS_5141 = 5141
+        const val CS_ZOOM_LIMITS = 626
+
+        /** Saved once the new-account setting defaults were applied. */
+        const val DEFAULTS_KEY = "login.defaults"
 
         /** Sets the display name shown in the chatbox (RS Mod `LoginScript`: `876, mapClock, 0, name, "REGULAR"`). */
         const val CS_DISPLAY_NAME = 876
