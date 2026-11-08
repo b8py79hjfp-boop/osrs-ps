@@ -62,7 +62,11 @@ public class RoomDef(
 /** Death rules (brief 3.9). */
 public sealed interface DeathPolicy {
     /** The dead player waits (items kept) until the room ends; when nobody is left alive the [wipe] rule applies. */
-    public class WaitUntilRoomEnds(public val wipe: WipePolicy) : DeathPolicy
+    public class WaitUntilRoomEnds(
+        public val wipe: WipePolicy,
+        /** A different wipe rule for some modes (ToB Entry retries the room). */
+        public val wipeByMode: Map<String, WipePolicy> = emptyMap(),
+    ) : DeathPolicy
 
     /** The player respawns at the [checkpoint] room's entry, items kept (CoX: start of the previous floor). */
     public class RespawnAtCheckpoint(public val checkpoint: (RaidRun) -> String) : DeathPolicy
@@ -72,8 +76,11 @@ public sealed interface WipePolicy {
     /** The party is ejected to the exit and every member's unprotected items go to graves at [RaidDefinition.graveAt]. */
     public object EjectWithGraves : WipePolicy
 
-    /** The run fails (ToB). */
-    public object FailRaid : WipePolicy
+    /** The run fails (ToB Normal / Hard); unprotected items go to [storeInv] when >= 0 (else the normal grave). */
+    public class FailRaid(public val storeInv: Int = -1) : WipePolicy
+
+    /** The room starts again with everyone alive, items kept (ToB Entry, TB16); content restarts it on RoomFailed. */
+    public object RetryRoom : WipePolicy
 }
 
 /** What a lost session does (brief 3.10). */

@@ -794,6 +794,7 @@ internal object TobVerzik : Boss(*VERZIK_IDS) {
         return when (s.phase) {
             1 -> {
                 npc.anim(Seqs.VERZIK_PHASE1_DEATH)
+                dawnbringerCrumbles(npc)
                 for (pillar in Bosses.minions(npc).filter { it.type == id(s.mode, PILLAR) }) collapse(npc, s, pillar)
                 npc.hitpoints = 1
                 s.phase = TRANSITION
@@ -816,6 +817,19 @@ internal object TobVerzik : Boss(*VERZIK_IDS) {
 
             else -> {
                 false
+            }
+        }
+    }
+
+    /** XA6: the Dawnbringer crumbles when her shield breaks. */
+    private fun dawnbringerCrumbles(npc: NpcRef) {
+        for (p in raiders(npc)) {
+            for (invId in intArrayOf(tp.symbols.Invs.INV, tp.symbols.Invs.WORN)) {
+                val inv = p.inv(invId)
+                val slot = (0 until inv.size).firstOrNull { inv.obj(it) == Objs.VERZIK_SPECIAL_WEAPON } ?: continue
+                if (p.transaction("dawnbringer crumbles") { removeAt(invId, slot, Objs.VERZIK_SPECIAL_WEAPON, 1) }) {
+                    p.message("The weapon falls apart in your hand as Verzik's shield is destroyed.")
+                }
             }
         }
     }

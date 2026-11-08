@@ -197,13 +197,21 @@ public class DeathPolicyRequest(public val player: PlayerRef, public val killer:
     public var keepItems: Boolean = false
     public var respawnAt: tp.util.CoordGrid? = null
     public var graveAt: tp.util.CoordGrid? = null
+
+    /** When >= 0, the items lost go into this (persisted) inventory instead of a grave (ToB's reclaim chest). */
+    public var storeInv: Int = -1
 }
 
 /**
  * Applies the normal dangerous-death item rules to [player] now, with the grave at [graveAt] (a raid wipe also costs the
  * players who died earlier in the room). Combat handles it; [done] says it ran.
  */
-public class DeathItemsRequest(public val player: PlayerRef, public val graveAt: tp.util.CoordGrid) : Event {
+public class DeathItemsRequest(
+    public val player: PlayerRef,
+    public val graveAt: tp.util.CoordGrid,
+    /** As [DeathPolicyRequest.storeInv]. */
+    public val storeInv: Int = -1,
+) : Event {
     public var done: Boolean = false
 }
 

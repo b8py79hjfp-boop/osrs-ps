@@ -61,7 +61,7 @@ internal object DeathRules {
      * by a player in the Wilderness or on a PvP world) drops the rest for the killer, except untradeables, which go to
      * the grave; any other death puts the rest in the grave (death.md DE1-DE4, DE10).
      */
-    fun dropItems(dead: PlayerRef, killer: EntityRef?, graveAt: tp.util.CoordGrid? = null) {
+    fun dropItems(dead: PlayerRef, killer: EntityRef?, graveAt: tp.util.CoordGrid? = null, storeInv: Int = -1) {
         val keep = (if (dead[SharedAttrs.SKULL_ICON] != null) 0 else KEPT) + if (dead.hasPrayer("Protect Item")) 1 else 0
         val inWilderness = dead[SharedAttrs.IN_WILDERNESS] == true
         val pvp = killer is PlayerRef && (inWilderness || dead.isPvpWorld)
@@ -86,6 +86,18 @@ internal object DeathRules {
         // DE3: a death in instance space leaves the grave at the respawn point.
         // A raid wipe names the grave tile (DeathPolicyRequest.graveAt: outside the raid's entrance).
         val at = graveAt ?: if (dead.coord.x shr SQUARE_SHIFT >= FIRST_INSTANCE_SQUARE) CombatSystem.RESPAWN else dead.coord
+        if (!pvp && storeInv >= 0) {
+            // A raid's own storage (ToB TB15: reclaimed at the theatre's chest for a fee).
+            dead.inv(storeInv, stackAll = true)
+            dead.transaction("raid wipe storage") {
+                lost.all { (invId, slot, _) ->
+                    val inv = dead.inv(invId)
+                    val obj = inv.obj(slot)
+                    obj < 0 || move(invId, slot, obj, inv.count(slot), storeInv)
+                }
+            }
+            return
+        }
         if (!pvp) {
             val bag = if (inWilderness) StorageDeath.destroyLootingBag(dead, lost) else emptyList()
             return Graves.bury(

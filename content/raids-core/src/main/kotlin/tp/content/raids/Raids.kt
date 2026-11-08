@@ -222,7 +222,7 @@ public class Raids internal constructor() {
                         policy.keepItems = true
                         policy.respawnAt = run.at(room.waitAt ?: room.entry)
                     } else {
-                        wipe(player, run, rule.wipe, policy)
+                        wipe(player, run, rule.wipeByMode[run.scaling.mode] ?: rule.wipe, policy)
                     }
                 }
             }
@@ -231,16 +231,26 @@ public class Raids internal constructor() {
         /** Everyone in the room is dead: eject with graves (TFA) or fail (ToB). */
         private fun wipe(dying: PlayerRef, run: RaidRun, rule: WipePolicy, policy: tp.plugin.DeathPolicyRequest) {
             val room = (run.state as? RunState.InRoom)?.room
+            if (rule == WipePolicy.RetryRoom && room != null) {
+                // TB16: everyone stands up again outside the room, items kept; content restarts the room on RoomFailed.
+                policy.keepItems = true
+                policy.respawnAt = run.at(room.waitAt ?: room.entry)
+                for (m in run.members.values) m.alive = true
+                dying.events.publish(RaidEvent.RoomFailed(run, room))
+                return
+            }
             if (room != null) dying.events.publish(RaidEvent.RoomFailed(run, room))
             run.state = RunState.Failed("wipe")
             run.endedTick = dying.tick
             policy.respawnAt = run.raid.exit
-            if (rule == WipePolicy.EjectWithGraves) {
+            val store = (rule as? WipePolicy.FailRaid)?.storeInv ?: -1
+            if (rule == WipePolicy.EjectWithGraves || store >= 0) {
                 policy.graveAt = run.raid.graveAt
+                policy.storeInv = store
                 // Members who died earlier in the room kept their items while waiting; the wipe costs them too.
                 for (other in run.presentPlayers(dying)) {
                     if (other == dying) continue
-                    dying.events.publish(tp.plugin.DeathItemsRequest(other, run.raid.graveAt))
+                    dying.events.publish(tp.plugin.DeathItemsRequest(other, run.raid.graveAt, store))
                     leave(other, run, toExit = true)
                 }
             }

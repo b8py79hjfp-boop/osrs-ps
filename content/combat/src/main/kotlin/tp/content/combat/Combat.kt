@@ -30,7 +30,7 @@ public class Combat : ContentPlugin {
         // poison.md PO14: poison / venom requested by other modules.
         events.on<tp.plugin.PoisonRequest> { r -> if (r.venom) Poison.envenom(r.target) else Poison.poison(r.target, r.severity) }
         events.on<tp.plugin.DeathItemsRequest> { r ->
-            DeathRules.dropItems(r.player, null, r.graveAt)
+            DeathRules.dropItems(r.player, null, r.graveAt, r.storeInv)
             r.done = true
         }
         events.on<tp.plugin.PrayersOffRequest> { r -> r.player.deactivateAllPrayers() }
@@ -317,7 +317,11 @@ internal object CombatSystem {
         val safe = player[tp.plugin.SharedAttrs.SAFE_DEATH_AT]
         val policy = if (safe == null) tp.plugin.DeathPolicyRequest(player, killer).also { player.events.publish(it) } else null
         val owned = policy?.handled == true
-        if (safe == null && !(owned && policy?.keepItems == true)) DeathRules.dropItems(player, killer, policy?.graveAt)
+        if (safe == null &&
+            !(owned && policy?.keepItems == true)
+        ) {
+            DeathRules.dropItems(player, killer, policy?.graveAt, policy?.storeInv ?: -1)
+        }
         player.events.publish(DeathEvent(player, killer))
         player.message("Oh dear, you are dead!")
         player.teleport(safe ?: policy?.respawnAt ?: RESPAWN)

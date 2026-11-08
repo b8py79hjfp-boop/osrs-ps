@@ -43,6 +43,15 @@ internal class TobState {
     /** The tick Verzik died: the overall time ends at her final blow (LR22). */
     var verzikDeadTick = -1L
 
+    /** An Entry room to start again after a wipe (TobDeaths). */
+    var retryRoom: String? = null
+
+    /** Members owed Entry's 3 Bandages for a death (TobDeaths). */
+    val bandagesOwed = LinkedHashSet<String>()
+
+    /** XA6: the Dawnbringer was taken this run. */
+    var dawnbringerTaken = false
+
     /** Midway supply points per member (TB22). */
     val supplyPoints = HashMap<String, Int>()
 

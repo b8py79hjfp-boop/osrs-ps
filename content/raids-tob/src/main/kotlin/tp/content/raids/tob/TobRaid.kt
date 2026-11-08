@@ -66,7 +66,12 @@ internal object TobRaid {
             modes = listOf(NORMAL, ENTRY, HARD)
             squares = listOf(49 to 67, 49 to 68, 49 to 69, 50 to 67, 50 to 69, 51 to 66, 51 to 67, 51 to 69, 52 to 67)
             exit = LOBBY
-            deaths = DeathPolicy.WaitUntilRoomEnds(WipePolicy.FailRaid)
+            // TB15: a Normal / Hard wipe ends the raid, unprotected items to the reclaim chest; TB16: Entry retries the room.
+            deaths =
+                DeathPolicy.WaitUntilRoomEnds(
+                    WipePolicy.FailRaid(storeInv = Invs.TOB_RECLAIM),
+                    wipeByMode = if (TobConfig.entryWipeRestartsRoom) mapOf(ENTRY to WipePolicy.RetryRoom) else emptyMap(),
+                )
             disconnect = DisconnectPolicy.DEATH_IN_ENCOUNTER
             raidOnlyItems = RAID_ONLY
             claimInv = Invs.TOB_CHESTS

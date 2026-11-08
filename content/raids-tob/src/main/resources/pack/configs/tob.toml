@@ -1,0 +1,7 @@
+# Theatre of Blood (docs/mechanics/raids/tob.md TB15-TB16): items lost in a wipe, kept for the reclaim chest in Ver Sinhaza.
+[[inventory]]
+id = "inv.tob_reclaim"
+size = 120
+scope = "Perm"
+stack = "Always"
+protect = false
