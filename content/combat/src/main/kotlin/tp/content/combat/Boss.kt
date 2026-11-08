@@ -118,6 +118,9 @@ internal object Bosses {
             CoxMuttadiles,
             CoxShamans,
             CoxMystics,
+            CoxCrab,
+            CoxIceDemon,
+            CoxDeathly,
         )
         ) {
             for (id in boss.ids) byType[id] = boss

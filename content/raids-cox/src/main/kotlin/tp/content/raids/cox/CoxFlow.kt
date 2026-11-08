@@ -35,6 +35,12 @@ internal class CoxState(val plan: CoxLayoutPlan) {
     /** Combat rooms: per cell, the required NPCs still alive (CoxRooms). */
     val roomAlive = HashMap<Int, MutableSet<tp.plugin.NpcRef>>()
 
+    /** Each room's blocker tile, while it stands (CoxRooms). */
+    val blockers = HashMap<Int, CoordGrid>()
+
+    /** Puzzle rooms' own state, per puzzle kind (CoxThieving, CoxTightrope, CoxIceDemonRoom, CoxCrabs). */
+    val puzzles = HashMap<String, Any>()
+
     /** Team-only point changes (CX30's 5% case, CX32's Challenge Mode bonus). */
     var teamAdjust = 0.0
 
@@ -79,7 +85,7 @@ public class CoxFlow : ContentPlugin {
             CoxHud.tick(this)
             watchCells(this)
         }
-        CoxRooms.register()
+        CoxRooms.register(this)
         CoxRoomActions.register(this)
         events.on<tp.plugin.DeathEvent> { e ->
             val npc = e.entity as? tp.plugin.NpcRef ?: return@on

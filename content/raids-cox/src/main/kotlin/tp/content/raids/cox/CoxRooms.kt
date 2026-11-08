@@ -25,8 +25,17 @@ internal object CoxRooms {
     /** Which cell an NPC belongs to. */
     val CELL = AttrKey<Int>("cox_cell")
 
-    fun register() {
+    fun register(scope: tp.plugin.ContentScope) {
         for (kind in CoxKind.entries.filter { it.combat }) CoxFlow.scripts[kind] = CoxRoomScript { run, cell, any -> start(run, cell, any) }
+        CoxThieving.register(scope)
+        CoxTightrope.register(scope)
+        CoxIceDemonRoom.register(scope)
+        CoxCrabs.register(scope)
+    }
+
+    /** A room NPC that must die before the room is done, added after the start (the Ice demon once it thaws). */
+    fun require(run: RaidRun, cell: CoxCell, npc: NpcRef) {
+        run.roomAlive().getOrPut(cell.index) { HashSet() } += npc
     }
 
     fun frame(run: RaidRun, cell: CoxCell): RaidRoomFrame =
@@ -50,7 +59,7 @@ internal object CoxRooms {
             return npc
         }
         populate(run, cell, frame, geo, ::spawn)
-        BLOCKERS[cell.kind]?.let { id -> any.addLoc(id, blockerAt(any, run, cell), CENTREPIECE, 0) }
+        BLOCKERS[cell.kind]?.let { id -> placeBlocker(any, run, cell, id) }
         val alive = run.roomAlive()
         alive[cell.index] = required.toMutableSet()
         if (required.isEmpty()) done(run, cell, any)
@@ -114,19 +123,43 @@ internal object CoxRooms {
         val index = npc[CELL] ?: return
         val set = run.roomAlive()[index] ?: return
         if (!set.removeIf { it == npc }) return
+        if (npc.type == Npcs.RAIDS_ICEDEMON_COMBAT) CoxIceDemonRoom.demonDied(run, any)
         if (set.isEmpty()) {
             val st = CoxFlow.state(run) ?: return
-            done(run, st.plan.cells[index], any)
+            val cell = st.plan.cells[index]
+            if (cell.kind.combat) done(run, cell, any) else CoxFlow.roomDone(run, cell)
         }
     }
 
     private fun done(run: RaidRun, cell: CoxCell, any: EntityRef) {
-        if (BLOCKERS.containsKey(cell.kind)) any.deleteLoc(blockerAt(any, run, cell), CENTREPIECE)
+        removeBlocker(any, run, cell)
         if (cell.kind == CoxKind.MYSTICS) CoxRoomActions.mysticsDone(run, cell, any)
         CoxFlow.roomDone(run, cell)
     }
 
-    private fun blockerAt(any: EntityRef, run: RaidRun, cell: CoxCell): CoordGrid = CoxMap.arrival(any, run, cell, cell.exitSide)
+    /**
+     * The room-lock blocker [id] in front of [cell]'s exit doorway, on the room's floor (the arrival pocket by the cell
+     * edge does not join the floor in every template); its tile is kept, since it blocks the tile it stands on.
+     */
+    fun placeBlocker(any: EntityRef, run: RaidRun, cell: CoxCell, id: Int) {
+        val st = CoxFlow.state(run)
+        val door = CoxMap.findLocs(any, run, cell, Locs.RAIDS_DOORWAY).firstOrNull { st?.spawnedPassages?.containsKey(it.coord) != true }
+        val at = if (door != null) CoxRoomGeo(any, run, cell).spotNear(door.coord, 1) else CoxMap.arrival(any, run, cell, cell.exitSide)
+        any.addLoc(id, at, CENTREPIECE, 0)
+        CoxFlow.state(run)?.blockers?.put(cell.index, at)
+    }
+
+    /** A room opened by its own rule (a puzzle): the blocker goes and the passage lets the party on. */
+    fun complete(run: RaidRun, cell: CoxCell, any: EntityRef) {
+        removeBlocker(any, run, cell)
+        CoxFlow.roomDone(run, cell)
+    }
+
+    /** Removes [cell]'s blocker (the room is done, or a puzzle opened the way). */
+    fun removeBlocker(any: EntityRef, run: RaidRun, cell: CoxCell) {
+        val at = CoxFlow.state(run)?.blockers?.remove(cell.index) ?: return
+        any.deleteLoc(at, CENTREPIECE)
+    }
 
     private fun RaidRun.roomAlive(): HashMap<Int, MutableSet<NpcRef>> {
         val st = requireNotNull(CoxFlow.state(this))

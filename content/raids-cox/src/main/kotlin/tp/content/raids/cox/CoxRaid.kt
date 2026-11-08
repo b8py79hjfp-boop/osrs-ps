@@ -105,6 +105,8 @@ internal object CoxRaid {
             // CX36: a logout is not a death (OPEN-CX19: the Olm-room logout penalty).
             disconnect = DisconnectPolicy.REJOIN
             claimInv = Invs.RAIDS_REWARDS
+            // CX35 / OPEN-CX18: raid-made items never leave the Chambers.
+            raidOnlyItems = CoxItems.RAID_ONLY
             // CX17-CX19 / CX17a: party size, the highest combat and Hitpoints levels, Challenge Mode.
             scaling = { ctx, npc -> CoxScaling.apply(ctx, npc) }
             // CX21-CX22: damage adds points directly; CX30: a death costs 40%.

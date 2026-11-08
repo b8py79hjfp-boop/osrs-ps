@@ -131,6 +131,15 @@ public object SharedAttrs {
     /** NPC attr: the raid run's mode (raids-core's mode name, e.g. CoX "challenge"). */
     public val RAID_MODE: AttrKey<String> = AttrKey("raid_mode")
 
+    /** NPC attr: a raid NPC's meter shared between the fight and the room (CoX lux grubs: ticks before they burst). */
+    public val RAID_METER: AttrKey<Int> = AttrKey("raid_meter")
+
+    /** NPC attr: the raider a raid NPC turns on (CoX tightrope: the one crossing the rope). */
+    public val RAID_FOCUS: AttrKey<String> = AttrKey("raid_focus")
+
+    /** NPC attr: the tick a raid NPC's temporary state ends (CoX jewelled crabs: their colour). */
+    public val RAID_UNTIL: AttrKey<Long> = AttrKey("raid_until")
+
     /** NPC attr: the raid room an NPC was spawned for (CoX cells: template positions per rotation). */
     public val RAID_ROOM: AttrKey<RaidRoomFrame> = AttrKey("raid_room")
 

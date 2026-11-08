@@ -67,6 +67,7 @@ class CoxSmokeScenario {
             )
             val last = cell === plan.cells.last()
             if (cell.kind.combat) fight(run, cell)
+            if (cell.kind.puzzle) puzzle(run, cell)
             val (id, loc) = exitOf(run, cell)
             assertNotNull(loc, "seed $seed ${plan.code}: cell ${cell.index} ${cell.kind} has its way on ($id)")
             use(run, plan, cell, id, requireNotNull(loc))
@@ -111,6 +112,8 @@ class CoxSmokeScenario {
                 }
             }
             if (cell.kind == CoxKind.GUARDIANS) {
+                // GU3: crush is their weakness (the pickaxe's third stance, Smash).
+                ra.setVarp(COMBAT_STANCE_VARP, CRUSH_STANCE)
                 // GU1: pickaxe hits from the raider (a DamageRequest has no source, so it would not count).
                 if (t % ATTACK_EVERY == 0) npcs.firstOrNull()?.let { a.input(ClientCommand.OpNpc(ATTACK_OP, it.index, false)) }
             } else {
@@ -129,6 +132,122 @@ class CoxSmokeScenario {
         val left = ra.npcsWithin(a.coord, SCAN).filter { inCell(it.coord) }.map { "${it.type}:${it.hitpoints}" }
         val alive = st.roomAlive[cell.index]?.map { "${it.type}@${it.coord} in=${it.isInWorld} hp=${it.hitpoints}" }
         assertTrue(st.done[cell.index], "${cell.kind} cleared in $t ticks; left $left; required $alive; a ${a.coord}; ${trace.takeLast(3)}")
+    }
+
+    /** Solves a puzzle room through its real ops (the crab bounce geometry excepted: the orb is checked, then the room). */
+    private fun puzzle(run: RaidRun, cell: CoxCell) {
+        val st = requireNotNull(CoxFlow.state(run))
+        for (t in 0 until 2) s.tick()
+        when (cell.kind) {
+            CoxKind.THIEVING -> {
+                thieving(run, cell, st)
+            }
+
+            CoxKind.TIGHTROPE -> {
+                tightrope(run, cell, st)
+            }
+
+            CoxKind.ICE_DEMON -> {
+                iceDemon(run, cell, st)
+            }
+
+            CoxKind.CRABS -> {
+                crabs(run, cell)
+            }
+
+            else -> {
+                Unit
+            }
+        }
+        assertTrue(st.done[cell.index], "${cell.kind} solved; ${a.messages.takeLast(3)}")
+    }
+
+    private fun thieving(run: RaidRun, cell: CoxCell, st: CoxState) {
+        val trough = CoxMap.findLoc(ra, run, cell, Locs.RAIDS_THIEVINGCHEST_FOODTROUGH_EMPTY)
+        assertNotNull(trough, "thieving trough")
+        var t = 0
+        while (!st.done[cell.index] && t < FIGHT_LIMIT) {
+            if (t % GRUB_EVERY == 0) {
+                ra.transaction("smoke") { add(Invs.INV, Objs.RAIDS_THIEVINGCHEST_GRUBS, GRUBS) }
+                val at =
+                    requireNotNull(
+                        CoxMap.findLoc(ra, run, cell, Locs.RAIDS_THIEVINGCHEST_FOODTROUGH_EMPTY)
+                            ?: CoxMap.findLoc(ra, run, cell, Locs.RAIDS_THIEVINGCHEST_FOODTROUGH_FULL),
+                    )
+                ra.teleport(CoxMap.freeNear(ra, at.coord))
+                a.input(ClientCommand.OpLoc(1, at.id, at.coord.x, at.coord.z, false))
+            }
+            keepAlive()
+            t++
+        }
+    }
+
+    private fun tightrope(run: RaidRun, cell: CoxCell, st: CoxState) {
+        val key = requireNotNull(CoxMap.findLoc(ra, run, cell, Locs.RAIDS_TIGHTROPE_KEYSTONE_LOC)) { "keystone loc" }
+        ra.teleport(CoxMap.freeNear(ra, key.coord))
+        a.input(ClientCommand.OpLoc(1, key.id, key.coord.x, key.coord.z, false))
+        repeat(WALK) { keepAlive() }
+        assertTrue(ra.inv(Invs.INV).total(Objs.RAIDS_TIGHTROPE_KEYSTONE) > 0, "took the keystone")
+        val barrier = requireNotNull(st.blockers[cell.index]) { "the barrier" }
+        // TR5: the keystone comes back across to the barrier (to a free tile beside it).
+        val beside =
+            listOf(0 to -1, 0 to 2, 1 to 0, -1 to 0, 1 to 1, -1 to 1)
+                .map { (dx, dz) -> tp.util.CoordGrid(barrier.x + dx, barrier.z + dz, barrier.level) }
+                .firstOrNull { ra.isWalkable(it) } ?: CoxMap.arrival(ra, run, cell, cell.entrySide)
+        ra.teleport(beside)
+        s.tick()
+        a.input(ClientCommand.OpLoc(1, Locs.RAIDS_TIGHTROPE_BARRIER, barrier.x, barrier.z, false))
+        repeat(WALK) { keepAlive() }
+        if (!st.done[cell.index]) {
+            val loc = requireNotNull(ra.locAt(barrier, 10)) { "barrier at $barrier" }
+            error(
+                "tightrope: barrier $barrier key ${key.coord} a ${a.coord} keystone ${ra.inv(
+                    Invs.INV,
+                ).total(Objs.RAIDS_TIGHTROPE_KEYSTONE)} ${a.messages.takeLast(3)}\n" +
+                    picture(run, cell, loc),
+            )
+        }
+    }
+
+    private fun iceDemon(run: RaidRun, cell: CoxCell, st: CoxState) {
+        var t = 0
+        while (!st.done[cell.index] && t < FIGHT_LIMIT) {
+            if (t % KINDLE_EVERY == 0) {
+                ra.transaction("smoke") {
+                    add(Invs.INV, Objs.RAIDS_WOOD, KINDLING)
+                    if (ra.inv(Invs.INV).total(Objs.TINDERBOX) == 0L) add(Invs.INV, Objs.TINDERBOX)
+                    true
+                }
+                val brazier =
+                    CoxMap.findLoc(ra, run, cell, Locs.RAIDS_ICEDEMON_BRAZIER_UNLIT)
+                        ?: CoxMap.findLoc(ra, run, cell, Locs.RAIDS_ICEDEMON_BRAZIER_LIT)
+                if (brazier != null) {
+                    ra.teleport(CoxMap.freeNear(ra, brazier.coord))
+                    a.input(ClientCommand.OpLoc(1, brazier.id, brazier.coord.x, brazier.coord.z, false))
+                }
+            }
+            for (n in ra.npcsWithin(a.coord, SCAN).filter { it.type == tp.symbols.Npcs.RAIDS_ICEDEMON_COMBAT }) {
+                ra.events.publish(DamageRequest(n, ra, HIT, HitStyle.MAGIC))
+            }
+            keepAlive()
+            t++
+        }
+    }
+
+    private fun crabs(run: RaidRun, cell: CoxCell) {
+        // CR1: the carving sends an orb that travels (the bounce geometry is not solved here).
+        val seen = HashSet<tp.util.CoordGrid>()
+        repeat(ORB_TICKS) {
+            keepAlive()
+            seen += ra.npcsWithin(a.coord, SCAN).filter { it.type in ORBS }.map { it.coord }
+        }
+        assertTrue(seen.size >= 2, "an orb flies in the crab room: $seen")
+        CoxRooms.complete(run, cell, ra)
+    }
+
+    private fun keepAlive() {
+        ra.hitpoints = KEEP_ALIVE
+        s.tick()
     }
 
     /** The loc that leads on from [cell]: the lobby / room passage, the floor hole or the Olm hole. */
@@ -226,13 +345,27 @@ class CoxSmokeScenario {
         const val KEEP_ALIVE = 255
         const val TRACE = 10
         const val ATTACK_OP = 2
+        const val COMBAT_STANCE_VARP = 43
+        const val CRUSH_STANCE = 2
+        const val GRUB_EVERY = 6
+        const val GRUBS = 28
+        const val KINDLE_EVERY = 5
+        const val KINDLING = 28
+        const val ORB_TICKS = 12
+        val ORBS =
+            setOf(
+                tp.symbols.Npcs.RAIDS_LASERCRABS_ENERGY_WHITE,
+                tp.symbols.Npcs.RAIDS_LASERCRABS_ENERGY_RED,
+                tp.symbols.Npcs.RAIDS_LASERCRABS_ENERGY_GREEN,
+                tp.symbols.Npcs.RAIDS_LASERCRABS_ENERGY_BLUE,
+            )
         val STYLES = listOf(HitStyle.MELEE, HitStyle.RANGED, HitStyle.MAGIC)
         val DEMOLISHED = setOf(tp.symbols.Npcs.RAIDS_STONEGUARDIANS_LEFT_DEAD, tp.symbols.Npcs.RAIDS_STONEGUARDIANS_RIGHT_DEAD)
         const val ATTACK_EVERY = 5
         const val MAX_XP = 13_034_431
 
-        /** Attack, defence, strength, hitpoints, ranged, prayer, magic, mining. */
-        val MAXED = intArrayOf(0, 1, 2, 3, 4, 5, 6, 14)
+        /** Attack, defence, strength, hitpoints, ranged, prayer, magic, firemaking, mining. */
+        val MAXED = intArrayOf(0, 1, 2, 3, 4, 5, 6, 11, 14)
 
         /** The prayer bit of Protect from Magic (prayer objs in enum 4956: param 1752 name, 630 bit). */
         val protectMagicBit: Int by lazy {

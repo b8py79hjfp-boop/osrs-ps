@@ -137,8 +137,8 @@ internal object CoxVespula : Boss(Npcs.RAIDS_VESPULA_FLYING, Npcs.RAIDS_VESPULA_
         npc.hitpoints = minOf(npc.maxHitpoints, npc.hitpoints + npc.maxHitpoints * TAKEOFF_HEAL / PERCENT)
     }
 
-    /** A grub's meter (ticks left), set by the sting; raids-cox counts it down and feeds it. */
-    val GRUB_METER = AttrKey<Int>("cox_grub_meter")
+    /** A grub's meter (ticks left), set by the sting; raids-cox's Feed fills it again. */
+    val GRUB_METER = tp.plugin.SharedAttrs.RAID_METER
 
     /** OPEN-VE6: the meter length. */
     const val GRUB_METER_FULL = 60

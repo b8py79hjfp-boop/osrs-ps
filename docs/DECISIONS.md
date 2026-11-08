@@ -1171,4 +1171,12 @@ means is not known.
   are dead. Spawn tiles are OPEN-CX32 (Tekton at his anvil, Vespula's portal at its template tile, the Guardians beside
   the exit doorway, the rest spread over the cell's floor). NPC stats follow the wiki calculator's CoX scaling (cox.md
   CX17a), applied through `SharedAttrs.RAID_SCALER` to summoned minions as well (`Bosses.summon(scale = true)`).
+- **Puzzle rooms:** thieving, tightrope, ice demon and crabs run their room rules in raids-cox (`CoxThieving`,
+  `CoxTightrope`, `CoxIceDemonRoom`, `CoxCrabs`) and their foes in content/combat (`CoxPuzzleFoes`). Each room's blocker
+  stands on the floor in front of its exit doorway and its tile is kept (it blocks the tile it is on). The crab orb flies
+  one tile a tick from the carving along the side whose run heads closest to the crystals (OPEN-PZ4); shared NPC state
+  between the two modules uses `SharedAttrs.RAID_METER / RAID_FOCUS / RAID_UNTIL` (attr keys compare by identity).
+- **Resource rooms** (`CoxResources` plugin: scavengers, shortcuts, farming, food, Herblore, kindling) follow
+  resources.md; the raid-made items in `CoxItems.RAID_ONLY` never leave the Chambers. Food and potion points use per-run
+  maker ledgers (the oldest maker of that item is credited first), since items carry no maker.
 

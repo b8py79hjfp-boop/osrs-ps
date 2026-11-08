@@ -124,7 +124,7 @@ internal object CoxRoomActions {
     }
 
     /** The meter key the Vespula fight reads (content/combat `CoxVespula.GRUB_METER`). */
-    private val GRUB_METER = tp.plugin.AttrKey<Int>("cox_grub_meter")
+    private val GRUB_METER = tp.plugin.SharedAttrs.RAID_METER
     private const val METER_FULL = 60
     private val STUNG_GRUBS = intArrayOf(Npcs.RAIDS_VESPULA_CATERPILLAR_SICKLY, Npcs.RAIDS_VESPULA_CATERPILLAR_INFECTED)
     private const val BLOSSOM = "Medivaemia blossom"
