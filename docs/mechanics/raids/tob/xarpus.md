@@ -86,6 +86,47 @@ everything else is `OPEN-XA<n>`.
 3 Jun 2021 modes added; 2 May 2019 and 16 May 2019 phase 1 changes and the small-team damage bug fix; 24 Jul 2024 burn; 25 Jun
 2025 air weakness; 3 Mar 2021 Dawnbringer drop on crystal use. No Xarpus entry after 25 Jun 2025 on the Page.
 
+## As implemented (content/combat TobXarpus.kt)
+
+Mode from the NPC id (`TobModes.of`). Entry damage = Normal / 2 (floor) where noted. Arena = offsets -5..7 x -6..8 from his
+spawn tile, level 1; "raiders" = living players there. One per-tick loop; it keeps the last 3 positions of every raider.
+
+- **Phase 0 (asleep):** no damage taken (`incoming` returns 0 for phases 0 and 1). The first tick a raider is in the arena starts
+  phase 1.
+- **Phase 1 (XA1, OPEN-XA1/XA4):** `transform(type + 1)` (static -> feeding), HP set to **75%** of max. With n = raiders in the arena at
+  that tick (1..5): total exhumeds Normal `7 / 9 / 12 / 15 / 18`, Hard `9 / 13 / 16 / 20 / 24`; a new one every `12 / 8 / 8 / 4 /
+  4` ticks; the first at tick + **8 + random(4)** (8..11). Party size of 5 uses the 4-player gap and heal (OPEN-XA1/XA4).
+  - Each exhumed: random tile in the arena (rerolled while under his footprint, with 1/20 chance to keep an under-him tile), scenery
+    32743 for **11** ticks (Hard **9**); first orb at its tick + **3**; from then every tick it is not covered by a raider
+    standing on its tile (`coord ==`), it fires an orb: graphic 1550, counter `missed++`, and a flat heal of `20 / 16 / 12 / 9 /
+    9` HP (index = raiders alive in the arena that tick, not the start count) landing `10 x d / 30 + 1` ticks later
+    (d = Chebyshev distance from his SW tile; capped at max HP). It is a flat HP amount, not a percentage of max HP (the wiki XA1
+    says "a percentage"). Xarpus is not hit by anything in this phase.
+  - **End:** all exhumeds spawned and gone, then **8** ticks after the last closed: phase 2 (`transform(type + 1)`, teleport
+    (-1, -1) for the larger footprint), HP kept, first spit at tick + **9**.
+  - **Hard:** at the start every tile of the two outermost layers of the arena is an acid pool (permanent), except the six entrance
+    tiles (rows z offset 7 and 8, x offset -1..1). The 3-tile clear radius around him is not modelled (**OPEN-XA6**).
+- **Phase 2 (XA2):** every tick, each raider standing under his footprint gets a guano graphic and **two** typeless hits of `3..7` (Entry
+  halved) landing +1, every tick they stay (no interruption of the spit; **OPEN-XA10**). Spit every **4** ticks while raiders exist: target
+  = the next raider in orb order (`RAID_ORDER`, unlisted names last), cycling by a spit counter; aimed at the tile that raider stood
+  on 2 ticks ago (oldest of the last 3 positions); anim 8059, projectile 1550-series acid spit (height 90), flight `30 + 30 x
+  max(1, d)` cycles, lands `(30 + 30d) / 30` ticks later. On landing, a **3 x 3** splash at the tile: every raider within 1 gets
+  poison with starting damage **2**, and the centre tile becomes a permanent acid pool (scenery). Then it splashes on to the
+  raiders after the target in orb order (no wrap-around): 1 if the target was first in order, else 2 (fewer when the order runs
+  out), each at that raider's locked tile one tick later (skipped if the same tile as the first). Only with a single raider in
+  the arena does it add one splash on a random arena tile. Not modelled: "everyone on one tile" random splash.
+  - **Pools:** each tick a raider stands on a pool tile (any pool, Hard outer ones too) takes typeless `4..8 x (100 + missed) / 100`
+    (floor, i.e. +1% per orb fired; **OPEN-XA4**), Entry halved after scaling, immediate (no delayed-hit rule for skipping over).
+- **Phase 3 (XA3, OPEN-XA7):** enters from phase 2 when `hp x 1000 / maxHp <= 250` (Entry **225**) and at least **3** ticks since the
+  last spit: he says "Screeeeech!", every raider gets "Xarpus begins to stare intently.", quadrant = random of 4 (NW/NE/SW/SE
+  by the raider being at-or-east and at-or-north of his centre tile `coord + size / 2`), first turn at tick + **9**, then every
+  **8** ticks to a different random quadrant (never the same twice). Spits stop; pools and guano continue. **Hard:** never rotates.
+  - **Retaliation:** every player hit received while in phase 3 from a player in the stared quadrant (Hard: the quadrant is first
+    set to the attacker's, so every hit) sends "Xarpus is staring in your direction and retaliates with a powerful attack!" and an
+    immediate typeless `50..75 x (100 + missed x 40 / 100) / 100` (integer maths, so +0.4% per orb; **OPEN-XA3** wording and
+    scaling); Entry halved. The hit on Xarpus itself is unchanged.
+- **Death:** plays `TOB_XARPUS_DEATH_A` only; the Dawnbringer (XA6), restores and chest are in raids-tob.
+
 ## Open list
 
 OPEN-XA1 exhumed counts per party size and what ends phase 1; OPEN-XA2 Entry HP (3,400 vs 520 base) and rounding for 4 / 3

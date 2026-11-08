@@ -87,6 +87,58 @@ Verzik; "Increased the damage of the ball attacks in Hard Mode" is not attribute
 orb tweak; 2 Aug 2018 consistent projectiles, shorter prayer lock; 21 Jun 2018 ball timing, message highlight, no stacked
 magic and ranged. No Sotetseg change after 1 Dec 2021 on the Page.
 
+## As implemented (content/combat TobSotetseg.kt)
+
+Mode from the NPC id (`TobModes.of`). Entry damage = Normal / 2 (floor) for melee and orbs and the death ball has its own Entry
+numbers; wrong-tile and tornado damage and the realm chip are not halved. HP is set by raids-tob `TobScaling`. Arena =
+offsets -4..9 x -19..8 from its spawn tile (same level); "raiders" = living players there.
+
+- **Wake (SO1):** asleep (non-combat id, no damage taken: `incoming` returns 0) until a raider stands at `z - spawn.z >= -17`
+  (north of the barrier row). Then `transform(type + 1)` to the combat id, `huntRange` 20, first attack at tick + **5**.
+  Each tick its Defence is raised to **100** if lower (the floor).
+- **Attack clock (SO2/SO3):** re-armed to tick + **5** on every attack; **10** after a death ball; **5** after a maze. No attack
+  while asleep or while a maze runs. Targets a player only.
+- **Melee (SO2):** when the engine says the victim is in melee range (`distance = false`): roll `0..45` (Entry `0..22`),
+  Protect from Melee = `raw / 2`, hit queued **+1** tick (typed melee; the roll is its own, no accuracy).
+- **Orb:** otherwise a ranged-distance attack: counts toward the 10; anim 8139, projectile 1606 (height 43, start 23, end 203),
+  lands **+6** ticks. At landing (skipped if the target is dying or a maze began): protected against magic = 0, else `0..50`
+  (Entry `0..25`); an unprotected hit disables protection prayers for **5** ticks (`disableProtection`). The bounce happens
+  whether or not the hit was protected: the (up to) two nearest other raiders within **9** (`distanceTo`, sorted by distance;
+  ties = list order) get one **red** (magic; end `36 + 30 x max(3, d)` cycles) and one **grey** (ranged; end 216), each landing
+  `end / 30` ticks later with the same damage rule against its own style, no further bounce. Magic-only first orb (the
+  first orb is always the magic one; the grey/red pairing is fixed by distance order, **OPEN-SO7**).
+- **Death ball (SO4):** when `balls >= 10` the next attack (melee included) is the ball: counter reset, anim 8139, all raiders get
+  the red message "`<name>` has discovered a large ball of energy coming their way...", target = a uniformly random raider
+  (not the melee victim), projectile 1604 end 480, impact graphic at the target's tile **at landing (+16)**. Sharers =
+  raiders within 1 tile of the target (3 x 3) at landing; damage total is fixed at the throw and split `total / sharers`
+  (floor), typeless, ignores prayer, not delayed further. Total: Normal / Hard `min(188, 47 x raiders)` (47 / 94 / 141 / 188 for
+  1..4+; **OPEN-SO6**; the code KDoc labels the 47 per raider "OPEN-SO4", a clash with this doc's SO4 = maze generation);
+  Entry 15 for 1 raider, **80** for 2+ (**OPEN-SO10**). Skipped if a maze begins before landing.
+- **Shadow realm (SO5):** `afterHit` starts a maze when `hp x 1000 <= maxHp x 666` and again at `x 333` (equal counts; at most
+  one per hit; the threshold is spent even if no raiders are in the arena at that moment). Runners: one uniformly random raider; Hard
+  with 2+ raiders = **all but the last** in raid (orb) order (unlisted names last). Runner(s) get "Sotetseg chooses you...", anim
+  1816 and teleport to the realm grid (offset +77, -14 from spawn, level +3) at the path's first tile; everyone else teleports to
+  the arena's south spot (+2, -17). The boss stops interacting. Hard does **not** divide the maze: every runner uses the same path
+  (**OPEN-SO3**).
+  - **Path (code label OPEN-SO5; this doc's SO4):** 14 wide x 15 deep grid; start x random 0..13 on row 0; each row a random
+    drift of -2..+2 (clamped), walked tile by tile on that row, then up to the next row, ending on row 14. The path is lit as scenery
+    (`TOB_SOTETSEG_LIGHTTILE`) on the realm tiles for 200 ticks; the arena shows a `TRIGGERED` tile for 1 tick under each runner.
+  - **Chip:** every **7** ticks of maze age each runner takes a drain graphic and `1..3` typeless damage landing **+2**.
+  - **Wrong tile (SO2):** a runner in the realm grid off the path, or an arena raider on the mirrored arena grid (-4, -15 from
+    spawn) off the path, takes every tick `hitpoints x 667 / 10000 + 15` (Entry `+ 11`), typeless, with a zap graphic; only
+    that player (the Page reading, **OPEN-SO2**).
+  - **Tornado (OPEN-SO8):** starts (index 0 of the path) when an arena raider is on grid row >= **3** (fourth row); removed when an
+    arena raider is on a row < 2 and no arena raider is on row >= 3. Each tick it moves one path index (the last is held), zaps
+    that arena tile and hits **50** typeless every raider within 1 tile of it. Since runners are not in the arena it never targets
+    them (the "only player" case of SO5 is not modelled, nor Hard's realm tornado).
+  - **End:** when a runner's grid row passes 14, or after **200** ticks (**OPEN-SO5 code label**: longest maze, not sourced), or
+    on Sotetseg's death: maze cleared, surviving runners teleport to the arena's south spot, Defence set back to its base level, ball
+    counter 0, next attack tick + 5 (4 Jun 2021 hotfix). Orbs and death balls that land during a maze do nothing.
+  - Not enforced: the KDoc "no damage while the maze is on"; `incoming` only checks asleep, so raiders left in the arena can still
+    damage it.
+- **Not scripted here:** Hard's two simultaneous big balls, the shadow-realm Defence "reset on transport" (it is reset at maze
+  end), death sequence/book (T+3) and chest (raids-tob).
+
 ## Open list
 
 OPEN-SO1 bone drops; OPEN-SO2 who the wrong-tile blast damages and its radius; OPEN-SO3 Hard numbers (ball damage, shared
