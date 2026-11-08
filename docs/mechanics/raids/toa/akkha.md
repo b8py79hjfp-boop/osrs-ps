@@ -5,7 +5,7 @@ Date anchor 2026-11-03; cache 2757. Sources read 2026-11-08 (labels used below):
 - OSRS Wiki pages (copies in `/tmp/claude-0/ref/wiki-toa/`): "Akkha" (Page), "Akkha's Shadow" (Shadow), "Unstable Orb" (Orb), "Orb of
   Darkness" (OrbD), "Tombs of Amascut/Strategies" Akkha section and "Akkha's Invocations" (Strat), "Tombs of Amascut" with its
   changelog (Main; the copies `Tombs_of_Amascut.txt`, `Raid_level.txt` and `Invocations.txt` are byte-identical, so "Main" also
-  covers the Raid Level and Invocations tables), update post "Summer Sweep Up: Combat" 25 Jun 2025 (Sweep).
+  covers the Raid Level and Invocations tables), update posts "Summer Sweep Up: Combat" 25 Jun 2025 (Sweep) and "Tombs of Amascut Drop Mechanics & Osmumten's Fang" (Drops).
 - Cache 2757: `cache-dump config npc|loc|obj|seq|spotanim|struct`. NPC `stats` array order is attack, defence, strength,
   hitpoints, ranged, magic (it agrees with the wiki infobox for Akkha). NPC params, read against the infobox on Akkha, Kephri
   and the scarabs: 3 = magic attack bonus, 4 = ranged attack bonus, 5 / 6 / 7 / 8 = stab / slash / crush / magic defence, 10 =
@@ -180,8 +180,8 @@ landing for Akkha, and no source gives a damage number by raid level for any Akk
   other bosses, and the magic-defence drain of the Eye of Ayak is permanent (Strat). Rate and rule are **OPEN-AK17**. Eye
   of Ayak attacks no longer turn Akkha (or the shadows) invisible (14 Jan 2026).
 - **AK14 Death and rewards.** Drops: Het's capture (once, only if not banked) and Eldritch ashes (obj 27223, only to the
-  player who dealt the most damage) (Page). No NPC point multiplier is listed for Akkha (Main lists 0.5x for three scarabs and
-  2.5x for the Het obelisk), so 1x; the per-room cap is 20,000 room points (Main).
+  player who dealt the most damage) (Page). No NPC point multiplier is listed for Akkha (Drops lists 0.5x for three scarabs and
+  2.5x for the Het obelisk), so 1x is assumed; the per-room cap is 20,000 room points (Main).
 
 ## Attack reference
 
