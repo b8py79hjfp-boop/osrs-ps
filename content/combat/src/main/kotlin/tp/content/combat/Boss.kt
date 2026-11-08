@@ -123,6 +123,17 @@ internal object Bosses {
             CoxDeathly,
             CoxOlm,
             CoxOlmClaw,
+            ToaBaba,
+            ToaBabaBaboon,
+            ToaZebak,
+            ToaZebakJug,
+            ToaAkkha,
+            ToaAkkhaShadow,
+            ToaKephri,
+            ToaKephriChildren,
+            ToaKephriSwarm,
+            ToaWardens,
+            ToaWardensParts,
         )
         ) {
             for (id in boss.ids) byType[id] = boss
@@ -232,15 +243,31 @@ public class BossScripts : ContentPlugin {
             boss.spawned(this)
         }
         onLogin { Dragonfire.onLogin(this) }
+        // ToA Deadly Prayers (toa.md TA14): each hit from a raid NPC drains floor(0.2 x damage) prayer (not self-inflicted).
+        events.on<tp.plugin.HitEvent> { e ->
+            val p = e.target as? PlayerRef ?: return@on
+            val npc = e.source as? NpcRef ?: return@on
+            if (e.damage > 0 && ToaKit.has(npc, ToaKit.DEADLY_PRAYERS)) BossCombat.drainPrayer(p, e.damage / DEADLY_DIVISOR)
+        }
         // TFA Ocellus censers (OC3): "Interact" on an active censer.
         for (id in TfaOcellus.CENSERS) onOpLoc(id, 1) { loc -> TfaOcellus.useCenser(player, id, loc.coord) }
         // ToB VZ1 / TB24: Verzik's "Talk-to" (op1) starts her fight; "Quick-start" (op2) needs a completion.
+        // ToA Zebak (ZB8): jugs "Push" (op1), "Pull" (op3), "Hit" (op4); ZB10 the rock steps' "Climb-up".
+        for (jug in intArrayOf(tp.symbols.Npcs.TOA_ZEBAK_JUG, tp.symbols.Npcs.TOA_ZEBAK_JUG_ROLLING)) {
+            onOpNpc(jug, 1) { npc -> ToaZebak.moveJug(player, npc, pull = false) }
+            onOpNpc(jug, 3) { npc -> ToaZebak.moveJug(player, npc, pull = true) }
+            onOpNpc(jug, 4) { npc -> ToaZebak.hitJug(npc).also { npc.despawn() } }
+        }
+        onOpLoc(tp.symbols.Locs.TOA_ZEBAK_CLIMBING_ROCK, 1) { loc -> ToaZebak.climb(player, loc.coord) }
         for (id in TobVerzik.INITIALS) {
             onOpNpc(id, 1) { npc -> TobVerzik.start(npc, player, quick = false) }
             onOpNpc(id, 2) { npc -> TobVerzik.start(npc, player, quick = true) }
         }
     }
 }
+
+/** TA14: Deadly Prayers drains a fifth of each hit. */
+private const val DEADLY_DIVISOR = 5
 
 /** Prayer outcome against a boss attack. */
 internal enum class PrayerRule {

@@ -132,6 +132,9 @@ internal object Consumables {
 
     /** Mix name, the potion whose effect it has (as named in [potionsByName]; missing = heal only, OPEN-E6), heal. */
     @Suppress("MagicNumber") // the Wiki table's heal column
+    /** ToA Dehydration's "health-restoring potions" (toa.md TA15): Saradomin brews and Guthix rest (cache names). */
+    private val HEALTH_POTIONS = listOf("Saradomin brew", "Guthix rest")
+
     private val MIXES: List<Triple<String, String, Int>> =
         listOf(
             Triple("Attack mix", "Attack potion", 3),
@@ -170,6 +173,15 @@ internal object Consumables {
 
     fun consume(player: PlayerRef, slot: Int, obj: Int, interrupts: Boolean = true): Boolean {
         val food = foods[obj]
+        if (food != null || potions[obj] != null) {
+            val name = player.objName(obj)
+            val check = tp.plugin.ConsumeCheck(player, obj, food = food != null, restoresHealth = HEALTH_POTIONS.any { name.startsWith(it) })
+            player.events.publish(check)
+            check.refusal?.let {
+                player.message(it)
+                return true
+            }
+        }
         if (food != null) {
             if (player.duelRule(
                     tp.plugin.DuelRules.NO_FOOD,

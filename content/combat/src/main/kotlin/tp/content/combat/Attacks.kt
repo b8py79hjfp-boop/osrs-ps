@@ -40,7 +40,7 @@ internal object Attacks {
     private fun prepare(player: PlayerRef, target: EntityRef, type: AttackType, category: WeaponCategory): Boolean {
         val blowpipe = Blowpipe.isBlowpipe(player.worn(Wear.WEAPON))
         // GE62 Wiki "Toxic blowpipe": attack speed 3 against monsters, 4 (a shortbow's) against players.
-        player.setAttackClock(player.tick + player.attackSpeed() + if (blowpipe && target is PlayerRef) 1 else 0)
+        player.setAttackClock(player.tick + player.attackSpeed() + (if (blowpipe && target is PlayerRef) 1 else 0) + ToaKit.iceSlow(player))
         val salamander = category === Weapons.SALAMANDER
         var ok = !salamander || Salamanders.useTar(player)
         if (ok && salamander && type.style == CombatStyle.MAGIC) {

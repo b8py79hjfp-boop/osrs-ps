@@ -238,7 +238,7 @@ internal object PoweredStaves {
         player.setSaved(key(staff), left - 1)
         // SP50: a stored Zorya's flow buff: +150% accuracy, +60% damage and a 2-tick attack.
         val buffed = staff.family == ZORYA && Zorya.use(player)
-        player.setAttackClock(player.tick + if (buffed) ZORYA_BUFFED_SPEED else staff.speed)
+        player.setAttackClock(player.tick + (if (buffed) ZORYA_BUFFED_SPEED else staff.speed) + ToaKit.iceSlow(player))
         val weapon = player.worn(Wear.WEAPON)
         player.anim(staff.castAnim.takeIf { it >= 0 } ?: WeaponData.of(weapon)?.attackAnims?.firstOrNull { it >= 0 } ?: Seqs.HUMAN_CASTING)
         if (staff.castSpot >= 0) player.spotAnim(staff.castSpot, height = CAST_HEIGHT)

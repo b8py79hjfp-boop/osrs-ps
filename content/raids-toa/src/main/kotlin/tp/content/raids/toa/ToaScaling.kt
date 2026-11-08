@@ -44,6 +44,11 @@ internal object ToaScaling {
             npc.overrideStats(levels)
             npc.hitpoints = hp
         }
+        // The fights read these (content/combat cannot see raids-toa): raid level, this NPC's path level, the invocations.
+        npc[SharedAttrs.RAID_LEVEL] = level
+        npc[SharedAttrs.RAID_PATH_LEVEL] = ToaNpcs.pathOf(type)?.let { p -> run?.let { ToaFlow.pathLevel(it, p) } }
+            ?: run?.let { r -> ToaFlow.state(r)?.path?.let { ToaFlow.pathLevel(r, it) } } ?: 0
+        run?.let { r -> ToaFlow.state(r)?.modifierNames?.let { npc[SharedAttrs.RAID_MODIFIERS] = it } }
         val permille = PER_MILLE + LEVEL_PERMILLE * level
         if (type !in ToaNpcs.OVERLORDS) npc[SharedAttrs.RAID_DEFENCE_PERMILLE] = permille
         npc[SharedAttrs.RAID_ACCURACY_PERMILLE] = permille

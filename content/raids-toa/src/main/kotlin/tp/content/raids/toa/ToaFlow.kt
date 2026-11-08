@@ -16,10 +16,13 @@ import tp.symbols.Locs
 
 /** Per-run ToA state (run.content). */
 internal class ToaState(
-    /** TA10: the raid level fixed at the start. */
-    val raidLevel: Int,
+    /** TA10: the raid level fixed at the start; at completion the time-limit penalty lowers it (TA12, [ToaLoot.prepare]). */
+    var raidLevel: Int,
     val words: IntArray,
 ) {
+    /** TA35-TA41: the points ledger and the figures of the summary. */
+    val ledger = ToaLedger()
+
     /** TA25: per path (ToaPath order), 0..6. */
     val pathLevels = IntArray(ToaPath.entries.size)
 
@@ -39,8 +42,21 @@ internal class ToaState(
     /** The tick the current room started (room splits). */
     var roomStart = -1L
 
+    /** WD1: the members who have spoken to Osmumten ("Begin"), and whether the Wardens' fight began. */
+    val begun = HashSet<String>()
+    var wardensStarted = false
+
+    /** A room wiped with RetryRoom: ToaRooms restarts it once the party stands again. */
+    var retryRoom: String? = null
+
     /** TA12: the tick of the Wardens' final blow (the raid timer's end), -1 before. */
     var endTick = -1L
+
+    /** The active invocations' cache names (the fights read them through SharedAttrs.RAID_MODIFIERS). */
+    var modifierNames: Set<String> = emptySet()
+
+    /** The Helpful Spirit's visits, rolls and claims (TA51-TA52). */
+    val supplies = ToaSupplyState()
 
     fun pathDone(p: ToaPath): Boolean = p.boss in done
 }
@@ -130,6 +146,7 @@ public class ToaFlow : ContentPlugin {
                 player.message(LEADER_FIRST)
                 return
             }
+            ToaSupplies.warnForfeit(player, run)
             st.path = path
             if (st.timerStart < 0) st.timerStart = player.tick
             Raids.enterRoom(player, run, path.puzzle)
@@ -210,6 +227,7 @@ public class ToaFlow : ContentPlugin {
             player.message(LEADER_FIRST)
             return
         }
+        ToaSupplies.warnForfeit(player, run)
         st.path = null
         Raids.enterRoom(player, run, ToaRaid.WARDENS)
     }
@@ -282,7 +300,13 @@ public class ToaFlow : ContentPlugin {
             val st = state(run) ?: newState(run, any).also { run.content = it }
             st.path = null
             st.roomStart = any.tick
-            if (run.roomsTaken.size == 1) for (p in run.presentPlayers(any)) p.message(ENTER_MESSAGE)
+            if (run.roomsTaken.size == 1) {
+                for (p in run.presentPlayers(any)) {
+                    p.message(ENTER_MESSAGE)
+                    // TA64: with a time-limit invocation the target time follows as its own message.
+                    ToaRecords.targetTimeMessage(st, p)?.let(p::message)
+                }
+            }
         }
 
         private fun newState(run: RaidRun, any: EntityRef): ToaState {
@@ -292,6 +316,7 @@ public class ToaFlow : ContentPlugin {
             // TA25: Pathseeker / Pathfinder / Pathmaster add 1 / 2 / 3 to every path at the start.
             val initial = ToaInvocations.activeValue(leader, words, ToaInvocations.CAT_PATH_LEVEL) ?: 0
             st.pathLevels.fill(initial)
+            st.modifierNames = ToaInvocations.active(leader, words).map { it.name }.toSet()
             // TA11: the attempts invocation's value (10 / 5 / 3 / 1, param 1299).
             st.attempts = ToaInvocations.activeValue(leader, words, ToaInvocations.CAT_ATTEMPTS) ?: 0
             return st
@@ -300,9 +325,12 @@ public class ToaFlow : ContentPlugin {
         fun roomStarted(run: RaidRun, any: EntityRef, room: String) {
             val st = state(run) ?: return
             st.roomStart = any.tick
+            ToaRooms.spawnBoss(any, run, room)
+            ToaPuzzles.roomStarted(run, any, room)
             ToaPath.ofRoom(room)?.let { st.path = it }
             // TA64: the boss rooms announce the challenge (RL's `Challenge started: <boss>.`).
-            val boss = ToaPath.entries.firstOrNull { it.boss == room }?.bossName ?: if (room == ToaRaid.WARDENS) WARDENS_NAME else null
+            // The Wardens' line comes when the fight begins (after Osmumten, WD1), from the fight itself.
+            val boss = ToaPath.entries.firstOrNull { it.boss == room }?.bossName
             if (boss != null) for (p in run.presentPlayers(any)) p.message("Challenge started: $boss.")
         }
 
@@ -332,7 +360,9 @@ public class ToaFlow : ContentPlugin {
                 // TA12 / TA22: the time ends at the final blow (the run completes when the burial chamber starts, as in
                 // ToB); the white teleport crystal leads there (OPEN-TA33: where it appears; assumed the arrival tile).
                 st.endTick = now
-                any.addLoc(Locs.TOA_TELEPORT_CRYSTAL_CONTINUE_WARDENS, run.at(ToaRaid.WARDENS_ENTRY), CENTREPIECE, 0)
+                // WD46: the white crystal appears where the Warden stood (the dying NPC when the fight reports it).
+                val at = (any as? tp.plugin.NpcRef)?.coord ?: run.at(ToaRaid.WARDENS_ENTRY)
+                any.addLoc(Locs.TOA_TELEPORT_CRYSTAL_CONTINUE_WARDENS, at, CENTREPIECE, 0)
                 return
             }
             val path = ToaPath.entries.firstOrNull { it.boss == room } ?: return
@@ -357,7 +387,8 @@ public class ToaFlow : ContentPlugin {
         fun toTomb(player: PlayerRef) {
             val run = runOf(player) ?: return
             if (ToaRaid.WARDENS !in (state(run)?.done ?: return)) return
-            if ((run.state as? RunState.InRoom)?.room?.id == ToaRaid.TOMB) {
+            // Once the raid is complete the crystal only moves a latecomer: entering the room again would reopen the run.
+            if ((run.state as? RunState.InRoom)?.room?.id == ToaRaid.TOMB || run.state == RunState.Completed) {
                 player.teleport(Raids.entryOf(run, requireNotNull(run.raid.rooms[ToaRaid.TOMB]), player))
             } else {
                 Raids.enterRoom(player, run, ToaRaid.TOMB)
@@ -394,11 +425,19 @@ public class ToaFlow : ContentPlugin {
             return if (st.wipes >= st.attempts) WipePolicy.FailRaid(storeInv = Invs.TOA_RECLAIM) else WipePolicy.RetryRoom
         }
 
-        /** The burial chamber: the run is complete (TA22; rewards and records in milestone 6). */
+        /**
+         * The burial chamber: the run is complete (TA22). Once only: the Wardens block of the chat (TA62), the final raid
+         * level and the reward inputs (TR28) go first, then raids-core rolls and pays the rewards and adds the total time
+         * and the kill count; the chests and the summary follow.
+         */
         fun tombStarted(run: RaidRun, any: EntityRef) {
             val st = state(run) ?: return
             st.path = null
+            if (st.ledger.completed) return
+            ToaRecords.wardensBlock(run, any)
+            ToaLoot.prepare(run, any, st)
             Raids.complete(any, run, endedAt = st.endTick.takeIf { it >= 0 } ?: any.tick)
+            ToaTomb.completed(run, any)
         }
 
         private const val MAX_PATH_LEVEL = 6

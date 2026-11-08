@@ -148,6 +148,15 @@ public object SharedAttrs {
      * attack rolls x (250 + RL) / 250, damage up to +150%), applied by the combat formulas: [RAID_DEFENCE_PERMILLE] on
      * the defence roll against it, [RAID_ACCURACY_PERMILLE] on its attack roll, [RAID_DAMAGE_PERMILLE] on its max hit.
      */
+    /** NPC attr: the run's raid level (ToA TA10), for fights whose mechanics read it. */
+    public val RAID_LEVEL: AttrKey<Int> = AttrKey("raid_level")
+
+    /** NPC attr: the level of the path this NPC belongs to (ToA TA25, 0..6). */
+    public val RAID_PATH_LEVEL: AttrKey<Int> = AttrKey("raid_path_level")
+
+    /** NPC attr: the names of the run's active modifiers (ToA invocations, cache names such as "Overclocked"). */
+    public val RAID_MODIFIERS: AttrKey<Set<String>> = AttrKey("raid_modifiers")
+
     public val RAID_DEFENCE_PERMILLE: AttrKey<Int> = AttrKey("raid_defence_permille")
     public val RAID_ACCURACY_PERMILLE: AttrKey<Int> = AttrKey("raid_accuracy_permille")
     public val RAID_DAMAGE_PERMILLE: AttrKey<Int> = AttrKey("raid_damage_permille")

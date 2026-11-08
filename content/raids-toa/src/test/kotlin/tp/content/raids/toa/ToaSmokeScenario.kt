@@ -53,7 +53,7 @@ class ToaSmokeScenario {
             op(nexusDoor.first, nexusDoor.second)
             assertEquals(path.puzzle, room(run), "$path: in the puzzle; ${a.messages.takeLast(2)}")
             assertEquals(path.hudPath, ra.varbit(Varbits.TOA_CLIENT_CURRENT_PATH))
-            ToaFlow.roomDone(ra, run, path.puzzle)
+            solvePuzzle(run, path)
             crossTo(run, path, continueDoor.first, continueDoor.second)
             assertEquals(path.boss, room(run), "$path: in the boss room; ${a.messages.takeLast(2)}")
             assertTrue(a.messages.any { it == "Challenge started: ${path.bossName}." }, "TA64 boss start line")
@@ -70,6 +70,31 @@ class ToaSmokeScenario {
         op(Locs.TOA_TELEPORT_CRYSTAL_CONTINUE_WARDENS, ToaRaid.WARDENS_ENTRY)
         assertEquals(RunState.Completed, run.state, "the raid is complete in the burial chamber")
         assertEquals(1, ra.varp(tp.symbols.Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT_ENTRY), "TA60 Entry KC")
+    }
+
+    /**
+     * Crondis is solved through real ops (fill at two waterfalls, water the palm). Apmeken (eight baboon waves need real
+     * combat), Het (a drafted mirror route and Mining the Seal) and Scabaras (five stepping puzzles with random layouts)
+     * cannot be driven blind through ops here, so their room reports itself done as before.
+     */
+    private fun solvePuzzle(run: RaidRun, path: ToaPath) {
+        if (path != ToaPath.CRONDIS) {
+            ToaFlow.roomDone(ra, run, path.puzzle)
+            return
+        }
+        for (i in WATERFALLS.indices) {
+            ra.teleport(run.at(WATERFALL_STANDS[i]))
+            s.tick(2)
+            val fall = run.at(WATERFALLS[i])
+            a.input(ClientCommand.OpLoc(1, Locs.TOA_CRONDIS_WATER_SOURCE, fall.x, fall.z, false))
+            s.tick(WATER_TICKS)
+            ra.teleport(run.at(PALM_STAND))
+            s.tick(2)
+            val palm = ra.npcsWithin(run.at(PALM_AT), PALM_RADIUS).firstOrNull { it.displayName.startsWith("Palm") } ?: break
+            a.input(ClientCommand.OpNpc(1, palm.index, false))
+            s.tick(WATER_TICKS)
+        }
+        assertTrue("crondis" in requireNotNull(ToaFlow.state(run)).done, "the palm is fully grown; ${a.messages.takeLast(3)}")
     }
 
     private fun room(run: RaidRun): String? = (run.state as? RunState.InRoom)?.room?.id
@@ -115,6 +140,12 @@ class ToaSmokeScenario {
     private companion object {
         const val SEED = 1L
         const val WALK = 40
+        const val WATER_TICKS = 6
+        const val PALM_RADIUS = 4
+        val WATERFALLS = listOf(CoordGrid(3926, 5250), CoordGrid(3940, 5250))
+        val WATERFALL_STANDS = listOf(CoordGrid(3927, 5255), CoordGrid(3941, 5255))
+        val PALM_AT = CoordGrid(3934, 5278)
+        val PALM_STAND = CoordGrid(3933, 5277)
         const val LEVEL = 65
         const val WALK_THE_PATH_KEY = 11
         const val PATHSEEKER_KEY = 12

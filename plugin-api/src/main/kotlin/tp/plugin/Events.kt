@@ -99,7 +99,28 @@ public class EmotePerformed(public val player: PlayerRef, public val name: Strin
  * Asks the combat module to cure [player]'s poison and give [immunityTicks] of immunity (content potions such as the
  * Chambers of Xeric antipoisons; the poison state belongs to combat).
  */
-public class CurePoisonRequest(public val player: PlayerRef, public val immunityTicks: Int) : Event
+public class CurePoisonRequest(public val player: PlayerRef, public val immunityTicks: Int, public val curesVenom: Boolean = false) : Event
+
+/**
+ * Asked before a special attack's energy is checked or spent (content/combat): listeners may change [tenths] (energy in
+ * tenths of a percent, the varp's unit); ToA's Overly Draining and liquid adrenaline (toa.md TA15).
+ */
+public class SpecialCostQuery(public val player: PlayerRef, public val special: String, public var tenths: Int) : Event
+
+/**
+ * Asked before [player] eats ([food]) or drinks [obj] (content/combat): a listener that sets [refusal] stops it with that
+ * message; [restoresHealth] marks Saradomin brews and Guthix rest (ToA's On a Diet / Dehydration, toa.md TA15).
+ */
+public class ConsumeCheck(
+    public val player: PlayerRef,
+    public val obj: Int,
+    public val food: Boolean,
+    public val restoresHealth: Boolean,
+    public var refusal: String? = null,
+) : Event
+
+/** Delays [player]'s next attack by [ticks] (content/combat; ToA nectar's "small attack delay"). */
+public class AttackDelayRequest(public val player: PlayerRef, public val ticks: Int) : Event
 
 /** [player] ate ([drink] false) or drank a dose of [obj] (content/combat food and potions; e.g. Wintertodt warmth). */
 public class Consumed(public val player: PlayerRef, public val obj: Int, public val drink: Boolean) : Event

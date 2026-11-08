@@ -23,8 +23,12 @@ internal object SpecialEffects {
         ) {
             maxOf(UNLEASH_MIN, player.varp(Varps.SA_ENERGY))
         } else {
-            row.energy
+            energy(player, row)
         }
+
+    /** A special's energy after listeners (ToA Overly Draining / liquid adrenaline) had their say. */
+    fun energy(player: PlayerRef, row: SpecialRow): Int =
+        tp.plugin.SpecialCostQuery(player, row.name, row.energy).also { player.events.publish(it) }.tenths
 
     /** SP5: an instant attack special fires now at the current target, ignoring the attack clock. */
     fun instantAttack(player: PlayerRef) {
@@ -36,7 +40,7 @@ internal object SpecialEffects {
     /** One special attack from [player] at [target] (the energy is already spent). */
     @Suppress("CyclomaticComplexMethod") // style and visuals per special
     fun perform(player: PlayerRef, target: EntityRef, row: SpecialRow, stance: Stance, type: AttackType, category: WeaponCategory) {
-        val energyUsed = if (row.name == "Unleash") player[UNLEASH_SPENT] ?: UNLEASH_MIN else row.energy
+        val energyUsed = if (row.name == "Unleash") player[UNLEASH_SPENT] ?: UNLEASH_MIN else energy(player, row)
         if (!SpecialRules.targetAllowed(player, target, row)) {
             player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) + cost(player, row))
             return Attacks.playerAttack(player, target)

@@ -74,13 +74,13 @@ internal object Specials {
             player.message("This weapon does not have a special attack.")
             return
         }
-        if (player.varp(Varps.SA_ENERGY) < row.energy) {
+        if (player.varp(Varps.SA_ENERGY) < SpecialEffects.energy(player, row)) {
             player.message(NO_ENERGY)
             return
         }
         if (!SpecialRules.ready(player, row)) return
         if (row.style == SpecStyle.INSTANT && !row.instantAttack()) {
-            if (SpecialEffects.buff(player, row)) player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - row.energy)
+            if (SpecialEffects.buff(player, row)) player.setVarp(Varps.SA_ENERGY, player.varp(Varps.SA_ENERGY) - SpecialEffects.energy(player, row))
             return
         }
         player.setVarp(Varps.SA_ATTACK, 1)

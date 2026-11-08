@@ -137,9 +137,14 @@ internal object ToaRaid {
             // TA48 (26 Mar 2025): a logout holding an escape crystal is safe.
             safeLogout = { p -> p.inv(Invs.INV).let { inv -> (0 until inv.size).any { inv.obj(it) == ESCAPE_CRYSTAL } } }
             claimInv = Invs.TOA_CHESTS
+            raidOnlyItems = ToaPuzzles.RAID_ONLY + ToaSupplies.RAID_ONLY
             scaling = { ctx, npc -> ToaScaling.apply(ctx, npc) }
-            contribution = ContributionRules(normalisedRooms = false)
-            rewards = { _, _ -> emptyMap() }
+            // TA35-TA39: raids-core's own damage ledger is off (multiplier 0): ToaPoints keeps the room points apart,
+            // joins them at room completion and leaves RaidMember.points as the Total; the death penalty is 20%, min 1,000.
+            contribution =
+                ContributionRules(normalisedRooms = false, multiplier = { 0.0 }, deathPenalty = { m, _ -> ToaPoints.deathPenalty(m) })
+            // TR1-TR28 (lobby-rewards.md): one unique per raid, commons, tertiaries and the challenge rewards.
+            rewards = { snap, rng -> ToaLoot.roll(snap, rng) }
             records =
                 RecordsDef(
                     kcVarp = Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT,
@@ -153,6 +158,8 @@ internal object ToaRaid {
                         }
                     },
                     pbKey = "raids.toa.pb",
+                    // TA62: `m:ss`, two decimals with the precise-timing option.
+                    formatTime = { p, ticks -> ToaRecords.formatTime(p, ticks) },
                     kcVarpByMode =
                         mapOf(
                             NORMAL to Varps.TOTAL_COMPLETED_TOMBSOFAMASCUT,
