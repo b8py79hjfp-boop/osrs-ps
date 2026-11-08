@@ -197,3 +197,13 @@ public fun PlayerRef.worldPlayers(): List<PlayerRef> {
  */
 public val PlayerRef.economyToolsAllowed: Boolean
     get() = rank.atLeast(Rank.DEVELOPER) && commandsConfig.allows(tp.util.commands.Impact.ECONOMY)
+
+/**
+ * Runs [line] (no `::`) through the same pipeline as a typed command (commands brief §4, §8: the interface carries no
+ * rights of its own), as [source]. Null when this world has no command pipeline.
+ */
+public fun PlayerRef.runCommandLine(line: String, source: Source = Source.INTERFACE): CommandDispatcher.Outcome? =
+    (p.world.content as? PluginContent)?.dispatcher?.dispatch(this, line, source)
+
+/** The viewer's last ten commands, newest first (the interface's Recent view, §5). */
+public fun PlayerRef.recentCommands(): List<String> = (p.world.content as? PluginContent)?.dispatcher?.recentOf(this).orEmpty()

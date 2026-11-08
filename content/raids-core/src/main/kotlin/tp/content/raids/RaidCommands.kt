@@ -227,8 +227,8 @@ public class RaidCommands : ContentPlugin {
 
     /** `::raid pb <player>`: personal bests by mode and team size. */
     private fun pb(p: PlayerRef, who: String): CommandResult {
-        val name = who.trim().replace('_', ' ')
-        val target = p.onlinePlayer(name) ?: return CommandResult.Failed("$name is not on this world.")
+        val name = who.trim()
+        val target = named(p, name) ?: return CommandResult.Failed("$name is not on this world.")
         val rows =
             Raids.of(p).allDefinitions().flatMap { d ->
                 val prefix = d.records.pbKey + "."
@@ -244,7 +244,7 @@ public class RaidCommands : ContentPlugin {
 
     private fun pbRemove(p: PlayerRef, words: List<String>): CommandResult {
         if (words.size < PB_REMOVE_WORDS) return CommandResult.Failed("Usage: ::raid pb remove <player> <raid> <mode> <size>")
-        val target = p.onlinePlayer(words[1].replace('_', ' ')) ?: return CommandResult.Failed("${words[1]} is not on this world.")
+        val target = named(p, words[1]) ?: return CommandResult.Failed("${words[1]} is not on this world.")
         val def = Raids.of(p).definition(words[2]) ?: return CommandResult.Failed("No raid '${words[2]}'.")
         val r = def.records
         val bucket = words[PB_SIZE_WORD]
@@ -380,8 +380,8 @@ public class RaidCommands : ContentPlugin {
     private fun points(p: PlayerRef, rest: String): CommandResult {
         val words = rest.trim().split(' ').filter { it.isNotEmpty() }
         val setAt = words.indexOf("set")
-        val name = (if (setAt >= 0) words.take(setAt) else words).joinToString(" ").ifBlank { p.username }.replace('_', ' ')
-        val r = Raids.of(p).runOf(name) ?: return CommandResult.Failed("$name is not in a raid.")
+        val name = (if (setAt >= 0) words.take(setAt) else words).joinToString(" ").ifBlank { p.username }
+        val r = find(p, name) ?: return CommandResult.Failed("$name is not in a raid.")
         val m = r.member(name) ?: return CommandResult.Failed("$name is not in a raid.")
         if (setAt < 0) return CommandResult.Done("$name has ${"%.1f".format(m.points)} points.")
         val n = words.getOrNull(setAt + 1)?.toDoubleOrNull() ?: return CommandResult.Failed("Usage: ::raid points [player] set <n>")
@@ -393,7 +393,7 @@ public class RaidCommands : ContentPlugin {
     private fun setKc(p: PlayerRef, rest: String): CommandResult {
         val w = rest.trim().split(' ').filter { it.isNotEmpty() }
         if (w.size < SETKC_WORDS) return CommandResult.Failed("Usage: ::raid setkc <player> <raid> <mode> <n>")
-        val target = p.onlinePlayer(w[0].replace('_', ' ')) ?: return CommandResult.Failed("${w[0]} is not on this world.")
+        val target = named(p, w[0]) ?: return CommandResult.Failed("${w[0]} is not on this world.")
         val def = Raids.of(p).definition(w[1]) ?: return CommandResult.Failed("No raid '${w[1]}'.")
         val n = w[SETKC_N].toIntOrNull()?.takeIf { it >= 0 } ?: return CommandResult.Failed("The count must be a number.")
         val varp = def.records.kcVarpByMode[w[2]] ?: def.records.kcVarp
@@ -418,10 +418,14 @@ public class RaidCommands : ContentPlugin {
     private fun find(p: PlayerRef, which: String): RaidRun? {
         val raids = Raids.of(p)
         val key = which.trim().removePrefix("#")
-        return key.toLongOrNull()?.let(raids::run) ?: raids.runOf(key.replace('_', ' '))
+        // OSRS names treat spaces and underscores alike (§2): try the name as typed, then with spaces.
+        return key.toLongOrNull()?.let(raids::run) ?: raids.runOf(key) ?: raids.runOf(key.replace('_', ' '))
     }
 
     private fun online(who: PlayerTarget): PlayerRef? = (who as? PlayerTarget.Online)?.player
+
+    /** An online player by name, as typed or with underscores as spaces (§2). */
+    private fun named(p: PlayerRef, name: String): PlayerRef? = p.onlinePlayer(name) ?: p.onlinePlayer(name.replace('_', ' '))
 
     private fun room(r: RaidRun): String =
         when (val s = r.state) {
