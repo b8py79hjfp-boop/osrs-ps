@@ -103,7 +103,8 @@ public class McpPlugin extends Plugin
 			return;
 		}
 		ClientTools tools = new ClientTools(client, clientThread, itemManager, drawManager, events, chat);
-		List<ToolDef> defs = tools.build();
+		List<ToolDef> defs = new java.util.ArrayList<>(tools.build());
+		defs.addAll(new ActionTools(client, clientThread, chat).build());
 		McpServer s = new McpServer(BIND_HOST, config.port(), config.token(), "runelite-mcp", VERSION,
 			INSTRUCTIONS, defs);
 		try

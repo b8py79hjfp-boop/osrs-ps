@@ -57,12 +57,23 @@ Steps:
 3. Open the plugin list, search **MCP Server**, switch it on (default off, RuneLite remembers it). The log then shows
    `MCP server listening on http://127.0.0.1:8765/mcp (N tools, token not required)`.
 
-**Unverified:** this has not been run against a live client yet (the author's sandbox has none). Everything above is
-from source. If the `Side-loading` line is missing, either the jar is in the wrong home directory (RSProx may run
-with a different `user.home`, check the `Java VM arguments`/`RuneLite ... starting up, args:` lines in the log for
-`--developer-mode`) or the RSProx build differs from 2.7.4-SNAPSHOT. If a class fails to load, the error is logged as
-`error sideloading plugin`. If `NoClassDefFoundError: com/sun/net/httpserver/HttpServer` appears, the JVM that runs
-the client lacks the `jdk.httpserver` module (RuneLite's own OAuth session code needs it too, so this is unlikely).
+**Verified 2026-11-09** against our own fork (not RSProx) in a cloud container under Xvfb: the plugin side-loads,
+the server answers on 8765 and every tool below was exercised in game. If the `Side-loading` line is missing, the jar is
+in the wrong home directory (check `RUNELITE_DIR`: `~/.runelite` for stock RuneLite and RSProx, `~/.tickperfect` for our
+fork), or developer mode is off. If a class fails to load, the error is logged as `error sideloading plugin`.
+
+### Our release fork (`client/runelite`), the easy way
+
+The fork refuses every plugin that is not on its allowlist, sideloaded ones included, and keeps its files in
+`~/.tickperfect`. `tools/runelite-mcp/dev-client.sh` builds a dev copy of the fork jar
+(`.data/client/dev/client-dev.jar`) with the plugin added to the allowlist, installs the plugin into
+`~/.tickperfect/sideloaded-plugins`, switches it on, and starts the client with `-ea --developer-mode`:
+
+```bash
+tools/runelite-mcp/dev-client.sh
+```
+
+On a machine without a display, add `--xvfb` (virtual display `:99`). The release jar itself is never changed.
 
 ### Plain RuneLite (without RSProx), for reference
 
@@ -113,6 +124,19 @@ part, except `screenshot` (PNG image part plus a size note). Failures come back 
 | `get_events` | Event ring buffer with tick numbers: `MenuOptionClicked`, `VarbitChanged`, `WidgetLoaded`, `WidgetClosed`, `GameStateChanged`, `StatChanged`, `ItemContainerChanged`, `ChatMessage`. Params `since_seq`, `types`, `limit` |
 | `get_varps` | Given varp ids / varbit ids, or all non-zero varps |
 | `screenshot` | PNG of the game canvas (next rendered frame), optional `scale` / `max_width` |
+
+Play-through tools (`ActionTools`): the same clicks and key presses a player makes, at a higher level.
+
+| Tool | What it does |
+|---|---|
+| `interact` | The nearest NPC / object / ground item / player by `name` (exact preferred) or `id`, optional `kind`, `x`/`y`, and an `option` text (or `op` slot); sends the matching menu action, e.g. `{name:'Bank booth', option:'Bank'}`. Ground items use the default "Take" (op 3) unless `op` is given (RuneLite 1.13.6 has no ground-op accessor) |
+| `use_item_on` | The "Use" flow: inventory `item_id`/`slot` on another inventory item (`target_item_id`/`target_slot`) or on the nearest NPC/object/ground item/player (`target_name`/`target_id`, `target_kind`) |
+| `get_dialog` | The open chatbox dialogue: speaker and text, numbered options (interface 219), `can_continue`, and input prompts ("Enter amount:") |
+| `continue_dialog` | "Click here to continue" (space), or `option` by number or text |
+| `type_input` | Types into an open prompt and presses Enter (amounts, names, searches) |
+| `press_key` | One key by name (`ESCAPE`, `SPACE`, `F1`, arrows ...) or character; `hold_ms` for camera keys |
+| `login` / `logout` | Legacy login from the login screen (waits for `LOGGED_IN`); logout with the logout tab's button (waits for the login screen) |
+| `wait` | Until `ticks` passed and/or a new `message`, an open `widget_group`, a tile `x`/`y`, `idle`, or a `varp`/`varbit` `value`; returns `timed_out` |
 
 ### Menu action cheat sheet (for `menu_action`)
 
@@ -175,7 +199,8 @@ Another: `run_command` `{"command": "tele 3222 3218"}`, then `get_events` filter
 | `McpPlugin.java` | `@PluginDescriptor` entry point, config wiring, event capture |
 | `McpConfig.java` | `@ConfigGroup("mcp")` settings |
 | `McpServer.java` | HTTP + JSON-RPC (Streamable HTTP, JSON replies only). JDK + Gson only |
-| `ClientTools.java` | The tools; client-thread bridge |
+| `ClientTools.java` | The observation and low-level tools; client-thread bridge |
+| `ActionTools.java` | The play-through tools (interact, use_item_on, dialogues, keys, login/logout, wait) |
 | `EventLog.java`, `ToolResult.java`, `ToolDef.java`, `Schema.java`, `GameNames.java` | helpers |
 | `src/smoke/java/.../SmokeMain.java` | Smoke harness, not in the jar. `serve <port> [token]` runs the fake server for manual `curl` |
 
