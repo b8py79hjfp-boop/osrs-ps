@@ -1,0 +1,62 @@
+[clientscript,teleports_nav](component $nav, string $data, int $active)
+// Server -> client: the categories, "label;code;count" separated by "|". Entry n draws children n * 5 .. n * 5 + 4; the
+// transparent cover at n * 5 + 4 takes the click.
+cc_deleteall($nav);
+def_int $n = 0;
+def_int $more = 1;
+def_int $id = 0;
+def_int $y = 0;
+def_string $row = "";
+while ($more = 1) {
+    $row = ~commands_row($data, $n);
+    if (string_length($row) = 0 | $n = 10) {
+        $more = 0;
+    } else {
+        $id = calc($n * 5);
+        $y = calc($n * 36);
+        cc_create($nav, ^iftype_rectangle, $id);
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 34, ^setsize_minus, ^setsize_abs);
+        cc_setfill(true);
+        if ($n = $active) {
+            cc_setcolour(0x6b5a40);
+        } else {
+            cc_setcolour(0x3e3529);
+        }
+        cc_create($nav, ^iftype_graphic, calc($id + 1));
+        cc_setposition(5, calc($y + 5), ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(24, 24, ^setsize_abs, ^setsize_abs);
+        cc_setgraphic(~teleports_icon(~commands_field($row, 1)));
+        cc_create($nav, ^iftype_text, calc($id + 2));
+        cc_setposition(34, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(60, 34, ^setsize_abs, ^setsize_abs);
+        cc_settextfont(p12_full);
+        cc_settextalign(^settextalign_left, ^settextalign_centre, 0);
+        cc_settextshadow(true);
+        if ($n = $active) {
+            cc_setcolour(0xffffff);
+        } else {
+            cc_setcolour(0xff981f);
+        }
+        cc_settext(~commands_field($row, 0));
+        cc_create($nav, ^iftype_text, calc($id + 3));
+        cc_setposition(94, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(20, 34, ^setsize_abs, ^setsize_abs);
+        cc_settextfont(p11_full);
+        cc_settextalign(^settextalign_right, ^settextalign_centre, 0);
+        cc_settextshadow(true);
+        cc_setcolour(0x9f8b6b);
+        cc_settext(~commands_field($row, 2));
+        cc_create($nav, ^iftype_rectangle, calc($id + 4));
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 34, ^setsize_minus, ^setsize_abs);
+        cc_setcolour(0xffffff);
+        cc_setfill(true);
+        cc_settrans(255);
+        cc_setop(1, "View");
+        cc_setopbase(append("<col=ff9040>", ~commands_field($row, 0)));
+        cc_setonmouseover("commands_hover(event_com, event_comsubid, 225)");
+        cc_setonmouseleave("commands_hover(event_com, event_comsubid, 255)");
+        $n = calc($n + 1);
+    }
+}

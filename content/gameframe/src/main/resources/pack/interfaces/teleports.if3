@@ -1,0 +1,146 @@
+# ::teleport (docs/mechanics/teleport-menu.md). Three panes inside a stone border: the categories on the left (drawn by
+# teleports_nav), the searchable destination list in the middle (teleports_rows) and the selected destination on the right
+# (teleports_detail) with Teleport and Favourite buttons. The server owns every row and only learns which one was clicked.
+[[interface]]
+name = "interface.teleports"
+width = 512
+height = 334
+on_load = ["clientscript.teleports_init", "component.teleports:border", "component.teleports:searchbar", "component.teleports:searchtext", "component.teleports:list", "component.teleports:list_scrollbar", "component.teleports:prevbtn", "component.teleports:telebtn", "component.teleports:favadd", "component.teleports:favremove"]
+
+[[component]]
+name = "border"
+type = "layer"
+x = 0
+y = 0
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "nav"
+type = "layer"
+x = 10
+y = 34
+width = 118
+height = 252
+
+[[component]]
+name = "prevbtn"
+type = "layer"
+x = 10
+y = 292
+width = 118
+height = 30
+options = ["Teleport"]
+
+[[component]]
+name = "prevtext"
+type = "text"
+x = 10
+y = 276
+width = 118
+height = 16
+text = ""
+font = "small"
+h_align = "center"
+v_align = "center"
+color = "#9F8B6B"
+
+[[component]]
+name = "searchbar"
+type = "layer"
+x = 134
+y = 34
+width = 222
+height = 24
+
+[[component]]
+name = "searchtext"
+type = "text"
+x = 140
+y = 34
+width = 210
+height = 24
+options = ["Search"]
+text = "Search all teleports..."
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#9F8B6B"
+
+[[component]]
+name = "heading"
+type = "text"
+x = 136
+y = 60
+width = 218
+height = 16
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "list"
+type = "layer"
+x = 134
+y = 78
+width = 206
+height = 244
+
+[[component]]
+name = "status"
+type = "text"
+x = 134
+y = 78
+width = 206
+height = 244
+text = ""
+font = "regular"
+h_align = "center"
+v_align = "center"
+color = "#9F8B6B"
+
+[[component]]
+name = "list_scrollbar"
+type = "layer"
+x = 340
+y = 78
+width = 16
+height = 244
+
+[[component]]
+name = "detail"
+type = "layer"
+x = 362
+y = 34
+width = 140
+height = 216
+
+[[component]]
+name = "telebtn"
+type = "layer"
+x = 362
+y = 256
+width = 140
+height = 30
+options = ["Teleport"]
+
+[[component]]
+name = "favadd"
+type = "layer"
+x = 362
+y = 292
+width = 140
+height = 30
+options = ["Add favourite"]
+
+[[component]]
+name = "favremove"
+type = "layer"
+x = 362
+y = 292
+width = 140
+height = 30
+options = ["Remove favourite"]

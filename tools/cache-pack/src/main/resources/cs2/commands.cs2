@@ -33,6 +33,7 @@
 [command,if_setscrollsize](int $width, int $height, component $com)
 [command,if_setscrollpos](int $x, int $y, component $com)
 [command,if_getwidth](component $com)(int)
+[command,if_getscrolly](component $com)(int)
 
 [command,string_length](string $text)(int)
 [command,substring](string $text, int $start, int $end)(string)

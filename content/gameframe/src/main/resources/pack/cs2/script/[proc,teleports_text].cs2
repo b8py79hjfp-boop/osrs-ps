@@ -1,0 +1,9 @@
+[proc,teleports_text](component $layer, int $id, int $x, int $y, int $width, int $height, fontmetrics $font, int $colour, string $text, int $halign, int $valign)
+cc_create($layer, ^iftype_text, $id);
+cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize($width, $height, ^setsize_abs, ^setsize_abs);
+cc_settextfont($font);
+cc_settextalign($halign, $valign, 0);
+cc_settextshadow(true);
+cc_setcolour($colour);
+cc_settext($text);

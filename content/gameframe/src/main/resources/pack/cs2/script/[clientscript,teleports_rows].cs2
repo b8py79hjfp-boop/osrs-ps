@@ -1,0 +1,103 @@
+[clientscript,teleports_rows](component $list, component $scrollbar, component $status, string $data, string $empty, int $scroll)
+// Server -> client: one list of rows, "|"-separated; fields ";"-separated: name;right;icon;favourite;kind;selected.
+// kind 0 = information, 1 = destination, 2 = heading, 3 = destination in the Wilderness (red right column). Row n draws
+// children n * 7 .. n * 7 + 6; the transparent cover at n * 7 + 6 takes the click (the server uses sub / 7).
+// $scroll -1 keeps where the player had scrolled (a redraw after a click), otherwise scrolls there (a new list).
+def_int $keep = if_getscrolly($list);
+if ($scroll >= 0) {
+    $keep = $scroll;
+}
+cc_deleteall($list);
+def_int $slot = 0;
+def_int $more = 1;
+def_int $id = 0;
+def_int $y = 0;
+def_string $row = "";
+def_string $kind = "";
+def_int $selected = 0;
+while ($more = 1) {
+    $row = ~commands_row($data, $slot);
+    if (string_length($row) = 0 | $slot = 200) {
+        $more = 0;
+    } else {
+        $kind = ~commands_field($row, 4);
+        $selected = 0;
+        if (compare(~commands_field($row, 5), "1") = 0) {
+            $selected = 1;
+        }
+        $id = calc($slot * 7);
+        $y = calc($slot * 24);
+        cc_create($list, ^iftype_rectangle, $id);
+        cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(0, 24, ^setsize_minus, ^setsize_abs);
+        cc_setfill(true);
+        if ($selected = 1) {
+            cc_setcolour(0x75603f);
+        } else if (compare($kind, "2") = 0) {
+            cc_setcolour(0x2b2318);
+        } else if (calc($slot % 2) = 0) {
+            cc_setcolour(0x3e3529);
+        } else {
+            cc_setcolour(0x463c2f);
+        }
+        if (compare($kind, "1") = 0 | compare($kind, "3") = 0) {
+            cc_create($list, ^iftype_graphic, calc($id + 1));
+            cc_setposition(3, calc($y + 2), ^setpos_abs_left, ^setpos_abs_top);
+            cc_setsize(20, 20, ^setsize_abs, ^setsize_abs);
+            cc_setgraphic(~teleports_icon(~commands_field($row, 2)));
+            if ($selected = 1) {
+                ~teleports_cell($list, calc($id + 2), 27, $y, 108, 0xffffff, ~commands_fit(~commands_field($row, 0), 108), ^settextalign_left);
+            } else {
+                ~teleports_cell($list, calc($id + 2), 27, $y, 108, 0xff981f, ~commands_fit(~commands_field($row, 0), 108), ^settextalign_left);
+            }
+            if (compare($kind, "3") = 0) {
+                ~teleports_cell($list, calc($id + 3), 136, $y, 48, 0xff4040, ~commands_fit(~commands_field($row, 1), 48), ^settextalign_right);
+            } else {
+                ~teleports_cell($list, calc($id + 3), 136, $y, 48, 0x9f8b6b, ~commands_fit(~commands_field($row, 1), 48), ^settextalign_right);
+            }
+            if (compare(~commands_field($row, 3), "1") = 0) {
+                cc_create($list, ^iftype_graphic, calc($id + 4));
+                cc_setposition(187, calc($y + 4), ^setpos_abs_left, ^setpos_abs_top);
+                cc_setsize(16, 16, ^setsize_abs, ^setsize_abs);
+                cc_setgraphic("worldswitcher_stars,1");
+            }
+            if ($selected = 1) {
+                cc_create($list, ^iftype_rectangle, calc($id + 5));
+                cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+                cc_setsize(0, 24, ^setsize_minus, ^setsize_abs);
+                cc_setcolour(0xff981f);
+                cc_setfill(false);
+            }
+            // A transparent cover over the row takes the clicks and lights the row on hover.
+            cc_create($list, ^iftype_rectangle, calc($id + 6));
+            cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
+            cc_setsize(0, 24, ^setsize_minus, ^setsize_abs);
+            cc_setcolour(0xffffff);
+            cc_setfill(true);
+            cc_settrans(255);
+            cc_setop(1, "Select");
+            cc_setop(2, "Teleport");
+            if (compare(~commands_field($row, 3), "1") = 0) {
+                cc_setop(3, "Remove favourite");
+            } else {
+                cc_setop(3, "Add favourite");
+            }
+            cc_setopbase(append("<col=ff9040>", ~commands_field($row, 0)));
+            cc_setonmouseover("commands_hover(event_com, event_comsubid, 225)");
+            cc_setonmouseleave("commands_hover(event_com, event_comsubid, 255)");
+        } else if (compare($kind, "2") = 0) {
+            ~teleports_cell($list, calc($id + 2), 6, $y, 192, 0xffff00, ~commands_fit(~commands_field($row, 0), 192), ^settextalign_left);
+        } else {
+            ~teleports_cell($list, calc($id + 2), 6, $y, 192, 0xffffff, ~commands_fit(~commands_field($row, 0), 192), ^settextalign_left);
+        }
+        $slot = calc($slot + 1);
+    }
+}
+if ($slot = 0) {
+    if_settext($empty, $status);
+} else {
+    if_settext("", $status);
+}
+if_setscrollsize(0, calc($slot * 24), $list);
+if_setscrollpos(0, $keep, $list);
+~scrollbar_vertical($scrollbar, $list, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

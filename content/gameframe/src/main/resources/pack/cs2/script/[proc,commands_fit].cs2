@@ -1,5 +1,6 @@
 [proc,commands_fit](string $text, int $width)(string)
-def_int $textwidth = parawidth($text, 0, p11_full);
+// One-line width: wrapped at 1000 px no row text breaks (a wrap width of 0 measured only the widest word).
+def_int $textwidth = parawidth($text, 1000, p11_full);
 if ($textwidth <= $width) {
     return($text);
 }

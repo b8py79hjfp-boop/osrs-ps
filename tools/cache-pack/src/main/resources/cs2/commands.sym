@@ -28,6 +28,7 @@
 2120	if_setscrollsize
 2100	if_setscrollpos
 2502	if_getwidth
+2601	if_getscrolly
 4117	string_length
 4118	substring
 4121	string_indexof_string

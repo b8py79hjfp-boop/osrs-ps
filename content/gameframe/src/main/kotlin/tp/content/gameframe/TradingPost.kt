@@ -49,7 +49,11 @@ public class TradingPost : ContentPlugin {
         onButton(Components.Trading_Post.MINE) { click -> mineClick(click) }
         onButton(Components.Trading_Post.COLLECTBTN) { collect() }
         onButton(Components.Trading_Post.SELLBTN) { sell() }
-        onModalClosed(Interfaces.TRADING_POST) { this[STATE] = null }
+        onModalClosed(Interfaces.TRADING_POST) {
+            this[STATE] = null
+            // Closed while its search box had the keyboard: give the chatbox its input back.
+            clientScript(Clientscripts.CHAT_RESTORE_INPUT)
+        }
     }
 
     /** Per-player view state while the interface is open. */

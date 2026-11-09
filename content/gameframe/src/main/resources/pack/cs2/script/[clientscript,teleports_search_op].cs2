@@ -1,0 +1,12 @@
+[clientscript,teleports_search_op](component $searchtext)
+~chatdefault_stopinput;
+if_setop(1, "", $searchtext);
+if_setonop(null, $searchtext);
+if_setonmouseover(null, $searchtext);
+if_setonmouseleave(null, $searchtext);
+if_setcolour(0xff981f, $searchtext);
+~searchbar_set_text($searchtext);
+if_setonkey("teleports_search_key(event_keycode, event_keychar, $searchtext)", $searchtext);
+if (~on_mobile = true) {
+    ~keyboard_show(0, 50);
+}

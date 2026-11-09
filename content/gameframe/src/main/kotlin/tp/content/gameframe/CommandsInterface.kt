@@ -34,7 +34,11 @@ public class CommandsInterface : ContentPlugin {
         events.on<RankChanged> { change ->
             if (change.player.rank.ordinal < change.before.ordinal && change.player.isOpen(Interfaces.COMMANDS)) change.player.closeModal()
         }
-        onModalClosed(Interfaces.COMMANDS) { this[CMD_STATE] = null }
+        onModalClosed(Interfaces.COMMANDS) {
+            this[CMD_STATE] = null
+            // Closed while its search box had the keyboard: give the chatbox its input back.
+            clientScript(Clientscripts.CHAT_RESTORE_INPUT)
+        }
         onScriptTrigger(Components.Commands.SEARCHTEXT, "iis") { trigger -> search(trigger.args[2] as? String ?: "") }
         // Focusing the search box is client-side (its onop script); op 1 is enabled so the click arrives and is ignored.
         onButton(Components.Commands.SEARCHTEXT) { }

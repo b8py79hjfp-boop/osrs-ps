@@ -1,0 +1,3 @@
+[clientscript,teleports_search_stop]
+// Before a server dialog opens: leaves search typing so the keys go to the dialog.
+~teleports_search_idle(teleports:searchtext);

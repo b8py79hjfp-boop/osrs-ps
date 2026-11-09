@@ -1,0 +1,25 @@
+[proc,teleports_icon](string $code)(graphic)
+// Category codes the server puts in a row: f favourites, r recent, c cities, a raids, b bosses, s skilling, m misc,
+// w Wilderness (red skull). Sprites from the cache (docs/mechanics/teleport-menu.md TM4).
+if (compare($code, "f") = 0) {
+    return("worldswitcher_stars,1");
+}
+if (compare($code, "r") = 0) {
+    return("side_icons,38");
+}
+if (compare($code, "c") = 0) {
+    return("worldmap_icon_large,0");
+}
+if (compare($code, "a") = 0) {
+    return("icon_activities_25x25,9");
+}
+if (compare($code, "b") = 0) {
+    return("icon_activities_25x25,3");
+}
+if (compare($code, "s") = 0) {
+    return("side_icons,1");
+}
+if (compare($code, "w") = 0) {
+    return("icon_activities_25x25,2");
+}
+return("icon_activities_25x25,10");

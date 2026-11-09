@@ -22,6 +22,7 @@ private val USAGE =
       find-locs <name>                     every placement of locs with this exact name (x z level id)
       banker-spawns <file>                 banker tiles behind bank booths (level x z)
       worldmap-sections <out>              world map pieces: display square/zone -> game square/zone, per map
+      group-raw <archive> <dir> <group...> file 0 of each group as <dir>/<group>.bin (sprites: archive 8)
       group <archive> <group>              every file of a raw group, in hex
       spawn-check <spawns.tsv> <out>       NPC spawns on tiles an NPC can't stand on, with the nearest free tile
     default cache dir: ${defaultCacheDir()}
@@ -104,6 +105,18 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
 
         "worldmap-sections" -> {
             WorldMapSections.write(cache, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
+        }
+
+        "group-raw" -> {
+            val archive = intArg(args, 0, "archive")
+            val dir = Path.of(args.getOrNull(1) ?: throw UsageException("missing output dir"))
+            java.nio.file.Files
+                .createDirectories(dir)
+            for (group in args.drop(2).map(String::toInt)) {
+                val files = cache.readFiles(archive, group) ?: continue
+                java.nio.file.Files
+                    .write(dir.resolve("$group.bin"), files.data[0])
+            }
         }
 
         "group" -> {

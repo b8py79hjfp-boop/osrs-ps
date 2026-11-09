@@ -1,0 +1,9 @@
+[proc,teleports_cell](component $list, int $id, int $x, int $y, int $width, int $colour, string $text, int $align)
+cc_create($list, ^iftype_text, $id);
+cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize($width, 24, ^setsize_abs, ^setsize_abs);
+cc_settextfont(p11_full);
+cc_settextalign($align, ^settextalign_centre, 0);
+cc_settextshadow(true);
+cc_setcolour($colour);
+cc_settext($text);

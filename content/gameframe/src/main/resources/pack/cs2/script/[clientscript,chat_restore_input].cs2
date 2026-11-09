@@ -1,0 +1,4 @@
+[clientscript,chat_restore_input]
+// Server -> client when a searchable interface closes (teleports, commands, trading post): a search box that still had
+// the keyboard (~chatdefault_stopinput) would otherwise leave the chatbox unable to type.
+~chatdefault_restoreinput;

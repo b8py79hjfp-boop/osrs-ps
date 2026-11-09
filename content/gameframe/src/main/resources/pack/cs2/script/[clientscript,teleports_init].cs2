@@ -1,0 +1,9 @@
+[clientscript,teleports_init](component $border, component $searchbar, component $searchtext, component $list, component $scrollbar, component $prev, component $tele, component $favadd, component $favremove)
+~stoneborder($border, "Teleports", 0);
+~searchbar_create($searchbar, null);
+%settings_search_string = "";
+~teleports_search_idle($searchtext);
+~button_setup(null, $prev, "Last teleport");
+~button_setup(null, $tele, "Teleport");
+~button_setup(null, $favadd, "Add favourite");
+~button_setup(null, $favremove, "Remove favourite");
