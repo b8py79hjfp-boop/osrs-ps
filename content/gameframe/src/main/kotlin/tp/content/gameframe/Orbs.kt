@@ -21,7 +21,14 @@ public class Orbs : ContentPlugin {
 
         // O5: the orb opens `worldmap` (595) after client script 1749 sets its markers (varcs `worldmap_youarehere` 188,
         // `worldmap_clue` 1078, `worldmap_gravestone` 401; packed coords, -1 = none).
-        onButton(Components.Orbs.WORLDMAP, OP_FLOATING_MAP) { openWorldMap() }
+        // Op 2 is the orb's left-click: "Floating World Map" while the map is shut, "Close Floating panel" while open.
+        onButton(Components.Orbs.WORLDMAP, OP_FLOATING_MAP) {
+            if (isOpen(Interfaces.WORLDMAP)) closeModal() else openWorldMap()
+        }
+        // OPEN-O5b: no fullscreen map yet, so "Fullscreen World Map" opens the floating one rather than nothing.
+        onButton(Components.Orbs.WORLDMAP, OP_FULLSCREEN_MAP) {
+            if (!isOpen(Interfaces.WORLDMAP)) openWorldMap()
+        }
         onButton(Components.Worldmap.CLOSE) {
             if (isOpen(Interfaces.WORLDMAP)) closeModal()
         }
@@ -42,8 +49,14 @@ public class Orbs : ContentPlugin {
         /** Sets the world map's "you are here", clue and gravestone markers (varcs 188 / 1078 / 401). */
         const val CS_WORLDMAP_MARKERS = 1749
 
-        /** World map orb op 1 "Floating World Map" (op 3 "Fullscreen World Map" is OPEN-O5b). */
-        const val OP_FLOATING_MAP = 1
+        /**
+         * World map orb op 2, its left-click: "Floating World Map", or "Close Floating panel" while the map is open (the
+         * orb's ops are set by client script; seen in the client's menu entries, 2026-11-09).
+         */
+        const val OP_FLOATING_MAP = 2
+
+        /** World map orb op 3 "Fullscreen World Map" (OPEN-O5b). */
+        const val OP_FULLSCREEN_MAP = 3
         const val NO_MARKER = -1
 
         /** Packed coordinate: level << 28 | x << 14 | z. */
