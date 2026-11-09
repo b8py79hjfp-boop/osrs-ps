@@ -15,19 +15,13 @@ public class TeleportTablets : ContentPlugin {
         onItemOp("Break") { click -> breakTablet(click) }
     }
 
-    private fun PlayerRef.breakTablet(click: ButtonClick, confirmed: Boolean = false) {
+    private fun PlayerRef.breakTablet(click: ButtonClick) {
         val inv = inv(Invs.INV)
         if (click.slot !in 0 until inv.size || inv.obj(click.slot) != click.obj) return
         val spell = SpellTeleports.BY_TABLET[click.obj] ?: return
         if (isDelayed || Teleports.isBusy(this)) return
         val denial = Teleports.denial(this, Teleports.WILDERNESS_LIMIT)
         if (denial != null) return message(denial)
-        // T15: above Wilderness level 20 the tablet is kept until the player says yes.
-        if (!confirmed &&
-            Teleports.isDeep(spell.destination)
-        ) {
-            return Teleports.askDeep(this, spell.destination) { breakTablet(click, confirmed = true) }
-        }
         if (!transaction("break tablet") { removeAt(Invs.INV, click.slot, click.obj, 1) }) return
         Teleports.start(this, TABLET_STAGES, spell.style.ticks, spell.destination)
     }

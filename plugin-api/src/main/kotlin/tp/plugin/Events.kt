@@ -152,16 +152,9 @@ public class OfferRemains(
 /**
  * Teleport [player] to [to] with the standard spell-cast visuals and checks (Tele Block, boss-lair delay, Wilderness
  * level above [wildernessLimit], one teleport at a time): content/magic `Teleports` handles it (teleports.md T7) for
- * other modules' devices (house portals, jewellery boxes, `::home`, the teleport menu). [denied] holds the refusal message
- * when it was refused. [confirmed]: the caller already asked the player about a destination above Wilderness level 20
- * (teleports.md T15); otherwise the handler asks first and the request completes later ([handled] true, [denied] null).
+ * other modules' devices (house portals, jewellery boxes). [denied] holds the refusal message when it was refused.
  */
-public class TeleportRequest(
-    public val player: PlayerRef,
-    public val to: tp.util.CoordGrid,
-    public val wildernessLimit: Int = 20,
-    public val confirmed: Boolean = false,
-) : Event {
+public class TeleportRequest(public val player: PlayerRef, public val to: tp.util.CoordGrid, public val wildernessLimit: Int = 20) : Event {
     public var handled: Boolean = false
     public var denied: String? = null
 }

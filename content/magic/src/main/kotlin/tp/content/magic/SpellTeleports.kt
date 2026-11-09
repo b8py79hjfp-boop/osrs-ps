@@ -19,8 +19,8 @@ internal object Book {
 
 /**
  * A rune-costing teleport spell (OSRS Wiki spell pages, cited per row in teleports.md). [tablet] is the matching magic
- * tablet obj (-1 = none), [unlock] the quest or unlock the Wiki requires (teleports.md OPEN-TP5). A destination above
- * Wilderness level 20 asks first (teleports.md T15).
+ * tablet obj (-1 = none), [unlock] the quest or unlock the Wiki requires (teleports.md OPEN-TP5), [deepWarning] the
+ * "Deep Wilderness" confirmation of Ice Plateau Teleport.
  */
 internal class TeleportSpell(
     val component: Int,
@@ -32,6 +32,7 @@ internal class TeleportSpell(
     val style: CastStyle,
     val tablet: Int = -1,
     val unlock: String? = null,
+    val deepWarning: Boolean = false,
 )
 
 /** Rune-costing teleport spells of the standard, ancient and lunar spellbooks, cast from the spellbook tab. */
@@ -48,18 +49,6 @@ public class SpellTeleports : ContentPlugin {
                 r.player.message(denial)
                 return@on
             }
-            if (!r.confirmed && Teleports.isDeep(r.to)) {
-                // T15: ask first; the rules are checked again on Yes (time has passed).
-                Teleports.askDeep(r.player, r.to) {
-                    val again = Teleports.denial(this, r.wildernessLimit)
-                    if (again != null) {
-                        message(again)
-                    } else if (!Teleports.isBusy(this)) {
-                        Teleports.start(this, CastStyle.STANDARD, r.to)
-                    }
-                }
-                return@on
-            }
             Teleports.start(r.player, CastStyle.STANDARD, r.to)
         }
         for (spell in SPELLS) onButton(spell.component, OP_CAST) { cast(spell, confirmed = false) }
@@ -74,8 +63,8 @@ public class SpellTeleports : ContentPlugin {
         if (level(MAGIC) < spell.level) return message("You need a Magic level of ${spell.level} to cast this spell.")
         val denial = Teleports.denial(this, Teleports.WILDERNESS_LIMIT)
         if (denial != null) return message(denial)
-        if (!confirmed && Teleports.isDeep(spell.destination)) {
-            Teleports.askDeep(this, spell.destination) { cast(spell, confirmed = true) }
+        if (spell.deepWarning && !confirmed) {
+            choiceDialog(DEEP_WILDERNESS_WARNING, listOf("Yes", "No")) { pick -> if (pick == 1) cast(spell, confirmed = true) }
             return
         }
         if (!transaction("teleport runes") { SpellRunes.take(this, this@cast, spell.runes) }) {
@@ -98,6 +87,9 @@ public class SpellTeleports : ContentPlugin {
          * spell that has an [TeleportSpell.unlock] (nothing can satisfy it yet); it exists to flip once quests do.
          */
         const val ENFORCE_UNLOCKS = false
+
+        /** OPEN-TP1: the Wiki says Ice Plateau Teleport "warns the player ... with an option to abort" but gives no text. */
+        const val DEEP_WILDERNESS_WARNING = "You are about to teleport into the Deep Wilderness. Continue?"
 
         /**
          * Destination of Teleport to House: no player-owned houses exist, so this is our Lumbridge respawn point
@@ -400,6 +392,7 @@ public class SpellTeleports : ContentPlugin {
                     CoordGrid(2975, 3938, 0),
                     CastStyle.LUNAR,
                     unlock = "Lunar Diplomacy",
+                    deepWarning = true,
                 ),
             ) + arceuusSpells()
 

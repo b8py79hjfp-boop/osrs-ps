@@ -72,21 +72,6 @@ internal object Teleports {
     fun isBusy(player: PlayerRef): Boolean = player[BUSY] == true
 
     /**
-     * T15: a destination above [WILDERNESS_LIMIT] (where no spell or jewellery teleports out) needs a confirmation first,
-     * whatever the teleport (spell, tablet, jewellery, portal, menu).
-     */
-    fun isDeep(destination: CoordGrid): Boolean = tp.plugin.WildernessArea.level(destination) > WILDERNESS_LIMIT
-
-    /** Asks about [destination] (T15) and runs [onYes] when the player agrees; nothing is spent before the answer. */
-    fun askDeep(player: PlayerRef, destination: CoordGrid, onYes: PlayerRef.() -> Unit) {
-        val level = tp.plugin.WildernessArea.level(destination)
-        player.choiceDialog(
-            "Teleport into level $level Wilderness? You can't teleport out from there.",
-            listOf("Yes, teleport into the Wilderness.", "No."),
-        ) { pick -> if (pick == 1) onYes() }
-    }
-
-    /**
      * Why [player] can't teleport now, or null (teleports.md T4): Tele Block first, then the Wilderness level against
      * [wildernessLimit]. Both are read at the click only (OPEN-TP2).
      */
