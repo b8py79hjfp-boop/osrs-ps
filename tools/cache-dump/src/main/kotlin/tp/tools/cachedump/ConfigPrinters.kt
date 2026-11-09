@@ -161,7 +161,16 @@ private fun ConfigPrinters.npc(c: Configs) {
                 "params" to t.params,
             )
         },
-        { t -> listOf("name" to t.name, "size" to t.size, "combatLevel" to t.combatLevel, "standSeq" to t.standSeq, "ops" to t.ops) },
+        { t ->
+            listOf(
+                "name" to t.name,
+                "size" to t.size,
+                "combatLevel" to t.combatLevel,
+                "standSeq" to t.standSeq,
+                "ops" to t.ops,
+                "multiNpcs" to t.multiNpcs,
+            )
+        },
     )
 }
 

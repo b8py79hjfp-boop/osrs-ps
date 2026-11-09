@@ -10,10 +10,13 @@ import tp.util.CoordGrid
  */
 public class Spawns : ContentPlugin {
     override fun ContentScope.register() {
-        onWorldStart {
+        onWorldStartLast {
             // Headless scenarios turn the world's NPCs off (golden tests need empty ground).
-            if (System.getProperty("tp.worldSpawns") == "false") return@onWorldStart
+            if (System.getProperty("tp.worldSpawns") == "false") return@onWorldStartLast
             val text = Spawns::class.java.getResource("npc-spawns.tsv")?.readText() ?: error("npc-spawns.tsv missing")
+            // SP3e: NPCs plugins placed (quest NPCs, minigame staff) win over the table's copy of the same NPC nearby.
+            val placed = HashMap<String, MutableList<CoordGrid>>()
+            forEachNpc { type, at -> placed.getOrPut(npcFamilyName(type)) { ArrayList() } += at }
             for (line in text.lineSequence().drop(1)) {
                 val c = line.split('\t')
                 if (c.size < COLUMNS) continue
@@ -22,10 +25,16 @@ public class Spawns : ContentPlugin {
                 val x = c[X].toInt()
                 val z = c[Z].toInt()
                 if (level !in 0..MAX_LEVEL || x !in 0 until MAX_COORD || z !in 0 until MAX_COORD) continue
-                spawnNpc(c[NPC].toInt(), CoordGrid(x, z, level), wander)
+                val type = c[NPC].toInt()
+                val at = CoordGrid(x, z, level)
+                if (placed[npcFamilyName(type)]?.any { near(it, at) } == true) continue
+                spawnNpc(type, at, wander)
             }
         }
     }
+
+    private fun near(a: CoordGrid, b: CoordGrid): Boolean =
+        a.level == b.level && maxOf(kotlin.math.abs(a.x - b.x), kotlin.math.abs(a.z - b.z)) <= YIELD_RADIUS
 
     private companion object {
         const val NPC = 0
@@ -38,6 +47,12 @@ public class Spawns : ContentPlugin {
 
         /** The world is 16,384 tiles on each axis (CoordGrid). */
         const val MAX_COORD = 16384
+
+        /**
+         * SP3e: a table row yields to a plugin-spawned NPC of the same name this close (Chebyshev). Wiki pins and the
+         * plugins' sourced tiles differ by up to 7 tiles (Osman: 3286 vs 3293).
+         */
+        const val YIELD_RADIUS = 8
 
         /** OPEN-SP1: per-NPC wander ranges aren't published; RS Mod `NpcTypeBuilder.DEFAULT_WANDER_RANGE`. */
         const val DEFAULT_WANDER = 5

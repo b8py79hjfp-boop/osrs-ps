@@ -1000,6 +1000,26 @@ public class WorldRef internal constructor(internal val w: World) {
     public fun spawnNpc(type: Int, at: CoordGrid, wanderRange: Int) {
         w.spawnNpc(type, at, wanderRange)
     }
+
+    /** Every NPC in the world now: its type and coordinate. */
+    public fun forEachNpc(action: (type: Int, at: CoordGrid) -> Unit) {
+        w.forEachNpc { action(it.type, it.coord) }
+    }
+
+    /**
+     * The name players know NPC type [type] by: its cache name, or for a multi-NPC (cache name "null") the name of the first
+     * type it can show.
+     */
+    public fun npcFamilyName(type: Int): String {
+        val t = w.data.configs.npcs[type] ?: return "null"
+        if (t.name != "null") return t.name
+        return t.multiNpcs
+            ?.firstOrNull { it >= 0 }
+            ?.let {
+                w.data.configs.npcs[it]
+                    ?.name
+            } ?: "null"
+    }
 }
 
 /** One cache db row; [column] ids are `DbTables.<Table>.COL_*`. */

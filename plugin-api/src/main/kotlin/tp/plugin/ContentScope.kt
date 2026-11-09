@@ -12,6 +12,11 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.worldStart += handler
     }
 
+    /** Once at world start, after every [onWorldStart] handler (the Wiki spawn table, which yields to plugin spawns: SP3e). */
+    public fun onWorldStartLast(handler: WorldRef.() -> Unit) {
+        handlers.worldStartLast += handler
+    }
+
     public fun onLogin(handler: PlayerRef.() -> Unit) {
         handlers.login += handler
     }
@@ -319,6 +324,7 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
 internal class Handlers {
     val events = EventBus()
     val worldStart = ArrayList<WorldRef.() -> Unit>()
+    val worldStartLast = ArrayList<WorldRef.() -> Unit>()
     val login = ArrayList<PlayerRef.() -> Unit>()
     val logout = ArrayList<PlayerRef.() -> Unit>()
     val npcSpawn = ArrayList<NpcRef.() -> Unit>()

@@ -66,6 +66,7 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         resolveNamed(world)
         val ref = WorldRef(world)
         for (handler in h.worldStart) ref.handler()
+        for (handler in h.worldStartLast) ref.handler()
     }
 
     /** Resolved name + op text handlers by (config id, op), built once so a click costs one map lookup. */

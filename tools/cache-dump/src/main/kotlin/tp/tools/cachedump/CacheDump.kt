@@ -21,6 +21,7 @@ private val USAGE =
       loc-links <dir>                      doors.tsv (door/gate pairs) and climbs.tsv (ladder/stair links)
       find-locs <name>                     every placement of locs with this exact name (x z level id)
       banker-spawns <file>                 banker tiles behind bank booths (level x z)
+      spawn-check <spawns.tsv> <out>       NPC spawns on tiles an NPC can't stand on, with the nearest free tile
     default cache dir: ${defaultCacheDir()}
     """.trimIndent()
 
@@ -84,6 +85,11 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
 
         "banker-spawns" -> {
             BankerSpawns.write(cache, cacheDir, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
+        }
+
+        "spawn-check" -> {
+            val spawns = Path.of(args.getOrNull(0) ?: throw UsageException("missing spawns file"))
+            SpawnCheck.write(cache, cacheDir, spawns, Path.of(args.getOrNull(1) ?: throw UsageException("missing output path")))
         }
 
         "anim-groups" -> {

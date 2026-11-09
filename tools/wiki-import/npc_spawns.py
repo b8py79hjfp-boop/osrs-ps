@@ -26,9 +26,13 @@ Usage (needs network access to oldschool.runescape.wiki; cache NPC list from cac
   ./gradlew -q :tools:cache-dump:run --args="config npc --all" > npcs.txt
   ./gradlew -q :tools:cache-dump:run --args="banker-spawns docs/research/banker-spawns.tsv"
   python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv
+  ./gradlew -q :tools:cache-dump:run --args="spawn-check $PWD/content/world/src/main/resources/tp/content/world/npc-spawns.tsv blocked.tsv"
+  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv blocked.tsv
+(the second run drops or moves the spawns the first run put on tiles an NPC can't stand on, SP10)
 
 Data licence: OSRS Wiki content is CC BY-NC-SA 3.0 (data/PROVENANCE.md).
 """
+import glob
 import json
 import re
 import sys
@@ -135,13 +139,53 @@ def clean(v):
 
 
 def load_cache_npcs(path):
-    """id -> (name, combat level) from cache-dump `config npc --all`."""
+    """id -> (name, combat level) from cache-dump `config npc --all`; also fills [MULTI] (id -> multiNpcs list)."""
     out = {}
     for line in open(path):
-        m = re.match(r'(\d+) name="(.*)" size=\d+ combatLevel=(-?\d+)', line)
+        m = re.match(r'(\d+) name="(.*?)" size=\d+ combatLevel=(-?\d+)', line)
         if m:
             out[int(m.group(1))] = (m.group(2), int(m.group(3)))
+            mn = re.search(r"multiNpcs=\[([-\d,]+)\]", line)
+            if mn:
+                MULTI[int(m.group(1))] = [int(x) for x in mn.group(1).split(",")]
     return out
+
+
+MULTI = {}
+PICK = {"rank": lambda i: 0}
+
+# Gameval prefixes of NPC copies made for another context than the world spot the Wiki pins: player-owned houses, random
+# events, Nightmare Zone, Deadman, Soul Wars, Barbarian Assault, Leagues (SP14).
+OTHER_CONTEXT = re.compile(r"(POH_|MACRO_|NZONE_|DEADMAN|SOUL_WARS|BARBASSAULT|BA_|LEAGUE)")
+
+
+def pick(ids, usable):
+    """The first usable id of [ids], other-context copies last (SP14); None when none is usable."""
+    good = [i for i in ids if usable(i)]
+    return min(good, key=lambda i: (PICK["rank"](i), good.index(i))) if good else None
+
+# Cache 2757 was captured on 3 November 2026 (docs/BRIEF.md): content the Wiki marks as removed on or before it is gone.
+CACHE_DATE = (2026, 11, 3)
+MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november",
+          "december"]
+
+
+def removed(value):
+    """True when an infobox `removal` value is a date on or before [CACHE_DATE] (an unreadable non-empty one counts too)."""
+    v = clean(value or "").lower()
+    if not v or v in ("no", "n/a", "none"):
+        return False
+    y = re.search(r"\b(\d{4})\b", v)
+    if not y:
+        return True
+    month = next((i + 1 for i, name in enumerate(MONTHS) if name in v), 1)
+    d = re.search(r"\b(\d{1,2})\b", v.replace(y.group(1), ""))
+    return (int(y.group(1)), month, int(d.group(1)) if d else 1) <= CACHE_DATE
+
+
+def strip_comments(text):
+    """Wikitext without HTML comments: pages park unverified pins there (`<!--TODO - Get locations ...`)."""
+    return re.sub(r"<!--.*?(?:-->|\Z)", "", text, flags=re.S)
 
 
 def infobox_versions(text):
@@ -156,14 +200,21 @@ def infobox_versions(text):
                     params[k.strip().lower()] = clean(v)
             keys = sorted(k for k in params if re.fullmatch(r"id\d*", k))
             for k in keys:
+                sfx = k[2:]
+                if removed(params.get("removal" + sfx, params.get("removal"))):
+                    continue  # SP11: a version removed from the game before the cache
                 ids = [int(x) for x in re.findall(r"\d+", params[k])]
                 if ids:
                     versions.append(ids)
     return versions
 
 
+def has_infobox(text):
+    return bool(templates(text, "Infobox Monster") or templates(text, "Infobox NPC"))
+
+
 def infobox_maps(text):
-    """(id, x, z, plane, wander) per infobox version with a {{Map}} in its map field."""
+    """(ids, x, z, plane, wander) per infobox version with a {{Map}} in its map field (the version's ids, in order)."""
     out = []
     for name in ("Infobox NPC", "Infobox Monster"):
         for body in templates(text, name):
@@ -175,6 +226,8 @@ def infobox_maps(text):
             suffixes = sorted({m.group(1) for k in params for m in [re.fullmatch(r"(?:id|map)(\d*)", k)] if m}) or [""]
             shared_used = False
             for sfx in suffixes:
+                if removed(params.get("removal" + sfx, params.get("removal"))):
+                    continue  # SP11
                 ids = [int(x) for x in re.findall(r"\d+", clean(params.get("id" + sfx, params.get("id", ""))))]
                 if "map" + sfx in params:
                     raw = params["map" + sfx]
@@ -201,7 +254,7 @@ def infobox_maps(text):
                     if mtype in ("pin", ""):
                         # Every pin is a spawn (the Wiki lists all stand tiles of the NPC), none wanders.
                         for px, pz in dict.fromkeys(pts):
-                            out.append((ids[0], px, pz, plane, 0))
+                            out.append((ids, px, pz, plane, 0))
                         break
                     x, z = (min(xs) + max(xs)) // 2, (min(zs) + max(zs)) // 2
                     if mtype == "rectangle":
@@ -212,7 +265,7 @@ def infobox_maps(text):
                         wander = min(5, min(max(xs) - min(xs), max(zs) - min(zs)) // 2)
                     else:
                         wander = 0
-                    out.append((ids[0], x, z, plane, wander))
+                    out.append((ids, x, z, plane, wander))
                     break
     return out
 
@@ -234,6 +287,11 @@ def levels_of(v):
 # 7624, 7625, 7627, 7628); and two op-less look-alikes on a quest NPC's tile: Veos 2850 and King Roald 1399.
 QUEST_CHILDREN = {11432, 7746, 1867, 14978, 14980, 14982, 14984, 11578, 11577, 11580, 7956, 7961, 7623, 7624, 7625, 7627, 7628, 2850, 1399}
 CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638, 10570, 10571, 10576, 10612, 10613, 10572, 10574, 10575}  # Tempoross plugin: the pool, the crates, the retired sailor, Gita, and the boss forms (instanced)
+# Also spawned by their own plugins (SP3d): Sea Charting's weather trolls 15154, Tempoross' harpoonfish spot 10565 (instanced),
+# Wintertodt's pyromancers 7371, Pyramid Plunder's guardian mummy 1779, Otto 2914, the Ourania banker 8132, the Abyss dark mage
+# 2583, Volcanic Mine's Pete 7776, Temple of the Eye's tea seller 8687, Distentor 3248; and the Restless Ghost 922, which
+# its quest spawns only while the quest is under way.
+CONTENT_SPAWNED |= {15154, 10565, 7371, 1779, 2914, 8132, 2583, 7776, 8687, 3248, 922}
 
 
 # Banker (cache name "Banker", ops Talk-to / Bank / Collect): the male and the female model, alternating with the tile parity.
@@ -314,8 +372,85 @@ def banker_rows(path, wiki):
     return rows
 
 
+def one_per_tile(rows, cache):
+    """SP11: one NPC of a name per tile. Sibling pages ("Citizen (Kastori)" / "(Tal Teklan)", "Monkey (monster)" / "Monkey
+    (Monkey Madness I)") list the same pins with their own ids; the page titled exactly as the NPC wins, else the first
+    title. Rows are `row -> page title`."""
+    best = {}
+    for row, title in rows.items():
+        key = (cache[row[0]][0].lower(), row[1], row[2], row[3])
+        main = re.sub(r"\s*\([^)]*\)$", "", title).lower() == title.lower() == key[0]
+        rank = (0 if main else 1, title, row[0])
+        if key not in best or rank < best[key][0]:
+            best[key] = (rank, row)
+    return {row: rows[row] for _, row in best.values()}
+
+
+def to_multi_parents(rows, cache):
+    """SP12: the Wiki pins the type a multi-NPC shows (its child); the game spawns the multi-NPC itself, and the client picks the
+    child from a varbit. A child is spawned as its parent when exactly one multi-NPC can show it, every state of that parent
+    is this NPC (same name) or hidden, and either the parent's default state (varbit 0) is this child or the parent only shows
+    or hides this child (a quest's visibility switch: Ardougne's knights, Varlamore's recruits); otherwise the child stays
+    (the Tool Leprechaun 0 has a My Arm's Big Adventure parent that hides it in most states)."""
+    parents = {}
+    for p, states in MULTI.items():
+        for c in set(states):
+            if c >= 0:
+                parents.setdefault(c, []).append(p)
+
+    def parent(c):
+        name = cache[c][0]
+        fit = [p for p in parents.get(c, []) if PICK["rank"](p) == 0 and
+               all(cache.get(k, ("",))[0] == name for k in MULTI[p] if k >= 0) and
+               (MULTI[p][0] == c or set(MULTI[p]) - {-1} == {c})]
+        return fit[0] if len(fit) == 1 else c
+
+    for npc, x, z, plane, wander in rows:
+        yield parent(npc), x, z, plane, wander
+
+
+def gamevals():
+    """npc id -> Jagex gameval name, from the generated `tp.symbols.Npcs` (cache archive 24; `./gradlew build` writes it)."""
+    out = {}
+    for path in glob.glob("symbols/build/**/Npcs.java", recursive=True):
+        for m in re.finditer(r"(\w+) = (\d+);", open(path).read()):
+            out[int(m.group(2))] = m.group(1)
+    return out
+
+
+def apply_blocked(rows, path):
+    """SP10: `cache-dump spawn-check` rows. `nomap` (no map square in this cache) drops the spawn, `loc` (inside solid
+    scenery: a pin a tile off) moves it to the nearest standable tile; `floor` stays (water creatures, staff behind counters,
+    fliers over gaps stand on floor players can't walk)."""
+    fix = {}
+    for line in open(path).read().splitlines()[1:]:
+        npc, x, z, level, reason, fx, fz = line.split("\t")
+        fix[(int(npc), int(x), int(z), int(level))] = (reason, fx, fz)
+    out = set()
+    for r in rows:
+        f = fix.get(r[:4])
+        if f is None or f[0] == "floor":
+            out.add(r)
+        elif f[0] == "loc" and f[1] != "-":
+            out.add((r[0], int(f[1]), int(f[2]), r[3], r[4]))
+    return out
+
+
 def main():
     cache = load_cache_npcs(sys.argv[1])
+    # SP13: cutscene copies (gameval `..._CUTSCENE...`: Frost Nagua, Song of the Elves rebels, the Elvarg of Dragon Slayer I's
+    # boat scene) exist only in a quest's scene; they never match, so a page picks its next version (the fightable Elvarg).
+    names = gamevals()
+    if not names:
+        sys.exit("no generated symbols: run ./gradlew :symbols:build first")
+    for i in [i for i in cache if "CUTSCENE" in names.get(i, "")]:
+        del cache[i]
+    # SP14: a version's id list and the by-name fallback often start with a copy made for another context (Ogre 136 is the
+    # house guard POH_OGRE, Swarm 330 the random event's, Elvarg 6349 Nightmare Zone's): those ids come last.
+    def rank(i):
+        return 1 if OTHER_CONTEXT.match(names.get(i, "")) else 0
+
+    PICK["rank"] = rank
     dest = sys.argv[2]
     by_name = {}
     for i, (n, lvl) in cache.items():
@@ -323,16 +458,24 @@ def main():
     loc_titles = set(pages_using("Template:LocLine"))
     titles = sorted(t for t in loc_titles | set(pages_using("Template:Infobox NPC")) if not OTHER_MODE.search(t))
     print(f"{len(loc_titles)} pages use LocLine, {len(titles)} pages in total", file=sys.stderr)
-    texts = wikitexts(titles)
-    rows, unmatched = set(), 0
+    texts = {t: strip_comments(x) for t, x in wikitexts(titles).items()}
+    rows, unmatched = {}, 0  # row -> the page that gave it
     for title in sorted(texts):
         text = texts[title]
         if title not in loc_titles:
-            for npc, x, z, plane, wander in infobox_maps(text):
-                if npc in cache:
-                    rows.add((npc, x, z, plane, wander))
+            for ids, x, z, plane, wander in infobox_maps(text):
+                npc = pick(ids, lambda i: i in cache)
+                if npc is not None:
+                    rows.setdefault((npc, x, z, plane, wander), title)
             continue
+        if not has_infobox(text):
+            continue  # SP11: guides ("Splashing/Guide") repeat other pages' LocLines; the NPC's own page has them
         versions = infobox_versions(text)
+        if not versions:
+            continue  # every version removed
+        # SP11: one page often has a LocLine per combat level listing the same pins (the levels mix): each pin is one NPC,
+        # its id taken in turn from the LocLines that list it.
+        pins = {}
         for body in templates(text, "LocLine"):
             params, coords = {}, []
             for p in split_params(body):
@@ -356,16 +499,22 @@ def main():
                     return False
                 return lvl in levels if levels else lvl <= 0
 
-            choices = [ids[0] for ids in ([[i for i in v if ok(i)] for v in versions]) if ids]
+            choices = [c for c in (pick(v, ok) for v in versions) if c is not None]
             if not choices:
-                choices = sorted(i for i in by_name.get(name, []) if ok(i))[:1]
+                fallback = pick(sorted(by_name.get(name, [])), ok)
+                choices = [fallback] if fallback is not None else []
             if not choices:
                 unmatched += 1
                 continue
             for n, (x, z) in enumerate(coords):
-                rows.add((choices[n % len(choices)], x, z, plane, -1))
+                pins.setdefault((name, x, z, plane), []).append(choices[n % len(choices)])
+        for n, ((_, x, z, plane), ids) in enumerate(pins.items()):
+            rows.setdefault((ids[n % len(ids)], x, z, plane, -1), title)
+    rows = one_per_tile(rows, cache)
+    rows = set(to_multi_parents(rows, cache))
     # NPCs content spawns itself (Wilderness lair bosses: their LocLines are the surface entrance pins).
     rows = {r for r in rows if r[0] not in CONTENT_SPAWNED | QUEST_CHILDREN | PET_IDS}
+
     if len(sys.argv) > 3:
         wiki = {(r[1], r[2], r[3]) for r in rows if cache.get(r[0], ("",))[0] == "Banker"}
         rows |= banker_rows(sys.argv[3], wiki)
@@ -373,6 +522,8 @@ def main():
     rows = {r for r in rows if (r[0], r[1], r[2]) not in MANUAL_REPLACES}
     rows |= {(npc, x, z, 0, 0) for npc, x, z in MANUAL_SPAWNS}
     rows = {r for r in rows if 0 <= r[3] <= 3 and 0 <= r[1] < 16384 and 0 <= r[2] < 16384}
+    if len(sys.argv) > 4:
+        rows = apply_blocked(rows, sys.argv[4])
     with open(dest, "w") as f:
         f.write("npc\tx\tz\tlevel\twander\n")
         for r in sorted(rows, key=lambda r: (r[3], r[1], r[2], r[0])):

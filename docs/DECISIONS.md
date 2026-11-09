@@ -1441,3 +1441,15 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   overwritten. `--memory` keeps the old behaviour; `--db` still selects PostgreSQL, which live worlds must use.
 - **Format.** `MemoryStore.exportState()` / `importState()`: one document, version 1, every table, enums by name
   and ranks by their stored value. A table that changes shape bumps the version and gets a migration in `importState`.
+
+## D-098 The NPC spawn table yields to plugin spawns at runtime (2026-11-09)
+
+- **Problem.** Quest and minigame plugins spawn their own NPCs, often a multi-NPC whose look follows a quest varbit. The
+  Wiki spawn table pins the same NPC, often under a different id (the child it shows). Hand-kept exclusion lists in the
+  importer drifted: 30 quest NPCs stood twice.
+- **Choice.** `Spawns` loads `npc-spawns.tsv` in `onWorldStartLast`, after every plugin's world-start spawns. It skips a row
+  when a plugin already placed an NPC of the same name within 8 tiles; a multi-NPC counts by the name of the first type it
+  shows (docs/mechanics/npc-spawns.md SP3e). The importer keeps `CONTENT_SPAWNED` only for NPCs that plugins spawn
+  temporarily or inside instances (the Restless Ghost, Tempoross), which the runtime check can't see.
+- **Rejected.** Matching by id (misses child vs. parent); a global per-id drop (loses the table's other, legitimate copies,
+  e.g. the Varrock Mage of Zamorak, while the Wilderness one is the plugin's).
