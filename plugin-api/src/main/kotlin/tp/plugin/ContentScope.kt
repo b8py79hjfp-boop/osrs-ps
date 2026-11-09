@@ -213,6 +213,11 @@ public class ContentScope internal constructor(internal val handlers: Handlers) 
         handlers.put(handlers.opNpcNamed, namedKey(name, text), script, "opnpc '$name'/'$text'")
     }
 
+    /** Approach variant of [onOpNpcNamed]: e.g. a banker behind a booth, reached across it (RS Mod `onApNpc` + ap range 2). */
+    public fun onApNpcNamed(name: String, text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
+        handlers.put(handlers.apNpcNamed, namedKey(name, text), script, "apnpc '$name'/'$text'")
+    }
+
     /** Approach variant of [onOpNpcOption] (ranged/magic attacks call `apRange`). */
     public fun onApNpcOption(text: String, script: suspend PlayerScript.(NpcRef) -> Unit) {
         handlers.put(handlers.apNpcByText, text.lowercase(), script, "apnpc text '$text'")
@@ -355,6 +360,7 @@ internal class Handlers {
     var worldEntityTick: (WorldRef.() -> Unit)? = null
     var opWorldEntity: (PlayerRef.(WorldEntityRef, Int) -> Unit)? = null
     val opNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
+    val apNpcNamed = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apLoc = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     val opNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()
     val apNpcByText = HashMap<String, suspend PlayerScript.(NpcRef) -> Unit>()

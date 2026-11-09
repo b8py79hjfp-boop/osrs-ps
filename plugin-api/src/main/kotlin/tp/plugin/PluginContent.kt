@@ -71,14 +71,17 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
     /** Resolved name + op text handlers by (config id, op), built once so a click costs one map lookup. */
     private val opLocResolved = HashMap<Int, suspend PlayerScript.(LocRef) -> Unit>()
     private val opNpcResolved = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
+    private val apNpcResolved = HashMap<Int, suspend PlayerScript.(NpcRef) -> Unit>()
 
     private fun resolveNamed(world: World) {
         if (h.opLocNamed.isNotEmpty()) resolveLocs(world)
-        if (h.opNpcNamed.isNotEmpty()) {
+        if (h.opNpcNamed.isNotEmpty() || h.apNpcNamed.isNotEmpty()) {
             for (type in world.data.configs.npcs) {
                 for ((index, text) in type.ops.ops.withIndex()) {
-                    val handler = text?.let { h.opNpcNamed[Handlers.namedKey(type.name, it)] } ?: continue
-                    opNpcResolved[key(type.id, index + 1)] = handler
+                    if (text == null) continue
+                    val named = Handlers.namedKey(type.name, text)
+                    h.opNpcNamed[named]?.let { opNpcResolved[key(type.id, index + 1)] = it }
+                    h.apNpcNamed[named]?.let { apNpcResolved[key(type.id, index + 1)] = it }
                 }
             }
         }
@@ -166,7 +169,8 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             ?.let(::npcScript)
 
     override fun apNpc(npcType: Int, option: Int): Script<Player>? =
-        (h.apNpc[key(npcType, option)] ?: opText(npcType, option)?.let(h.apNpcByText::get))?.let(::npcScript)
+        (h.apNpc[key(npcType, option)] ?: apNpcResolved[key(npcType, option)] ?: opText(npcType, option)?.let(h.apNpcByText::get))
+            ?.let(::npcScript)
 
     private var world: World? = null
 

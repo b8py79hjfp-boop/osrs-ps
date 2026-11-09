@@ -51,6 +51,7 @@ public class Bank : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcOption("Bank") { if (with(BankPin) { unlock() }) player.openBank() }
         onOpNpcNamed("Banker", "Talk-to") { npc -> banker(npc) }
+        bankers()
         onCommand("openbank", DEV_RANK, DEV_CONVENIENCE) { weakQueue(0) { if (with(BankPin) { unlock() }) player.openBank() } }
         // Commands brief §2 (official): `::bank` makes the player say this; developers get the bank instead.
         commandFallback { name -> bankCommand(name) }
@@ -823,7 +824,31 @@ public class Bank : ContentPlugin {
         return true
     }
 
+    private fun ContentScope.bankers() {
+        // B20: bankers stand behind booths, so they are reached across them: within 2 tiles in line of sight (the ap range
+        // check), as RS Mod's Banker (`isWithinApRange(npc, distance = 2)`). Without these, "I can't reach that!".
+        onApNpcNamed("Banker", "Bank") { npc ->
+            if (withinBankerRange(npc)) {
+                if (with(BankPin) { unlock() }) {
+                    player.openBank()
+                }
+            }
+        }
+        onApNpcNamed("Banker", "Collect") { npc -> if (withinBankerRange(npc)) events.publish(tp.plugin.OpenCollectionBox(player)) }
+        onApNpcNamed("Banker", "Talk-to") { npc -> if (withinBankerRange(npc)) banker(npc) }
+    }
+
+    /** B20: a banker within [BANKER_RANGE] tiles is reached; further away the player keeps approaching (ap range). */
+    private fun PlayerScript.withinBankerRange(npc: NpcRef): Boolean {
+        if (player.distanceTo(npc) <= BANKER_RANGE) return true
+        apRange(BANKER_RANGE)
+        return false
+    }
+
     private companion object {
+        /** B20: how far a banker is reached across a booth (RS Mod Banker `isWithinApRange(npc, distance = 2)`). */
+        const val BANKER_RANGE = 2
+
         /** Commands brief §2: the official `::bank` reply. */
         const val SILLY = "Hey, everyone, I just tried to do something very silly!"
 
