@@ -44,7 +44,7 @@ internal object Attacks {
         val salamander = category === Weapons.SALAMANDER
         var ok = !salamander || Salamanders.useTar(player)
         if (ok && salamander && type.style == CombatStyle.MAGIC) {
-            player.anim(attackAnim(player, category, type))
+            attackFx(player, category, type)
             CombatSystem.announceAttack(player, target, type.style)
             Salamanders.blaze(player, target, Formulas.magicDelay(player.distanceTo(target)))
             return false
@@ -67,7 +67,7 @@ internal object Attacks {
         val min = minOf(range[0], max)
         val distance = player.distanceTo(target)
         val delay = hitDelay(type.style, category, distance)
-        player.anim(attackAnim(player, category, type))
+        attackFx(player, category, type)
         if (type.style == CombatStyle.RANGED) rangedVisuals(player, target, category, delay)
         CombatVisuals.block(target, delay)
         CombatSystem.announceAttack(player, target, type.style)
@@ -287,6 +287,24 @@ internal object Attacks {
             else -> Formulas.bowDelay(distance)
         }
 
+    /** The attack animation and, to the attacker, the weapon's attack sound (combat-sounds.md CS1). */
+    private fun attackFx(player: PlayerRef, category: WeaponCategory, type: AttackType) {
+        player.anim(attackAnim(player, category, type))
+        player.sound(attackSound(player))
+    }
+
+    /**
+     * The weapon's sound for the selected stance (weapons.tsv `sound1..4`, from RS Mod), else its first one; unarmed
+     * punches or kicks like the unarmed animation; -1 (silent) for a weapon with no sound listed.
+     */
+    private fun attackSound(player: PlayerRef): Int {
+        val weapon = player.worn(Wear.WEAPON)
+        val slot = player.varp(Varps.COM_MODE).coerceIn(0, SLOTS - 1)
+        if (weapon < 0) return if (slot == UNARMED_KICK_SLOT) SYNTH_UNARMED_KICK else SYNTH_UNARMED_PUNCH
+        val sounds = WeaponData.of(weapon)?.sounds ?: return -1
+        return sounds[slot].takeIf { it >= 0 } ?: sounds.firstOrNull { it >= 0 } ?: -1
+    }
+
     /** CD-W2: the wielded weapon's anim for the current combat-tab slot (RS Mod obj data), else the category's. */
     private fun attackAnim(player: PlayerRef, category: WeaponCategory, type: AttackType): Int {
         val weapon = player.worn(Wear.WEAPON)
@@ -376,6 +394,15 @@ internal object Attacks {
     }
 
     private const val SLOTS = 4
+
+    /** Synth `human_unarmedpunch` (RS Mod synth.sym 2564; RS Mod MeleeAnimationAndSound stances 1, 3, 4). */
+    private const val SYNTH_UNARMED_PUNCH = 2564
+
+    /** Synth `human_unarmedkick` (RS Mod synth.sym 2565; RS Mod MeleeAnimationAndSound stance 2). */
+    private const val SYNTH_UNARMED_KICK = 2565
+
+    /** Stance slot (0-based `com_mode`) whose unarmed attack is the kick (RS Mod stance 2). */
+    private const val UNARMED_KICK_SLOT = 1
 
     /** RS Mod `PvNCombat`: the ranged launch spot anim at height 96. */
     private const val LAUNCH_HEIGHT = 96

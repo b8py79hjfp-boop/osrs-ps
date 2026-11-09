@@ -525,6 +525,11 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.IfObject(component, obj, count))
     }
 
+    /** Plays sound effect [id] (a cache synth id) to this player only, [loops] times, after [delay] client cycles. */
+    public fun sound(id: Int, loops: Int = 1, delay: Int = 0) {
+        if (id >= 0) p.session.send(ServerMessage.SynthSound(id, loops, delay))
+    }
+
     /** Plays music track [id] (cache music/midi id). */
     public fun playMusic(id: Int) {
         p.session.send(ServerMessage.MusicTrack(id))

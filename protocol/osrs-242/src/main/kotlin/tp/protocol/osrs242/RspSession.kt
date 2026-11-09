@@ -525,7 +525,7 @@ internal class RspSession(
 
                 is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
                 is ServerMessage.IfNpcHead, is ServerMessage.IfPlayerHead, is ServerMessage.IfAnim,
-                is ServerMessage.Jingle,
+                is ServerMessage.Jingle, is ServerMessage.SynthSound,
                 is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong, is ServerMessage.FriendList, is ServerMessage.IgnoreList,
                 ServerMessage.FriendListLoaded, is ServerMessage.PrivateMessage,
                 is ServerMessage.PrivateMessageEcho, is ServerMessage.ChannelJoined, ServerMessage.ChannelLeft,
@@ -586,7 +586,7 @@ private fun socialProt(message: ServerMessage): OutgoingGameMessage =
     when (message) {
         is ServerMessage.IfText, is ServerMessage.IfHide, is ServerMessage.IfObject, is ServerMessage.MusicTrack,
         is ServerMessage.IfNpcHead, is ServerMessage.IfPlayerHead, is ServerMessage.IfAnim, is ServerMessage.Jingle,
-        is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong,
+        is ServerMessage.SynthSound, is ServerMessage.StockMarketSlot, is ServerMessage.VarpLong,
         -> {
             uiProt(message)
         }
@@ -703,6 +703,11 @@ private fun uiProt(message: ServerMessage): OutgoingGameMessage =
         is ServerMessage.Jingle -> {
             net.rsprot.protocol.game.outgoing.sound
                 .MidiJingle(message.id)
+        }
+
+        is ServerMessage.SynthSound -> {
+            net.rsprot.protocol.game.outgoing.sound
+                .SynthSound(message.id, message.loops, message.delay)
         }
 
         is ServerMessage.VarpLong -> {

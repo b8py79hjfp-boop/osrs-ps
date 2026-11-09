@@ -54,7 +54,7 @@ class Interaction(
     internal var apRange: Int = DEFAULT_AP_RANGE
     internal var apRangeCalled: Boolean = false
 
-    /** Persistent interactions survive a successful run (e.g. combat follow). */
+    /** Set by the script during this turn's run (`keepInteraction`): the interaction survives that run (I8). */
     var persistent: Boolean = false
 
     internal val isMobileTarget: Boolean get() = target is InteractionTarget.OfNpc || target is InteractionTarget.OfPlayer
@@ -154,7 +154,11 @@ class InteractionProcessor internal constructor(
     fun processPlayer(player: Player, maxSteps: Int) {
         val interaction = player.interaction
         var interacted = false
-        if (interaction != null) interaction.apRangeCalled = false
+        if (interaction != null) {
+            interaction.apRangeCalled = false
+            // I8: persistence lasts one run; the script asks again each time (combat stops once its target died).
+            interaction.persistent = false
+        }
 
         if (interaction != null && !blocked(player)) {
             updateRoute(player, interaction)

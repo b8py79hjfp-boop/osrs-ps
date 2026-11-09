@@ -332,6 +332,9 @@ sealed interface ServerMessage {
     /** Animation [seq] (-1 none) on a model component (IF_SETANIM): chat head expressions. */
     data class IfAnim(val component: Int, val seq: Int) : ServerMessage
 
+    /** Plays sound effect [id] (SYNTH_SOUND: a cache synth id), [loops] times, after [delay] client cycles (20 ms). */
+    data class SynthSound(val id: Int, val loops: Int = 1, val delay: Int = 0) : ServerMessage
+
     /** Plays music track [id] (MIDI_SONG; fades in client cycles, 0 = cut). */
     data class MusicTrack(val id: Int, val fadeOut: Int = 0, val fadeIn: Int = 0) : ServerMessage
 
