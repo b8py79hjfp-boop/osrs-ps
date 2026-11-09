@@ -21,6 +21,14 @@ import tp.util.CoordGrid
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
+/** Client-script argument mismatches already logged (each once per JVM). */
+private val scriptWarnings: MutableSet<String> =
+    java.util.concurrent.ConcurrentHashMap
+        .newKeySet()
+private val scriptLog =
+    io.github.oshai.kotlinlogging.KotlinLogging
+        .logger("tp.plugin.ClientScripts")
+
 /** Content's view of a player. Every change goes through the engine (interfaces, vars, item transactions). */
 public class PlayerRef internal constructor(internal val p: Player) : EntityRef() {
     override val e: Entity get() = p
@@ -387,7 +395,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Asks for text (client script 110 `meslayer_mode9`); [answer] runs with what the player types. */
     public fun stringDialog(title: String, answer: PlayerRef.(String) -> Unit) {
         dialogs()[p] = { (it as? String)?.let { text -> answer(text) } }
-        p.session.send(ServerMessage.ClientScript(MESLAYER_STRING, listOf(title, 0)))
+        sendScript(MESLAYER_STRING, listOf(title, 0))
     }
 
     /**
@@ -422,7 +430,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     /** Asks for a number (client script 108 `meslayer_mode7`); [answer] runs with the (non-negative) count. */
     public fun countDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
         dialogs()[p] = { (it as? Int)?.let { n -> answer(kotlin.math.abs(n)) } }
-        p.session.send(ServerMessage.ClientScript(MESLAYER_COUNT, listOf(title)))
+        sendScript(MESLAYER_COUNT, listOf(title))
     }
 
     /**
@@ -431,7 +439,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
      */
     public fun objDialog(title: String, answer: PlayerRef.(Int) -> Unit) {
         dialogs()[p] = { (it as? tp.engine.ObjDialogAnswer)?.let { a -> answer(a.obj) } }
-        p.session.send(ServerMessage.ClientScript(OBJ_SEARCH, listOf(title, 1, -1, 0)))
+        sendScript(OBJ_SEARCH, listOf(title, 1, -1, 0))
     }
 
     /**
@@ -442,7 +450,7 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
     public fun choiceDialog(title: String, choices: List<String>, answer: PlayerRef.(Int) -> Unit) {
         require(choices.size in MIN_CHOICES..MAX_CHOICES) { "choice menus have $MIN_CHOICES..$MAX_CHOICES options" }
         p.world.interfaces.openModal(p, Components.Chatbox.CHATMODAL, Interfaces.CHATMENU)
-        p.session.send(ServerMessage.ClientScript(CHATBOX_MULTI_INIT, listOf(title, choices.joinToString(CHOICE_SEPARATOR))))
+        sendScript(CHATBOX_MULTI_INIT, listOf(title, choices.joinToString(CHOICE_SEPARATOR)))
         ifEvents(Components.Chatmenu.OPTIONS, 1..choices.size, IfEvents.PAUSE_BUTTON)
         (p.world.content as PluginContent).pendingChoices[p] = PendingChoice(choices.size, answer)
     }
@@ -545,10 +553,18 @@ public class PlayerRef internal constructor(internal val p: Player) : EntityRef(
         p.session.send(ServerMessage.InterfaceEvents(component, slots.first, slots.last, events))
     }
 
+    /** Sends client script [id]; a call the cache script can't take is logged once (WorldData.scriptArgMismatch). */
+    private fun sendScript(id: Int, args: List<Any>) {
+        p.world.data
+            .scriptArgMismatch(id, args)
+            ?.let { if (scriptWarnings.add(it)) scriptLog.warn { "$it (${args.joinToString()})" } }
+        p.session.send(ServerMessage.ClientScript(id, args))
+    }
+
     /** Runs client script [id] with Int/String [args]. */
     public fun clientScript(id: Int, vararg args: Any) {
         require(args.all { it is Int || it is String || it is Long }) { "client script args must be Int, Long or String" }
-        p.session.send(ServerMessage.ClientScript(id, args.toList()))
+        sendScript(id, args.toList())
     }
 
     /** Right-click option [slot] (1..8) on other players; null text removes it. */

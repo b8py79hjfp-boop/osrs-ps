@@ -29,7 +29,7 @@ public class Login : ContentPlugin {
         transmitInv(Invs.WORN)
         clientScript(CS_2498, 1, 0, 0)
         clientScript(CS_828, 1)
-        clientScript(CS_5141)
+        // RS Mod also sends script 5141 with no arguments; in rev 242 it is a key handler taking two ints, so it is not sent.
         // CS 626: sets the camera zoom limits (varcs 1338-1341 = 128..896) that CS 42 `camera_do_zoom` clamps to;
         // without it the scroll wheel cannot zoom (RS Mod / OpenRune `LoginScript` sends it at login).
         clientScript(CS_ZOOM_LIMITS)
@@ -43,7 +43,6 @@ public class Login : ContentPlugin {
         // Client script ids as sent by live OSRS at login (RS Mod `LoginScript`); their purpose isn't named there.
         const val CS_2498 = 2498
         const val CS_828 = 828
-        const val CS_5141 = 5141
         const val CS_ZOOM_LIMITS = 626
 
         /** Saved once the new-account setting defaults were applied. */

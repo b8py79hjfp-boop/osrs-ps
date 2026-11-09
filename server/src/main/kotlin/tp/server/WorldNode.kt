@@ -112,7 +112,7 @@ object WorldNode {
         return BootData(
             cache,
             configs,
-            WorldData(configs, collision, locs, WorldData.dialogueFont(cache), WorldData.objGamevals(cache)),
+            WorldData(configs, collision, locs, WorldData.dialogueFont(cache), WorldData.objGamevals(cache), WorldData.scriptArgs(cache)),
         )
     }
 
