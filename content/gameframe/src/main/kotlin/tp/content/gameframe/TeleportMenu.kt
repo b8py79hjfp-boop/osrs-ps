@@ -239,7 +239,7 @@ internal fun PlayerRef.go(dest: Destination, confirmed: Boolean = false) {
         ) { pick -> if (pick == 1) go(dest, confirmed = true) }
         return
     }
-    val request = TeleportRequest(this, dest.at)
+    val request = TeleportRequest(this, dest.at, confirmed = confirmed)
     events.publish(request)
     if (request.denied != null) return
     if (!request.handled) teleport(dest.at)

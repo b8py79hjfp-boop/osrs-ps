@@ -92,7 +92,7 @@ public class Jewellery : ContentPlugin {
     }
 
     /** Spends one charge of [obj] at [place] and teleports to [destination] (teleports.md J3-J5). */
-    private fun PlayerRef.use(place: Place, obj: Int, destination: Destination, bus: EventBus) {
+    private fun PlayerRef.use(place: Place, obj: Int, destination: Destination, bus: EventBus, confirmed: Boolean = false) {
         if (isDelayed || Teleports.isBusy(this)) return
         val view = inv(place.inv)
         if (place.slot !in 0 until view.size || view.obj(place.slot) != obj) return
@@ -101,6 +101,10 @@ public class Jewellery : ContentPlugin {
         val jewel = held.jewel
         val denial = Teleports.denial(this, jewel.wildernessLimit)
         if (denial != null) return message(denial)
+        // T15: above Wilderness level 20 (Burning amulet's Lava Maze) no charge is spent until the player says yes.
+        if (!confirmed && Teleports.isDeep(destination.coord)) {
+            return Teleports.askDeep(this, destination.coord) { use(place, obj, destination, bus, confirmed = true) }
+        }
         val spent =
             transaction("${jewel.itemName} charge") {
                 if (held.next >= 0) replaceAt(place.inv, place.slot, obj, held.next) else removeAt(place.inv, place.slot, obj, 1)
