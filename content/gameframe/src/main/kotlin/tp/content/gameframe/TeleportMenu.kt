@@ -230,7 +230,11 @@ internal fun PlayerRef.go(dest: Destination, confirmed: Boolean = false) {
     if (dest.wilderness > 0 && !confirmed) {
         if (isOpen(Interfaces.TELEPORTS)) clientScript(Clientscripts.TELEPORTS_SEARCH_STOP)
         choiceDialog(
-            "${dest.name} is in level ${dest.wilderness} Wilderness. Teleport?",
+            if (dest.wilderness > TELEPORT_OUT_LIMIT) {
+                "${dest.name}: level ${dest.wilderness} Wilderness, no teleporting out. Go?"
+            } else {
+                "${dest.name} is in level ${dest.wilderness} Wilderness. Teleport?"
+            },
             listOf("Yes, teleport into the Wilderness.", "No."),
         ) { pick -> if (pick == 1) go(dest, confirmed = true) }
         return
@@ -392,7 +396,19 @@ private fun PlayerRef.drawDetail(d: Destination?, favs: Set<Int>) {
     }
     val info = "${d.at.x}, ${d.at.z}" + if (d.at.level > 0) ", level ${d.at.level}" else ""
     val warning =
-        if (d.wilderness > 0) "Level ${d.wilderness} Wilderness. Other players can attack you here." else ""
+        when {
+            d.wilderness > TELEPORT_OUT_LIMIT -> {
+                "Level ${d.wilderness} Wilderness: players can attack you, and you must walk below level 21 to teleport out."
+            }
+
+            d.wilderness > 0 -> {
+                "Level ${d.wilderness} Wilderness: other players can attack you here."
+            }
+
+            else -> {
+                ""
+            }
+        }
     clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, d.name, d.icon, d.description, info, warning)
 }
 
@@ -411,6 +427,9 @@ private const val KEEP_SCROLL = -1
 private val EXTRA_ROWS = Tab.entries.size
 
 private const val MAX_TELE_QUERY = 40
+
+/** Spells and jewellery work up to this Wilderness level (teleports.md T4, `Teleports.WILDERNESS_LIMIT`). */
+private const val TELEPORT_OUT_LIMIT = 20
 
 private const val FAV_KEY = "teleport_fav_"
 
