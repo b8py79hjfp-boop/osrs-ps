@@ -121,7 +121,7 @@ part, except `screenshot` (PNG image part plus a size note). Failures come back 
 | `send_chat` | Public chat line via the chatbox send script (5517) |
 | `run_command` | A `::command`, typed as key events into the game canvas, then Enter |
 | `get_messages` | Last N chat/game messages (ring buffer of 500) |
-| `get_events` | Event ring buffer with tick numbers: `MenuOptionClicked`, `VarbitChanged`, `WidgetLoaded`, `WidgetClosed`, `GameStateChanged`, `StatChanged`, `ItemContainerChanged`, `ChatMessage`. Params `since_seq`, `types`, `limit` |
+| `get_events` | Event ring buffer with tick numbers: `MenuOptionClicked`, `VarbitChanged`, `WidgetLoaded`, `WidgetClosed`, `GameStateChanged`, `StatChanged`, `ItemContainerChanged`, `ChatMessage`, `SoundEffectPlayed` / `AreaSoundEffectPlayed`, `HitsplatApplied` (RuneLite does not post it for our server's hitsplats yet), `ActorDeath`, `InteractingChanged` and `AnimationChanged` (local player and its target), `OverheadTextChanged`. Params `since_seq`, `types`, `limit` |
 | `get_varps` | Given varp ids / varbit ids, or all non-zero varps |
 | `screenshot` | PNG of the game canvas (next rendered frame), optional `scale` / `max_width` |
 
@@ -129,13 +129,16 @@ Play-through tools (`ActionTools`): the same clicks and key presses a player mak
 
 | Tool | What it does |
 |---|---|
-| `interact` | The nearest NPC / object / ground item / player by `name` (exact preferred) or `id`, optional `kind`, `x`/`y`, and an `option` text (or `op` slot); sends the matching menu action, e.g. `{name:'Bank booth', option:'Bank'}`. Ground items use the default "Take" (op 3) unless `op` is given (RuneLite 1.13.6 has no ground-op accessor) |
+| `interact` | (also `option: 'Examine'`) The nearest NPC / object / ground item / player by `name` (exact preferred) or `id`, optional `kind`, `x`/`y`, and an `option` text (or `op` slot); sends the matching menu action, e.g. `{name:'Bank booth', option:'Bank'}`. Ground items use the default "Take" (op 3) unless `op` is given (RuneLite 1.13.6 has no ground-op accessor) |
 | `use_item_on` | The "Use" flow: inventory `item_id`/`slot` on another inventory item (`target_item_id`/`target_slot`) or on the nearest NPC/object/ground item/player (`target_name`/`target_id`, `target_kind`) |
 | `get_dialog` | The open chatbox dialogue: speaker and text, numbered options (interface 219), `can_continue`, and input prompts ("Enter amount:") |
 | `continue_dialog` | "Click here to continue" (space), or `option` by number or text |
 | `type_input` | Types into an open prompt and presses Enter (amounts, names, searches) |
 | `press_key` | One key by name (`ESCAPE`, `SPACE`, `F1`, arrows ...) or character; `hold_ms` for camera keys |
 | `login` / `logout` | Legacy login from the login screen (waits for `LOGGED_IN`); logout with the logout tab's button (waits for the login screen) |
+| `get_client_log` | The client's WARN/ERROR log lines (RuneLite and the game client, e.g. client script errors) with ticks |
+| `read_interface` | Compact read of an open interface (default: the modal ones and any dialogue): visible texts, items, actions, packed ids |
+| `get_menu` | The right-click menu entries the client would show now |
 | `wait` | Until `ticks` passed and/or a new `message`, an open `widget_group`, a tile `x`/`y`, `idle`, or a `varp`/`varbit` `value`; returns `timed_out` |
 
 ### Menu action cheat sheet (for `menu_action`)

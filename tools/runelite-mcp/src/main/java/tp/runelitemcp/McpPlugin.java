@@ -10,7 +10,16 @@ import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.MenuAction;
+import net.runelite.api.Actor;
+import net.runelite.api.NPC;
+import net.runelite.api.events.ActorDeath;
+import net.runelite.api.events.AnimationChanged;
+import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.HitsplatApplied;
+import net.runelite.api.events.InteractingChanged;
+import net.runelite.api.events.OverheadTextChanged;
+import net.runelite.api.events.SoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuOptionClicked;
@@ -49,6 +58,8 @@ public class McpPlugin extends Plugin
 	private static final String BIND_HOST = "127.0.0.1";
 	/** Chat ring buffer size (task requirement). */
 	private static final int CHAT_BUFFER_SIZE = 500;
+	/** Client WARN/ERROR lines kept for get_client_log. */
+	private static final int CLIENT_LOG_BUFFER_SIZE = 500;
 	private static final String VERSION = "0.1.0";
 	private static final String INSTRUCTIONS = "Observe and drive a RuneLite client connected to a tickperfect "
 		+ "(OSRS rev 242) private server. Start with get_state; use get_events after an action to see the "
@@ -71,6 +82,8 @@ public class McpPlugin extends Plugin
 
 	private EventLog events;
 	private EventLog chat;
+	private EventLog clientLog;
+	private ClientLogCapture logCapture;
 	private McpServer server;
 
 	@Provides
@@ -84,6 +97,17 @@ public class McpPlugin extends Plugin
 	{
 		events = new EventLog(config.eventBufferSize());
 		chat = new EventLog(CHAT_BUFFER_SIZE);
+		clientLog = new EventLog(CLIENT_LOG_BUFFER_SIZE);
+		try
+		{
+			logCapture = new ClientLogCapture(clientLog, client::getTickCount);
+			logCapture.attach();
+		}
+		catch (RuntimeException | LinkageError e)
+		{
+			log.warn("client log capture unavailable", e);
+			logCapture = null;
+		}
 		startServer();
 	}
 
@@ -91,8 +115,14 @@ public class McpPlugin extends Plugin
 	protected void shutDown()
 	{
 		stopServer();
+		if (logCapture != null)
+		{
+			logCapture.detach();
+			logCapture = null;
+		}
 		events = null;
 		chat = null;
+		clientLog = null;
 	}
 
 	private void startServer()
@@ -104,7 +134,7 @@ public class McpPlugin extends Plugin
 		}
 		ClientTools tools = new ClientTools(client, clientThread, itemManager, drawManager, events, chat);
 		List<ToolDef> defs = new java.util.ArrayList<>(tools.build());
-		defs.addAll(new ActionTools(client, clientThread, chat).build());
+		defs.addAll(new ActionTools(client, clientThread, chat, clientLog).build());
 		McpServer s = new McpServer(BIND_HOST, config.port(), config.token(), "runelite-mcp", VERSION,
 			INSTRUCTIONS, defs);
 		try
@@ -182,6 +212,119 @@ public class McpPlugin extends Plugin
 		}
 		o.addProperty("consumed", e.isConsumed());
 		events.add("MenuOptionClicked", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onSoundEffectPlayed(SoundEffectPlayed e)
+	{
+		if (events == null)
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("sound_id", e.getSoundId());
+		o.addProperty("delay", e.getDelay());
+		o.addProperty("source", actorName(e.getSource()));
+		events.add("SoundEffectPlayed", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed e)
+	{
+		if (events == null)
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("sound_id", e.getSoundId());
+		o.addProperty("scene_x", e.getSceneX());
+		o.addProperty("scene_y", e.getSceneY());
+		o.addProperty("range", e.getRange());
+		o.addProperty("delay", e.getDelay());
+		o.addProperty("source", actorName(e.getSource()));
+		events.add("AreaSoundEffectPlayed", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onHitsplatApplied(HitsplatApplied e)
+	{
+		if (events == null)
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("actor", actorName(e.getActor()));
+		o.addProperty("amount", e.getHitsplat().getAmount());
+		o.addProperty("type", e.getHitsplat().getHitsplatType());
+		o.addProperty("mine", e.getHitsplat().isMine());
+		events.add("HitsplatApplied", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onActorDeath(ActorDeath e)
+	{
+		if (events == null)
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("actor", actorName(e.getActor()));
+		events.add("ActorDeath", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onInteractingChanged(InteractingChanged e)
+	{
+		// Only the local player's side: every NPC turning is noise.
+		if (events == null || (e.getSource() != client.getLocalPlayer() && e.getTarget() != client.getLocalPlayer()))
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("source", actorName(e.getSource()));
+		o.addProperty("target", actorName(e.getTarget()));
+		events.add("InteractingChanged", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onAnimationChanged(AnimationChanged e)
+	{
+		// The local player and whatever it interacts with (the fight or skill being checked).
+		Actor me = client.getLocalPlayer();
+		if (events == null || me == null || (e.getActor() != me && e.getActor() != me.getInteracting()))
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("actor", actorName(e.getActor()));
+		o.addProperty("animation", e.getActor().getAnimation());
+		events.add("AnimationChanged", client.getTickCount(), o);
+	}
+
+	@Subscribe
+	public void onOverheadTextChanged(OverheadTextChanged e)
+	{
+		if (events == null)
+		{
+			return;
+		}
+		JsonObject o = new JsonObject();
+		o.addProperty("actor", actorName(e.getActor()));
+		o.addProperty("text", e.getOverheadText());
+		events.add("OverheadTextChanged", client.getTickCount(), o);
+	}
+
+	private static String actorName(Actor a)
+	{
+		if (a == null)
+		{
+			return null;
+		}
+		if (a instanceof NPC)
+		{
+			return a.getName() + " (npc " + ((NPC) a).getId() + ")";
+		}
+		return a.getName();
 	}
 
 	@Subscribe

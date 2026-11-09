@@ -78,12 +78,14 @@ final class ActionTools
 	private final Client client;
 	private final ClientThread clientThread;
 	private final EventLog chat;
+	private final EventLog clientLog;
 
-	ActionTools(Client client, ClientThread clientThread, EventLog chat)
+	ActionTools(Client client, ClientThread clientThread, EventLog chat, EventLog clientLog)
 	{
 		this.client = client;
 		this.clientThread = clientThread;
 		this.chat = chat;
+		this.clientLog = clientLog;
 	}
 
 	List<ToolDef> build()
@@ -98,7 +100,7 @@ final class ActionTools
 				.string("name", "Case-insensitive substring of the target's name (exact match preferred).")
 				.integer("id", "NPC/object/item id instead of a name.")
 				.string("kind", "npc, object, ground_item or player. Default: search all kinds.")
-				.string("option", "Option text, case-insensitive (exact match preferred, then substring).")
+				.string("option", "Option text, case-insensitive (exact match preferred, then substring); 'Examine' works too.")
 				.integer("op", "1-based op slot instead of option text (e.g. a ground item's op 4).")
 				.integer("x", "Only the target on this world tile (with y).")
 				.integer("y", "Only the target on this world tile (with x).")
@@ -180,7 +182,145 @@ final class ActionTools
 				.integer("timeout_ms", "Default 10000, max 120000.")
 				.build(),
 			this::waitFor));
+		t.add(new ToolDef("get_client_log",
+			"The client's WARN/ERROR log lines (RuneLite and the game client, e.g. client script errors), newest last, "
+				+ "with the tick they happened on. since_seq to see only new ones.",
+			Schema.object()
+				.integer("since_seq", "Only lines with seq greater than this.")
+				.integer("limit", "Newest N. Default 100.")
+				.build(),
+			a -> ToolResult.json(clientLogTool(a))));
+		t.add(new ToolDef("read_interface",
+			"A compact read of an open interface group: every visible component's text, item (id, quantity) and actions, "
+				+ "with packed ids for click_widget. Without group: the modal (main) interface and any open dialogue.",
+			Schema.object()
+				.integer("group", "Interface group id. Default: the open modal interfaces.")
+				.integer("limit", "Max entries per group. Default 200.")
+				.build(),
+			a -> ToolResult.json(onClient(() -> readInterface(a)))));
+		t.add(new ToolDef("get_menu",
+			"The right-click menu entries the client would show now (top entry last, as RuneLite stores them): option, "
+				+ "target, MenuAction, ids. Useful to see which ops an object or NPC offers under the mouse.",
+			Schema.object().build(),
+			a -> ToolResult.json(onClient(this::menu))));
 		return t;
+	}
+
+	// ---- logs, interfaces, menu ----------------------------------------------------------------------------------
+
+	private JsonObject clientLogTool(JsonObject a)
+	{
+		JsonObject o = new JsonObject();
+		if (clientLog == null)
+		{
+			o.addProperty("available", false);
+			return o;
+		}
+		Integer since = optInt(a, "since_seq");
+		o.add("lines", clientLog.query(since == null ? 0 : since, null, Math.max(1, Math.min(500, intArg(a, "limit", 100)))));
+		o.addProperty("latest_seq", clientLog.latestSeq());
+		return o;
+	}
+
+	private JsonObject readInterface(JsonObject a)
+	{
+		JsonObject o = new JsonObject();
+		int limit = Math.max(1, Math.min(2000, intArg(a, "limit", 200)));
+		List<Integer> groups = new ArrayList<>();
+		Integer one = optInt(a, "group");
+		if (one != null)
+		{
+			groups.add(one);
+		}
+		else
+		{
+			for (net.runelite.api.WidgetNode node : client.getComponentTable())
+			{
+				if (node.getModalMode() == 0 || isDialogGroup(node.getId()))
+				{
+					groups.add(node.getId());
+				}
+			}
+		}
+		JsonArray out = new JsonArray();
+		for (int g : groups)
+		{
+			JsonObject gj = new JsonObject();
+			gj.addProperty("group", g);
+			JsonArray entries = new JsonArray();
+			for (Widget w : groupWidgets(g))
+			{
+				if (entries.size() >= limit || w.isHidden())
+				{
+					continue;
+				}
+				String text = w.getText() == null ? "" : Text.removeTags(w.getText().replace("<br>", " ")).trim();
+				String[] acts = w.getActions();
+				JsonArray actions = actionsJson(acts);
+				boolean item = w.getItemId() > 0;
+				if (text.isEmpty() && actions.size() == 0 && !item)
+				{
+					continue;
+				}
+				JsonObject e = new JsonObject();
+				e.addProperty("id", w.getId());
+				if (w.getIndex() >= 0)
+				{
+					e.addProperty("index", w.getIndex());
+				}
+				if (!text.isEmpty())
+				{
+					e.addProperty("text", text);
+				}
+				if (item)
+				{
+					e.addProperty("item_id", w.getItemId());
+					e.addProperty("item_quantity", w.getItemQuantity());
+				}
+				if (actions.size() > 0)
+				{
+					e.add("actions", actions);
+				}
+				entries.add(e);
+			}
+			gj.add("entries", entries);
+			out.add(gj);
+		}
+		o.add("interfaces", out);
+		return o;
+	}
+
+	private static boolean isDialogGroup(int g)
+	{
+		for (int d : DIALOG_GROUPS)
+		{
+			if (d == g && g != 162)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private JsonObject menu()
+	{
+		JsonObject o = new JsonObject();
+		JsonArray arr = new JsonArray();
+		for (net.runelite.api.MenuEntry m : client.getMenuEntries())
+		{
+			JsonObject e = new JsonObject();
+			e.addProperty("option", Text.removeTags(m.getOption()));
+			e.addProperty("target", Text.removeTags(m.getTarget()));
+			e.addProperty("action", m.getType().name());
+			e.addProperty("id", m.getIdentifier());
+			e.addProperty("p0", m.getParam0());
+			e.addProperty("p1", m.getParam1());
+			e.addProperty("item_id", m.getItemId());
+			arr.add(e);
+		}
+		o.add("entries", arr);
+		o.addProperty("menu_open", client.isMenuOpen());
+		return o;
 	}
 
 	// ---- interact ------------------------------------------------------------------------------------------------
@@ -204,6 +344,10 @@ final class ActionTools
 	{
 		Target t = find(a, "name", "id", "kind");
 		String option = strArg(a, "option", null);
+		if (option != null && option.trim().equalsIgnoreCase("examine"))
+		{
+			return examine(t, boolArg(a, "dry_run", false));
+		}
 		Integer slot = optInt(a, "op");
 		int op = slot != null ? slot - 1 : chooseOp(t.actions, option);
 		if (op < 0 || op >= t.ops.length)
@@ -219,6 +363,34 @@ final class ActionTools
 			client.menuAction(t.p0, t.p1, type, t.menuId, -1, opText, t.name);
 		}
 		sent.addProperty("sent", !boolArg(a, "dry_run", false));
+		sent.addProperty("tick", client.getTickCount());
+		return sent;
+	}
+
+	/** Examine is not one of the config ops: it has its own menu actions (EXAMINE_NPC / _OBJECT / _ITEM_GROUND). */
+	private JsonObject examine(Target t, boolean dry)
+	{
+		MenuAction type;
+		switch (t.kind)
+		{
+			case "npc":
+				type = MenuAction.EXAMINE_NPC;
+				break;
+			case "ground_item":
+				type = MenuAction.EXAMINE_ITEM_GROUND;
+				break;
+			case "object":
+				type = MenuAction.EXAMINE_OBJECT;
+				break;
+			default:
+				throw new IllegalArgumentException("players have no Examine");
+		}
+		JsonObject sent = describe(t, type, "Examine");
+		if (!dry)
+		{
+			client.menuAction(t.p0, t.p1, type, t.menuId, -1, "Examine", t.name);
+		}
+		sent.addProperty("sent", !dry);
 		sent.addProperty("tick", client.getTickCount());
 		return sent;
 	}

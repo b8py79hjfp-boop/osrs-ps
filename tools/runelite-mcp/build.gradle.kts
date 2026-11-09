@@ -26,6 +26,7 @@ dependencies {
     compileOnly("com.google.inject:guice:4.1.0")
     compileOnly("javax.inject:javax.inject:1")
     compileOnly("org.slf4j:slf4j-api:1.7.25")
+    compileOnly("ch.qos.logback:logback-classic:1.2.9") // RuneLite 1.13.6's logging backend (ClientLogCapture)
     compileOnly("org.jetbrains:annotations:26.0.2") // @Nullable and friends, referenced by the RuneLite API
 }
 

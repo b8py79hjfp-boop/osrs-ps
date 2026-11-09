@@ -224,7 +224,9 @@ final class ClientTools
 		t.add(new ToolDef("get_events",
 			"Ring buffer of client events with tick numbers: MenuOptionClicked (what the client sent), VarbitChanged "
 				+ "(varp/varbit + value), WidgetLoaded/WidgetClosed, GameStateChanged, StatChanged, "
-				+ "ItemContainerChanged, ChatMessage. Poll with since_seq = latest_seq of the previous call.",
+				+ "ItemContainerChanged, ChatMessage, SoundEffectPlayed/AreaSoundEffectPlayed (sound id), HitsplatApplied, "
+				+ "ActorDeath, InteractingChanged and AnimationChanged (local player and its target), OverheadTextChanged. "
+				+ "Poll with since_seq = latest_seq of the previous call.",
 			Schema.object()
 				.integer("since_seq", "Only events with seq greater than this. Default 0.")
 				.strings("types", "Event type names to keep, e.g. MenuOptionClicked, VarbitChanged.")
