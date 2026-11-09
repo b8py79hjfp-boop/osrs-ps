@@ -24,7 +24,8 @@ public class DevCommands : ContentPlugin {
             runMode = !runMode
             message("Run: $runMode")
         }
-        onCommand("hp", DEV, ECONOMY) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it } }
+        // At least 1: a player alive at 0 Hitpoints is a state the game never has (death needs a hit; seen in the client).
+        onCommand("hp", DEV, ECONOMY) { args -> args.getOrNull(0)?.toIntOrNull()?.let { hitpoints = it.coerceAtLeast(1) } }
         onCommand("spellbook", DEV, CONVENIENCE) { args ->
             // 0 standard, 1 ancient, 2 lunar, 3 arceuus (varbit `spellbook`).
             val book = args.getOrNull(0)?.toIntOrNull()

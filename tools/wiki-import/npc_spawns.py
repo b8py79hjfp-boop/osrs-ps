@@ -245,6 +245,10 @@ MANUAL_REPLACES = {(2148, 3165, 3490)}
 # 1337 and no animations in the cache) put Deadman guards in Lumbridge, Falador and the Gnome Stronghold.
 OTHER_MODE = re.compile(r"\((Deadman[^)]*|[^)]*League|Grid Master|RuneScape 2 Beta|[^)]*beta)\)$|^Leagues? |Tournament Guide$", re.I)
 
+# Pet NPCs (cache op "Pick-up", they follow their owner) that some Wiki LocLine / map put in the world: seen in the client
+# (a Rock Golem in Lumbridge castle's courtyard). Rock Golem, Great blue heron, Tiny Tempor, Tumeken's and Elidinis' Guardian.
+PET_IDS = {2182, 6817, 10562, 11652, 11653}
+
 BANKER_IDS = (1613, 1618)
 
 # Banker offset from its booth, named as the `open` digits (W, N, E, S) and the `evidence` letter of cache-dump's
@@ -354,7 +358,7 @@ def main():
             for n, (x, z) in enumerate(coords):
                 rows.add((choices[n % len(choices)], x, z, plane, -1))
     # NPCs content spawns itself (Wilderness lair bosses: their LocLines are the surface entrance pins).
-    rows = {r for r in rows if r[0] not in CONTENT_SPAWNED}
+    rows = {r for r in rows if r[0] not in CONTENT_SPAWNED and r[0] not in PET_IDS}
     if len(sys.argv) > 3:
         wiki = {(r[1], r[2], r[3]) for r in rows if cache.get(r[0], ("",))[0] == "Banker"}
         rows |= banker_rows(sys.argv[3], wiki)
