@@ -1,4 +1,4 @@
-[clientscript,teleports_detail](component $detail, string $title, string $icon, string $desc, string $info, string $warn)
+[clientscript,teleports_detail](component $detail, string $title, string $icon, string $desc, string $warn)
 // Server -> client: the selected destination. An empty $title shows the "choose a destination" hint.
 cc_deleteall($detail);
 cc_create($detail, ^iftype_rectangle, 0);
@@ -25,9 +25,7 @@ cc_setposition(6, 36, ^setpos_abs_left, ^setpos_abs_top);
 cc_setsize(128, 1, ^setsize_abs, ^setsize_abs);
 cc_setcolour(0x5a4a35);
 cc_setfill(true);
-~teleports_text($detail, 6, 6, 42, 128, 80, p11_full, 0xffffff, $desc, ^settextalign_left, ^settextalign_top);
-~teleports_text($detail, 7, 6, 124, 128, 14, p11_full, 0x9f8b6b, "Location", ^settextalign_left, ^settextalign_top);
-~teleports_text($detail, 8, 6, 138, 128, 14, p11_full, 0xffffff, $info, ^settextalign_left, ^settextalign_top);
+~teleports_text($detail, 6, 6, 42, 128, 118, p11_full, 0xffffff, $desc, ^settextalign_left, ^settextalign_top);
 if (string_length($warn) > 0) {
     cc_create($detail, ^iftype_graphic, 9);
     cc_setposition(6, 168, ^setpos_abs_left, ^setpos_abs_top);

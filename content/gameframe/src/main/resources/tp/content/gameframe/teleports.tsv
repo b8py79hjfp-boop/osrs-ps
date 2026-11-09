@@ -1,150 +1,150 @@
 id	category	name	x	z	level	wilderness	description	source	icon
-1	cities	Lumbridge	3222	3218	0	0	Home: castle courtyard, respawn point	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:127	
-2	cities	Varrock	3213	3424	0	0	Varrock square	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:117	
-3	cities	Grand Exchange	3163	3478	0	0	The Grand Exchange, north-west Varrock	docs/mechanics/teleports.md:82	
-4	cities	Falador	2964	3378	0	0	Falador square	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:137	
-5	cities	Edgeville	3087	3496	0	0	Bank and Wilderness ditch	docs/mechanics/teleports.md:77	
-6	cities	Draynor Village	3105	3251	0	0	Bank, market and Draynor Manor	docs/mechanics/teleports.md:77	
-7	cities	Al Kharid	3293	3163	0	0	Desert town gate and bank	docs/mechanics/teleports.md:77	
-8	cities	Port Sarim	3028	3220	0	0	Ships to Karamja and Entrana	https://oldschool.runescape.wiki/w/Port_Sarim (infobox map) (nearest standable tile)	
-9	cities	Rimmington	2949	3224	0	0	Small town; house portal	https://oldschool.runescape.wiki/w/Rimmington (infobox map) (nearest standable tile)	
-10	cities	Camelot	2757	3479	0	0	Outside Camelot Castle	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:157	
-11	cities	Seers' Village	2710	3485	0	0	Bank, flax and maple trees	https://oldschool.runescape.wiki/w/Seers%27_Village (infobox map)	
-12	cities	Catherby	2801	3450	0	0	Fishing spots and herb patch	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:381	
-13	cities	East Ardougne	2662	3305	0	0	Market square and stalls	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:178	
-14	cities	West Ardougne	2500	3290	0	0	Plague city	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:440	
-15	cities	Yanille	2577	3090	0	0	Magic Guild and Watchtower	https://oldschool.runescape.wiki/w/Yanille (infobox map)	
-16	cities	Taverley	2910	3451	0	0	Druids' village; dungeon entrance	https://oldschool.runescape.wiki/w/Taverley (infobox map)	
-17	cities	Burthorpe	2899	3553	0	0	Games room and Warriors' Guild	docs/mechanics/teleports.md:78	
-18	cities	Trollheim	2890	3679	0	0	Mountain top; God Wars path	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:211	
-19	cities	Brimhaven	2760	3195	0	0	Pub, dock and dungeon	https://oldschool.runescape.wiki/w/Brimhaven (infobox map)	
-20	cities	Musa Point	2918	3176	0	0	Karamja: banana plantation	docs/mechanics/teleports.md:77	
-21	cities	Shilo Village	2920	2998	0	0	Gem mine and Duradel	https://oldschool.runescape.wiki/w/Shilo_Village ({{Map}}) (nearest standable tile)	
-22	cities	Tree Gnome Stronghold	2440	3460	0	0	Grand Tree and agility course	https://oldschool.runescape.wiki/w/Tree_Gnome_Stronghold (infobox map)	
-23	cities	Lletya	2337	3170	0	0	Elven settlement	https://oldschool.runescape.wiki/w/Lletya (infobox map) (nearest standable tile)	
-24	cities	Prifddinas	3259	6079	0	0	City of the elves	https://oldschool.runescape.wiki/w/Prifddinas (infobox map) (nearest standable tile)	
-25	cities	Zanaris	2429	4429	0	0	Fairy realm; fairy ring hub	https://oldschool.runescape.wiki/w/Zanaris (infobox map) (nearest standable tile)	
-26	cities	Rellekka	2658	3677	0	0	Fremennik town and boats	https://oldschool.runescape.wiki/w/Rellekka (infobox map)	
-27	cities	Neitiznot	2331	3802	0	0	Fremennik isle; yak farm	https://oldschool.runescape.wiki/w/Neitiznot (infobox map)	
-28	cities	Miscellania	2534	3862	0	0	Kingdom of Miscellania	docs/mechanics/teleports.md:82	
-29	cities	Lunar Isle	2113	3915	0	0	Moonclan; Lunar spellbook	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:321	
-30	cities	Canifis	3493	3488	0	0	Werewolf village; rooftop course	https://oldschool.runescape.wiki/w/Canifis (infobox map)	
-31	cities	Port Phasmatys	3679	3486	0	0	Ghost town and Ectofuntus	https://oldschool.runescape.wiki/w/Port_Phasmatys (infobox map)	
-32	cities	Mos Le'Harmless	3735	2999	0	0	Pirate island; cave horrors	https://oldschool.runescape.wiki/w/Mos_Le%27Harmless (infobox map)	
-33	cities	Pollnivneach	3358	2974	0	0	Desert town; rooftop course	https://oldschool.runescape.wiki/w/Pollnivneach (infobox map)	
-34	cities	Nardah	3427	2911	0	0	Desert town and Elidinis shrine	https://oldschool.runescape.wiki/w/Nardah (infobox map)	
-35	cities	Sophanem	3297	2783	0	0	Desert city; Pyramid Plunder	https://oldschool.runescape.wiki/w/Sophanem (infobox map)	
-36	cities	Kourend Castle	1641	3673	0	0	Great Kourend city centre	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:167	
-37	cities	Hosidius	1761	3597	0	0	Farming house and kitchen	https://oldschool.runescape.wiki/w/Hosidius (infobox map) (nearest standable tile)	
-38	cities	Arceuus	1700	3800	0	0	Library and Dark altar	https://oldschool.runescape.wiki/w/Arceuus (infobox map)	
-39	cities	Lovakengj	1505	3801	0	0	Mines and blast mine	https://oldschool.runescape.wiki/w/Lovakengj (infobox map)	
-40	cities	Port Piscarilius	1803	3752	0	0	Fishing port; Tempoross boats	https://oldschool.runescape.wiki/w/Port_Piscarilius (infobox map)	
-41	cities	Shayzien	1517	3592	0	0	Military house; combat ring	https://oldschool.runescape.wiki/w/Shayzien (infobox map)	
-42	cities	Civitas illa Fortis	1681	3133	0	0	Varlamore's capital	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:189	
-43	cities	Ferox Enclave	3151	3635	0	0	Safe zone in the Wilderness	docs/mechanics/teleports.md:79	
-44	cities	Ape Atoll	2798	2799	0	0	Marim, the monkey island	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:221	
-45	raids	Chambers of Xeric	1232	3572	0	0	Mount Quidamortem: raid entrance	content/raids-cox/src/main/kotlin/tp/content/raids/cox/CoxRaid.kt:38 (nearest standable tile)	28
-46	raids	Theatre of Blood	3675	3219	0	0	Ver Sinhaza: party board and lobby	content/raids-tob/src/main/kotlin/tp/content/raids/tob/TobRaid.kt:33	30
-47	raids	Tombs of Amascut	3358	9114	0	0	Necropolis: raid lobby	content/raids-toa/src/main/kotlin/tp/content/raids/toa/ToaRaid.kt:74	37
-48	raids	The Fractured Archive	4127	5508	0	0	Raid lobby entrance	content/raids-tfa/src/main/kotlin/tp/content/raids/tfa/TfaRaid.kt:29	72
-49	bosses	God Wars Dungeon	2892	5300	2	0	Generals of the four gods; Nex	https://oldschool.runescape.wiki/w/God_Wars_Dungeon (infobox map)	22
-50	bosses	Zulrah	2193	3060	0	0	Zul-Andra: boat to Zulrah's shrine	https://oldschool.runescape.wiki/w/Zul-Andra (infobox map)	19
-51	bosses	Vorkath	2269	4061	0	0	Ungael: Vorkath's island	https://oldschool.runescape.wiki/w/Ungael (infobox map) (nearest standable tile)	21
-52	bosses	Corporeal Beast	2967	4254	2	0	Corporeal Beast's cave	docs/mechanics/teleports.md:78 (nearest standable tile)	27
-53	bosses	Kraken	2271	10015	0	0	Kraken Cove (Slayer 87)	https://oldschool.runescape.wiki/w/Kraken_Cove (infobox map) (nearest standable tile)	15
-54	bosses	Cerberus	2884	3398	0	0	Taverley Dungeon: Cerberus' lair (Slayer 91)	https://oldschool.runescape.wiki/w/Taverley_Dungeon ({{Map}})	20
-55	bosses	Thermonuclear smoke devil	2392	9440	0	0	Smoke Devil Dungeon (Slayer 93)	https://oldschool.runescape.wiki/w/Smoke_Devil_Dungeon (infobox map)	17
-56	bosses	Abyssal Sire	3105	4789	0	0	Abyssal Nexus (Slayer 85)	https://oldschool.runescape.wiki/w/Abyssal_Sire (LocLine) (nearest standable tile)	16
-57	bosses	Alchemical Hydra	1364	10265	0	0	Karuulm Slayer Dungeon (Slayer 95)	https://oldschool.runescape.wiki/w/Alchemical_Hydra (LocLine)	29
-58	bosses	Giant Mole	3006	3379	0	0	Falador Park: mole hills	https://oldschool.runescape.wiki/w/Falador_Park (infobox map)	3
-59	bosses	Kalphite Queen	3474	9496	0	0	Kalphite Lair, Kharidian Desert	https://oldschool.runescape.wiki/w/Kalphite_Queen (LocLine)	10
-60	bosses	Dagannoth Kings	2523	3745	0	0	Waterbirth Island	https://oldschool.runescape.wiki/w/Waterbirth_Island (infobox map) (nearest standable tile)	33
-61	bosses	Sarachnis	1701	3573	0	0	Forthos Dungeon, Hosidius	https://oldschool.runescape.wiki/w/Forthos_Dungeon ({{Map}}) (nearest standable tile)	9
-62	bosses	The Nightmare	3724	3335	0	0	Slepe: the Sisterhood Sanctuary	https://oldschool.runescape.wiki/w/Slepe (infobox map)	26
-63	bosses	The Leviathan	2038	6427	0	0	The Scar (Desert Treasure II)	https://oldschool.runescape.wiki/w/The_Scar (infobox map) (nearest standable tile)	52
-64	bosses	The Whisperer	2663	6367	0	0	Lassar Undercity (Desert Treasure II)	https://oldschool.runescape.wiki/w/Lassar_Undercity (infobox map)	50
-65	bosses	Vardorvis	1162	3379	0	0	Stranglewood (Desert Treasure II)	https://oldschool.runescape.wiki/w/The_Stranglewood (infobox map)	53
-66	bosses	Duke Sucellus	2919	10328	0	0	Ghorrock Dungeon (Desert Treasure II)	https://oldschool.runescape.wiki/w/Ghorrock_Dungeon (infobox map)	51
-67	bosses	Scurrius	3299	9867	0	0	Varrock Sewers: Scurrius's nest	https://oldschool.runescape.wiki/w/Scurrius (LocLine)	54
-68	bosses	Perilous Moons	1440	9632	0	0	Neypotzli: the three moons	https://oldschool.runescape.wiki/w/Neypotzli (infobox map)	56
-69	bosses	Araxxor	3675	9830	0	0	Morytania Spider Nest (Slayer 92)	https://oldschool.runescape.wiki/w/Morytania_Spider_Cave (infobox map)	57
-70	bosses	The Hueycoatl	1508	3289	0	0	Varlamore: the Hueycoatl	https://oldschool.runescape.wiki/w/The_Hueycoatl (LocLine) (nearest standable tile)	59
-71	bosses	Amoxliatl	1362	4511	0	0	Ruins of Tapoyauik	https://oldschool.runescape.wiki/w/Amoxliatl (LocLine)	58
-72	bosses	The Royal Titans	3007	3149	0	0	Asgarnian Ice Dungeon: the Titans	https://oldschool.runescape.wiki/w/Asgarnian_Ice_Dungeon ({{Map}}) (nearest standable tile)	62
-73	bosses	Barrows	3564	3315	0	0	The six Barrows brothers	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:465	7
-74	bosses	Zalcano	3280	6058	0	0	Prifddinas: Zalcano's prison	https://oldschool.runescape.wiki/w/Zalcano ({{Map}}) (nearest standable tile)	13
-75	bosses	The Gauntlet	3228	6116	0	0	Prifddinas: Crystalline Hunllef	https://oldschool.runescape.wiki/w/The_Gauntlet (infobox map)	18
-76	bosses	TzHaar Fight Cave	2439	5172	0	0	TzTok-Jad	https://oldschool.runescape.wiki/w/TzHaar_Fight_Cave (infobox map)	48
-77	bosses	The Inferno	2496	5122	0	0	TzKal-Zuk, Mor Ul Rek	https://oldschool.runescape.wiki/w/Inferno (infobox map)	49
-78	bosses	Tormented Demons	4104	4427	0	0	Ancient Guthixian Temple	https://oldschool.runescape.wiki/w/Ancient_Guthixian_Temple (infobox map) (nearest standable tile)	
-79	bosses	Callisto	3290	3848	0	42	Callisto's Den entrance	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:199 (nearest standable tile)	41
-80	bosses	Vet'ion	3220	3786	0	34	Vet'ion's Rest entrance	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:225 (nearest standable tile)	42
-81	bosses	Venenatis	3320	3793	0	35	Silk Chasm entrance	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:251 (nearest standable tile)	43
-82	bosses	Artio	3114	3676	0	20	Hunter's End entrance (singles)	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:212 (nearest standable tile)	41
-83	bosses	Calvar'ion	3179	3682	0	21	Skeletal Tomb entrance (singles)	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:238 (nearest standable tile)	42
-84	bosses	Spindel	3182	3743	0	28	Web Chasm entrance (singles)	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:264 (nearest standable tile)	43
-85	bosses	Chaos Elemental	3261	3927	0	51	Rogues' Castle, deep Wilderness	https://oldschool.runescape.wiki/w/Chaos_Elemental (LocLine)	40
-86	bosses	Scorpia	3240	3944	0	54	Scorpion Pit, Wilderness	https://oldschool.runescape.wiki/w/Scorpion_Pit (infobox map)	47
-87	bosses	King Black Dragon	2269	4697	0	0	The King Black Dragon's lair	https://oldschool.runescape.wiki/w/King_Black_Dragon (LocLine)	14
-88	bosses	Revenant Caves	3075	3652	0	17	Revenant Caves, low-level entrance	content/pvp/src/main/kotlin/tp/content/pvp/RevenantCaves.kt:75	
-89	skilling	Woodcutting Guild	1662	3505	0	0	Woodcutting: redwoods to yews	docs/mechanics/teleports.md:81	
-90	skilling	Mining Guild	3049	9763	0	0	Mining: amethyst, mithril, adamant	docs/mechanics/teleports.md:81	
-91	skilling	Motherlode Mine	3745	5663	0	0	Mining: pay-dirt and gold nuggets	https://oldschool.runescape.wiki/w/Motherlode_Mine (infobox map) (nearest standable tile)	
-92	skilling	Fishing Guild	2611	3390	0	0	Fishing: sharks and lobsters	docs/mechanics/teleports.md:81	
-93	skilling	Piscatoris Fishing Colony	2332	3683	0	0	Fishing: monkfish	https://oldschool.runescape.wiki/w/Piscatoris_Fishing_Colony (infobox map)	
-94	skilling	Farming Guild	1248	3719	0	0	Farming: contracts and special patches	docs/mechanics/teleports.md:81	
-95	skilling	Tithe Farm	1818	3499	0	0	Farming minigame, Hosidius	https://oldschool.runescape.wiki/w/Tithe_Farm (infobox map)	
-96	skilling	Crafting Guild	2933	3295	0	0	Crafting and Mining	docs/mechanics/teleports.md:81	
-97	skilling	Cooking Guild	3144	3438	0	0	Cooking	docs/mechanics/teleports.md:81	
-98	skilling	Hosidius Kitchen	1679	3618	0	0	Cooking: the clay oven range	https://oldschool.runescape.wiki/w/Hosidius_Kitchen (infobox map)	
-99	skilling	Blast Furnace	2931	10196	0	0	Smithing: half-coal bars	https://oldschool.runescape.wiki/w/Blast_Furnace (infobox map) (nearest standable tile)	
-100	skilling	Gnome Stronghold Agility	2480	3428	0	0	Agility course, level 1	https://oldschool.runescape.wiki/w/Gnome_Stronghold_Agility_Course (infobox map)	
-101	skilling	Canifis Rooftop	3509	3482	0	0	Agility: rooftop course, level 40	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:38 (the last obstacle's landing, by the course start)	
-102	skilling	Falador Rooftop	3025	3333	0	0	Agility: rooftop course, level 50	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:74 (the last obstacle's landing, by the course start)	
-103	skilling	Seers' Village Rooftop	2702	3463	0	0	Agility: rooftop course, level 60	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:100 (the last obstacle's landing, by the course start)	
-104	skilling	Pollnivneach Rooftop	3364	3001	0	0	Agility: rooftop course, level 70	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:129 (the last obstacle's landing, by the course start)	
-105	skilling	Rellekka Rooftop	2653	3675	0	0	Agility: rooftop course, level 80	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:156 (the last obstacle's landing, by the course start)	
-106	skilling	Ardougne Rooftop	2656	3296	0	0	Agility: rooftop course, level 90	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:186 (the last obstacle's landing, by the course start)	
-107	skilling	Prifddinas Agility	3253	6108	0	0	Agility course, level 75	https://oldschool.runescape.wiki/w/Prifddinas_Agility_Course (infobox map) (nearest standable tile)	
-108	skilling	Hallowed Sepulchre	3653	3388	0	0	Agility minigame, Darkmeyer	https://oldschool.runescape.wiki/w/Hallowed_Sepulchre (infobox map) (nearest standable tile)	
-109	skilling	Wintertodt	1630	3962	0	0	Firemaking boss, Kourend	content/skills/src/main/kotlin/tp/content/skills/Wintertodt.kt:517	6
-110	skilling	Tempoross	3133	2840	0	0	Fishing boss: Tempoross Cove	content/skills/src/main/kotlin/tp/content/skills/TemporossConfig.kt:41	5
-111	skilling	Guardians of the Rift	3613	9472	0	0	Runecraft minigame lobby	content/skills/src/main/kotlin/tp/content/skills/RunecraftGotrData.kt:239	
-112	skilling	Ourania Altar	2452	3232	0	0	Runecraft: ZMI cave ladder	content/skills/src/main/kotlin/tp/content/skills/RunecraftOurania.kt:136 (nearest standable tile)	
-113	skilling	Blood Altar	1714	3827	0	0	Runecraft: blood runes, Kourend	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:268 (nearest standable tile)	
-114	skilling	Soul Altar	1812	3852	0	0	Runecraft: soul runes, Kourend	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:269 (nearest standable tile)	
-115	skilling	Abyss (Mage of Zamorak)	3107	3555	0	5	Runecraft: into the Abyss	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:261	
-116	skilling	Volcanic Mine	3816	3808	0	0	Mining minigame, Fossil Island	content/skills/src/main/kotlin/tp/content/skills/VolcanicMineData.kt:195	
-117	skilling	Pyramid Plunder	3288	2801	0	0	Thieving minigame, Sophanem	content/skills/src/main/kotlin/tp/content/skills/PyramidPlunder.kt:484	
-118	skilling	Rogues' Den	2906	3537	0	0	Thieving: safes; Rogue's Den maze	https://oldschool.runescape.wiki/w/Rogues%27_Den (infobox map)	
-119	skilling	Sorceress's Garden	2911	5473	0	0	Thieving minigame, Al Kharid	https://oldschool.runescape.wiki/w/Sorceress%27s_Garden (infobox map) (nearest standable tile)	
-120	skilling	Hunter Guild	1558	3047	0	0	Hunter: rumours, Varlamore	https://oldschool.runescape.wiki/w/Hunter_Guild (infobox map) (nearest standable tile)	
-121	skilling	Feldip Hunter Area	2558	2911	0	0	Hunter: chinchompas, birds	https://oldschool.runescape.wiki/w/Feldip_Hunter_area (infobox map)	
-122	skilling	Chaos Altar	3238	3608	0	12	Prayer: bones at the Chaos Temple	content/skills/src/main/kotlin/tp/content/skills/PrayerTraining.kt:119 (nearest standable tile)	
-123	skilling	Barbarian Outpost	2520	3571	0	0	Barbarian training; Assault	docs/mechanics/teleports.md:78	
-124	misc	Emir's Arena	3315	3235	0	0	PvP arena, Al Kharid	docs/mechanics/teleports.md:79	
-125	misc	Castle Wars	2440	3090	0	0	Team minigame	docs/mechanics/teleports.md:79	
-126	misc	Soul Wars	2204	2902	0	0	Team minigame, Isle of Souls	https://oldschool.runescape.wiki/w/Soul_Wars (infobox map) (nearest standable tile)	
-127	misc	Pest Control	2656	2656	0	0	Void Knights' Outpost	https://oldschool.runescape.wiki/w/Void_Knights%27_Outpost (infobox map)	
-128	misc	Barbarian Assault	2533	3571	0	0	Penance minigame	https://oldschool.runescape.wiki/w/Barbarian_Assault (infobox map)	
-129	misc	Fortis Colosseum	1793	3107	0	0	Wave combat challenge	docs/mechanics/teleports.md:79	55
-130	misc	Warriors' Guild	2882	3547	0	0	Defenders and the Cyclopes	docs/mechanics/teleports.md:80	
-131	misc	Champions' Guild	3192	3368	0	0	Champions' challenges	docs/mechanics/teleports.md:80	
-132	misc	Ranging Guild	2653	3439	0	0	Archery targets	docs/mechanics/teleports.md:80	
-133	misc	Myths' Guild	2456	2845	0	0	Dragon Slayer II guild	https://oldschool.runescape.wiki/w/Myths%27_Guild (infobox map) (nearest standable tile)	
-134	misc	Wizards' Tower	3109	3160	0	0	Rune Mysteries; Sedridor	https://oldschool.runescape.wiki/w/Wizards%27_Tower (infobox map)	
-135	misc	Mage Arena	3105	3933	0	52	God spells and capes	https://oldschool.runescape.wiki/w/Mage_Arena (infobox map)	
-136	misc	Tears of Guthix	3245	9500	0	0	Weekly experience minigame	docs/mechanics/teleports.md:78	
-137	misc	Fossil Island	3730	3807	0	0	Museum camp	https://oldschool.runescape.wiki/w/Fossil_Island (infobox map)	
-138	misc	Lighthouse	2509	3641	0	0	Horror from the Deep; dagannoths	https://oldschool.runescape.wiki/w/Lighthouse (infobox map)	
-139	misc	Draynor Manor	3109	3351	0	0	Professor Oddenstein's manor	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:411	
-140	misc	Salve Graveyard	3433	3461	0	0	Morytania graveyard	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:429	
-141	misc	Harmony Island	3797	2866	0	0	Island off Mos Le'Harmless	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:445	
-142	misc	Turael (Slayer)	2931	3536	0	0	Slayer master, Burthorpe	https://oldschool.runescape.wiki/w/Turael (infobox map)	
-143	misc	Mazchna (Slayer)	3511	3509	0	0	Slayer master, Canifis	https://oldschool.runescape.wiki/w/Mazchna (infobox map)	
-144	misc	Vannaka (Slayer)	3147	9914	0	0	Slayer master, Edgeville Dungeon	https://oldschool.runescape.wiki/w/Vannaka (infobox map)	
-145	misc	Chaeldar (Slayer)	2444	4431	0	0	Slayer master, Zanaris	https://oldschool.runescape.wiki/w/Chaeldar (infobox map)	
-146	misc	Nieve (Slayer)	2432	3423	0	0	Slayer master, Gnome Stronghold	https://oldschool.runescape.wiki/w/Nieve (infobox map)	
-147	misc	Duradel (Slayer)	2869	2982	1	0	Slayer master, Shilo Village	https://oldschool.runescape.wiki/w/Duradel (infobox map)	
-148	misc	Konar (Slayer)	1309	3785	0	0	Slayer master, Mount Karuulm	https://oldschool.runescape.wiki/w/Konar_quo_Maten (infobox map)	
-149	misc	Krystilia (Slayer)	3108	3515	0	0	Wilderness Slayer master, Edgeville	https://oldschool.runescape.wiki/w/Krystilia (infobox map) (nearest standable tile)	
+1	cities	Lumbridge	3222	3218	0	0	Lumbridge Castle courtyard, where new players start and where you respawn after dying. The bank is at the top of the castle.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:127	
+2	cities	Varrock	3213	3424	0	0	Varrock's central square by the fountain. Aubury's rune shop, Zaff's staves and both Varrock banks are a short walk away.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:117	
+3	cities	Grand Exchange	3163	3478	0	0	The Grand Exchange in north-west Varrock: buy and sell items with every player in the world. Bankers and clerks wait inside.	docs/mechanics/teleports.md:82	
+4	cities	Falador	2964	3378	0	0	Falador's town square, home of the White Knights. Two banks, the Party Room, Falador Park and the Dwarven Mine are close by.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:137	
+5	cities	Edgeville	3087	3496	0	0	Edgeville bank, beside the Wilderness ditch. The Edgeville Dungeon trapdoor and Vannaka's Slayer spot are nearby.	docs/mechanics/teleports.md:77	
+6	cities	Draynor Village	3105	3251	0	0	Draynor Village: bank, market stalls and the Wise Old Man. Willow trees line the river, and Draynor Manor lies to the north.	docs/mechanics/teleports.md:77	
+7	cities	Al Kharid	3293	3163	0	0	Al Kharid, the desert town east of Lumbridge: bank, furnace and the palace. Emir's Arena and the Shantay Pass are nearby.	docs/mechanics/teleports.md:77	
+8	cities	Port Sarim	3028	3220	0	0	Port Sarim docks: boats to Karamja and Entrana, plus fishing and magic shops. Rimmington is just to the west.	https://oldschool.runescape.wiki/w/Port_Sarim (infobox map) (nearest standable tile)	
+9	cities	Rimmington	2949	3224	0	0	Rimmington, a small village west of Port Sarim with the player-owned house portal and a mine to the north.	https://oldschool.runescape.wiki/w/Rimmington (infobox map) (nearest standable tile)	
+10	cities	Camelot	2757	3479	0	0	Outside Camelot Castle, home of King Arthur and his knights. Seers' Village is to the west.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:157	
+11	cities	Seers' Village	2710	3485	0	0	Seers' Village bank, with flax fields, maple and yew trees nearby. The Seers' rooftop course starts at the bank.	https://oldschool.runescape.wiki/w/Seers%27_Village (infobox map)	
+12	cities	Catherby	2801	3450	0	0	Catherby: lobster, swordfish and shark spots on the beach, a herb and allotment patch, and Arhein's general store.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:381	
+13	cities	East Ardougne	2662	3305	0	0	East Ardougne market square: baker's, silk, fur, gem and spice stalls for thieving. Bank and Ardougne Castle nearby.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:178	
+14	cities	West Ardougne	2500	3290	0	0	West Ardougne, the quarantined half of the city from Plague City and Biohazard.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:440	
+15	cities	Yanille	2577	3090	0	0	Yanille, the walled town in south Kandarin: bank, the Wizards' Guild (66 Magic) and the Watchtower to the north.	https://oldschool.runescape.wiki/w/Yanille (infobox map)	
+16	cities	Taverley	2910	3451	0	0	Taverley, the druids' village north-west of Falador. Taverley Dungeon's entrance and the druids' stone circle are close by.	https://oldschool.runescape.wiki/w/Taverley (infobox map)	
+17	cities	Burthorpe	2899	3553	0	0	Burthorpe, at the foot of Death Plateau: the Games Room, Turael's Slayer house and the Warriors' Guild.	docs/mechanics/teleports.md:78	
+18	cities	Trollheim	2890	3679	0	0	The top of Trollheim (Eadgar's Ruse). The path north-east leads to the God Wars Dungeon entrance.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:211	
+19	cities	Brimhaven	2760	3195	0	0	Brimhaven on Karamja: dock to Ardougne, the Brimhaven Agility Arena, and Brimhaven Dungeon (Saniboch charges 875 coins).	https://oldschool.runescape.wiki/w/Brimhaven (infobox map)	
+20	cities	Musa Point	2918	3176	0	0	Musa Point on Karamja: Luthas's banana plantation, the dock to Port Sarim and the Karamja volcano.	docs/mechanics/teleports.md:77	
+21	cities	Shilo Village	2920	2998	0	0	Shilo Village in south Karamja (Shilo Village quest): bank, gem mine, fly fishing on the river and Duradel.	https://oldschool.runescape.wiki/w/Shilo_Village ({{Map}}) (nearest standable tile)	
+22	cities	Tree Gnome Stronghold	2440	3460	0	0	The Tree Gnome Stronghold: the Grand Tree, gnome gliders, the Gnome Stronghold Agility Course and Nieve.	https://oldschool.runescape.wiki/w/Tree_Gnome_Stronghold (infobox map)	
+23	cities	Lletya	2337	3170	0	0	Lletya, the hidden elven settlement in Tirannwn (Mourning's End Part I), with a bank and shops.	https://oldschool.runescape.wiki/w/Lletya (infobox map) (nearest standable tile)	
+24	cities	Prifddinas	3259	6079	0	0	Prifddinas, the crystal city of the elves (Song of the Elves): eight clan districts, Zalcano, the Gauntlet and a rooftop course.	https://oldschool.runescape.wiki/w/Prifddinas (infobox map) (nearest standable tile)	
+25	cities	Zanaris	2429	4429	0	0	Zanaris, the fairy city (Lost City): the fairy ring hub, the Cosmic Altar and Chaeldar's Slayer spot.	https://oldschool.runescape.wiki/w/Zanaris (infobox map) (nearest standable tile)	
+26	cities	Rellekka	2658	3677	0	0	Rellekka, the Fremennik town: boats to Miscellania, Neitiznot, Jatizso and Waterbirth Island, and a rooftop course.	https://oldschool.runescape.wiki/w/Rellekka (infobox map)	
+27	cities	Neitiznot	2331	3802	0	0	Neitiznot, a Fremennik isle (The Fremennik Isles): yak hide armour, and the helm of neitiznot from Mawnis.	https://oldschool.runescape.wiki/w/Neitiznot (infobox map)	
+28	cities	Miscellania	2534	3862	0	0	Miscellania (Throne of Miscellania): keep the kingdom happy and it gathers resources for you. Etceteria is next door.	docs/mechanics/teleports.md:82	
+29	cities	Lunar Isle	2113	3915	0	0	Lunar Isle, home of the Moonclan (Lunar Diplomacy): the Astral Altar and the Lunar spellbook.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:321	
+30	cities	Canifis	3493	3488	0	0	Canifis, the werewolf village in Morytania (Priest in Peril): bank, Mazchna's Slayer spot and the Canifis rooftop course.	https://oldschool.runescape.wiki/w/Canifis (infobox map)	
+31	cities	Port Phasmatys	3679	3486	0	0	Port Phasmatys, the ghost town (Ghosts Ahoy): the Ectofuntus for Prayer training, a bank and the harbour.	https://oldschool.runescape.wiki/w/Port_Phasmatys (infobox map)	
+32	cities	Mos Le'Harmless	3735	2999	0	0	Mos Le'Harmless, the pirate island (Cabin Fever). Cave horrors (58 Slayer) live in the caves.	https://oldschool.runescape.wiki/w/Mos_Le%27Harmless (infobox map)	
+33	cities	Pollnivneach	3358	2974	0	0	Pollnivneach, the desert town south of the Shantay Pass: the Pollnivneach rooftop course and the Smoke Dungeon well.	https://oldschool.runescape.wiki/w/Pollnivneach (infobox map)	
+34	cities	Nardah	3427	2911	0	0	Nardah, the desert town by the River Elid: bank, the shrine of Elidinis, and Zahur, who cleans herbs.	https://oldschool.runescape.wiki/w/Nardah (infobox map)	
+35	cities	Sophanem	3297	2783	0	0	Sophanem, the desert city of Icthlarin (Icthlarin's Little Helper): bank and Pyramid Plunder.	https://oldschool.runescape.wiki/w/Sophanem (infobox map)	
+36	cities	Kourend Castle	1641	3673	0	0	Kourend Castle, at the centre of Great Kourend. Every house of Kourend is a short walk away.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:167	
+37	cities	Hosidius	1761	3597	0	0	Hosidius, Kourend's farming house: farming patches, the Tithe Farm, the clay oven kitchen and the vinery.	https://oldschool.runescape.wiki/w/Hosidius (infobox map) (nearest standable tile)	
+38	cities	Arceuus	1700	3800	0	0	Arceuus, Kourend's house of magic: the Arceuus Library, the Dark Altar and the Arceuus spellbook from Tyss.	https://oldschool.runescape.wiki/w/Arceuus (infobox map)	
+39	cities	Lovakengj	1505	3801	0	0	Lovakengj, Kourend's house of mining and smithing: the Lovakite mine and the blast mine.	https://oldschool.runescape.wiki/w/Lovakengj (infobox map)	
+40	cities	Port Piscarilius	1803	3752	0	0	Port Piscarilius, Kourend's fishing house: anglerfish, the boat to Tempoross Cove and the port market.	https://oldschool.runescape.wiki/w/Port_Piscarilius (infobox map)	
+41	cities	Shayzien	1517	3592	0	0	Shayzien, Kourend's military house: the combat ring, Shayzien armour and the crypts.	https://oldschool.runescape.wiki/w/Shayzien (infobox map)	
+42	cities	Civitas illa Fortis	1681	3133	0	0	Civitas illa Fortis, the capital of Varlamore: banks, the Fortis Colosseum and the quetzal transport network.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:189	
+43	cities	Ferox Enclave	3151	3635	0	0	Ferox Enclave, a safe haven inside the Wilderness: no player combat, a bank, and the Pool of Refreshment.	docs/mechanics/teleports.md:79	
+44	cities	Ape Atoll	2798	2799	0	0	Ape Atoll, home of the monkeys of Marim (Monkey Madness I): the Ape Atoll Agility Course.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:221	
+45	raids	Chambers of Xeric	1232	3572	0	0	Chambers of Xeric, beneath Mount Quidamortem: a raid for 1 to 100 players ending with the Great Olm. Challenge Mode too.	content/raids-cox/src/main/kotlin/tp/content/raids/cox/CoxRaid.kt:38 (nearest standable tile)	28
+46	raids	Theatre of Blood	3675	3219	0	0	Theatre of Blood in Ver Sinhaza, Morytania: six rooms for 1 to 5 players, ending with Verzik Vitur. Entry and Hard Mode.	content/raids-tob/src/main/kotlin/tp/content/raids/tob/TobRaid.kt:33	30
+47	raids	Tombs of Amascut	3358	9114	0	0	Tombs of Amascut, in the Necropolis: pick invocations to set the raid level, 1 to 8 players, ending with the Wardens.	content/raids-toa/src/main/kotlin/tp/content/raids/toa/ToaRaid.kt:74	37
+48	raids	The Fractured Archive	4127	5508	0	0	The Fractured Archive, beneath the Tears of Guthix cave (While Guthix Sleeps): five bosses for 1 to 8 players, ending with Ocellus.	content/raids-tfa/src/main/kotlin/tp/content/raids/tfa/TfaRaid.kt:29	72
+49	bosses	God Wars Dungeon	2892	5300	2	0	The God Wars Dungeon: Graardor, Zilyana, K'ril and Kree'arra, each behind a kill count. Nex waits beyond the frozen door.	https://oldschool.runescape.wiki/w/God_Wars_Dungeon (infobox map)	22
+50	bosses	Zulrah	2193	3060	0	0	Zul-Andra (Regicide): take the boat from the jetty to Zulrah, the solo snake boss that changes form and style.	https://oldschool.runescape.wiki/w/Zul-Andra (infobox map)	19
+51	bosses	Vorkath	2269	4061	0	0	Ungael, Vorkath's island (Dragon Slayer II). An undead dragon: bring anti-dragon protection and venom cures.	https://oldschool.runescape.wiki/w/Ungael (infobox map) (nearest standable tile)	21
+52	bosses	Corporeal Beast	2967	4254	2	0	The Corporeal Beast's cave: a 2,000 Hitpoint group boss that takes reduced damage from everything but spears and halberds.	docs/mechanics/teleports.md:78 (nearest standable tile)	27
+53	bosses	Kraken	2271	10015	0	0	Kraken Cove: the Kraken boss (87 Slayer, kraken task). Disturb the whirlpools to bring it up.	https://oldschool.runescape.wiki/w/Kraken_Cove (infobox map) (nearest standable tile)	15
+54	bosses	Cerberus	2884	3398	0	0	Cerberus' lair in Taverley Dungeon: the hellhound boss (91 Slayer, hellhound task).	https://oldschool.runescape.wiki/w/Taverley_Dungeon ({{Map}})	20
+55	bosses	Thermonuclear smoke devil	2392	9440	0	0	The Smoke Devil Dungeon: the Thermonuclear smoke devil (93 Slayer, smoke devil task). Wear a face mask or slayer helmet.	https://oldschool.runescape.wiki/w/Smoke_Devil_Dungeon (infobox map)	17
+56	bosses	Abyssal Sire	3105	4789	0	0	The Abyssal Nexus: the Abyssal Sire (85 Slayer, abyssal demon task).	https://oldschool.runescape.wiki/w/Abyssal_Sire (LocLine) (nearest standable tile)	16
+57	bosses	Alchemical Hydra	1364	10265	0	0	The Karuulm Slayer Dungeon: the Alchemical Hydra (95 Slayer, hydra task). Boots of stone or better are needed inside.	https://oldschool.runescape.wiki/w/Alchemical_Hydra (LocLine)	29
+58	bosses	Giant Mole	3006	3379	0	0	Falador Park: dig into a mole hill with a spade to fall into the Giant Mole's tunnels.	https://oldschool.runescape.wiki/w/Falador_Park (infobox map)	3
+59	bosses	Kalphite Queen	3474	9496	0	0	The Kalphite Lair in the Kharidian Desert: the Kalphite Queen, whose two forms resist different styles. Bring ropes.	https://oldschool.runescape.wiki/w/Kalphite_Queen (LocLine)	10
+60	bosses	Dagannoth Kings	2523	3745	0	0	Waterbirth Island: the three Dagannoth Kings below, Rex, Prime and Supreme, each weak to a different style.	https://oldschool.runescape.wiki/w/Waterbirth_Island (infobox map) (nearest standable tile)	33
+61	bosses	Sarachnis	1701	3573	0	0	Forthos Dungeon, south of Hosidius: Sarachnis, the spider queen.	https://oldschool.runescape.wiki/w/Forthos_Dungeon ({{Map}}) (nearest standable tile)	9
+62	bosses	The Nightmare	3724	3335	0	0	Slepe, Morytania: the Nightmare of Ashihama beneath the Sisterhood Sanctuary. Phosani's Nightmare is the solo version.	https://oldschool.runescape.wiki/w/Slepe (infobox map)	26
+63	bosses	The Leviathan	2038	6427	0	0	The Scar (Desert Treasure II): the Leviathan.	https://oldschool.runescape.wiki/w/The_Scar (infobox map) (nearest standable tile)	52
+64	bosses	The Whisperer	2663	6367	0	0	The Lassar Undercity (Desert Treasure II): the Whisperer.	https://oldschool.runescape.wiki/w/Lassar_Undercity (infobox map)	50
+65	bosses	Vardorvis	1162	3379	0	0	The Stranglewood (Desert Treasure II): Vardorvis.	https://oldschool.runescape.wiki/w/The_Stranglewood (infobox map)	53
+66	bosses	Duke Sucellus	2919	10328	0	0	Ghorrock Dungeon (Desert Treasure II): Duke Sucellus.	https://oldschool.runescape.wiki/w/Ghorrock_Dungeon (infobox map)	51
+67	bosses	Scurrius	3299	9867	0	0	The Varrock Sewers: Scurrius, the rat king, a mid-level boss for solo players or groups.	https://oldschool.runescape.wiki/w/Scurrius (LocLine)	54
+68	bosses	Perilous Moons	1440	9632	0	0	Neypotzli, Varlamore: the Perilous Moons, three boss fights with supplies gathered at the camp.	https://oldschool.runescape.wiki/w/Neypotzli (infobox map)	56
+69	bosses	Araxxor	3675	9830	0	0	The Morytania Spider Nest: Araxxor (92 Slayer, spider or araxyte task).	https://oldschool.runescape.wiki/w/Morytania_Spider_Cave (infobox map)	57
+70	bosses	The Hueycoatl	1508	3289	0	0	Varlamore: the Hueycoatl, a group boss.	https://oldschool.runescape.wiki/w/The_Hueycoatl (LocLine) (nearest standable tile)	59
+71	bosses	Amoxliatl	1362	4511	0	0	The Ruins of Tapoyauik, Varlamore: Amoxliatl.	https://oldschool.runescape.wiki/w/Amoxliatl (LocLine)	58
+72	bosses	The Royal Titans	3007	3149	0	0	The Asgarnian Ice Dungeon: the Royal Titans, Branda the Fire Queen and Eldric the Ice King.	https://oldschool.runescape.wiki/w/Asgarnian_Ice_Dungeon ({{Map}}) (nearest standable tile)	62
+73	bosses	Barrows	3564	3315	0	0	The Barrows: dig into each mound, defeat the six brothers in their crypts, then loot the chest in the tunnels.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:465	7
+74	bosses	Zalcano	3280	6058	0	0	Prifddinas: Zalcano, a skilling boss damaged by mining, refining and imbuing tephra.	https://oldschool.runescape.wiki/w/Zalcano ({{Map}}) (nearest standable tile)	13
+75	bosses	The Gauntlet	3228	6116	0	0	Prifddinas: the Gauntlet. Gather and craft gear in a random dungeon, then face the Crystalline Hunllef. Corrupted version too.	https://oldschool.runescape.wiki/w/The_Gauntlet (infobox map)	18
+76	bosses	TzHaar Fight Cave	2439	5172	0	0	The TzHaar Fight Cave: 63 waves ending with TzTok-Jad, for the fire cape.	https://oldschool.runescape.wiki/w/TzHaar_Fight_Cave (infobox map)	48
+77	bosses	The Inferno	2496	5122	0	0	The Inferno in Mor Ul Rek: 69 waves ending with TzKal-Zuk. Sacrifice a fire cape to enter.	https://oldschool.runescape.wiki/w/Inferno (infobox map)	49
+78	bosses	Tormented Demons	4104	4427	0	0	The Ancient Guthixian Temple (While Guthix Sleeps): Tormented Demons, who drop claws and synapses.	https://oldschool.runescape.wiki/w/Ancient_Guthixian_Temple (infobox map) (nearest standable tile)	
+79	bosses	Callisto	3290	3848	0	42	The entrance to Callisto's Den. Callisto is a great bear in multi-combat.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:199 (nearest standable tile)	41
+80	bosses	Vet'ion	3220	3786	0	34	The entrance to Vet'ion's Rest. Vet'ion is a skeleton champion in multi-combat.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:225 (nearest standable tile)	42
+81	bosses	Venenatis	3320	3793	0	35	The entrance to the Silk Chasm. Venenatis is a giant spider in multi-combat.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:251 (nearest standable tile)	43
+82	bosses	Artio	3114	3676	0	20	The entrance to Hunter's End: Artio, the single-combat version of Callisto.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:212 (nearest standable tile)	41
+83	bosses	Calvar'ion	3179	3682	0	21	The entrance to the Skeletal Tomb: Calvar'ion, the single-combat version of Vet'ion.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:238 (nearest standable tile)	42
+84	bosses	Spindel	3182	3743	0	28	The entrance to the Web Chasm: Spindel, the single-combat version of Venenatis.	content/pvp/src/main/kotlin/tp/content/pvp/Lairs.kt:264 (nearest standable tile)	43
+85	bosses	Chaos Elemental	3261	3927	0	51	Rogues' Castle: the Chaos Elemental, which can teleport you and unequip your items.	https://oldschool.runescape.wiki/w/Chaos_Elemental (LocLine)	40
+86	bosses	Scorpia	3240	3944	0	54	The Scorpion Pit: Scorpia, the scorpion queen, and her guardians.	https://oldschool.runescape.wiki/w/Scorpion_Pit (infobox map)	47
+87	bosses	King Black Dragon	2269	4697	0	0	The King Black Dragon's lair, a three-headed dragon. Bring anti-dragon protection.	https://oldschool.runescape.wiki/w/King_Black_Dragon (LocLine)	14
+88	bosses	Revenant Caves	3075	3652	0	17	The Revenant Caves: revenants drop ancient artefacts, ether and wilderness weapons. Multi-combat.	content/pvp/src/main/kotlin/tp/content/pvp/RevenantCaves.kt:75	
+89	skilling	Woodcutting Guild	1662	3505	0	0	Woodcutting Guild, Hosidius (60 Woodcutting): redwoods, magic, yew and maple trees, with a boost while inside.	docs/mechanics/teleports.md:81	
+90	skilling	Mining Guild	3049	9763	0	0	Mining Guild under Falador (60 Mining): coal, mithril, adamantite, runite and amethyst.	docs/mechanics/teleports.md:81	
+91	skilling	Motherlode Mine	3745	5663	0	0	Motherlode Mine in the Dwarven Mine (30 Mining): mine pay-dirt, wash it, and collect ores and golden nuggets.	https://oldschool.runescape.wiki/w/Motherlode_Mine (infobox map) (nearest standable tile)	
+92	skilling	Fishing Guild	2611	3390	0	0	Fishing Guild (68 Fishing): lobsters, swordfish, tuna and sharks, with a bank right beside the docks.	docs/mechanics/teleports.md:81	
+93	skilling	Piscatoris Fishing Colony	2332	3683	0	0	Piscatoris Fishing Colony (Swan Song): monkfish, with a bank close by.	https://oldschool.runescape.wiki/w/Piscatoris_Fishing_Colony (infobox map)	
+94	skilling	Farming Guild	1248	3719	0	0	Farming Guild (45 Farming): Farming contracts, and the redwood, celastrus, spirit tree and anima patches.	docs/mechanics/teleports.md:81	
+95	skilling	Tithe Farm	1818	3499	0	0	The Tithe Farm, Hosidius (34 Farming): grow and water seeds for Farming experience and points.	https://oldschool.runescape.wiki/w/Tithe_Farm (infobox map)	
+96	skilling	Crafting Guild	2933	3295	0	0	Crafting Guild (40 Crafting): pottery, spinning, a gold and clay mine, and a bank.	docs/mechanics/teleports.md:81	
+97	skilling	Cooking Guild	3144	3438	0	0	Cooking Guild (32 Cooking, chef's hat): ranges, a dairy churn and cooking supplies.	docs/mechanics/teleports.md:81	
+98	skilling	Hosidius Kitchen	1679	3618	0	0	Hosidius Kitchen: the clay oven range, which burns less food than an ordinary range.	https://oldschool.runescape.wiki/w/Hosidius_Kitchen (infobox map)	
+99	skilling	Blast Furnace	2931	10196	0	0	Blast Furnace (Keldagrim): smelt bars with half the usual coal. Pay the foreman below 60 Smithing.	https://oldschool.runescape.wiki/w/Blast_Furnace (infobox map) (nearest standable tile)	
+100	skilling	Gnome Stronghold Agility	2480	3428	0	0	Gnome Stronghold Agility Course: the first course, from level 1 Agility.	https://oldschool.runescape.wiki/w/Gnome_Stronghold_Agility_Course (infobox map)	
+101	skilling	Canifis Rooftop	3509	3482	0	0	Canifis rooftop course (40 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:38 (the last obstacle's landing, by the course start)	
+102	skilling	Falador Rooftop	3025	3333	0	0	Falador rooftop course (50 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:74 (the last obstacle's landing, by the course start)	
+103	skilling	Seers' Village Rooftop	2702	3463	0	0	Seers' Village rooftop course (60 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:100 (the last obstacle's landing, by the course start)	
+104	skilling	Pollnivneach Rooftop	3364	3001	0	0	Pollnivneach rooftop course (70 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:129 (the last obstacle's landing, by the course start)	
+105	skilling	Rellekka Rooftop	2653	3675	0	0	Rellekka rooftop course (80 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:156 (the last obstacle's landing, by the course start)	
+106	skilling	Ardougne Rooftop	2656	3296	0	0	Ardougne rooftop course (90 Agility), with marks of grace.	content/skills/src/main/kotlin/tp/content/skills/AgilityRooftops.kt:186 (the last obstacle's landing, by the course start)	
+107	skilling	Prifddinas Agility	3253	6108	0	0	Prifddinas Agility Course (75 Agility): crystal shards and portals for bonus experience.	https://oldschool.runescape.wiki/w/Prifddinas_Agility_Course (infobox map) (nearest standable tile)	
+108	skilling	Hallowed Sepulchre	3653	3388	0	0	Hallowed Sepulchre, Darkmeyer (52 Agility, Sins of the Father): five floors of traps, coffins and the Grand Hallowed Coffin.	https://oldschool.runescape.wiki/w/Hallowed_Sepulchre (infobox map) (nearest standable tile)	
+109	skilling	Wintertodt	1630	3962	0	0	Wintertodt, north of Kourend (50 Firemaking): keep the braziers burning to subdue the Wintertodt.	content/skills/src/main/kotlin/tp/content/skills/Wintertodt.kt:517	6
+110	skilling	Tempoross	3133	2840	0	0	Tempoross Cove (35 Fishing): fish, cook and fight the storm spirit Tempoross with other players.	content/skills/src/main/kotlin/tp/content/skills/TemporossConfig.kt:41	5
+111	skilling	Guardians of the Rift	3613	9472	0	0	Guardians of the Rift, beneath the Temple of the Eye (27 Runecraft): power the Great Guardian with runes.	content/skills/src/main/kotlin/tp/content/skills/RunecraftGotrData.kt:239	
+112	skilling	Ourania Altar	2452	3232	0	0	The Ourania cave: the ZMI altar crafts random runes from pure essence.	content/skills/src/main/kotlin/tp/content/skills/RunecraftOurania.kt:136 (nearest standable tile)	
+113	skilling	Blood Altar	1714	3827	0	0	Blood Altar, north-east Kourend (77 Runecraft): blood runes from dark essence fragments.	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:268 (nearest standable tile)	
+114	skilling	Soul Altar	1812	3852	0	0	Soul Altar, north of Kourend (90 Runecraft): soul runes from dark essence fragments.	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:269 (nearest standable tile)	
+115	skilling	Abyss (Mage of Zamorak)	3107	3555	0	5	The Mage of Zamorak, who teleports you into the Abyss to reach every runecrafting altar.	content/skills/src/main/kotlin/tp/content/skills/RunecraftAbyss.kt:261	
+116	skilling	Volcanic Mine	3816	3808	0	0	Volcanic Mine, Fossil Island (50 Mining): mine the volcano with a team while keeping its vents in check.	content/skills/src/main/kotlin/tp/content/skills/VolcanicMineData.kt:195	
+117	skilling	Pyramid Plunder	3288	2801	0	0	Pyramid Plunder, Sophanem (21 Thieving): loot urns, chests and sarcophagi in the pyramid's rooms.	content/skills/src/main/kotlin/tp/content/skills/PyramidPlunder.kt:484	
+118	skilling	Rogues' Den	2906	3537	0	0	Rogues' Den, under the Burthorpe pub: the safe-cracking room and the Rogues' Den maze (50 Thieving and Agility).	https://oldschool.runescape.wiki/w/Rogues%27_Den (infobox map)	
+119	skilling	Sorceress's Garden	2911	5473	0	0	Sorceress's Garden, Al Kharid: sneak past the elementals and pick fruit in the four seasonal gardens.	https://oldschool.runescape.wiki/w/Sorceress%27s_Garden (infobox map) (nearest standable tile)	
+120	skilling	Hunter Guild	1558	3047	0	0	Hunter Guild, Varlamore (46 Hunter): Hunter rumours from the guild masters.	https://oldschool.runescape.wiki/w/Hunter_Guild (infobox map) (nearest standable tile)	
+121	skilling	Feldip Hunter Area	2558	2911	0	0	Feldip Hunter area: red chinchompas, birds and Feldip weasels.	https://oldschool.runescape.wiki/w/Feldip_Hunter_area (infobox map)	
+122	skilling	Chaos Altar	3238	3608	0	12	The Chaos Temple in the Wilderness: offering bones on its altar can save them and gives extra Prayer experience.	content/skills/src/main/kotlin/tp/content/skills/PrayerTraining.kt:119 (nearest standable tile)	
+123	skilling	Barbarian Outpost	2520	3571	0	0	Barbarian Outpost: barbarian training, and the Barbarian Assault minigame.	docs/mechanics/teleports.md:78	
+124	misc	Emir's Arena	3315	3235	0	0	Emir's Arena, Al Kharid: ranked and unranked player-versus-player fights.	docs/mechanics/teleports.md:79	
+125	misc	Castle Wars	2440	3090	0	0	Castle Wars: Saradomin against Zamorak, capture the other team's flag.	docs/mechanics/teleports.md:79	
+126	misc	Soul Wars	2204	2902	0	0	Soul Wars, Isle of Souls: two teams fight for the soul obelisk and the Avatar.	https://oldschool.runescape.wiki/w/Soul_Wars (infobox map) (nearest standable tile)	
+127	misc	Pest Control	2656	2656	0	0	Pest Control, the Void Knights' Outpost: defend the knight and destroy the portals for commendation points and Void Knight equipment.	https://oldschool.runescape.wiki/w/Void_Knights%27_Outpost (infobox map)	
+128	misc	Barbarian Assault	2533	3571	0	0	Barbarian Assault: a team of five against the Penance, with roles for attacker, defender, collector and healer.	https://oldschool.runescape.wiki/w/Barbarian_Assault (infobox map)	
+129	misc	Fortis Colosseum	1793	3107	0	0	Fortis Colosseum, Civitas illa Fortis: twelve waves of combat challenges ending with Sol Heredit.	docs/mechanics/teleports.md:79	55
+130	misc	Warriors' Guild	2882	3547	0	0	Warriors' Guild, Burthorpe (130 combined Attack and Strength): defenders from the Cyclopes.	docs/mechanics/teleports.md:80	
+131	misc	Champions' Guild	3192	3368	0	0	Champions' Guild, south of Varrock (32 quest points): the Champion's challenge scrolls.	docs/mechanics/teleports.md:80	
+132	misc	Ranging Guild	2653	3439	0	0	Ranging Guild, north of East Ardougne (40 Ranged): archery targets and ranged shops.	docs/mechanics/teleports.md:80	
+133	misc	Myths' Guild	2456	2845	0	0	Myths' Guild, Feldip Hills (Dragon Slayer II): the Mythical cape and Myths' Guild dungeon.	https://oldschool.runescape.wiki/w/Myths%27_Guild (infobox map) (nearest standable tile)	
+134	misc	Wizards' Tower	3109	3160	0	0	Wizards' Tower, south of Draynor: Sedridor and the start of Rune Mysteries.	https://oldschool.runescape.wiki/w/Wizards%27_Tower (infobox map)	
+135	misc	Mage Arena	3105	3933	0	52	The Mage Arena: Kolodion's challenge for the god spells, and the god capes.	https://oldschool.runescape.wiki/w/Mage_Arena (infobox map)	
+136	misc	Tears of Guthix	3245	9500	0	0	Tears of Guthix, in the Lumbridge Swamp Caves: collect the blue tears each week for experience in your lowest skill.	docs/mechanics/teleports.md:78	
+137	misc	Fossil Island	3730	3807	0	0	Fossil Island: the museum camp, with the Volcanic Mine, the Wyvern Cave and the House on the Hill nearby.	https://oldschool.runescape.wiki/w/Fossil_Island (infobox map)	
+138	misc	Lighthouse	2509	3641	0	0	The Lighthouse north of the Barbarian Outpost (Horror from the Deep): dagannoths below.	https://oldschool.runescape.wiki/w/Lighthouse (infobox map)	
+139	misc	Draynor Manor	3109	3351	0	0	Draynor Manor, home of Professor Oddenstein and Count Draynor (Ernest the Chicken, Vampyre Slayer).	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:411	
+140	misc	Salve Graveyard	3433	3461	0	0	Salve Graveyard, Morytania, by the River Salve.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:429	
+141	misc	Harmony Island	3797	2866	0	0	Harmony Island, off Mos Le'Harmless (The Great Brain Robbery): its herb patch is disease-free.	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:445	
+142	misc	Turael (Slayer)	2931	3536	0	0	Turael in Burthorpe: the easiest Slayer tasks, no requirements.	https://oldschool.runescape.wiki/w/Turael (infobox map)	
+143	misc	Mazchna (Slayer)	3511	3509	0	0	Mazchna in Canifis: Slayer tasks for combat level 20 and up.	https://oldschool.runescape.wiki/w/Mazchna (infobox map)	
+144	misc	Vannaka (Slayer)	3147	9914	0	0	Vannaka in Edgeville Dungeon: Slayer tasks for combat level 40 and up.	https://oldschool.runescape.wiki/w/Vannaka (infobox map)	
+145	misc	Chaeldar (Slayer)	2444	4431	0	0	Chaeldar in Zanaris: Slayer tasks for combat level 70 and up (Lost City).	https://oldschool.runescape.wiki/w/Chaeldar (infobox map)	
+146	misc	Nieve (Slayer)	2432	3423	0	0	Nieve in the Tree Gnome Stronghold: Slayer tasks for combat level 85 and up.	https://oldschool.runescape.wiki/w/Nieve (infobox map)	
+147	misc	Duradel (Slayer)	2869	2982	1	0	Duradel in Shilo Village: Slayer tasks for combat level 100 and up, 50 Slayer.	https://oldschool.runescape.wiki/w/Duradel (infobox map)	
+148	misc	Konar (Slayer)	1309	3785	0	0	Konar quo Maten on Mount Karuulm: Slayer tasks for combat level 75 and up, with a set location for each task.	https://oldschool.runescape.wiki/w/Konar_quo_Maten (infobox map)	
+149	misc	Krystilia (Slayer)	3108	3515	0	0	Krystilia in Edgeville: Wilderness Slayer tasks, with no requirements.	https://oldschool.runescape.wiki/w/Krystilia (infobox map) (nearest standable tile)	

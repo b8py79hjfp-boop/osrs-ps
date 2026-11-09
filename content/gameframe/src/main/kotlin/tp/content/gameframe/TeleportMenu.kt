@@ -391,10 +391,9 @@ private fun PlayerRef.drawDetail(d: Destination?, favs: Set<Int>) {
     ifHide(Components.Teleports.FAVADD, d == null || d.id in favs)
     ifHide(Components.Teleports.FAVREMOVE, d == null || d.id !in favs)
     if (d == null) {
-        clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, "", "", "", "", "")
+        clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, "", "", "", "")
         return
     }
-    val info = "${d.at.x}, ${d.at.z}" + if (d.at.level > 0) ", level ${d.at.level}" else ""
     val warning =
         when {
             d.wilderness > TELEPORT_OUT_LIMIT -> {
@@ -409,7 +408,7 @@ private fun PlayerRef.drawDetail(d: Destination?, favs: Set<Int>) {
                 ""
             }
         }
-    clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, d.name, d.icon, d.description, info, warning)
+    clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, d.name, d.icon, d.description, warning)
 }
 
 /** Text for one row field: no field or row separators. */
