@@ -774,6 +774,8 @@ class World(
             currentTurn = player
             player.stepsThisTick = 0
             if (ScriptRunner.resumeDelayed(player)) tracer?.onPhase(player, "delay-end")
+            // I10: no interaction left (the attack or conversation ended last tick), so stop facing its entity.
+            if (player.interaction == null) player.resetFace()
             if (player.queue.hasStrong()) player.closeModal() // Q3
             player.queue.process()
             player.timers.process()
@@ -902,6 +904,7 @@ class World(
     /** Hard interruption (I7, Q7): cancels the interaction, clears weak scripts and closes the modal. */
     fun interrupt(player: Player) {
         player.interaction = null
+        player.resetFace() // I10
         player.route.clear()
         player.closeModal()
     }

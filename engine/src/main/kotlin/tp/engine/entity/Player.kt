@@ -90,7 +90,20 @@ class Player internal constructor(
     override val maxHitpoints: Int get() = stats.baseLevel(PlayerStats.HITPOINTS)
 
     override fun visual(visual: Visual) {
+        if (visual is Visual.Face) faceTarget = visual.target
         session.visual(visual)
+    }
+
+    /** The entity this player is turned towards (the last [Visual.Face]), or null. */
+    var faceTarget: AvatarRef? = null
+        private set
+
+    /**
+     * Stops facing an entity (interactions.md I10): the client then keeps the last direction and turns with its walk.
+     * Sends nothing when the player faces nothing.
+     */
+    fun resetFace() {
+        if (faceTarget != null) visual(Visual.Face(null))
     }
 
     override val avatarRef: AvatarRef = AvatarRef.OfPlayer(slot)

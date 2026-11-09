@@ -18,6 +18,7 @@ pseudocode verbatim.
 | I7 | Interrupted by a new interaction, death (and similar manual cancels), player-invoked teleports, certain buttons (e.g. "View equipment stats") and every inventory item action. Equipment-tab actions and ordinary interface clicks don't interrupt. | I |
 | I8 | Guarded by not delayed and no modal: if nothing interacted, the entity didn't move and has no steps left, send "I can't reach that!" and reset. After an interaction ran, reset unless `aprange` was called or it's persistent. **OPEN-I3:** what makes an interaction persistent (the pseudocode declares it, never sets it). | I pseudocode |
 | I9 | NPCs use the same algorithm without modals, engine scripts or messages. | I |
+| I10 | **Facing ends with the interaction (players).** A hard interruption (I7: a walk click, a new interaction, …) stops the player facing an entity at once, and a player with no interaction at the start of its turn stops facing (so after an attack or a conversation ends, the next tick). The client keeps the last direction and turns with its walk. Combat keeps facing while it keeps its interaction (`keepInteraction`). NPC facing is unchanged. | RS Mod (ISC) `MoveGameClickHandler` / `ProtectedAccess.stopAction` (`resetFaceEntity`), `PlayerMainProcess.refreshFaceEntity` (commit fa13b3f) |
 
 ## SOURCE-CONFLICT (decided)
 
