@@ -168,6 +168,12 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
         (h.opNpc[key(npcType, option)] ?: opNpcResolved[key(npcType, option)] ?: opText(npcType, option)?.let(h.opNpcByText::get))
             ?.let(::npcScript)
 
+    override fun opNpcSpecific(npcType: Int, option: Int): Script<Player>? =
+        (h.opNpc[key(npcType, option)] ?: opNpcResolved[key(npcType, option)])?.let(::npcScript)
+
+    override fun apNpcSpecific(npcType: Int, option: Int): Script<Player>? =
+        (h.apNpc[key(npcType, option)] ?: apNpcResolved[key(npcType, option)])?.let(::npcScript)
+
     override fun apNpc(npcType: Int, option: Int): Script<Player>? =
         (h.apNpc[key(npcType, option)] ?: apNpcResolved[key(npcType, option)] ?: opText(npcType, option)?.let(h.apNpcByText::get))
             ?.let(::npcScript)

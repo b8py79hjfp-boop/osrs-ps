@@ -954,11 +954,19 @@ class World(
             is InteractionTarget.OfPlayer -> content.opPlayer(option) to content.apPlayer(option)
         }
 
-    /** NPC op scripts: those of the type this player sees ([seenNpcType]) first, then the parent type's. */
+    /**
+     * NPC op scripts (I11): the id/name handlers of the type this player sees ([seenNpcType]), then of the spawned (parent)
+     * type, and only then the op-text fallbacks of either, so a quest's handler on a multi-NPC isn't shadowed by a generic
+     * "Talk-to" bound by text to the type it shows.
+     */
     private fun Player.npcScripts(type: Int, option: Int): Pair<Script<Player>?, Script<Player>?> {
-        val seen = seenNpcType(this, type)
-        val op = (if (seen != type && seen >= 0) content.opNpc(seen, option) else null) ?: content.opNpc(type, option)
-        val ap = (if (seen != type && seen >= 0) content.apNpc(seen, option) else null) ?: content.apNpc(type, option)
+        val seen = seenNpcType(this, type).takeIf { it != type && it >= 0 }
+        val op =
+            seen?.let { content.opNpcSpecific(it, option) } ?: content.opNpcSpecific(type, option)
+                ?: seen?.let { content.opNpc(it, option) } ?: content.opNpc(type, option)
+        val ap =
+            seen?.let { content.apNpcSpecific(it, option) } ?: content.apNpcSpecific(type, option)
+                ?: seen?.let { content.apNpc(it, option) } ?: content.apNpc(type, option)
         return op to ap
     }
 

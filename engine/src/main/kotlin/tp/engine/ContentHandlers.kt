@@ -45,6 +45,15 @@ interface ContentHandlers {
 
     fun apNpc(npcType: Int, option: Int): Script<Player>? = null
 
+    /**
+     * [opNpc] without the op-text fallbacks (`onOpNpcOption`): only handlers bound to this type's id or name. A multi-NPC's
+     * own handler must beat a generic fallback that matches the op text of the type it shows (interactions.md I11).
+     */
+    fun opNpcSpecific(npcType: Int, option: Int): Script<Player>? = opNpc(npcType, option)
+
+    /** [apNpc] without the op-text fallbacks (see [opNpcSpecific]). */
+    fun apNpcSpecific(npcType: Int, option: Int): Script<Player>? = apNpc(npcType, option)
+
     fun opPlayer(option: Int): Script<Player>? = null
 
     fun apPlayer(option: Int): Script<Player>? = null

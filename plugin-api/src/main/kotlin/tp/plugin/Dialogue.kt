@@ -35,6 +35,14 @@ public enum class Expression(internal val oneLine: Int) {
 public suspend fun PlayerScript.chatNpc(npc: NpcRef, text: String, expression: Expression = Expression.NEUTRAL) {
     npc.face(player)
     player.face(npc)
+    // A multi-NPC (spawned by its parent id, config name "null") speaks as the type this player sees (I11).
+    val shown = player.p.world.seenNpcType(player.p, npc.type)
+    if (shown >= 0 && shown != npc.type) {
+        val name =
+            player.p.world.data.configs.npcs[shown]
+                ?.name ?: npc.displayName
+        return chatNpcAs(shown, name, text, expression)
+    }
     chatNpcAs(npc.type, npc.displayName, text, expression)
 }
 

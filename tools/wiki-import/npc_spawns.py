@@ -226,6 +226,13 @@ def levels_of(v):
 # Callisto, Venenatis, Vet'ion (both forms), Artio, Calvar'ion (both forms), Spindel: content/pvp Lairs spawns them.
 # Misthalin Mystery's visible forms of Mandy (kitchen, outside) and the shady figure: content/quests QuestSpawnsB spawns their
 # multi-NPCs (7433, 7434, 7435) so the quest variable shows and hides them.
+# Quest NPCs whose Wiki pin names a multi-NPC child: content/quests QuestSpawns spawns the multi-NPC instead (Head Wizard
+# 5034 shows Archmage Sedridor 11432, Wizard Mizgog 5005 shows 7746) or the quest's own id (Sir Amik Varze 4771, not the
+# Recipe for Disaster form 1867), so the quest's varp drives them and they don't stand twice on one tile. The same for
+# content/quests QuestSpawnsB's multi-NPCs: the Port Sarim ferry crew (14978, 14980, 14982, 14984), Lady Keli 11578, Joe
+# 11577, Prince Ali 11580, Captain Tock 7956, Ithoi 7961, Misthalin Mystery's Abigale, Hewey, Sid, Tayten, Lacey (7623,
+# 7624, 7625, 7627, 7628); and two op-less look-alikes on a quest NPC's tile: Veos 2850 and King Roald 1399.
+QUEST_CHILDREN = {11432, 7746, 1867, 14978, 14980, 14982, 14984, 11578, 11577, 11580, 7956, 7961, 7623, 7624, 7625, 7627, 7628, 2850, 1399}
 CONTENT_SPAWNED = {6609, 6610, 6611, 6612, 11992, 11993, 11994, 11998, 7629, 7630, 7638, 10570, 10571, 10576, 10612, 10613, 10572, 10574, 10575}  # Tempoross plugin: the pool, the crates, the retired sailor, Gita, and the boss forms (instanced)
 
 
@@ -358,7 +365,7 @@ def main():
             for n, (x, z) in enumerate(coords):
                 rows.add((choices[n % len(choices)], x, z, plane, -1))
     # NPCs content spawns itself (Wilderness lair bosses: their LocLines are the surface entrance pins).
-    rows = {r for r in rows if r[0] not in CONTENT_SPAWNED and r[0] not in PET_IDS}
+    rows = {r for r in rows if r[0] not in CONTENT_SPAWNED | QUEST_CHILDREN | PET_IDS}
     if len(sys.argv) > 3:
         wiki = {(r[1], r[2], r[3]) for r in rows if cache.get(r[0], ("",))[0] == "Banker"}
         rows |= banker_rows(sys.argv[3], wiki)
