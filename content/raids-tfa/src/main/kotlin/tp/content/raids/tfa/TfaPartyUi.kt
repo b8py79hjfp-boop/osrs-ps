@@ -72,12 +72,13 @@ internal object TfaParties {
                 .filter { it.state == PartyState.Forming }
                 .take(MAX_LIST_ROWS)
         p[LIST_ROWS] = IntArray(parties.size) { parties[it].id.value }
-        // 10094 with an empty row hides it and runs the layout tail, which shows the "No parties" text.
-        if (parties.isEmpty()) p.clientScript(SCRIPT_LIST_ROW, 0, "")
-        for ((row, party) in parties.withIndex()) {
-            p.clientScript(SCRIPT_LIST_ROW, row, partyListRow(p, party, lobby))
+        // Script 10094 lays the list out (removes 10087's "Loading...", shows the rows, or "No parties are currently
+        // listed.") only when it is called for the last row of enum 6058 (row 44): every row is sent, empty ones as "".
+        for (row in 0 until MAX_LIST_ROWS) {
+            val party = parties.getOrNull(row)
+            p.clientScript(SCRIPT_LIST_ROW, row, party?.let { partyListRow(p, it, lobby) } ?: "")
             // OPEN-TFA-UI2: the "View Party:" op is set by script 10095; the client only sends it with the op flag.
-            p.ifEvents(Components.Tfa_Partylist._00 + row, -1..-1, IfEvents.op(1))
+            if (party != null) p.ifEvents(Components.Tfa_Partylist._00 + row, -1..-1, IfEvents.op(1))
         }
     }
 

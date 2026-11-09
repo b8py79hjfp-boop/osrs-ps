@@ -221,13 +221,15 @@ class InteractionProcessor internal constructor(
                 }
             }
         }
-        if (!blocked(player) && player.interaction === current) {
-            if (!interacted && !moved && player.route.isEmpty) {
-                player.session.send(ServerMessage.GameMessage(CANT_REACH))
-                player.interaction = null
-            }
-            if (interacted && !current.apRangeCalled && !current.persistent) player.interaction = null
+        if (player.interaction !== current) return
+        val stuck = !interacted && !moved && player.route.isEmpty
+        if (stuck && !blocked(player)) {
+            player.session.send(ServerMessage.GameMessage(CANT_REACH))
+            player.interaction = null
         }
+        // I8: a script that ran resets the interaction even when it opened a modal or delayed itself; otherwise closing
+        // the modal would run the op again (the TFA Grouping Board reopened its list when the player closed it).
+        if (interacted && !current.apRangeCalled && !current.persistent) player.interaction = null
     }
 
     /**
