@@ -240,6 +240,11 @@ MANUAL_SPAWNS = [
 # Replaced by MANUAL_SPAWNS: the clerk polygon's centre pin.
 MANUAL_REPLACES = {(2148, 3165, 3490)}
 
+# Pages about other game modes (Deadman Mode and Deadman: All Stars, Leagues, Grid Master, the RuneScape 2 beta, beta
+# tests) describe NPCs that never stand in the main game: e.g. "Guard (Deadman Mode)" (ids 3361, 6574..6583, combat level
+# 1337 and no animations in the cache) put Deadman guards in Lumbridge, Falador and the Gnome Stronghold.
+OTHER_MODE = re.compile(r"\((Deadman[^)]*|[^)]*League|Grid Master|RuneScape 2 Beta|[^)]*beta)\)$|^Leagues? |Tournament Guide$", re.I)
+
 BANKER_IDS = (1613, 1618)
 
 # Banker offset from its booth, named as the `open` digits (W, N, E, S) and the `evidence` letter of cache-dump's
@@ -305,7 +310,7 @@ def main():
     for i, (n, lvl) in cache.items():
         by_name.setdefault(n.lower(), []).append(i)
     loc_titles = set(pages_using("Template:LocLine"))
-    titles = sorted(loc_titles | set(pages_using("Template:Infobox NPC")))
+    titles = sorted(t for t in loc_titles | set(pages_using("Template:Infobox NPC")) if not OTHER_MODE.search(t))
     print(f"{len(loc_titles)} pages use LocLine, {len(titles)} pages in total", file=sys.stderr)
     texts = wikitexts(titles)
     rows, unmatched = set(), 0
