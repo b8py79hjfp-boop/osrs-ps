@@ -21,6 +21,8 @@ private val USAGE =
       loc-links <dir>                      doors.tsv (door/gate pairs) and climbs.tsv (ladder/stair links)
       find-locs <name>                     every placement of locs with this exact name (x z level id)
       banker-spawns <file>                 banker tiles behind bank booths (level x z)
+      worldmap-sections <out>              world map pieces: display square/zone -> game square/zone, per map
+      group <archive> <group>              every file of a raw group, in hex
       spawn-check <spawns.tsv> <out>       NPC spawns on tiles an NPC can't stand on, with the nearest free tile
     default cache dir: ${defaultCacheDir()}
     """.trimIndent()
@@ -98,6 +100,14 @@ private fun dispatch(command: String, args: List<String>, cache: Js5Cache, cache
 
         "overlays" -> {
             printOverlays(cache, intArg(args, 0, "squareX"), intArg(args, 1, "squareZ"))
+        }
+
+        "worldmap-sections" -> {
+            WorldMapSections.write(cache, Path.of(args.getOrNull(0) ?: throw UsageException("missing output path")))
+        }
+
+        "group" -> {
+            printGroup(cache, intArg(args, 0, "archive"), intArg(args, 1, "group"))
         }
 
         "summary" -> {
@@ -242,6 +252,20 @@ private fun runeliteStatic(cache: Js5Cache, args: List<String>) {
         )
     println("wrote RuneLite static data to $dir")
 }
+
+/** Every file of one raw group: id, size and bytes in hex (the first [HEX_LIMIT] bytes). */
+private fun printGroup(cache: Js5Cache, archive: Int, group: Int) {
+    val files = cache.readFiles(archive, group) ?: return println("no group $archive/$group")
+    println("archive $archive group $group: ${files.ids.size} files")
+    for ((i, id) in files.ids.withIndex()) {
+        val data = files.data[i]
+        val hex = data.take(HEX_LIMIT).joinToString(" ") { "%02x".format(it) }
+        println("  file $id (${data.size} bytes): $hex")
+    }
+}
+
+/** Bytes shown per file by `group`. */
+private const val HEX_LIMIT = 32
 
 /** Level-0 overlay config ids of one map square, north at top (`.` = none; ids in hex, two digits). */
 private fun printOverlays(cache: Js5Cache, squareX: Int, squareZ: Int) {

@@ -25,9 +25,10 @@ Output: tab-separated `npc x z level wander` rows (header first), sorted, duplic
 Usage (needs network access to oldschool.runescape.wiki; cache NPC list from cache-dump):
   ./gradlew -q :tools:cache-dump:run --args="config npc --all" > npcs.txt
   ./gradlew -q :tools:cache-dump:run --args="banker-spawns docs/research/banker-spawns.tsv"
-  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv
+  ./gradlew -q :tools:cache-dump:run --args="worldmap-sections $PWD/worldmap.tsv"
+  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv --worldmap worldmap.tsv
   ./gradlew -q :tools:cache-dump:run --args="spawn-check $PWD/content/world/src/main/resources/tp/content/world/npc-spawns.tsv blocked.tsv"
-  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv blocked.tsv
+  python3 -I tools/wiki-import/npc_spawns.py npcs.txt content/world/src/main/resources/tp/content/world/npc-spawns.tsv docs/research/banker-spawns.tsv --worldmap worldmap.tsv --blocked blocked.tsv
 (the second run drops or moves the spawns the first run put on tiles an NPC can't stand on, SP10)
 
 Data licence: OSRS Wiki content is CC BY-NC-SA 3.0 (data/PROVENANCE.md).
@@ -183,6 +184,39 @@ def removed(value):
     return (int(y.group(1)), month, int(d.group(1)) if d else 1) <= CACHE_DATE
 
 
+WORLD_MAP = {}  # (map, display square x, z, zone x or -1, zone z or -1) -> (dx, dz, level offset)
+
+
+def load_world_map(path):
+    """SP15: `cache-dump worldmap-sections` rows. The Wiki's pins are world-map (display) coordinates of their `mapID`; the
+    world map draws game squares and zones elsewhere (dungeons patched together), so a pin is moved by its piece's shift and
+    its plane raised by the piece's lowest level."""
+    for line in open(path).read().splitlines()[1:]:
+        c = line.split("\t")
+        m, kind = int(c[0]), c[1]
+        dsx, dsz, ssx, ssz, min_level = int(c[2]), int(c[3]), int(c[6]), int(c[7]), int(c[10])
+        if kind == "square":
+            WORLD_MAP[(m, dsx, dsz, -1, -1)] = ((ssx - dsx) * 64, (ssz - dsz) * 64, min_level)
+        else:
+            dzx, dzz, szx, szz = int(c[4]), int(c[5]), int(c[8]), int(c[9])
+            WORLD_MAP[(m, dsx, dsz, dzx, dzz)] = ((ssx - dsx) * 64 + (szx - dzx) * 8, (ssz - dsz) * 64 + (szz - dzz) * 8, min_level)
+
+
+def game_coord(map_id, x, z, plane):
+    """The game tile of a pin at display (x, z, plane) on world map [map_id] (unchanged when the map has no piece there)."""
+    key = (map_id, x >> 6, z >> 6)
+    shift = WORLD_MAP.get(key + (((x & 63) >> 3), ((z & 63) >> 3))) or WORLD_MAP.get(key + (-1, -1))
+    if shift is None:
+        return x, z, plane
+    return x + shift[0], z + shift[1], plane + shift[2]
+
+
+def map_id(value):
+    """A LocLine / {{Map}} `mapID`; missing, empty or -1 means the main map (0)."""
+    m = re.fullmatch(r"\s*(-?\d+)\s*", clean(value or ""))
+    return max(0, int(m.group(1))) if m else 0
+
+
 def strip_comments(text):
     """Wikitext without HTML comments: pages park unverified pins there (`<!--TODO - Get locations ...`)."""
     return re.sub(r"<!--.*?(?:-->|\Z)", "", text, flags=re.S)
@@ -247,6 +281,10 @@ def infobox_maps(text):
                     if not pts or not ids:
                         continue
                     plane = int(re.sub(r"[^0-9]", "", kv.get("plane", "0")) or 0)
+                    mid = map_id(kv.get("mapid"))
+                    pts = [game_coord(mid, px, pz, plane) for px, pz in pts]
+                    plane = pts[0][2]
+                    pts = [(px, pz) for px, pz, _ in pts]
                     xs, zs = [p[0] for p in pts], [p[1] for p in pts]
                     mtype = kv.get("mtype", "pin").lower() or "pin"
                     if mtype == "line":
@@ -437,6 +475,17 @@ def apply_blocked(rows, path):
 
 
 def main():
+    args = sys.argv[1:]
+    flags = {}
+    for flag in ("--worldmap", "--blocked"):
+        if flag in args:
+            i = args.index(flag)
+            flags[flag] = args[i + 1]
+            del args[i:i + 2]
+    sys.argv = [sys.argv[0]] + args
+    if "--worldmap" not in flags:
+        sys.exit("--worldmap <file> is required (cache-dump worldmap-sections): Wiki pins are world-map coordinates")
+    load_world_map(flags["--worldmap"])
     cache = load_cache_npcs(sys.argv[1])
     # SP13: cutscene copies (gameval `..._CUTSCENE...`: Frost Nagua, Song of the Elves rebels, the Elvarg of Dragon Slayer I's
     # boat scene) exist only in a quest's scene; they never match, so a page picks its next version (the fightable Elvarg).
@@ -506,8 +555,10 @@ def main():
             if not choices:
                 unmatched += 1
                 continue
+            mid = map_id(params.get("mapid"))
             for n, (x, z) in enumerate(coords):
-                pins.setdefault((name, x, z, plane), []).append(choices[n % len(choices)])
+                gx, gz, gplane = game_coord(mid, x, z, plane)
+                pins.setdefault((name, gx, gz, gplane), []).append(choices[n % len(choices)])
         for n, ((_, x, z, plane), ids) in enumerate(pins.items()):
             rows.setdefault((ids[n % len(ids)], x, z, plane, -1), title)
     rows = one_per_tile(rows, cache)
@@ -522,8 +573,8 @@ def main():
     rows = {r for r in rows if (r[0], r[1], r[2]) not in MANUAL_REPLACES}
     rows |= {(npc, x, z, 0, 0) for npc, x, z in MANUAL_SPAWNS}
     rows = {r for r in rows if 0 <= r[3] <= 3 and 0 <= r[1] < 16384 and 0 <= r[2] < 16384}
-    if len(sys.argv) > 4:
-        rows = apply_blocked(rows, sys.argv[4])
+    if "--blocked" in flags:
+        rows = apply_blocked(rows, flags["--blocked"])
     with open(dest, "w") as f:
         f.write("npc\tx\tz\tlevel\twander\n")
         for r in sorted(rows, key=lambda r: (r[3], r[1], r[2], r[0])):
