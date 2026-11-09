@@ -17,6 +17,8 @@ internal object Consumables {
         val attackDelay: Int = STANDARD_DELAY,
         val karambwan: Boolean = false,
         val overheal: Boolean = false,
+        /** The item left after a bite of a multi-bite food (half a pie, 2/3 cake), or -1: the food is used up. */
+        val next: Int = -1,
     )
 
     private class Potion(val effect: (PlayerRef) -> Unit)
@@ -101,7 +103,7 @@ internal object Consumables {
 
     /** Builds the id tables from cache names (once per world start; immutable afterwards). */
     fun load(world: WorldRef) {
-        foods = foodsByName.flatMap { (name, food) -> world.objIdsNamed(name).map { it to food } }.toMap()
+        foods = loadFoods(world)
         val table = HashMap<Int, Pair<Potion, Int>>()
         for ((name, potion) in potionsByName) {
             for (dose in 1..MAX_DOSES) {
@@ -211,12 +213,69 @@ internal object Consumables {
         return true
     }
 
+    /** E12: every food of the Wiki "Food/All food" table (foods.tsv); the hand-written [foodsByName] rows win. */
+    private fun loadFoods(world: WorldRef): Map<Int, Food> {
+        val table = HashMap<Int, Food>()
+        for (row in wikiFoods()) {
+            val ids = world.objIdsNamed(row.name)
+            if (ids.isEmpty() || foodsByName.containsKey(row.name)) continue
+            val heal: (PlayerRef) -> Int =
+                if (row.min == row.max) { _ -> row.min } else { p -> row.min + p.random(row.max - row.min + 1) }
+            val stages = biteStages(row.name, row.bites).map { world.objIdsNamed(it).firstOrNull() ?: -1 }
+            // stages[0] is the item after the first bite, and so on; the last bite leaves stages.last() (a pie dish) or nothing.
+            for (id in ids) table.putIfAbsent(id, Food(heal, next = stages.getOrNull(0) ?: -1))
+            for (i in 0 until stages.size - 1) {
+                val stage = stages[i]
+                if (stage >= 0) table.putIfAbsent(stage, Food(heal, next = stages[i + 1]))
+            }
+        }
+        for ((name, food) in foodsByName) for (id in world.objIdsNamed(name)) table[id] = food
+        return table
+    }
+
+    private class WikiFood(val name: String, val min: Int, val max: Int, val bites: Int)
+
+    /** foods.tsv rows (tools/wiki-import/foods.py; OSRS Wiki "Food/All food", CC BY-NC-SA 3.0). */
+    private fun wikiFoods(): List<WikiFood> {
+        val text = Consumables::class.java.getResource("foods.tsv")?.readText() ?: return emptyList()
+        return text
+            .lineSequence()
+            .drop(1)
+            .filter { it.isNotBlank() }
+            .map { line ->
+                val f = line.split('\t')
+                WikiFood(f[0], f[1].toInt(), f[2].toInt(), f[3].toInt())
+            }.toList()
+    }
+
+    /**
+     * E12: the cache names of what is left after each bite of a [bites]-bite food, in order (the last one is what the
+     * final bite leaves: a pie dish, or nothing). OSRS names the parts by pattern: "Meat pie" → "Half a meat pie" →
+     * "Pie dish"; "Plain pizza" → "1/2 plain pizza"; "Cake" → "2/3 cake" → "Slice of cake" (chocolate: "Chocolate slice").
+     * A multi-bite food with no known pattern is eaten in one go (OPEN-E8).
+     */
+    private fun biteStages(name: String, bites: Int): List<String> {
+        if (bites <= 1) return emptyList()
+        val lower = name.replaceFirstChar { it.lowercase() }
+        return when {
+            bites == 2 && name.endsWith(" pie") -> listOf(if (lower.first() in "aeiou") "Half an $lower" else "Half a $lower", "Pie dish")
+            bites == 2 && name.endsWith(" pizza") -> listOf("1/2 $lower")
+            bites == 3 && name == "Cake" -> listOf("2/3 cake", "Slice of cake")
+            bites == 3 && name == "Chocolate cake" -> listOf("2/3 chocolate cake", "Chocolate slice")
+            else -> emptyList()
+        }
+    }
+
     private fun eat(player: PlayerRef, slot: Int, obj: Int, food: Food, interrupts: Boolean) {
         val now = player.tick
         // E3: a karambwan uses its own clock (it can follow other food in the same tick); other food the food clock.
         val clock = if (food.karambwan) Attr.KARAMBWAN_CLOCK else Attr.FOOD_CLOCK
         if ((player[clock] ?: 0L) > now) return
-        if (!player.transaction("eat") { removeAt(Invs.INV, slot, obj, 1) }) return
+        val removed =
+            player.transaction("eat") {
+                if (food.next >= 0) replaceAt(Invs.INV, slot, obj, food.next) else removeAt(Invs.INV, slot, obj, 1)
+            }
+        if (!removed) return
         if (interrupts) player.interrupt() // interactions.md I7: inventory item actions interrupt (not from the bank)
         player[Attr.FOOD_CLOCK] = now + EAT_DELAY
         if (food.karambwan) {

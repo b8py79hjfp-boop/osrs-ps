@@ -48,6 +48,17 @@ public class PlayerScript internal constructor(private val scope: ScriptScope<Pl
         scope.self.keepInteraction()
     }
 
+    /**
+     * For ap scripts of NPCs behind counters and booths (bankers, Grand Exchange clerks): true when [target] is within
+     * [range] tiles (the ap range check already required line of sight); otherwise sets the ap range to [range] so the
+     * player keeps approaching, and returns false (RS Mod `isWithinApRange(npc, distance)`).
+     */
+    public fun approachWithin(target: EntityRef, range: Int): Boolean {
+        if (player.distanceTo(target) <= range) return true
+        apRange(range)
+        return false
+    }
+
     /** Changes the approach range of the current ap interaction (interactions.md I2); -1 turns it into an op. */
     public fun apRange(range: Int) {
         scope.self.apRange(range)

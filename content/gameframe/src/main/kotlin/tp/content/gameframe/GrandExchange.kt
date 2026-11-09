@@ -32,6 +32,10 @@ public class GrandExchange : ContentPlugin {
         onOpLocNamed("Grand Exchange booth", "Collect") { player.openCollectionBox() }
         onOpNpcOption("History") { player.history() }
         onOpNpcOption("Collect") { player.openCollectionBox() }
+        // GE16: the clerks stand behind the centre desk, so they are reached across it, like bankers (bank.md B20).
+        onApNpcNamed(CLERK, "Exchange") { npc -> if (approachWithin(npc, CLERK_RANGE) && with(BankPin) { unlock() }) player.open() }
+        onApNpcNamed(CLERK, "History") { npc -> if (approachWithin(npc, CLERK_RANGE)) player.history() }
+        onApNpcNamed(CLERK, "Collect") { npc -> if (approachWithin(npc, CLERK_RANGE)) player.openCollectionBox() }
         onCommand("geui", DEV_RANK, DEV_CONVENIENCE) { open() }
         onCommand("ge", DEV_RANK, DEV_CONVENIENCE) { exchange(GeRequest.Offers) { offers -> list(offers) } }
         onCommand("gebuy", DEV_RANK, DEV_CONVENIENCE) { args -> placeFromCommand(args, buy = true) }
@@ -571,6 +575,12 @@ public class GrandExchange : ContentPlugin {
     }
 
     private companion object {
+        /** The Grand Exchange clerks' cache name (npcs 2148-2151). */
+        const val CLERK = "Grand Exchange Clerk"
+
+        /** GE16: how far a clerk is reached across the desk (the banker distance, bank.md B20). */
+        const val CLERK_RANGE = 2
+
         val PRICE = tp.plugin.AttrKey<Long>("ge_newoffer_price")
         val MODIFYING = tp.plugin.AttrKey<Int>("ge_modifying_slot")
         val HISTORY_OBJS = tp.plugin.AttrKey<List<Int>>("ge_history_objs")
