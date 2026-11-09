@@ -177,6 +177,7 @@ internal object ToaBoard {
             p.message(it)
             return
         }
+        Raids.claim(p, ToaRaid.ID)
         val party = raids.createParty(def, p.username)
         if (party == null) {
             p.message(ALREADY_IN_PARTY)
@@ -460,12 +461,13 @@ internal object ToaBoard {
         val name = view.applicants.getOrNull(row)
         if (name != null && party.applicants.any { it == name }) {
             val problem = applicantProblem(p, party, name)
-            if (Raids.of(p).partyOf(name) != null) {
+            if (Raids.of(p).blockingParty(name, ToaRaid.ID) != null) {
                 party.reject(name)
                 p.message("$name has joined another party.")
             } else if (problem != null) {
                 p.message(problem)
             } else if (party.accept(name)) {
+                Raids.leaveOtherRaids(p, name, ToaRaid.ID)
                 syncMembers(p, party, emptyList())
             } else {
                 p.message(PARTY_FULL)
@@ -501,7 +503,7 @@ internal object ToaBoard {
         when {
             party.state != PartyState.Forming -> PARTY_STARTED
             party.isFull -> PARTY_FULL
-            Raids.of(p).partyOf(p.username) != null -> ALREADY_IN_PARTY
+            Raids.of(p).blockingParty(p.username, ToaRaid.ID) != null -> ALREADY_IN_PARTY
             ToaLobbyWorld.of(p).blocked[party.id.value]?.contains(p.username.lowercase()) == true -> BLOCKED
             else -> party.raid.requirements(p) ?: completionsProblem(p, party, ToaLobbyWorld.snapshot(p))
         }

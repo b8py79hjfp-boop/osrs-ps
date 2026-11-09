@@ -211,6 +211,7 @@ internal object TobBoard {
             problem?.let { p.message(it) }
             return
         }
+        Raids.claim(p, TobRaid.ID)
         val party = raids.createParty(def, p.username)
         if (party == null) {
             p.message(ALREADY_IN_PARTY)
@@ -452,12 +453,13 @@ internal object TobBoard {
         if (name != null && party.applicants.any { it == name }) {
             val hard = party.settings[TobParties.MODE_SETTING] == TobParties.MODE_HARD
             val problem = if (hard) p.onlinePlayer(name)?.let { TobConfig.hardRequirement(it) } else null
-            if (Raids.of(p).partyOf(name) != null) {
+            if (Raids.of(p).blockingParty(name, TobRaid.ID) != null) {
                 party.reject(name)
                 p.message("$name has joined another party.")
             } else if (problem != null) {
                 p.message("$name has not completed the Theatre of Blood in Normal Mode.")
             } else if (party.accept(name)) {
+                Raids.leaveOtherRaids(p, name, TobRaid.ID)
                 syncMembers(p, party, emptyList())
             } else {
                 p.message(PARTY_FULL)
@@ -493,7 +495,7 @@ internal object TobBoard {
         when {
             party.state != PartyState.Forming -> PARTY_STARTED
             party.isFull -> PARTY_FULL
-            partyOf(p) != null || Raids.of(p).partyOf(p.username) != null -> ALREADY_IN_PARTY
+            partyOf(p) != null || Raids.of(p).blockingParty(p.username, TobRaid.ID) != null -> ALREADY_IN_PARTY
             TobLobbyWorld.of(p).blocked[party.id.value]?.contains(p.username.lowercase()) == true -> BLOCKED
             party.settings[TobParties.MODE_SETTING] == TobParties.MODE_HARD -> TobConfig.hardRequirement(p)
             else -> TobConfig.requirement(p)

@@ -116,10 +116,11 @@ public class ToaFlow : ContentPlugin {
         val def = raids.definition(ToaRaid.ID) ?: return
         var party = raids.partyOf(player.username)?.takeIf { it.raid.id == ToaRaid.ID }
         if (party == null) {
-            if (raids.partyOf(player.username) != null || !ToaConfig.soloWithoutParty) {
+            if (raids.blockingParty(player.username, ToaRaid.ID) != null || !ToaConfig.soloWithoutParty) {
                 player.message(NO_PARTY)
                 return
             }
+            if (!Raids.claim(player, ToaRaid.ID)) return
             party = raids.createParty(def, player.username) ?: return
         }
         when (val s = party.state) {

@@ -134,6 +134,11 @@ internal class RspSession(
         }.getOrNull()
 
     override fun send(message: ServerMessage) {
+        // MESSAGE_GAME carries at most 255 bytes of text (RSProt drops longer ones): long lines go out as several.
+        if (message is ServerMessage.GameMessage && message.text.length > MAX_GAME_MESSAGE) {
+            for (part in splitGameMessage(message.text)) send(ServerMessage.GameMessage(part, message.type, message.name))
+            return
+        }
         val world =
             when (message) {
                 is ServerMessage.ZoneOps -> message.world
@@ -750,3 +755,22 @@ private const val RED_SHIFT = 16
 private const val GREEN_SHIFT = 8
 private const val BYTE = 0xFF
 private const val TO_5BIT = 3
+
+/** Longest MESSAGE_GAME text: RSProt's bound for the packet (0..255 bytes; our text is one byte per char in cp1252). */
+private const val MAX_GAME_MESSAGE = 255
+
+/** Splits [text] into lines of at most [MAX_GAME_MESSAGE] chars, at the last space before the limit, never inside a tag. */
+internal fun splitGameMessage(text: String): List<String> {
+    val out = ArrayList<String>()
+    var rest = text
+    while (rest.length > MAX_GAME_MESSAGE) {
+        var cut = rest.lastIndexOf(' ', MAX_GAME_MESSAGE).takeIf { it > 0 } ?: MAX_GAME_MESSAGE
+        // A cut inside `<...>` moves to before the tag.
+        val open = rest.lastIndexOf('<', cut - 1)
+        if (open > 0 && open > rest.lastIndexOf('>', cut - 1)) cut = open
+        out += rest.substring(0, cut).trimEnd()
+        rest = rest.substring(cut).trimStart()
+    }
+    if (rest.isNotEmpty()) out += rest
+    return out
+}

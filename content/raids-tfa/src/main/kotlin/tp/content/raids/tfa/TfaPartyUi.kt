@@ -136,6 +136,7 @@ internal object TfaParties {
             problem?.let { p.message(it) }
             return
         }
+        Raids.claim(p, TfaRaid.ID)
         val party = raids.createParty(def, p.username)
         if (party == null) {
             p.message(ALREADY_IN_PARTY)
@@ -361,10 +362,11 @@ internal object TfaParties {
         if (!canEdit(p, party)) return
         val name = view.applicants.getOrNull(row)
         if (name != null && party.applicants.any { it == name }) {
-            if (Raids.of(p).partyOf(name) != null) {
+            if (Raids.of(p).blockingParty(name, TfaRaid.ID) != null) {
                 party.reject(name)
                 p.message("$name has joined another party.")
             } else if (party.accept(name)) {
+                Raids.leaveOtherRaids(p, name, TfaRaid.ID)
                 syncMembers(p, party, emptyList())
             } else {
                 p.message(PARTY_FULL)
@@ -400,7 +402,7 @@ internal object TfaParties {
         when {
             party.state != PartyState.Forming -> PARTY_STARTED
             party.isFull -> PARTY_FULL
-            partyOf(p) != null || Raids.of(p).partyOf(p.username) != null -> ALREADY_IN_PARTY
+            partyOf(p) != null || Raids.of(p).blockingParty(p.username, TfaRaid.ID) != null -> ALREADY_IN_PARTY
             TfaLobbyWorld.of(p).blocked[party.id.value]?.contains(p.username.lowercase()) == true -> BLOCKED
             else -> TfaConfig.requirement(p)
         }

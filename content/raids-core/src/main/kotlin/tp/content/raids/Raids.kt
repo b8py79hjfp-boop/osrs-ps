@@ -55,9 +55,29 @@ public class Raids internal constructor() {
 
     public val activeRuns: Collection<RaidRun> get() = runs.values
 
-    /** A new forming party led by [leader] (who must not be in another one). */
+    /**
+     * The party that keeps [name] from making or joining a [raidId] party: one of that raid, or any party whose run has
+     * started. A forming party of another raid doesn't block: [leaveOtherRaids] leaves it (one party at a time).
+     */
+    public fun blockingParty(name: String, raidId: String): Party? =
+        parties.values.firstOrNull {
+            it.state != PartyState.Disbanded && it.has(name) && (it.raid.id == raidId || it.state != PartyState.Forming)
+        }
+
+    /** Leaves [name]'s forming parties of raids other than [raidId] (the newest party wins); returns the ones left. */
+    public fun leaveOtherRaids(name: String, raidId: String): List<Party> {
+        val left = parties.values.filter { it.state == PartyState.Forming && it.raid.id != raidId && it.has(name) }
+        for (party in left) {
+            party.leave(name)
+            if (party.state == PartyState.Disbanded) dropParty(party)
+        }
+        return left
+    }
+
+    /** A new forming party led by [leader], who leaves a forming party of another raid first; null if [blockingParty]. */
     public fun createParty(raid: RaidDefinition, leader: String): Party? {
-        if (partyOf(leader) != null) return null
+        if (blockingParty(leader, raid.id) != null) return null
+        leaveOtherRaids(leader, raid.id)
         val p = Party(PartyId(nextParty++), raid, leader)
         parties[p.id.value] = p
         return p
@@ -77,6 +97,22 @@ public class Raids internal constructor() {
         private val KEY = AttrKey<Raids>("raids_world")
 
         public fun of(any: EntityRef): Raids = any.worldAttr(KEY) ?: Raids().also { any.setWorldAttr(KEY, it) }
+
+        /** [name] was accepted into a [raidId] party: leaves forming parties of other raids, telling them if online. */
+        public fun leaveOtherRaids(any: EntityRef, name: String, raidId: String) {
+            for (party in of(any).leaveOtherRaids(name, raidId)) any.onlinePlayer(name)?.message("You leave your ${party.raid.name} party.")
+        }
+
+        /**
+         * Before [p] makes or joins a [raidId] party: false (with nothing changed) when [blockingParty] stops it, else
+         * leaves any forming party of another raid and says so.
+         */
+        public fun claim(p: PlayerRef, raidId: String): Boolean {
+            val raids = of(p)
+            if (raids.blockingParty(p.username, raidId) != null) return false
+            for (party in raids.leaveOtherRaids(p.username, raidId)) p.message("You leave your ${party.raid.name} party.")
+            return true
+        }
 
         public fun of(world: WorldRef): Raids = world.worldAttr(KEY) ?: Raids().also { world.setWorldAttr(KEY, it) }
 

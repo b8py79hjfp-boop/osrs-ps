@@ -112,16 +112,19 @@ public class CoxFlow : ContentPlugin {
         events.on<RaidEvent.Died> { e -> if (e.run.raid.id == CoxRaid.ID) world?.onlinePlayer(e.member)?.let { dropRaidItems(it, e.run) } }
     }
 
+    /** A new CoX party led by [player], after leaving a forming party of another raid (null when one blocks). */
+    private fun newParty(player: PlayerRef, raids: Raids): tp.content.raids.Party? =
+        if (Raids.claim(player, CoxRaid.ID)) raids.createParty(requireNotNull(raids.definition(CoxRaid.ID)), player.username) else null
+
     /**
      * CX2-CX4 (OPEN-CX1 / OPEN-CX3): the leader's entry builds the instance and the layout; members of a started party
      * follow while it is still in the lobby. A player with no party enters as the leader of a new one.
      */
     private fun enterChambers(player: PlayerRef) {
         val raids = Raids.of(player)
-        val party =
-            raids.partyOf(player.username)
-                ?: raids.createParty(requireNotNull(raids.definition(CoxRaid.ID)), player.username)
-                ?: return
+        // A forming party of another raid is left (Raids.claim); one whose run started still blocks (OTHER_PARTY below).
+        val current = raids.partyOf(player.username)?.takeIf { it.raid.id == CoxRaid.ID || it.state != PartyState.Forming }
+        val party = current ?: newParty(player, raids) ?: return
         if (party.raid.id != CoxRaid.ID) {
             player.message(OTHER_PARTY)
             return

@@ -186,6 +186,7 @@ internal object CoxBoard {
         }
         val raids = Raids.of(p)
         val def = raids.definition(CoxRaid.ID) ?: return
+        Raids.claim(p, CoxRaid.ID)
         val party = raids.createParty(def, p.username)
         if (party == null) {
             p.message(ALREADY_IN_PARTY)
@@ -278,7 +279,7 @@ internal object CoxBoard {
                 p.message(PARTY_FULL)
             }
 
-            partyOf(p) != null || Raids.of(p).partyOf(p.username) != null -> {
+            partyOf(p) != null || Raids.of(p).blockingParty(p.username, CoxRaid.ID) != null -> {
                 p.message(ALREADY_IN_PARTY)
             }
 
@@ -286,7 +287,7 @@ internal object CoxBoard {
                 Unit
             }
 
-            party.join(p.username) -> {
+            Raids.claim(p, CoxRaid.ID) && party.join(p.username) -> {
                 p.message("You have joined ${party.leader}'s party.")
                 syncMembers(p, party, emptyList())
             }
