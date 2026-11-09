@@ -13,10 +13,10 @@ while ($more = 1) {
         $more = 0;
     } else {
         $id = calc($n * 5);
-        $y = calc($n * 36);
+        $y = calc($n * 31);
         cc_create($nav, ^iftype_rectangle, $id);
         cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
-        cc_setsize(0, 34, ^setsize_minus, ^setsize_abs);
+        cc_setsize(0, 29, ^setsize_minus, ^setsize_abs);
         cc_setfill(true);
         if ($n = $active) {
             cc_setcolour(0x6b5a40);
@@ -24,12 +24,12 @@ while ($more = 1) {
             cc_setcolour(0x3e3529);
         }
         cc_create($nav, ^iftype_graphic, calc($id + 1));
-        cc_setposition(5, calc($y + 5), ^setpos_abs_left, ^setpos_abs_top);
+        cc_setposition(5, calc($y + 3), ^setpos_abs_left, ^setpos_abs_top);
         cc_setsize(24, 24, ^setsize_abs, ^setsize_abs);
         cc_setgraphic(~teleports_icon(~commands_field($row, 1)));
         cc_create($nav, ^iftype_text, calc($id + 2));
         cc_setposition(34, $y, ^setpos_abs_left, ^setpos_abs_top);
-        cc_setsize(60, 34, ^setsize_abs, ^setsize_abs);
+        cc_setsize(60, 29, ^setsize_abs, ^setsize_abs);
         cc_settextfont(p12_full);
         cc_settextalign(^settextalign_left, ^settextalign_centre, 0);
         cc_settextshadow(true);
@@ -41,7 +41,7 @@ while ($more = 1) {
         cc_settext(~commands_field($row, 0));
         cc_create($nav, ^iftype_text, calc($id + 3));
         cc_setposition(94, $y, ^setpos_abs_left, ^setpos_abs_top);
-        cc_setsize(20, 34, ^setsize_abs, ^setsize_abs);
+        cc_setsize(20, 29, ^setsize_abs, ^setsize_abs);
         cc_settextfont(p11_full);
         cc_settextalign(^settextalign_right, ^settextalign_centre, 0);
         cc_settextshadow(true);
@@ -49,7 +49,7 @@ while ($more = 1) {
         cc_settext(~commands_field($row, 2));
         cc_create($nav, ^iftype_rectangle, calc($id + 4));
         cc_setposition(0, $y, ^setpos_abs_left, ^setpos_abs_top);
-        cc_setsize(0, 34, ^setsize_minus, ^setsize_abs);
+        cc_setsize(0, 29, ^setsize_minus, ^setsize_abs);
         cc_setcolour(0xffffff);
         cc_setfill(true);
         cc_settrans(255);

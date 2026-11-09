@@ -1,6 +1,6 @@
 [proc,teleports_icon](string $code)(graphic)
 // Category codes the server puts in a row: f favourites, r recent, c cities, a raids, b bosses, s skilling, m misc,
-// w Wilderness (red skull). Sprites from the cache (docs/mechanics/teleport-menu.md TM4).
+// w Wilderness (red skull), k<N> boss icon N (icon_boss_25x25,N; teleport-menu.md TM4).
 if (compare($code, "f") = 0) {
     return("worldswitcher_stars,1");
 }
@@ -21,5 +21,116 @@ if (compare($code, "s") = 0) {
 }
 if (compare($code, "w") = 0) {
     return("icon_activities_25x25,2");
+}
+if (compare($code, "k3") = 0) {
+    return("icon_boss_25x25,3");
+}
+if (compare($code, "k5") = 0) {
+    return("icon_boss_25x25,5");
+}
+if (compare($code, "k6") = 0) {
+    return("icon_boss_25x25,6");
+}
+if (compare($code, "k9") = 0) {
+    return("icon_boss_25x25,9");
+}
+if (compare($code, "k10") = 0) {
+    return("icon_boss_25x25,10");
+}
+if (compare($code, "k13") = 0) {
+    return("icon_boss_25x25,13");
+}
+if (compare($code, "k14") = 0) {
+    return("icon_boss_25x25,14");
+}
+if (compare($code, "k15") = 0) {
+    return("icon_boss_25x25,15");
+}
+if (compare($code, "k16") = 0) {
+    return("icon_boss_25x25,16");
+}
+if (compare($code, "k17") = 0) {
+    return("icon_boss_25x25,17");
+}
+if (compare($code, "k18") = 0) {
+    return("icon_boss_25x25,18");
+}
+if (compare($code, "k19") = 0) {
+    return("icon_boss_25x25,19");
+}
+if (compare($code, "k20") = 0) {
+    return("icon_boss_25x25,20");
+}
+if (compare($code, "k22") = 0) {
+    return("icon_boss_25x25,22");
+}
+if (compare($code, "k26") = 0) {
+    return("icon_boss_25x25,26");
+}
+if (compare($code, "k27") = 0) {
+    return("icon_boss_25x25,27");
+}
+if (compare($code, "k29") = 0) {
+    return("icon_boss_25x25,29");
+}
+if (compare($code, "k33") = 0) {
+    return("icon_boss_25x25,33");
+}
+if (compare($code, "k40") = 0) {
+    return("icon_boss_25x25,40");
+}
+if (compare($code, "k41") = 0) {
+    return("icon_boss_25x25,41");
+}
+if (compare($code, "k42") = 0) {
+    return("icon_boss_25x25,42");
+}
+if (compare($code, "k43") = 0) {
+    return("icon_boss_25x25,43");
+}
+if (compare($code, "k47") = 0) {
+    return("icon_boss_25x25,47");
+}
+if (compare($code, "k48") = 0) {
+    return("icon_boss_25x25,48");
+}
+if (compare($code, "k49") = 0) {
+    return("icon_boss_25x25,49");
+}
+if (compare($code, "k50") = 0) {
+    return("icon_boss_25x25,50");
+}
+if (compare($code, "k51") = 0) {
+    return("icon_boss_25x25,51");
+}
+if (compare($code, "k52") = 0) {
+    return("icon_boss_25x25,52");
+}
+if (compare($code, "k53") = 0) {
+    return("icon_boss_25x25,53");
+}
+if (compare($code, "k54") = 0) {
+    return("icon_boss_25x25,54");
+}
+if (compare($code, "k55") = 0) {
+    return("icon_boss_25x25,55");
+}
+if (compare($code, "k56") = 0) {
+    return("icon_boss_25x25,56");
+}
+if (compare($code, "k57") = 0) {
+    return("icon_boss_25x25,57");
+}
+if (compare($code, "k58") = 0) {
+    return("icon_boss_25x25,58");
+}
+if (compare($code, "k59") = 0) {
+    return("icon_boss_25x25,59");
+}
+if (compare($code, "k62") = 0) {
+    return("icon_boss_25x25,62");
+}
+if (compare($code, "k72") = 0) {
+    return("icon_boss_25x25,72");
 }
 return("icon_activities_25x25,10");

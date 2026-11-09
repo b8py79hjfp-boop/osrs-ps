@@ -113,6 +113,7 @@ internal enum class Tab(val label: String, val code: String) {
     CITIES("Cities", "c"),
     RAIDS("Raids", "a"),
     BOSSES("Bosses", "b"),
+    WILDERNESS("Wilderness", "w"),
     SKILLING("Skilling", "s"),
     MISC("Misc", "m"),
     ;
@@ -129,7 +130,10 @@ internal enum class Tab(val label: String, val code: String) {
     }
 }
 
-/** One destination (a `teleports.tsv` row). [wilderness] is its Wilderness level (0 outside). */
+/**
+ * One destination (a `teleports.tsv` row). [wilderness] is its Wilderness level (0 outside); [bossIcon] the frame of
+ * `icon_boss_25x25` that shows the boss (teleport-menu.md TM4), or -1 for the category's icon.
+ */
 internal class Destination(
     val id: Int,
     val tab: Tab,
@@ -137,7 +141,11 @@ internal class Destination(
     val at: CoordGrid,
     val wilderness: Int,
     val description: String,
+    val bossIcon: Int,
 ) {
+    /** The row / detail icon code (teleports_icon). */
+    val icon: String = if (bossIcon >= 0) "k$bossIcon" else tab.code
+
     val lowerText: String = "$name $description ${tab.label}".lowercase()
 }
 
@@ -171,6 +179,7 @@ internal object Destinations {
                     at = CoordGrid(c[COL_X].toInt(), c[COL_Z].toInt(), c[COL_LEVEL].toInt()),
                     wilderness = c[COL_WILDERNESS].toInt(),
                     description = c[COL_DESCRIPTION],
+                    bossIcon = c.getOrNull(COL_ICON)?.toIntOrNull() ?: -1,
                 )
             }.toList()
     }
@@ -183,6 +192,7 @@ internal object Destinations {
     private const val COL_LEVEL = 5
     private const val COL_WILDERNESS = 6
     private const val COL_DESCRIPTION = 7
+    private const val COL_ICON = 9
 }
 
 /** One drawn row: a destination, or a heading / information line ([dest] null). */
@@ -317,6 +327,7 @@ private fun navData(favourites: Int, recent: Int): String =
             when (tab) {
                 Tab.FAVOURITES -> favourites
                 Tab.RECENT -> recent
+                Tab.WILDERNESS -> Destinations.all.count { it.wilderness > 0 }
                 else -> Destinations.all.count { it.tab == tab }
             }
         "${tab.label};${tab.code};$count"
@@ -335,6 +346,7 @@ private fun rowsFor(s: TeleState, favs: Set<Int>, recent: List<Destination>): Li
         when (s.tab) {
             Tab.FAVOURITES -> Destinations.all.filter { it.id in favs }
             Tab.RECENT -> recent
+            Tab.WILDERNESS -> Destinations.all.filter { it.wilderness > 0 }
             else -> Destinations.all.filter { it.tab == s.tab }
         }
     return list.map { TeleRow(it) }
@@ -367,7 +379,7 @@ private fun rowData(row: TeleRow, s: TeleState, favs: Set<Int>, mixed: Boolean):
     val kind = if (d.wilderness > 0) 3 else 1
     val fav = if (d.id in favs) 1 else 0
     val selected = if (s.selected?.id == d.id) 1 else 0
-    return "${cell(d.name)};${cell(right)};${d.tab.code};$fav;$kind;$selected"
+    return "${cell(d.name)};${cell(right)};${d.icon};$fav;$kind;$selected"
 }
 
 private fun PlayerRef.drawDetail(d: Destination?, favs: Set<Int>) {
@@ -375,14 +387,13 @@ private fun PlayerRef.drawDetail(d: Destination?, favs: Set<Int>) {
     ifHide(Components.Teleports.FAVADD, d == null || d.id in favs)
     ifHide(Components.Teleports.FAVREMOVE, d == null || d.id !in favs)
     if (d == null) {
-        clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, "", "", "", "", "", "")
+        clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, "", "", "", "", "")
         return
     }
-    val icon = if (d.wilderness > 0) "w" else d.tab.code
     val info = "${d.at.x}, ${d.at.z}" + if (d.at.level > 0) ", level ${d.at.level}" else ""
     val warning =
         if (d.wilderness > 0) "Level ${d.wilderness} Wilderness. Other players can attack you here." else ""
-    clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, d.name, d.tab.label, icon, d.description, info, warning)
+    clientScript(Clientscripts.TELEPORTS_DETAIL, Components.Teleports.DETAIL, d.name, d.icon, d.description, info, warning)
 }
 
 /** Text for one row field: no field or row separators. */
