@@ -43,13 +43,13 @@ id	category	name	x	z	level	wilderness	description	source	icon
 42	cities	Civitas illa Fortis	1681	3133	0	0	Varlamore's capital	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:189	
 43	cities	Ferox Enclave	3151	3635	0	0	Safe zone in the Wilderness	docs/mechanics/teleports.md:79	
 44	cities	Ape Atoll	2798	2799	0	0	Marim, the monkey island	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:221	
-45	raids	Chambers of Xeric	1232	3572	0	0	Mount Quidamortem: raid entrance	content/raids-cox/src/main/kotlin/tp/content/raids/cox/CoxRaid.kt:38 (nearest standable tile)	
-46	raids	Theatre of Blood	3675	3219	0	0	Ver Sinhaza: party board and lobby	content/raids-tob/src/main/kotlin/tp/content/raids/tob/TobRaid.kt:33	
-47	raids	Tombs of Amascut	3358	9114	0	0	Necropolis: raid lobby	content/raids-toa/src/main/kotlin/tp/content/raids/toa/ToaRaid.kt:74	
+45	raids	Chambers of Xeric	1232	3572	0	0	Mount Quidamortem: raid entrance	content/raids-cox/src/main/kotlin/tp/content/raids/cox/CoxRaid.kt:38 (nearest standable tile)	28
+46	raids	Theatre of Blood	3675	3219	0	0	Ver Sinhaza: party board and lobby	content/raids-tob/src/main/kotlin/tp/content/raids/tob/TobRaid.kt:33	30
+47	raids	Tombs of Amascut	3358	9114	0	0	Necropolis: raid lobby	content/raids-toa/src/main/kotlin/tp/content/raids/toa/ToaRaid.kt:74	37
 48	raids	The Fractured Archive	4127	5508	0	0	Raid lobby entrance	content/raids-tfa/src/main/kotlin/tp/content/raids/tfa/TfaRaid.kt:29	72
 49	bosses	God Wars Dungeon	2892	5300	2	0	Generals of the four gods; Nex	https://oldschool.runescape.wiki/w/God_Wars_Dungeon (infobox map)	22
 50	bosses	Zulrah	2193	3060	0	0	Zul-Andra: boat to Zulrah's shrine	https://oldschool.runescape.wiki/w/Zul-Andra (infobox map)	19
-51	bosses	Vorkath	2269	4061	0	0	Ungael: Vorkath's island	https://oldschool.runescape.wiki/w/Ungael (infobox map) (nearest standable tile)	
+51	bosses	Vorkath	2269	4061	0	0	Ungael: Vorkath's island	https://oldschool.runescape.wiki/w/Ungael (infobox map) (nearest standable tile)	21
 52	bosses	Corporeal Beast	2967	4254	2	0	Corporeal Beast's cave	docs/mechanics/teleports.md:78 (nearest standable tile)	27
 53	bosses	Kraken	2271	10015	0	0	Kraken Cove (Slayer 87)	https://oldschool.runescape.wiki/w/Kraken_Cove (infobox map) (nearest standable tile)	15
 54	bosses	Cerberus	2884	3398	0	0	Taverley Dungeon: Cerberus' lair (Slayer 91)	https://oldschool.runescape.wiki/w/Taverley_Dungeon ({{Map}})	20
@@ -71,7 +71,7 @@ id	category	name	x	z	level	wilderness	description	source	icon
 70	bosses	The Hueycoatl	1508	3289	0	0	Varlamore: the Hueycoatl	https://oldschool.runescape.wiki/w/The_Hueycoatl (LocLine) (nearest standable tile)	59
 71	bosses	Amoxliatl	1362	4511	0	0	Ruins of Tapoyauik	https://oldschool.runescape.wiki/w/Amoxliatl (LocLine)	58
 72	bosses	The Royal Titans	3007	3149	0	0	Asgarnian Ice Dungeon: the Titans	https://oldschool.runescape.wiki/w/Asgarnian_Ice_Dungeon ({{Map}}) (nearest standable tile)	62
-73	bosses	Barrows	3564	3315	0	0	The six Barrows brothers	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:465	
+73	bosses	Barrows	3564	3315	0	0	The six Barrows brothers	content/magic/src/main/kotlin/tp/content/magic/SpellTeleports.kt:465	7
 74	bosses	Zalcano	3280	6058	0	0	Prifddinas: Zalcano's prison	https://oldschool.runescape.wiki/w/Zalcano ({{Map}}) (nearest standable tile)	13
 75	bosses	The Gauntlet	3228	6116	0	0	Prifddinas: Crystalline Hunllef	https://oldschool.runescape.wiki/w/The_Gauntlet (infobox map)	18
 76	bosses	TzHaar Fight Cave	2439	5172	0	0	TzTok-Jad	https://oldschool.runescape.wiki/w/TzHaar_Fight_Cave (infobox map)	48

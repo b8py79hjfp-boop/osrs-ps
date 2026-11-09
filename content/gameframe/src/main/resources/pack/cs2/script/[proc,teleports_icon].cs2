@@ -31,6 +31,9 @@ if (compare($code, "k5") = 0) {
 if (compare($code, "k6") = 0) {
     return("icon_boss_25x25,6");
 }
+if (compare($code, "k7") = 0) {
+    return("icon_boss_25x25,7");
+}
 if (compare($code, "k9") = 0) {
     return("icon_boss_25x25,9");
 }
@@ -61,6 +64,9 @@ if (compare($code, "k19") = 0) {
 if (compare($code, "k20") = 0) {
     return("icon_boss_25x25,20");
 }
+if (compare($code, "k21") = 0) {
+    return("icon_boss_25x25,21");
+}
 if (compare($code, "k22") = 0) {
     return("icon_boss_25x25,22");
 }
@@ -70,11 +76,20 @@ if (compare($code, "k26") = 0) {
 if (compare($code, "k27") = 0) {
     return("icon_boss_25x25,27");
 }
+if (compare($code, "k28") = 0) {
+    return("icon_boss_25x25,28");
+}
 if (compare($code, "k29") = 0) {
     return("icon_boss_25x25,29");
 }
+if (compare($code, "k30") = 0) {
+    return("icon_boss_25x25,30");
+}
 if (compare($code, "k33") = 0) {
     return("icon_boss_25x25,33");
+}
+if (compare($code, "k37") = 0) {
+    return("icon_boss_25x25,37");
 }
 if (compare($code, "k40") = 0) {
     return("icon_boss_25x25,40");
