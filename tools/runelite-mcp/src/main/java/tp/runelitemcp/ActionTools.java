@@ -51,13 +51,15 @@ final class ActionTools
 	/** Inventory side panel items (interface 149, component 0): the widget for use-item and inventory ops. */
 	private static final int INVENTORY_ITEMS_WIDGET = 149 << 16;
 	private static final int INVENTORY_CONTAINER = 93;
-	/** Chatbox dialogue interfaces (gameval names): NPC chat, player chat, options, message box, item/double/level-up boxes. */
-	private static final int[] DIALOG_GROUPS = {231, 217, 219, 229, 193, 11, 233, 162};
+	/** Chatbox dialogue interfaces: NPC chat, player chat, options, message box, item/double/level-up boxes, skillmulti (make-x). */
+	private static final int[] DIALOG_GROUPS = {231, 217, 219, 229, 193, 11, 233, 270, 162};
 	private static final int OPTIONS_GROUP = 219;
 	/** Upper bound and stop rule when walking a group's component ids (dialogue groups have well under 100). */
 	private static final int MAX_GROUP_COMPONENTS = 600;
 	private static final int MISSING_RUN = 8;
 	private static final long POLL_MS = 100;
+	/** Gap between synthetic mouse events, so the client's mouse handler sees press and release on separate cycles. */
+	private static final long MOUSE_GAP_MS = 60;
 	/** The ground ops of an item without its own (OSRS default): op 3 "Take". */
 	private static final String[] DEFAULT_GROUND_ACTIONS = {null, null, "Take", null, null};
 	private static final long DEFAULT_WAIT_MS = 10_000;
@@ -182,6 +184,18 @@ final class ActionTools
 				.integer("timeout_ms", "Default 10000, max 120000.")
 				.build(),
 			this::waitFor));
+		t.add(new ToolDef("mouse_click",
+			"A real mouse click on the game canvas: at x/y (canvas pixels), or at the centre of a widget's on-screen bounds "
+				+ "(widget + optional index). For buttons that have no menu op of their own (client-side pause buttons, "
+				+ "labels over a clickable layer). right=true for a right click (opens the menu; see get_menu).",
+			Schema.object()
+				.integer("x", "Canvas x.")
+				.integer("y", "Canvas y.")
+				.integer("widget", "Packed component id to click the centre of.")
+				.integer("index", "Dynamic child index of that component.")
+				.bool("right", "Right button. Default false.")
+				.build(),
+			this::mouseClick));
 		t.add(new ToolDef("get_client_log",
 			"The client's WARN/ERROR log lines (RuneLite and the game client, e.g. client script errors), newest last, "
 				+ "with the tick they happened on. since_seq to see only new ones.",
@@ -204,6 +218,64 @@ final class ActionTools
 			Schema.object().build(),
 			a -> ToolResult.json(onClient(this::menu))));
 		return t;
+	}
+
+	// ---- mouse ------------------------------------------------------------------------------------------------------
+
+	private ToolResult mouseClick(JsonObject a) throws Exception
+	{
+		int[] at = onClient(() ->
+		{
+			Integer widget = optInt(a, "widget");
+			if (widget == null)
+			{
+				return new int[]{reqIntArg(a, "x"), reqIntArg(a, "y")};
+			}
+			Widget parent = client.getWidget(widget);
+			Widget w = parent;
+			Integer index = optInt(a, "index");
+			if (w != null && index != null)
+			{
+				w = w.getChild(index);
+			}
+			if (w == null || w.isHidden())
+			{
+				throw new IllegalArgumentException("widget not loaded or hidden");
+			}
+			java.awt.Rectangle b = w.getBounds();
+			// A dynamic child's bounds can be stale or relative (seen on 364's buttons): then click the parent's centre.
+			if (parent != null && w != parent && !parent.getBounds().contains(b.x + b.width / 2, b.y + b.height / 2))
+			{
+				b = parent.getBounds();
+			}
+			return new int[]{b.x + b.width / 2, b.y + b.height / 2};
+		});
+		Canvas canvas = canvas();
+		boolean right = boolArg(a, "right", false);
+		int button = right ? java.awt.event.MouseEvent.BUTTON3 : java.awt.event.MouseEvent.BUTTON1;
+		int mods = right ? java.awt.event.InputEvent.BUTTON3_DOWN_MASK : java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
+		long now = System.currentTimeMillis();
+		canvas.dispatchEvent(new java.awt.event.MouseEvent(canvas, java.awt.event.MouseEvent.MOUSE_MOVED, now, 0, at[0], at[1], 0, false));
+		Thread.sleep(MOUSE_GAP_MS);
+		canvas.dispatchEvent(new java.awt.event.MouseEvent(canvas, java.awt.event.MouseEvent.MOUSE_PRESSED, now, mods, at[0], at[1], 1, right, button));
+		Thread.sleep(MOUSE_GAP_MS);
+		canvas.dispatchEvent(new java.awt.event.MouseEvent(canvas, java.awt.event.MouseEvent.MOUSE_RELEASED, now, 0, at[0], at[1], 1, false, button));
+		canvas.dispatchEvent(new java.awt.event.MouseEvent(canvas, java.awt.event.MouseEvent.MOUSE_CLICKED, now, 0, at[0], at[1], 1, false, button));
+		JsonObject o = new JsonObject();
+		o.addProperty("x", at[0]);
+		o.addProperty("y", at[1]);
+		o.addProperty("button", right ? "right" : "left");
+		return ToolResult.json(o);
+	}
+
+	private static int reqIntArg(JsonObject a, String name)
+	{
+		Integer v = optInt(a, name);
+		if (v == null)
+		{
+			throw new IllegalArgumentException("give " + name + " (or widget)");
+		}
+		return v;
 	}
 
 	// ---- logs, interfaces, menu ----------------------------------------------------------------------------------

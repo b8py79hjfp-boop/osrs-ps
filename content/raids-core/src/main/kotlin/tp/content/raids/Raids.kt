@@ -100,7 +100,11 @@ public class Raids internal constructor() {
 
         /** [name] was accepted into a [raidId] party: leaves forming parties of other raids, telling them if online. */
         public fun leaveOtherRaids(any: EntityRef, name: String, raidId: String) {
-            for (party in of(any).leaveOtherRaids(name, raidId)) any.onlinePlayer(name)?.message("You leave your ${party.raid.name} party.")
+            for (party in of(
+                any,
+            ).leaveOtherRaids(name, raidId)) {
+                any.onlinePlayer(name)?.message("You leave your party for ${party.raid.name}.")
+            }
         }
 
         /**
@@ -110,7 +114,7 @@ public class Raids internal constructor() {
         public fun claim(p: PlayerRef, raidId: String): Boolean {
             val raids = of(p)
             if (raids.blockingParty(p.username, raidId) != null) return false
-            for (party in raids.leaveOtherRaids(p.username, raidId)) p.message("You leave your ${party.raid.name} party.")
+            for (party in raids.leaveOtherRaids(p.username, raidId)) p.message("You leave your party for ${party.raid.name}.")
             return true
         }
 

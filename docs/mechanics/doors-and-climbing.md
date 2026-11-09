@@ -27,7 +27,7 @@ Content-specific handlers for the same loc and op win: these are fallbacks (`Con
 - **Revert.** "The (cycle) duration that a door remains changed before reverting to its original state" is 500 ticks
   (RS Mod `DoorConstants.DURATION`).
 
-## Ladders, trapdoors and stairs (DC5–DC7)
+## Ladders, trapdoors and stairs (DC5–DC8)
 
 - **DC5. Links.**
   - Every placement with a climb op ("Climb-up", "Climb-down", "Climb", and the "Go"/"Walk" up/down variants) is
@@ -43,6 +43,10 @@ Content-specific handlers for the same loc and op win: these are fallbacks (`Con
   `climbOption`: "Climb up or down the ladder?" / "Climb up or down the stairs?".
 - **DC7. Animation.** Ladders play `human_reachforladder` going up and `human_pickupfloor` going down, then move the
   player after a tick (RS Mod `LadderScript`). Stairs move without an animation.
+- **DC8. Top-floor / Bottom-floor.** A staircase with these ops (Lumbridge Castle's ground-floor staircase, loc
+  56230: "Climb-up", "Top-floor") takes the player through every floor at once: its own link, then the staircase
+  near that landing (within 4 tiles) that goes on the same way, until none does. Before, "Nothing interesting happens."
+  (seen in the client).
 - **Checked:**
   - Lumbridge castle stairs go up to (3205,3209,1) and back down.
   - A door at (3226,3214) opens to (3227,3214) at angle 3, can be walked through, and closes back to its cache state.

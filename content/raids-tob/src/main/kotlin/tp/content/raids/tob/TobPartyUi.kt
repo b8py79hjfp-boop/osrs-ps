@@ -139,6 +139,9 @@ internal object TobBoard {
 
     /** The notice board: every forming ToB party, oldest first (client-contract 2.4). */
     fun openList(p: PlayerRef) {
+        // The first visit asks for the preferred mode first: the question replaces the list in the chatbox flow, so the
+        // list opens once it is answered (it was opened before the question and never came back; seen in the client).
+        if (p.saved(PREFERRED_MODE_KEY) == null) return askPreferredMode(p)
         p.openModal(Components.Toplevel.MAINMODAL, Interfaces.TOB_PARTYLIST)
         val lobby = TobLobbyWorld.of(p)
         val parties =
@@ -155,7 +158,6 @@ internal object TobBoard {
             // OPEN-TB-UI4: the "View party:" op is set by script 2340; the client only sends it with the op flag.
             if (party != null) p.ifEvents(Components.Tob_Partylist._00 + row, -1..-1, IfEvents.op(1))
         }
-        if (p.saved(PREFERRED_MODE_KEY) == null) askPreferredMode(p)
     }
 
     /** `RESUME_PAUSEBUTTON` on 364:3: 0 Refresh, 1 Make party / My party, 2 Friends/Clan filter (client-contract 2.4). */
@@ -229,7 +231,10 @@ internal object TobBoard {
     private fun askPreferredMode(p: PlayerRef) {
         p.choiceDialog(MODE_PROMPT, MODE_NAMES) { pick ->
             val mode = pick - 1
-            if (mode in MODE_NAMES.indices) setSaved(PREFERRED_MODE_KEY, mode.toLong())
+            if (mode in MODE_NAMES.indices) {
+                setSaved(PREFERRED_MODE_KEY, mode.toLong())
+                openList(this)
+            }
         }
     }
 
