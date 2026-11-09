@@ -49,7 +49,9 @@ public class CommandDispatcher internal constructor(
         val ctx = WorldParseContext(player)
         val match = registry.match(def, tokens.drop(1), ctx)
         if (match is CommandRegistry.Match.Usage) {
-            val usage = def.usages.joinToString(" or ")
+            // An unknown subcommand's error already lists the words that work (CommandRegistry.match): no usage lines.
+            if (match.closest.isEmpty() && match.error != null) return refuse(player, "${match.error}.")
+            val usage = match.closest.ifEmpty { def.signatures }.joinToString(" or ") { def.usageOf(it) }
             return refuse(player, if (match.error == null) "Usage: $usage" else "${match.error}. Usage: $usage")
         }
         val parsed = match as CommandRegistry.Match.Parsed

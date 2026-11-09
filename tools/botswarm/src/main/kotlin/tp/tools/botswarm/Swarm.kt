@@ -59,6 +59,7 @@ fun main(args: Array<String>) {
                     "gear" -> gear(bot)
                     "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
                     "raids" -> raids(bot, RAIDS[i % RAIDS.size])
+                    "script" -> script(bot)
                     else -> wander(bot, centreX, centreZ)
                 }
             }
@@ -66,6 +67,23 @@ fun main(args: Array<String>) {
     }
     pool.close()
 }
+
+/**
+ * Sweep helper: sends each line of the file named by `-Dbotswarm.script` as a command (`::` dropped), one every
+ * `-Dbotswarm.scriptMs` (default 1200 ms), so a run of the server log shows what any command breaks.
+ */
+private fun script(bot: BotClient) {
+    val file = System.getProperty("botswarm.script") ?: error("-Dbotswarm.script=<file> is required for mode script")
+    val pause = java.lang.Long.getLong("botswarm.scriptMs", SCRIPT_PAUSE_MS)
+    for (line in Files.readAllLines(Path.of(file)).map(String::trim).filter { it.isNotEmpty() && !it.startsWith("#") }) {
+        println("> $line")
+        bot.cheat(line.removePrefix("::"))
+        Thread.sleep(pause)
+    }
+}
+
+/** Default pause between [script] lines: two ticks. */
+private const val SCRIPT_PAUSE_MS = 1_200L
 
 /**
  * Multi-combat brawl for the Phase 4 check: teleport into the Main Wilderness multi area (3300, 3800; level 36), get

@@ -84,20 +84,36 @@ public class CommandRegistry {
     public sealed interface Match {
         public class Parsed(public val signature: Signature, public val values: Map<Arg<*>, Any?>) : Match
 
-        /** No signature fits: the first signature's error, shown with the usage lines. */
-        public class Usage(public val error: String?) : Match
+        /**
+         * No signature fits: the error of the signature that got furthest through the line (the first of those on a
+         * tie), and the signatures that got that far ([closest]; all of them when none took a token), for the usage lines.
+         */
+        public class Usage(
+            public val error: String?,
+            public val progress: Int = 0,
+            public val closest: List<Signature> = emptyList(),
+        ) : Match
     }
 
     /** Tries [def]'s signatures in order with [args]; the first that takes every token wins. */
     public fun match(def: CommandDef, args: List<String>, ctx: ParseContext): Match {
-        var firstError: String? = null
+        val misses = ArrayList<Pair<Signature, Match.Usage>>()
         for (s in def.signatures) {
             when (val r = tryParse(s, args, ctx)) {
                 is Match.Parsed -> return r
-                is Match.Usage -> if (firstError == null) firstError = r.error
+                is Match.Usage -> misses += s to r
             }
         }
-        return Match.Usage(firstError)
+        val best = misses.maxOfOrNull { it.second.progress } ?: 0
+        val closest = if (best == 0) def.signatures else misses.filter { it.second.progress == best }.map { it.first }
+        // Subcommands (`::raid info ...`, `::raid parties`): a first word none of them takes names the words that work.
+        val firsts = def.signatures.map { it.args.firstOrNull() }
+        if (best == 0 && firsts.isNotEmpty() && firsts.all { it is Arg.ChoiceArg }) {
+            if (args.isEmpty()) return Match.Usage(null, 0, def.signatures)
+            val words = firsts.flatMap { (it as Arg.ChoiceArg).choices }.distinct()
+            return Match.Usage("'${args[0]}' isn't one of: ${words.joinToString(", ")}", 0, emptyList())
+        }
+        return Match.Usage(misses.firstOrNull { it.second.progress == best }?.second?.error, best, closest)
     }
 
     private fun tryParse(s: Signature, args: List<String>, ctx: ParseContext): Match {
@@ -106,7 +122,7 @@ public class CommandRegistry {
         for (arg in s.args) {
             if (at >= args.size) {
                 if (arg.optional) continue
-                return Match.Usage("${arg.usage} is missing")
+                return Match.Usage("${arg.usage} is missing", at)
             }
             when (val r = arg.parse(args, at, ctx)) {
                 is ParseResult.Ok -> {
@@ -115,11 +131,11 @@ public class CommandRegistry {
                 }
 
                 is ParseResult.Err -> {
-                    return Match.Usage(r.message)
+                    return Match.Usage(r.message, at)
                 }
             }
         }
-        if (at < args.size) return Match.Usage("too many arguments")
+        if (at < args.size) return Match.Usage("too many arguments", at)
         return Match.Parsed(s, values)
     }
 

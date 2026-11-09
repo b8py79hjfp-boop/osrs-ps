@@ -244,7 +244,7 @@ public sealed class Arg<T>(public val name: String, public val optional: Boolean
 
         override fun parse(tokens: List<String>, at: Int, ctx: ParseContext): ParseResult<String> =
             choices.firstOrNull { it.equals(tokens[at], ignoreCase = true) }?.let { ParseResult.Ok(it, 1) }
-                ?: ParseResult.Err("$name is one of ${choices.joinToString(", ")}")
+                ?: ParseResult.Err("'${tokens[at]}' isn't one of: ${choices.joinToString(", ")}")
     }
 
     /** The rest of the line (reasons, messages); always last. */

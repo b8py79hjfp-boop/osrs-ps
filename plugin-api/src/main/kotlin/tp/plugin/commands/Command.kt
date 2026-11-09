@@ -88,7 +88,10 @@ public class CommandDef internal constructor(
     public val available: (tp.util.commands.CommandsConfig) -> Boolean,
 ) {
     /** `::name <a> [b]` for each signature. */
-    public val usages: List<String> get() = signatures.map { s -> "::$name${if (s.args.isEmpty()) "" else " " + s.usage}" }
+    public val usages: List<String> get() = signatures.map(::usageOf)
+
+    /** One usage line, `::name args`. */
+    public fun usageOf(s: Signature): String = "::$name${if (s.args.isEmpty()) "" else " " + s.usage}"
 }
 
 /** The command DSL (commands brief §3). */

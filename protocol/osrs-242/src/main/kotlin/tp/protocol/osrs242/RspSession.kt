@@ -756,8 +756,11 @@ private const val GREEN_SHIFT = 8
 private const val BYTE = 0xFF
 private const val TO_5BIT = 3
 
-/** Longest MESSAGE_GAME text: RSProt's bound for the packet (0..255 bytes; our text is one byte per char in cp1252). */
-private const val MAX_GAME_MESSAGE = 255
+/**
+ * Longest MESSAGE_GAME text: RSProt bounds the packet's string at 0..255 bytes including its terminator, and our text
+ * is one byte per char in cp1252 (a 255-char line was refused as 256).
+ */
+private const val MAX_GAME_MESSAGE = 254
 
 /** Splits [text] into lines of at most [MAX_GAME_MESSAGE] chars, at the last space before the limit, never inside a tag. */
 internal fun splitGameMessage(text: String): List<String> {
