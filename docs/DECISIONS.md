@@ -1430,3 +1430,14 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   non-staff ranks, and worlds deliver `[Staff] ...` to staff only, whatever their yell setting.
 - **Legacy procs** called by our scripts are named by id (`script553` and so on) in `legacy.sym`, because their roles
   are not documented.
+
+## D-097 Local file store (2026-11-09, the user's request)
+
+- **Why.** With no `--db`, the embedded hub kept everything in memory, so accounts, saves (stats, items, position)
+  and ranks were lost on every restart.
+- **What.** `FileStore` (hub) is the `MemoryStore` plus a JSON snapshot at `.data/accounts/hub-store.json`
+  (`--store-file` to move it). The snapshot is written atomically when something changed, at most every 5 s, and
+  again on close (after the shutdown's final player saves). A file that can't be read stops the start rather than being
+  overwritten. `--memory` keeps the old behaviour; `--db` still selects PostgreSQL, which live worlds must use.
+- **Format.** `MemoryStore.exportState()` / `importState()`: one document, version 1, every table, enums by name
+  and ranks by their stored value. A table that changes shape bumps the version and gets a migration in `importState`.

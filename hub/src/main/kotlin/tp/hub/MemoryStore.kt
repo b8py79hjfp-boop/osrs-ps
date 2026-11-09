@@ -1,5 +1,16 @@
 package tp.hub
 
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import kotlinx.serialization.json.put
 import tp.services.ChannelSettings
 import tp.services.GeOffer
 import tp.services.HiscoreEntry
@@ -10,7 +21,11 @@ import tp.util.Rank
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-/** In-memory [HubStore] (dev, tests). Thread-safe; nothing survives a restart. */
+/**
+ * In-memory [HubStore] (tests, `--memory`). Thread-safe; nothing survives a restart unless [FileStore] snapshots it
+ * ([exportState] / [importState]).
+ */
+@Suppress("LargeClass", "TooManyFunctions") // one map per HubStore table, plus the snapshot codec
 class MemoryStore : HubStore {
     private val ids = AtomicLong()
     private val offerIds = AtomicLong()
@@ -309,7 +324,99 @@ class MemoryStore : HubStore {
     }
 
     override fun close() = Unit
+
+    /** Everything this store holds, as one JSON document (D-097). Weakly consistent while writers run. */
+    fun exportState(): JsonObject =
+        buildJsonObject {
+            put("v", STATE_VERSION)
+            put("ids", ids.get())
+            put("offerIds", offerIds.get())
+            put("recordIds", recordIds.get())
+            put("tpIds", tpIds.get())
+            put("accounts", JsonArray(byId.values.sortedBy { it.id }.map(StateCodec::account)))
+            put("saves", longMap(saves) { JsonPrimitive(it) })
+            put("friends", longMap(friendLists) { strings(it) })
+            put("ignores", longMap(ignoreLists) { strings(it) })
+            put("bannedIps", strings(bannedIps))
+            put("lastIps", longMap(lastIps) { JsonPrimitive(it) })
+            put("seen", JsonArray(seenRows.map { (k, at) -> JsonArray(listOf(k.first, k.second, k.third, at).map(::prim)) }))
+            put("donations", longMap(donations) { JsonPrimitive(it) })
+            put("records", JsonArray(records.map(StateCodec::record)))
+            put("channelRanks", longMap(channelRanks) { m -> JsonObject(m.mapValues { JsonPrimitive(it.value) }) })
+            put("channelSettings", longMap(channelSettings, StateCodec::channel))
+            put("clans", JsonArray(clans.values.map(StateCodec::clan)))
+            put(
+                "prices",
+                JsonObject(
+                    prices.entries.associate { (k, v) ->
+                        k.toString() to JsonArray(listOf(prim(v.first), prim(v.second)))
+                    },
+                ),
+            )
+            put("geOffers", JsonArray(geOffers.values.map(StateCodec::offer)))
+            put("geHistory", longMap(geHistory) { q -> JsonArray(synchronized(q) { q.toList() }.map(StateCodec::offer)) })
+            put("tpListings", JsonArray(tpListings.values.map(StateCodec::listing)))
+            put("tpCollects", longMap(tpCollects, StateCodec::collect))
+            put("tpTrades", longMap(tpTrades) { q -> JsonArray(synchronized(q) { q.toList() }.map(StateCodec::trade)) })
+            put("hiscores", longMap(hiscores) { (name, xp) -> JsonArray(listOf(prim(name), JsonArray(xp.map(::prim)))) })
+            put("audit", strings(synchronized(auditLog) { auditLog.toList() }))
+            put("auditKeys", strings(synchronized(auditKeys) { auditKeys.toList() }))
+        }
+
+    /** Loads a document written by [exportState] into this (empty) store. Unknown keys are ignored; missing ones stay empty. */
+    @Suppress("CyclomaticComplexMethod", "LongMethod") // one line per table
+    fun importState(o: JsonObject) {
+        val v = o["v"]?.jsonPrimitive?.int ?: 0
+        require(v in 1..STATE_VERSION) { "unknown state version $v" }
+        ids.set(o.long("ids"))
+        offerIds.set(o.long("offerIds"))
+        recordIds.set(o.long("recordIds"))
+        tpIds.set(o.long("tpIds"))
+        o.arr("accounts").map { StateCodec.account(it.jsonObject) }.forEach {
+            byId[it.id] = it
+            byName[it.username] = it
+        }
+        o.obj("saves").forEach { (k, e) -> saves[k.toLong()] = e.jsonPrimitive.content }
+        o.obj("friends").forEach { (k, e) -> friendLists[k.toLong()] = keySet(e) }
+        o.obj("ignores").forEach { (k, e) -> ignoreLists[k.toLong()] = keySet(e) }
+        o.arr("bannedIps").forEach { bannedIps += it.jsonPrimitive.content }
+        o.obj("lastIps").forEach { (k, e) -> lastIps[k.toLong()] = e.jsonPrimitive.content }
+        o.arr("seen").forEach {
+            val a = it.jsonArray
+            seenRows[Triple(a[0].jsonPrimitive.long, a[1].jsonPrimitive.content, a[2].jsonPrimitive.content)] = a[3].jsonPrimitive.long
+        }
+        o.obj("donations").forEach { (k, e) -> donations[k.toLong()] = e.jsonPrimitive.long }
+        o.arr("records").forEach { records += StateCodec.record(it.jsonObject) }
+        o.obj("channelRanks").forEach { (k, e) ->
+            channelRanks[k.toLong()] = ConcurrentHashMap(e.jsonObject.mapValues { it.value.jsonPrimitive.int })
+        }
+        o.obj("channelSettings").forEach { (k, e) -> channelSettings[k.toLong()] = StateCodec.channel(e.jsonObject) }
+        o.arr("clans").map { StateCodec.clan(it.jsonObject) }.forEach { clans[it.id] = it }
+        o.obj("prices").forEach { (k, e) -> prices[k.toInt()] = e.jsonArray[0].jsonPrimitive.int to e.jsonArray[1].jsonPrimitive.int }
+        o.arr("geOffers").map { StateCodec.offer(it.jsonObject) }.forEach { geOffers[it.id] = it }
+        o.obj("geHistory").forEach { (k, e) -> geHistory[k.toLong()] = ArrayDeque(e.jsonArray.map { StateCodec.offer(it.jsonObject) }) }
+        o.arr("tpListings").map { StateCodec.listing(it.jsonObject) }.forEach { tpListings[it.id] = it }
+        o.obj("tpCollects").forEach { (k, e) -> tpCollects[k.toLong()] = StateCodec.collect(e.jsonObject) }
+        o.obj("tpTrades").forEach { (k, e) -> tpTrades[k.toLong()] = ArrayDeque(e.jsonArray.map { StateCodec.trade(it.jsonObject) }) }
+        o.obj("hiscores").forEach { (k, e) ->
+            val a = e.jsonArray
+            hiscores[k.toLong()] = a[0].jsonPrimitive.content to a[1].jsonArray.map { it.jsonPrimitive.int }.toIntArray()
+        }
+        o.arr("audit").forEach { auditLog += it.jsonPrimitive.content }
+        o.arr("auditKeys").forEach { auditKeys += it.jsonPrimitive.content }
+    }
+
+    private fun keySet(e: JsonElement): MutableSet<String> =
+        ConcurrentHashMap.newKeySet<String>().also { s ->
+            e.jsonArray.forEach {
+                s +=
+                    it.jsonPrimitive.content
+            }
+        }
 }
+
+/** Version of [MemoryStore.exportState]'s document; bump with a migration in importState when a table changes shape. */
+private const val STATE_VERSION = 1
 
 /** Hiscore ranking shared by the stores: xp tenths per stat, overall = sum. */
 internal object Hiscores {

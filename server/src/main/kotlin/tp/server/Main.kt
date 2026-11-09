@@ -1,6 +1,7 @@
 package tp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import tp.hub.FileStore
 import tp.hub.Hub
 import tp.hub.HubConfig
 import tp.hub.HubHttp
@@ -30,7 +31,8 @@ private const val DEFAULT_HTTP_PORT = 8080
  * hop locally), `--world` (first world id, default 1), `--http-port` (jav_config/worldlist with an embedded
  * hub, default 8080), `--public-host` (address advertised to clients, default 127.0.0.1),
  * `--hub host:port` (remote hub over gRPC; default: an embedded hub), `--db <jdbc url>` `--db-user` `--db-password`
- * (embedded hub's PostgreSQL; default in-memory), `--trace <file>` (tick inspector JSONL, first world),
+ * (embedded hub's PostgreSQL; default a JSON file, `--store-file <path>`, default `.data/accounts/hub-store.json`, or
+ * `--memory` for nothing saved; D-097), `--trace <file>` (tick inspector JSONL, first world),
  * `--proxy-protocol [cidrs]` (PROXY v2 from trusted proxies; default loopback), `--ops-port` (health + Prometheus
  * metrics, default 9090), `--admins a,b` (embedded hub: these accounts get administrator rights),
  * `--record <file>` (replay log, first world), `--max-per-ip <n>` (default 10; raise for local bot swarms),
@@ -149,7 +151,13 @@ private class NodeOptions(options: Map<String, String?>) {
 private fun embeddedHub(options: Map<String, String?>, config: ServerConfig): Hub {
     val store =
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") }
-            ?: MemoryStore()
+            ?: if ("--memory" in
+                options
+            ) {
+                MemoryStore()
+            } else {
+                FileStore.open(options["--store-file"]?.let(Path::of) ?: FileStore.DEFAULT_PATH)
+            }
     // Dev: the first login with a new name creates the account with that password.
     val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
     return Hub(store, HubConfig(autoRegister = true, admins = admins, bootstrap = config.bootstrap()))

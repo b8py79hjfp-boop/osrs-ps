@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.bouncycastle)
     implementation(libs.postgresql)
     implementation(libs.hikari)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.grpc.netty.shaded)
     implementation(platform(libs.netty.bom))
     implementation(project(":net"))
