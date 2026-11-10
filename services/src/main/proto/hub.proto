@@ -640,6 +640,7 @@ message BroadcastEvent {
     PresenceUpdate presence = 3;
     YellRequest yell = 4;
   }
+  int32 message_world = 5; // with `message`: only this world shows it; 0 = every world
 }
 
 service Broadcasts {
@@ -649,4 +650,192 @@ service Broadcasts {
   rpc Yell(YellRequest) returns (Empty);
   rpc SetInvisible(InvisibleRequest) returns (Empty);
   rpc Subscribe(Empty) returns (stream BroadcastEvent);
+}
+
+// ---- control panel (panel/docs/plan.md §3). Served only on the hub's mTLS panel listener, never to world nodes.
+// The hub re-checks the actor's stored rank on every call; the panel's own checks are not trusted alone.
+
+message PanelActor {
+  int64 account_id = 1;
+  string ip = 2; // the staff member's address, for the audit row
+}
+
+message VerifyStaffRequest {
+  string username = 1;
+  string password = 2;
+  string ip = 3;
+}
+
+message VerifyStaffReply {
+  string result = 1; // OK, INVALID_CREDENTIALS, THROTTLED, BANNED or NOT_STAFF
+  int64 account_id = 2;
+  string display_name = 3;
+  string rank = 4; // tp.util.Rank stored value
+}
+
+message RankReply {
+  bool exists = 1;
+  string rank = 2;
+  bool banned = 3;
+  string display_name = 4;
+}
+
+message PanelAuditRequest {
+  PanelActor actor = 1;
+  string action = 2;
+  string target = 3;
+  string detail = 4;
+  string result = 5;
+}
+
+message AuditQuery {
+  PanelActor actor = 1;
+  string by = 2; // actor filter
+  string target = 3;
+  string action = 4;
+  string source = 5;
+  string text = 6;
+  int64 since_ms = 7;
+  int64 until_ms = 8;
+  int64 before_id = 9;
+  int32 limit = 10;
+}
+
+message AuditRowPb {
+  int64 id = 1;
+  int64 at_ms = 2;
+  string actor = 3;
+  string action = 4;
+  string target = 5;
+  string detail = 6;
+  string source = 7;
+  string ip = 8;
+  string result = 9;
+}
+
+message AuditRows {
+  string error = 1;
+  repeated AuditRowPb rows = 2;
+}
+
+message OnlineReply {
+  string error = 1;
+  repeated PresencePb players = 2;
+}
+
+message PanelWorld {
+  int32 id = 1;
+  string host = 2;
+  int32 port = 3;
+  string activity = 4;
+  int32 flags = 5;
+  int32 population = 6;
+  bool locked = 7;
+  int64 last_beat_ms = 8;
+}
+
+message PanelWorlds {
+  string error = 1;
+  repeated PanelWorld worlds = 2;
+}
+
+message LoginLockRequest {
+  PanelActor actor = 1;
+  int32 world_id = 2; // 0 = every world
+  bool locked = 3;
+  string message = 4;
+}
+
+message LoginLockPb {
+  int32 world_id = 1;
+  string message = 2;
+}
+
+message LoginLockState {
+  string error = 1;
+  repeated LoginLockPb locks = 2;
+}
+
+message PanelUpdateRequest {
+  PanelActor actor = 1;
+  int32 seconds = 2;
+  string message = 3; // broadcast first when not empty
+}
+
+message PanelBroadcastRequest {
+  PanelActor actor = 1;
+  string text = 2;
+  int32 world_id = 3; // 0 = every world
+}
+
+message PanelSanctionRequest {
+  PanelActor actor = 1;
+  string target = 2;
+  string sanction = 3; // tp.util.Sanction name
+  string reason = 4;
+  sint64 duration_ms = 5; // -1 = permanent
+}
+
+message PanelTargetRequest {
+  PanelActor actor = 1;
+  string target = 2;
+  string kind = 3; // Investigate: "alts", "ips" or "audit"
+  string filter = 4;
+}
+
+message PanelSetRankRequest {
+  PanelActor actor = 1;
+  string target = 2;
+  string rank = 3; // tp.util.Rank stored value
+}
+
+message SanctionsQuery {
+  PanelActor actor = 1;
+  string type = 2; // tp.util.RecordType name, empty = any
+  string staff = 3; // actor name, empty = any
+  bool active_only = 4;
+  int32 limit = 5;
+}
+
+message SanctionRowPb {
+  ModRecordPb record = 1;
+  string account_name = 2;
+}
+
+message SanctionRows {
+  string error = 1;
+  repeated SanctionRowPb rows = 2;
+}
+
+message StaffRowPb {
+  int64 account_id = 1;
+  string name = 2;
+  string rank = 3;
+  int32 world_id = 4; // 0 = offline
+}
+
+message StaffRows {
+  string error = 1;
+  repeated StaffRowPb staff = 2;
+}
+
+service Panel {
+  rpc VerifyStaff(VerifyStaffRequest) returns (VerifyStaffReply);
+  rpc GetRank(AccountRef) returns (RankReply);
+  rpc Audit(PanelAuditRequest) returns (ErrorReply);
+  rpc QueryAudit(AuditQuery) returns (AuditRows);
+  rpc ListOnline(PanelActor) returns (OnlineReply);
+  rpc ListWorlds(PanelActor) returns (PanelWorlds);
+  rpc SetLoginLock(LoginLockRequest) returns (ErrorReply);
+  rpc GetLoginLock(PanelActor) returns (LoginLockState);
+  rpc SystemUpdate(PanelUpdateRequest) returns (ErrorReply);
+  rpc CancelUpdate(PanelActor) returns (ErrorReply);
+  rpc Broadcast(PanelBroadcastRequest) returns (ErrorReply);
+  rpc ApplySanction(PanelSanctionRequest) returns (ErrorReply);
+  rpc History(PanelTargetRequest) returns (HistoryReply);
+  rpc Lookup(PanelTargetRequest) returns (LookupReply);
+  rpc Investigate(PanelTargetRequest) returns (LinesReply);
+  rpc SetRank(PanelSetRankRequest) returns (ErrorReply);
+  rpc ListSanctions(SanctionsQuery) returns (SanctionRows);
+  rpc ListStaff(PanelActor) returns (StaffRows);
 }

@@ -38,7 +38,8 @@ class MemoryStore : HubStore {
     private val lastIps = ConcurrentHashMap<Long, String>()
     private val geOffers = ConcurrentHashMap<Long, GeOffer>()
     private val hiscores = ConcurrentHashMap<Long, Pair<String, IntArray>>()
-    val auditLog: MutableList<String> = java.util.Collections.synchronizedList(ArrayList())
+    private val auditLog: MutableList<AuditRow> = java.util.Collections.synchronizedList(ArrayList())
+    private val auditIds = AtomicLong()
 
     override fun account(username: String): AccountRow? = byName[username.lowercase()]
 
@@ -82,11 +83,17 @@ class MemoryStore : HubStore {
     override fun auditQuery(who: String, filter: String, limit: Int): List<String> =
         synchronized(auditLog) { auditLog.toList() }
             .asReversed()
-            .filter { line ->
-                val f = line.split(' ', limit = AUDIT_FIELDS)
-                (who.isBlank() || f.getOrNull(1).equals(who, true) || f.getOrNull(AUDIT_TARGET).equals(who, true)) &&
-                    (filter.isBlank() || line.contains(filter, ignoreCase = true))
-            }.take(limit)
+            .filter { r -> who.isBlank() || r.actor.equals(who, true) || r.target.equals(who, true) }
+            .map { r -> "${r.atMs} ${r.actor} ${r.action} ${r.target} ${r.detail}" }
+            .filter { line -> filter.isBlank() || line.contains(filter, ignoreCase = true) }
+            .take(limit)
+
+    override fun auditSearch(q: AuditSearch): List<AuditRow> =
+        synchronized(auditLog) { auditLog.toList() }.asReversed().filter(q::matches).take(q.limit)
+
+    override fun allRecords(limit: Int): List<tp.util.ModRecord> = records.sortedByDescending { it.id }.take(limit)
+
+    override fun staffAccounts(): List<AccountRow> = byId.values.filter { it.rights.isStaff }.sortedBy { it.id }
 
     override fun setRights(id: Long, rights: Rank) =
         update(id) {
@@ -318,9 +325,9 @@ class MemoryStore : HubStore {
 
     override fun audited(action: String, target: String): Boolean = "$action\u0000$target" in auditKeys
 
-    override fun audit(actor: String, action: String, target: String, detail: String) {
+    override fun auditEntry(actor: String, action: String, target: String, detail: String, source: String, ip: String, result: String) {
         auditKeys += "$action\u0000$target"
-        auditLog += "${System.currentTimeMillis()} $actor $action $target $detail"
+        auditLog += AuditRow(auditIds.incrementAndGet(), System.currentTimeMillis(), actor, action, target, detail, source, ip, result)
     }
 
     override fun close() = Unit
@@ -359,7 +366,7 @@ class MemoryStore : HubStore {
             put("tpCollects", longMap(tpCollects, StateCodec::collect))
             put("tpTrades", longMap(tpTrades) { q -> JsonArray(synchronized(q) { q.toList() }.map(StateCodec::trade)) })
             put("hiscores", longMap(hiscores) { (name, xp) -> JsonArray(listOf(prim(name), JsonArray(xp.map(::prim)))) })
-            put("audit", strings(synchronized(auditLog) { auditLog.toList() }))
+            put("auditRows", JsonArray(synchronized(auditLog) { auditLog.toList() }.map(StateCodec::audit)))
             put("auditKeys", strings(synchronized(auditKeys) { auditKeys.toList() }))
         }
 
@@ -402,7 +409,23 @@ class MemoryStore : HubStore {
             val a = e.jsonArray
             hiscores[k.toLong()] = a[0].jsonPrimitive.content to a[1].jsonArray.map { it.jsonPrimitive.int }.toIntArray()
         }
-        o.arr("audit").forEach { auditLog += it.jsonPrimitive.content }
+        // Version 1 files hold "ms actor action target detail" strings; later ones structured rows.
+        o.arr("audit").forEach { line ->
+            val f = line.jsonPrimitive.content.split(' ', limit = AUDIT_FIELDS)
+            auditLog +=
+                AuditRow(
+                    auditIds.incrementAndGet(),
+                    f[0].toLongOrNull() ?: 0,
+                    f.getOrElse(1) { "" },
+                    f.getOrElse(2) { "" },
+                    f.getOrElse(AUDIT_TARGET) { "" },
+                    f.getOrElse(AUDIT_DETAIL) { "" },
+                    AUDIT_SOURCE_GAME,
+                    "",
+                    "",
+                )
+        }
+        o.arr("auditRows").forEach { auditLog += StateCodec.audit(it.jsonObject).also { r -> auditIds.accumulateAndGet(r.id, ::maxOf) } }
         o.arr("auditKeys").forEach { auditKeys += it.jsonPrimitive.content }
     }
 
@@ -457,3 +480,4 @@ internal object Levels {
 /** Memory audit rows are "ms actor action target detail". */
 private const val AUDIT_FIELDS = 5
 private const val AUDIT_TARGET = 3
+private const val AUDIT_DETAIL = 4

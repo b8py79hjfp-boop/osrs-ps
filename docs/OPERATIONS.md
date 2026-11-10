@@ -11,8 +11,12 @@ players ──> DDoS proxy (PROXY v2) ──> world-node JVM(s): N worlds each �
 Start the hub first, then the world nodes:
 
 ```bash
-./gradlew :hub:run --args="--db jdbc:postgresql://db/tp --db-user tp --db-password ... --public-url https://play.example"
+./gradlew :hub:run --args="--db jdbc:postgresql://db/tp --db-user tp --db-password ... --public-url https://play.example --grpc-bind 10.0.0.2"
 ```
+
+The hub's gRPC binds to 127.0.0.1 unless `--grpc-bind` names the private-network address the world nodes use. It is
+unauthenticated: never bind it to a public interface. The control panel uses a separate mTLS listener (`--panel-*`,
+panel/docs/plan.md).
 
 ```bash
 ./gradlew :server:run --args="--hub hub:43600 --worlds 3 --world 1 --public-host w1.example --proxy-protocol 10.0.0.0/8"

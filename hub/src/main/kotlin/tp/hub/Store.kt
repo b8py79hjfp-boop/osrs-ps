@@ -19,6 +19,46 @@ class AccountRow(
     val bannedUntil: Long,
 )
 
+/** One `audit_log` row. [source] is `GAME` or `PANEL`; [ip] and [result] are set for panel rows (panel brief §8). */
+class AuditRow(
+    val id: Long,
+    val atMs: Long,
+    val actor: String,
+    val action: String,
+    val target: String,
+    val detail: String,
+    val source: String,
+    val ip: String,
+    val result: String,
+)
+
+/** Audit log filters (panel Audit page). Blank strings and 0 times match everything; [beforeId] 0 = newest first. */
+class AuditSearch(
+    val actor: String = "",
+    val target: String = "",
+    val action: String = "",
+    val source: String = "",
+    val text: String = "",
+    val sinceMs: Long = 0,
+    val untilMs: Long = 0,
+    val beforeId: Long = 0,
+    val limit: Int = 100,
+) {
+    /** In-memory filter, the same semantics as [PostgresStore.auditSearch]. */
+    fun matches(r: AuditRow): Boolean =
+        (actor.isBlank() || r.actor.equals(actor, true)) &&
+            (target.isBlank() || r.target.equals(target, true)) &&
+            (action.isBlank() || r.action.equals(action, true)) &&
+            (source.isBlank() || r.source.equals(source, true)) &&
+            (text.isBlank() || "${r.actor} ${r.action} ${r.target} ${r.detail} ${r.result}".contains(text, true)) &&
+            (sinceMs == 0L || r.atMs >= sinceMs) &&
+            (untilMs == 0L || r.atMs < untilMs) &&
+            (beforeId == 0L || r.id < beforeId)
+}
+
+/** Audit source of rows written by the game itself. */
+const val AUDIT_SOURCE_GAME: String = "GAME"
+
 /**
  * Hub persistence (brief §7, §12). [MemoryStore] for dev and tests, [PostgresStore] for production. Blocking calls:
  * the hub runs them on virtual threads. Usernames are compared case-insensitively (lower-cased keys).
@@ -159,7 +199,20 @@ interface HubStore : AutoCloseable {
     fun topHiscores(stat: Int, count: Int): List<HiscoreEntry>
 
     /** Append-only audit log (staff actions, logins): who, what, when. */
-    fun audit(actor: String, action: String, target: String, detail: String)
+    fun audit(actor: String, action: String, target: String, detail: String) =
+        auditEntry(actor, action, target, detail, AUDIT_SOURCE_GAME, "", "")
+
+    /** [audit] with the panel's extra fields (panel brief §8). */
+    fun auditEntry(actor: String, action: String, target: String, detail: String, source: String, ip: String, result: String)
+
+    /** Audit rows matching [q], newest first. */
+    fun auditSearch(q: AuditSearch): List<AuditRow>
+
+    /** Moderation records of every account, newest first, at most [limit] (panel Moderation page). */
+    fun allRecords(limit: Int): List<tp.util.ModRecord>
+
+    /** Accounts at [Rank.MODERATOR] or above (panel Staff page). */
+    fun staffAccounts(): List<AccountRow>
 
     /** Whether the audit log already holds [action] on [target] (one-time actions such as the rank bootstrap). */
     fun audited(action: String, target: String): Boolean

@@ -97,11 +97,14 @@ private fun maybe(o: tp.services.GeOffer?): MaybeOffer =
             .build()
     }
 
-/** Serves [hub] over gRPC (hub.proto). */
-class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
+/**
+ * Serves [hub] over gRPC (hub.proto) to world nodes. [bind]: loopback by default; world nodes on other hosts need the
+ * private address (`--grpc-bind`). Unauthenticated, so never a public interface.
+ */
+class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127.0.0.1") : AutoCloseable {
     private val server: Server =
         NettyServerBuilder
-            .forPort(port)
+            .forAddress(java.net.InetSocketAddress(bind, port))
             .addService(Accounts())
             .addService(Worlds())
             .addService(Social())
@@ -589,7 +592,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int) : AutoCloseable {
                         val e =
                             when (b) {
                                 is Broadcast.Message -> {
-                                    BroadcastEvent.newBuilder().setMessage(b.text)
+                                    BroadcastEvent.newBuilder().setMessage(b.text).setMessageWorld(b.worldId)
                                 }
 
                                 is Broadcast.SystemUpdate -> {

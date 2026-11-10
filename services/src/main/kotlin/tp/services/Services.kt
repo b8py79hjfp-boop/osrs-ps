@@ -22,7 +22,8 @@ interface HubServices {
 
 // ---------------------------------------------------------------- accounts and saves
 
-enum class LoginResult { OK, INVALID_CREDENTIALS, ALREADY_ONLINE, BANNED, THROTTLED, SAVE_PENDING, SERVER_ERROR }
+/** [LOCKED]: maintenance mode, logins below moderator refused (panel brief §3). */
+enum class LoginResult { OK, INVALID_CREDENTIALS, ALREADY_ONLINE, BANNED, THROTTLED, SAVE_PENDING, SERVER_ERROR, LOCKED }
 
 class LoginGrant(
     val result: LoginResult,
@@ -435,7 +436,8 @@ interface BroadcastService {
 class PresenceEntry(val accountId: Long, val name: String, val worldId: Int, val rank: Rank, val invisible: Boolean)
 
 sealed interface Broadcast {
-    class Message(val text: String) : Broadcast
+    /** A server-wide message; [worldId] 0 = every world, otherwise only that world shows it (panel broadcast). */
+    class Message(val text: String, val worldId: Int = 0) : Broadcast
 
     class SystemUpdate(val seconds: Int) : Broadcast
 

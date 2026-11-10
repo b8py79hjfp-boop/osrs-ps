@@ -87,6 +87,11 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
                     request.reject(LoginRejection.HOP_BLOCKED)
                 }
 
+                // Maintenance mode: the 242 client has no free-text login reply, so the standard "being updated" line.
+                LoginResult.LOCKED -> {
+                    request.reject(LoginRejection.UPDATE_IN_PROGRESS)
+                }
+
                 LoginResult.SERVER_ERROR, null -> {
                     request.reject(LoginRejection.SERVER_ERROR)
                 }

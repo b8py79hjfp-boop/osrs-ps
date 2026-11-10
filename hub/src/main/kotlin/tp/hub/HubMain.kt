@@ -9,10 +9,11 @@ import java.nio.file.Path
 private val logger = KotlinLogging.logger {}
 
 /**
- * Hub process (brief §7). Options: `--grpc-port` (43600), `--http-port` (8080), `--db jdbc:postgresql://…`
+ * Hub process (brief §7). Options: `--grpc-port` (43600), `--grpc-bind` (127.0.0.1; the private address when world
+ * nodes run on other hosts), `--http-port` (8080), `--db jdbc:postgresql://…`
  * `--db-user` `--db-password` (default: in-memory store), `--auto-register` (dev), `--initial-world` (1).
  * HTTP: `/jav_config.ws`, `/worldlist.ws` (from the world directory), `POST /register` (sign-up, brief §12),
- * `/health`.
+ * `/health`. Control panel API (mTLS, loopback): `--panel-cert` `--panel-key` `--panel-ca` [`--panel-port` 50051].
  */
 fun main(args: Array<String>) {
     val options =
@@ -24,7 +25,8 @@ fun main(args: Array<String>) {
         options["--db"]?.let { PostgresStore(it, options["--db-user"] ?: "postgres", options["--db-password"] ?: "") } ?: MemoryStore()
     val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
     val hub = Hub(store, HubConfig(autoRegister = "--auto-register" in options, admins = admins))
-    val grpc = HubGrpcServer(hub, options["--grpc-port"]?.toIntOrNull() ?: DEFAULT_GRPC_PORT).start()
+    val grpc = HubGrpcServer(hub, options["--grpc-port"]?.toIntOrNull() ?: DEFAULT_GRPC_PORT, options["--grpc-bind"] ?: "127.0.0.1").start()
+    val panel = PanelGrpcServer.fromOptions(hub, options)
     val httpPort = options["--http-port"]?.toIntOrNull() ?: DEFAULT_HTTP_PORT
     val http =
         ClientConfigServer(
@@ -50,6 +52,7 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(
         Thread {
             http.close()
+            panel?.close()
             grpc.close()
             hub.close()
         },

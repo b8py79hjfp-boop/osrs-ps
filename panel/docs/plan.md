@@ -98,7 +98,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
 
 ## 5. Phases (brief §11) and done-when
 
-1. **Plan and hub API.**
+1. **Plan and hub API.** Done 2026-11-10 (docs/PROGRESS.md "Control panel").
    - Done when:
      - this plan and DECISIONS D-100 are written;
      - RPCs #1–12 are in `hub.proto`, implemented in the hub and served on the mTLS listener (`--panel-port`,

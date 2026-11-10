@@ -238,6 +238,20 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
 - Open: the donator crown (no sprite packing, OPEN-DN2) and bank space above the cache's 1410 slots (OPEN-DN1).
   The perks for systems we don't have are listed in DN6.
 
+## Control panel (panel/docs/brief.md, plan panel/docs/plan.md, D-100)
+
+- [x] Phase 1: plan (Windows Server 2025 adaptation, hub API gap list). Hub `Panel` gRPC service on its own loopback
+  mTLS listener (`--panel-cert/--panel-key/--panel-ca`, port 50051, in the standalone hub and the embedded one):
+  VerifyStaff (no game session, same throttles, bootstrap rank applied), GetRank, Audit, QueryAudit, ListOnline,
+  ListWorlds, Set/GetLoginLock (maintenance mode: staff-only logins, lock message as world activity), SystemUpdate /
+  CancelUpdate, Broadcast (per world), ApplySanction, History, Lookup, Investigate, SetRank, ListSanctions, ListStaff.
+  Every call re-checks the actor's stored rank; state changes and IP views are audited with source PANEL, IP and
+  result (new `audit_log` columns in all three stores). World-facing gRPC now binds 127.0.0.1 (`--grpc-bind`).
+  Checked end to end over mTLS on the memory store, the embedded world node and PostgreSQL 16. Fixed on the way:
+  `lastIp` crashed on PostgreSQL for accounts that never logged in (broke `::lookup`); botswarm detekt.
+- [ ] Phase 2: Rust skeleton, certs/secrets CLI, Windows install script, JSON store to PostgreSQL import.
+- Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
+
 ## Next
 
 1. Phase 6 (in progress, see docs/plans/phase-6.md).

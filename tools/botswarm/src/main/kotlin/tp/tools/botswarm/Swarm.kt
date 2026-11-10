@@ -28,7 +28,6 @@ fun main(args: Array<String>) {
     val centreX = args.getOrNull(CENTRE_X_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_X
     val centreZ = args.getOrNull(CENTRE_Z_ARG)?.toIntOrNull() ?: DEFAULT_CENTRE_Z
     val mode = args.getOrNull(MODE_ARG) ?: "walk"
-    val fight = mode == "fight"
     // Account names are global across worlds (the hub refuses a second session), so each world's swarm needs its own.
     val prefix = args.getOrNull(PREFIX_ARG) ?: "bot"
     val modulus = BigInteger(Files.readString(Path.of(".data", "rsa", "modulus.hex")).trim(), HEX)
@@ -52,20 +51,36 @@ fun main(args: Array<String>) {
                 // mixed: a quarter each of walkers, clumped multi-combat fighters, gear switchers and (with
                 // --loopback-hosts on the server) world hoppers.
                 val behaviour = if (mode == "mixed") MIXED[i % MIXED.size] else mode
-                when (behaviour) {
-                    "fight" -> fight(bot, count)
-                    "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
-                    "clienthop" -> clientHop(bot, "$prefix${i + 1}", modulus, crcs)
-                    "gear" -> gear(bot)
-                    "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
-                    "raids" -> raids(bot, RAIDS[i % RAIDS.size])
-                    "script" -> script(bot)
-                    else -> wander(bot, centreX, centreZ)
-                }
+                behave(bot, behaviour, i, count, prefix, modulus, crcs, centreX, centreZ)
             }
         }
     }
     pool.close()
+}
+
+/** Runs bot [i]'s [behaviour] until it ends. */
+@Suppress("LongParameterList") // the swarm's settings, passed through unchanged
+private fun behave(
+    bot: BotClient,
+    behaviour: String,
+    i: Int,
+    count: Int,
+    prefix: String,
+    modulus: BigInteger,
+    crcs: IntArray,
+    centreX: Int,
+    centreZ: Int,
+) {
+    when (behaviour) {
+        "fight" -> fight(bot, count)
+        "hop" -> hop(bot, "$prefix${i + 1}", modulus, crcs)
+        "clienthop" -> clientHop(bot, "$prefix${i + 1}", modulus, crcs)
+        "gear" -> gear(bot)
+        "channel" -> channel(bot, "$prefix${i + 1}", "${prefix}1")
+        "raids" -> raids(bot, RAIDS[i % RAIDS.size])
+        "script" -> script(bot)
+        else -> wander(bot, centreX, centreZ)
+    }
 }
 
 /**

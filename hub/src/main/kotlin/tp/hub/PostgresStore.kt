@@ -129,7 +129,9 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
     override fun setIpBan(ip: String, banned: Boolean) =
         if (banned) exec("INSERT INTO ip_bans (ip) VALUES (?) ON CONFLICT DO NOTHING", ip) else exec("DELETE FROM ip_bans WHERE ip = ?", ip)
 
-    override fun lastIp(id: Long): String? = strings("SELECT last_ip FROM accounts WHERE id = ?", id).firstOrNull()
+    // NULL until the account first logs in to the game (sign-up on the website sets none).
+    override fun lastIp(id: Long): String? =
+        strings("SELECT COALESCE(last_ip, '') FROM accounts WHERE id = ?", id).firstOrNull()?.takeIf { it.isNotEmpty() }
 
     override fun addDonation(accountId: Long, cents: Long, actor: String, note: String, at: Long) =
         exec(
@@ -587,8 +589,87 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
     override fun audited(action: String, target: String): Boolean =
         strings("SELECT action FROM audit_log WHERE action = ? AND target = ? LIMIT 1", action, target).isNotEmpty()
 
-    override fun audit(actor: String, action: String, target: String, detail: String) =
-        exec("INSERT INTO audit_log (actor, action, target, detail) VALUES (?, ?, ?, ?)", actor, action, target, detail)
+    override fun auditEntry(actor: String, action: String, target: String, detail: String, source: String, ip: String, result: String) =
+        exec(
+            "INSERT INTO audit_log (actor, action, target, detail, source, ip, result) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            actor,
+            action,
+            target,
+            detail,
+            source,
+            ip,
+            result,
+        )
+
+    @Suppress("MagicNumber") // JDBC column / parameter indexes
+    override fun auditSearch(q: AuditSearch): List<AuditRow> =
+        sql { c ->
+            val sql =
+                "SELECT id, at, actor, action, target, detail, source, ip, result FROM audit_log WHERE " +
+                    "(? = '' OR lower(actor) = lower(?)) AND (? = '' OR lower(target) = lower(?)) AND " +
+                    "(? = '' OR lower(action) = lower(?)) AND (? = '' OR lower(source) = lower(?)) AND " +
+                    "(? = '' OR (actor || ' ' || action || ' ' || target || ' ' || detail || ' ' || result) ILIKE ?) AND " +
+                    "(? = 0 OR at >= to_timestamp(? / 1000.0)) AND (? = 0 OR at < to_timestamp(? / 1000.0)) AND " +
+                    "(? = 0 OR id < ?) ORDER BY id DESC LIMIT ?"
+            c.prepareStatement(sql).use { ps ->
+                var i = 1
+                for (v in listOf(q.actor, q.target, q.action, q.source)) {
+                    ps.setString(i++, v)
+                    ps.setString(i++, v)
+                }
+                ps.setString(i++, q.text)
+                ps.setString(i++, "%${q.text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")}%")
+                for (v in listOf(q.sinceMs, q.untilMs, q.beforeId)) {
+                    ps.setLong(i++, v)
+                    ps.setLong(i++, v)
+                }
+                ps.setInt(i, q.limit)
+                ps.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            add(
+                                AuditRow(
+                                    rs.getLong(1),
+                                    rs.getTimestamp(2).time,
+                                    rs.getString(3),
+                                    rs.getString(4),
+                                    rs.getString(5),
+                                    rs.getString(6),
+                                    rs.getString(7),
+                                    rs.getString(8),
+                                    rs.getString(9),
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+    override fun allRecords(limit: Int): List<tp.util.ModRecord> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM moderation_records ORDER BY id DESC LIMIT ?").use { ps ->
+                ps.setInt(1, limit)
+                ps.executeQuery().use { rs -> buildList { while (rs.next()) add(record(rs)) } }
+            }
+        }
+
+    override fun staffAccounts(): List<AccountRow> =
+        sql { c ->
+            c.prepareStatement("SELECT * FROM accounts WHERE rights = ANY (?) ORDER BY id").use { ps ->
+                ps.setArray(
+                    1,
+                    c.createArrayOf(
+                        "text",
+                        Rank.entries
+                            .filter { it.isStaff }
+                            .map { it.stored }
+                            .toTypedArray(),
+                    ),
+                )
+                ps.executeQuery().use { rs -> buildList { while (rs.next()) add(rs.account()) } }
+            }
+        }
 
     @Suppress("MagicNumber") // JDBC column / parameter indexes
     override fun clans(): List<tp.services.ClanRecord> =
@@ -762,6 +843,11 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
                     actor text NOT NULL, note text NOT NULL, at_ms bigint NOT NULL)""",
                 "CREATE INDEX IF NOT EXISTS donations_account ON donations (account_id)",
                 "CREATE INDEX IF NOT EXISTS moderation_records_scope ON moderation_records (type, scope) WHERE scope <> ''",
+                // Panel brief §8: who did it from where, and how it ended; additive, existing rows are game rows.
+                "ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'GAME'",
+                "ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS ip text NOT NULL DEFAULT ''",
+                "ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS result text NOT NULL DEFAULT ''",
+                "CREATE INDEX IF NOT EXISTS audit_log_actor ON audit_log (lower(actor))",
             )
     }
 }

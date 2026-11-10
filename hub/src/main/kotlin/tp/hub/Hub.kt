@@ -68,13 +68,13 @@ class HubConfig(
  * world directory, social, GE skeleton, hiscores, moderation, broadcasts. Served over gRPC by `HubGrpcServer`, or
  * used directly by a world-node running an embedded hub (dev). Blocking store calls run on virtual threads.
  */
-class Hub(private val store: HubStore, private val config: HubConfig = HubConfig()) : HubServices, AutoCloseable {
+class Hub(internal val store: HubStore, private val config: HubConfig = HubConfig()) : HubServices, AutoCloseable {
     private val io: CoroutineDispatcher = Executors.newVirtualThreadPerTaskExecutor().asCoroutineDispatcher()
 
-    private suspend fun <T> db(block: () -> T): T = withContext(io) { block() }
+    internal suspend fun <T> db(block: () -> T): T = withContext(io) { block() }
 
     /** [account] with its bootstrap rank applied (set and audited) when one is due; else unchanged. */
-    private suspend fun withBootstrap(account: AccountRow, name: String): AccountRow {
+    internal suspend fun withBootstrap(account: AccountRow, name: String): AccountRow {
         val boot = bootstrapRank(name) ?: return account
         if (!bootstrapDue(account, boot)) return account
         return db {
@@ -89,7 +89,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         account.rights != rank && !db { store.audited(BOOTSTRAP, "account:${account.id}") }
 
     /** [name]'s bootstrap rank: `[ranks.bootstrap]`, else ADMINISTRATOR for a `--admins` name. */
-    private fun bootstrapRank(name: String): Rank? {
+    internal fun bootstrapRank(name: String): Rank? {
         val key = name.trim().replace('_', ' ').lowercase()
         config.bootstrap[key]?.let { return it }
         // D-088: a trailing `*` is a name prefix (bot accounts on dev worlds); the longest prefix wins.
@@ -105,7 +105,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     private val online = ConcurrentHashMap<Long, Int>()
 
     /** Every online account with its world, rank and hidden flag (pushed to every world, commands brief §5). */
-    private val presence = ConcurrentHashMap<Long, PresenceEntry>()
+    internal val presence = ConcurrentHashMap<Long, PresenceEntry>()
 
     private fun presenceChanged(online: List<PresenceEntry> = emptyList(), offline: List<Long> = emptyList()) {
         val event = Broadcast.Presence(online, offline, snapshot = false)
@@ -118,7 +118,7 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
      */
     private val hashPermits = java.util.concurrent.Semaphore(Runtime.getRuntime().availableProcessors())
 
-    private fun <T> hashing(block: () -> T): T {
+    internal fun <T> hashing(block: () -> T): T {
         hashPermits.acquire()
         try {
             return block()
@@ -132,8 +132,25 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
     /** Logout saves in flight: account → completes when durable. */
     private val pendingLogout = ConcurrentHashMap<Long, CompletableDeferred<Unit>>()
 
-    private val failures = Throttle(config.failureWindowMs)
-    private val worldList = ConcurrentHashMap<Int, WorldInfo>()
+    internal val failures = Throttle(config.failureWindowMs)
+    internal val worldList = ConcurrentHashMap<Int, WorldInfo>()
+
+    /** Last registration or heartbeat per world, epoch ms (panel dashboard). */
+    internal val lastBeat = ConcurrentHashMap<Int, Long>()
+
+    /** Maintenance mode (panel brief §3): world id (0 = every world) to the message shown as the world's activity. */
+    internal val loginLocks = ConcurrentHashMap<Int, String>()
+
+    /** The maintenance message for [worldId] while logins there are locked, else null. */
+    fun lockMessage(worldId: Int): String? = loginLocks[worldId] ?: loginLocks[0]
+
+    /** A server message to one world ([worldId]) or all (0): the panel's broadcast. */
+    internal fun broadcastTo(text: String, worldId: Int) {
+        broadcastSinks.forEach { runCatching { it(Broadcast.Message(text, worldId)) } }
+    }
+
+    internal val maxFailuresPerIp: Int get() = config.maxFailuresPerIp
+    internal val maxFailuresPerAccount: Int get() = config.maxFailuresPerAccount
     private val socialSinks = ConcurrentHashMap<Int, CopyOnWriteArrayList<(SocialEvent) -> Unit>>()
     private val kickSinks = ConcurrentHashMap<Int, CopyOnWriteArrayList<(Long) -> Unit>>()
     private val broadcastSinks = CopyOnWriteArrayList<(Broadcast) -> Unit>()
@@ -175,6 +192,10 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
                     }
                 ) {
                     return LoginGrant(LoginResult.BANNED)
+                }
+                // Panel maintenance mode: staff only (the bootstrap rank counts, so the first developer can get in).
+                if (lockMessage(worldId) != null && !maxOf(row.rights, bootstrapRank(name) ?: Rank.PLAYER).isStaff) {
+                    return LoginGrant(LoginResult.LOCKED)
                 }
                 // Dupe prevention: the previous world's logout save must be durable first (brief §7).
                 pendingLogout[row.id]?.let { pending ->
@@ -272,15 +293,21 @@ class Hub(private val store: HubStore, private val config: HubConfig = HubConfig
         object : WorldDirectory {
             override suspend fun register(world: WorldInfo) {
                 worldList[world.id] = world
+                lastBeat[world.id] = System.currentTimeMillis()
                 logger.info { "world ${world.id} registered at ${world.host}:${world.port}" }
             }
 
             override suspend fun heartbeat(worldId: Int, population: Int) {
                 val w = worldList[worldId] ?: return
                 worldList[worldId] = WorldInfo(w.id, w.host, w.port, w.activity, w.flags, population)
+                lastBeat[worldId] = System.currentTimeMillis()
             }
 
-            override suspend fun list(): List<WorldInfo> = worldList.values.sortedBy { it.id }
+            // A locked world shows the maintenance message as its activity (panel brief §3).
+            override suspend fun list(): List<WorldInfo> =
+                worldList.values.sortedBy { it.id }.map { w ->
+                    lockMessage(w.id)?.let { WorldInfo(w.id, w.host, w.port, it, w.flags, w.population) } ?: w
+                }
         }
 
     // ---------------------------------------------------------------- social

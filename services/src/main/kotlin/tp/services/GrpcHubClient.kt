@@ -777,7 +777,7 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                 stream({ broadcastsStub.subscribe(PbEmpty.getDefaultInstance()) }) { e: BroadcastEvent ->
                     when (e.eventCase) {
                         BroadcastEvent.EventCase.MESSAGE -> {
-                            sink(Broadcast.Message(e.message))
+                            sink(Broadcast.Message(e.message, e.messageWorld))
                         }
 
                         BroadcastEvent.EventCase.SYSTEM_UPDATE_SECONDS -> {

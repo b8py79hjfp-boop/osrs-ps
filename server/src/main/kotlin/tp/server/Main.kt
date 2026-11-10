@@ -106,7 +106,8 @@ fun main(args: Array<String>) {
     for (w in worlds) {
         w.onUpdateDone = { if (done.incrementAndGet() == worlds.size) Thread { exitProcess(0) }.start() }
     }
-    val http = embeddedHub?.let { worldListServer(it, worlds, node::hostOf, node.httpPort, node.firstWorld) }
+    // The embedded hub's HTTP side, and the control panel's mTLS API when its certificates are configured.
+    val http = embeddedHub?.let { hubEndpoints(it, worlds, node, options) }
     val ops = Ops(worlds, options["--ops-port"]?.toIntOrNull() ?: Ops.DEFAULT_PORT).start()
     Runtime.getRuntime().addShutdownHook(
         Thread {
@@ -163,6 +164,16 @@ private fun embeddedHub(options: Map<String, String?>, config: ServerConfig): Hu
     return Hub(store, HubConfig(autoRegister = true, admins = admins, bootstrap = config.bootstrap()))
 }
 
+/** [worldListServer] plus the panel API (panel/docs/plan.md §3), closed together. */
+private fun hubEndpoints(hub: Hub, worlds: List<tp.engine.World>, node: NodeOptions, options: Map<String, String?>): AutoCloseable {
+    val http = worldListServer(hub, worlds, node::hostOf, node.httpPort, node.firstWorld)
+    val panel = tp.hub.PanelGrpcServer.fromOptions(hub, options)
+    return AutoCloseable {
+        panel?.close()
+        http.close()
+    }
+}
+
 private fun worldListServer(
     hub: Hub,
     worlds: List<tp.engine.World>,
@@ -176,7 +187,13 @@ private fun worldListServer(
         javConfigTemplate = Path.of(".data", "client", "jav_config.ws"),
         worlds = {
             worlds.mapIndexed { i, w ->
-                WorldEntry(w.config.id, hostOf(i), "Lotus", ClientConfigServer.FLAG_MEMBERS, population = w.playerCount)
+                WorldEntry(
+                    w.config.id,
+                    hostOf(i),
+                    hub.lockMessage(w.config.id) ?: "Lotus",
+                    ClientConfigServer.FLAG_MEMBERS,
+                    population = w.playerCount,
+                )
             }
         },
         initialWorld = firstWorld,

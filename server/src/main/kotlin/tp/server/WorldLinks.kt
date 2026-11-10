@@ -49,10 +49,25 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
             hub.broadcasts.subscribe { b ->
                 world.execute {
                     when (b) {
-                        is Broadcast.Message -> world.forEachPlayer { it.session.send(ServerMessage.GameMessage(b.text)) }
-                        is Broadcast.SystemUpdate -> world.systemUpdate(b.seconds)
-                        is Broadcast.Presence -> presence(b)
-                        is Broadcast.Yell -> yell(b)
+                        is Broadcast.Message -> {
+                            if (b.worldId == 0 ||
+                                b.worldId == id
+                            ) {
+                                world.forEachPlayer { it.session.send(ServerMessage.GameMessage(b.text)) }
+                            }
+                        }
+
+                        is Broadcast.SystemUpdate -> {
+                            world.systemUpdate(b.seconds)
+                        }
+
+                        is Broadcast.Presence -> {
+                            presence(b)
+                        }
+
+                        is Broadcast.Yell -> {
+                            yell(b)
+                        }
                     }
                 }
             }

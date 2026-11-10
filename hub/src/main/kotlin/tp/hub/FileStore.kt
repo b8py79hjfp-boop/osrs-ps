@@ -166,6 +166,32 @@ internal object StateCodec {
             o.long("bannedUntil"),
         )
 
+    fun audit(r: AuditRow): JsonObject =
+        buildJsonObject {
+            put("id", r.id)
+            put("at", r.atMs)
+            put("actor", r.actor)
+            put("action", r.action)
+            put("target", r.target)
+            put("detail", r.detail)
+            put("source", r.source)
+            put("ip", r.ip)
+            put("result", r.result)
+        }
+
+    fun audit(o: JsonObject): AuditRow =
+        AuditRow(
+            o.long("id"),
+            o.long("at"),
+            o.str("actor"),
+            o.str("action"),
+            o.str("target"),
+            o.str("detail"),
+            o.str("source"),
+            o.str("ip"),
+            o.str("result"),
+        )
+
     fun record(r: ModRecord): JsonObject =
         buildJsonObject {
             put("id", r.id)
