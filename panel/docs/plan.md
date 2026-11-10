@@ -22,6 +22,24 @@ brief stands as written. The decision is recorded in docs/DECISIONS.md D-100.
 | Firewall: only 443 | Windows Defender Firewall: allow 443 (Caddy), 43594 and 8080 (game, unchanged). Hub gRPC (43600) and panel gRPC (50051) bind to 127.0.0.1 only. The panel's read-only check lists the firewall's inbound allow rules. | Opening any other port requires asking the owner first (brief §0.6). |
 | "Running anything as root" | Running anything elevated (Administrator). The install script needs elevation once (create services, ACLs, firewall rules). It is the owner's to run, and the panel never asks for it. | |
 
+## 1a. Decisions made in phase 2 (2026-11-10)
+
+- **Service wrapper: Shawl, not WinSW.** Shawl (MIT, one exe, pinned by SHA-256) sends Ctrl+C on stop and restarts on
+  any other exit, including the clean exit after `::update`. That matches the brief's `Restart=on-failure` plus the
+  game's update flow. WinSW leaves a service stopped after exit code 0.
+- **Secrets: ACL-protected files, without DPAPI.** Machine-scope DPAPI adds nothing over an ACL against a local
+  Administrator. User-scope DPAPI for a virtual account would need the secret to be written from inside the service.
+  It also needs Win32 calls that `forbid(unsafe_code)` rules out in our crates. Each secrets directory has inheritance
+  removed and grants only Administrators, SYSTEM and the one service account.
+- **HTTPS: `lotusps.duckdns.org`** (the owner's DuckDNS name). Caddy gets the certificate through TLS-ALPN on 443
+  (`disable_http_challenge`), so port 80 stays closed. Caddy's admin API is off.
+- **Database: fresh.** The owner chose a new PostgreSQL database over importing the JSON store. The old file is left
+  in place and isn't read. The hub runs standalone (`lotus-hub`), and the world connects to it with `--hub`. The first
+  developer comes from `--bootstrap`.
+- **Panel binary: built by CI** (`.github/workflows/panel.yml`, Windows runner, published as release
+  `panel-latest` with its SHA-256). The VPS needs no Rust or Visual Studio toolchain. Signing (minisign) arrives with
+  deploys in phase 7.
+
 ## 2. What the hub already offers
 
 - **Accounts:** `Accounts.Login` creates a game session, so the panel can't use it; there is no check of credentials
@@ -106,7 +124,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - the audit columns are added in all stores;
      - the login lock is enforced;
      - `./gradlew build` is green.
-2. **Skeleton.**
+2. **Skeleton.** Done 2026-11-10, with a fresh database instead of `importStore` (§1a).
    - Done when:
      - the `panel/` Cargo workspace (toolchain pinned, edition 2024, `forbid(unsafe_code)`, clippy `-D warnings`,
        `cargo deny`) has typed config, an sqlx `panel` schema with migrations, assets embedded with `rust-embed`, and an

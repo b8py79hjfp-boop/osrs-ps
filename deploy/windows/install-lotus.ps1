@@ -1,15 +1,22 @@
-# Lotus one-command installer and updater for Windows Server 2025 (docs/VPS.md).
+# Lotus one-command installer and updater for Windows Server 2025 (docs/VPS.md, panel/docs/plan.md §1).
 #
 # Run in PowerShell opened with "Run as administrator":
 #
 #   irm https://raw.githubusercontent.com/b8py79hjfp-boop/osrs-ps/main/deploy/windows/install-lotus.ps1 | iex
 #
-# First run: downloads Java, Git and Shawl into C:\lotus\tools, clones the game into C:\lotus\game, downloads the
-# cache, makes the login key, builds the server and the Lotus client, opens the firewall ports, installs the
-# "lotus" Windows service and a daily backup. Run it again at any time to update: it pulls the latest code, rebuilds
-# and restarts (players are disconnected for a few minutes; warn them with ::update 60 first).
-#
-# Nothing here needs editing. The server address comes from client/runelite/release.properties (`site`).
+# Sets up, in C:\lotus:
+#   - tools: Java 25 (server) and 21 (client build), MinGit, Shawl (service wrapper), PostgreSQL 17, Caddy (HTTPS),
+#     and lotus-panel.exe (the control panel, built by CI);
+#   - services, each under its own restricted account and started in this order:
+#       lotus-postgresql  the database (127.0.0.1:5432 only)
+#       lotus-hub         accounts, saves, world list, website and client download (:8080), panel API (127.0.0.1)
+#       lotus             the game world (:43594)
+#       lotus-panel       the control panel (127.0.0.1:8088)
+#       lotus-caddy       HTTPS for the panel on https://lotusps.duckdns.org (:443)
+#   - the Lotus client, built here with this server's own login key (served at :8080/update/Lotus.jar);
+#   - firewall rules for 43594, 8080 and 443; a daily database backup.
+# Run it again at any time to update: it pulls the latest code, rebuilds and restarts (players are disconnected for a
+# few minutes; warn them with ::update 60 first).
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -21,11 +28,33 @@ $Game = "$Root\game"
 $Logs = "$Root\logs"
 $Backups = "$Root\backups"
 $Config = "$Root\server.toml"
+$OwnerFile = "$Root\owner.txt"
+$PgData = "$Root\pgdata"
+$PgDir = "$Root\pg"          # the database superuser password (Administrators only)
+$Pki = "$Root\pki"           # the panel CA and its key (Administrators only)
+$HubDir = "$Root\hub"        # the hub's certificates and database password
+$PanelDir = "$Root\panel"
+$CaddyDir = "$Root\caddy"
 $RepoUrl = 'https://github.com/b8py79hjfp-boop/osrs-ps.git'
-$Service = 'lotus'
+$PanelDomain = 'lotusps.duckdns.org'
+$PanelExeUrl = 'https://github.com/b8py79hjfp-boop/osrs-ps/releases/download/panel-latest/lotus-panel.exe'
+
+# Pinned downloads (version and SHA-256).
+$ShawlUrl = 'https://github.com/mtkennerly/shawl/releases/download/v1.7.0/shawl-v1.7.0-win64.zip'
+$ShawlSha256 = 'eaa4fed710e844cc7968fdb82e816d406ed89c4486ab34c3e5db2da7e5927923'
+$PgUrl = 'https://get.enterprisedb.com/postgresql/postgresql-17.11-1-windows-x64-binaries.zip'
+$PgSha256 = '6eabdf00d2893713b75db4336a23c3fdf505f056e217ec6e2e95d901750cfea3'
+$CaddyUrl = 'https://github.com/caddyserver/caddy/releases/download/v2.11.9/caddy_2.11.9_windows_amd64.zip'
+$CaddySha256 = 'ad93112d335ee687100c4c9f11bced16ca590377976b7fe7883882b9e797e472'
+
+# Well-known SIDs, so the ACLs work on any Windows language.
+$Admins = '*S-1-5-32-544'
+$System = '*S-1-5-18'
+$NetworkService = '*S-1-5-20'
 
 function Step($text) { Write-Host ""; Write-Host "==> $text" -ForegroundColor Cyan }
 function Done($text) { Write-Host "    $text" -ForegroundColor Green }
+function Warn($text) { Write-Host "    $text" -ForegroundColor Yellow }
 
 function Assert-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -44,6 +73,13 @@ function Get-File($url, $out) {
             if ($i -eq 4) { throw "Download failed: $url ($($_.Exception.Message))" }
             Start-Sleep -Seconds (2 * $i)
         }
+    }
+}
+
+function Assert-Sha256($file, $expected) {
+    if ((Get-FileHash $file -Algorithm SHA256).Hash -ne $expected.ToUpper()) {
+        Remove-Item $file -Force
+        throw "$file failed its checksum; run the installer again."
     }
 }
 
@@ -84,20 +120,45 @@ function Install-Git {
     Done "Git installed ($($release.tag_name))"
 }
 
-# Shawl (MIT, github.com/mtkennerly/shawl) runs java as a Windows service: Ctrl+C on stop, restart on exit.
-$ShawlUrl = 'https://github.com/mtkennerly/shawl/releases/download/v1.7.0/shawl-v1.7.0-win64.zip'
-$ShawlSha256 = 'eaa4fed710e844cc7968fdb82e816d406ed89c4486ab34c3e5db2da7e5927923'
+function Install-Zip($name, $url, $sha, $dest, $marker) {
+    if (Test-Path $marker) { Done "$name already installed"; return }
+    $zip = "$Tools\$name.zip"
+    Get-File $url $zip
+    Assert-Sha256 $zip $sha
+    Expand-To $zip $dest
+    Done "$name installed"
+}
 
 function Install-Shawl {
     $exe = "$Tools\shawl.exe"
     if (Test-Path $exe) { Done 'Shawl already installed'; return $exe }
     $zip = "$Tools\shawl.zip"
     Get-File $ShawlUrl $zip
-    if ((Get-FileHash $zip -Algorithm SHA256).Hash -ne $ShawlSha256.ToUpper()) { throw 'Shawl download failed its checksum.' }
+    Assert-Sha256 $zip $ShawlSha256
     Expand-Archive -Path $zip -DestinationPath $Tools -Force
     Remove-Item $zip -Force
     Done 'Shawl installed (service wrapper)'
     return $exe
+}
+
+# The control panel binary from CI (release "panel-latest"). Returns $false when it isn't available yet: the game is
+# installed anyway and the panel comes with a later run.
+function Install-PanelExe {
+    $exe = "$Tools\lotus-panel.exe"
+    $new = "$Tools\lotus-panel.new.exe"
+    try {
+        Get-File $PanelExeUrl $new
+        Get-File "$PanelExeUrl.sha256" "$new.sha256"
+        $expected = (Get-Content "$new.sha256" -Raw).Trim()
+        Remove-Item "$new.sha256" -Force
+        Assert-Sha256 $new $expected
+    } catch {
+        Warn "The control panel isn't available yet ($($_.Exception.Message)); skipping it this time."
+        return $false
+    }
+    Move-Item $new $exe -Force
+    Done 'Control panel downloaded'
+    return $true
 }
 
 function Invoke-Gradle([string[]] $taskArgs) {
@@ -114,19 +175,71 @@ function Get-ReleaseHost {
     return ([Uri]($line -replace '^site=', '')).Host
 }
 
+function Write-Text($path, $text) {
+    # UTF-8 without a byte-order mark (Windows PowerShell's -Encoding UTF8 writes one, which TOML and PEM readers reject).
+    if (-not $text.EndsWith("`n")) { $text += "`n" }
+    [IO.File]::WriteAllText($path, $text, (New-Object Text.UTF8Encoding $false))
+}
+
+function New-Secret {
+    $bytes = New-Object byte[] 32
+    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+    $rng.GetBytes($bytes)
+    $rng.Dispose()
+    return ([Convert]::ToBase64String($bytes)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+}
+
+# A directory only Administrators, SYSTEM and the given accounts (icacls grants) can open; nothing inherited.
+function Protect-Dir($dir, [string[]] $grants) {
+    New-Item -ItemType Directory -Force $dir | Out-Null
+    $acl = @("${Admins}:(OI)(CI)F", "${System}:(OI)(CI)F") + $grants
+    icacls $dir /inheritance:r /grant:r @acl /Q | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Could not set permissions on $dir" }
+}
+
 function Set-Firewall($name, $port) {
     if (-not (Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue)) {
         New-NetFirewallRule -DisplayName $name -Direction Inbound -Protocol TCP -LocalPort $port -Action Allow | Out-Null
     }
 }
 
-function Stop-Lotus {
-    $svc = Get-Service $Service -ErrorAction SilentlyContinue
-    if ($svc -and $svc.Status -ne 'Stopped') {
-        Step 'Stopping the server (everyone online is saved first)'
-        Stop-Service $Service
-        Done 'Stopped'
+# A Shawl-wrapped service under its own virtual account (NT SERVICE\<name>). Stop sends Ctrl+C and waits 60 s (the
+# game saves everyone); any other exit restarts it after 10 s. Output goes to C:\lotus\logs\<name>\<name>_rCURRENT.log.
+function Set-ShawlService($name, $display, $cwd, $command, $depends) {
+    $bin = "$Shawl run --name $name --restart --restart-delay 10000 --stop-timeout 60000 --cwd $cwd " +
+        "--log-dir $Logs\$name --log-cmd-as $name --log-rotate bytes=10485760 --log-retain 5 -- $command"
+    if (Get-Service $name -ErrorAction SilentlyContinue) {
+        sc.exe config $name binPath= $bin start= auto | Out-Null
+    } else {
+        sc.exe create $name binPath= $bin start= auto DisplayName= $display | Out-Null
     }
+    if ($LASTEXITCODE -ne 0) { throw "Could not create the $name service." }
+    sc.exe config $name obj= "NT SERVICE\$name" | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Could not set the $name service account." }
+    $dep = if ($depends) { $depends } else { '/' }
+    sc.exe config $name depend= $dep | Out-Null
+}
+
+function Stop-IfRunning($name) {
+    $svc = Get-Service $name -ErrorAction SilentlyContinue
+    if ($svc -and $svc.Status -ne 'Stopped') { Stop-Service $name -Force; Done "Stopped $name" }
+}
+
+function Wait-Http($url, $what, $match) {
+    for ($i = 0; $i -lt 90; $i++) {
+        Start-Sleep -Seconds 2
+        try {
+            $r = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 3
+            if ($r.StatusCode -eq 200 -and (-not $match -or $r.Content -match $match)) { Done "$what is up"; return }
+        } catch { }
+    }
+    throw "$what did not come up within 3 minutes. Look at its log in $Logs."
+}
+
+function Invoke-Psql($sql) {
+    $out = & "$Tools\pgsql\bin\psql.exe" -h 127.0.0.1 -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 -tAc $sql
+    if ($LASTEXITCODE -ne 0) { throw "Database command failed: $sql" }
+    return $out
 }
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -139,9 +252,11 @@ $Jdk25 = Install-Jdk 25
 $Jdk21 = Install-Jdk 21
 Install-Git
 $Shawl = Install-Shawl
+Install-Zip 'PostgreSQL 17' $PgUrl $PgSha256 "$Tools\pgsql" "$Tools\pgsql\bin\pg_ctl.exe"
+Install-Zip 'Caddy' $CaddyUrl $CaddySha256 "$Tools\caddy" "$Tools\caddy\caddy.exe"
+$HavePanel = Install-PanelExe
 $env:JAVA_HOME = $Jdk25
-$env:Path = "$Jdk25\bin;$Tools\git\cmd;$env:Path"
-# Also for new PowerShell windows, so java and git work when typed by hand.
+$env:Path = "$Jdk25\bin;$Tools\git\cmd;$Tools\pgsql\bin;$env:Path"
 $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 foreach ($dir in "$Tools\git\cmd", "$Jdk25\bin") {
     if ($machinePath -notlike "*$dir*") { $machinePath = "$dir;$machinePath" }
@@ -168,18 +283,24 @@ if (-not (Test-Path "$Game\.data\cache\242\disk")) { Invoke-Gradle @('setup') } 
 Step 'Login key'
 if (-not (Test-Path "$Game\.data\rsa\private.pem")) { Invoke-Gradle @('generateRsa'); Done 'New key made in C:\lotus\game\.data\rsa (keep it secret)' } else { Done 'Key already present' }
 
+Step 'Server settings'
 if (-not (Test-Path $Config)) {
-    Step 'Server settings'
     $owner = ''
     while ($owner -notmatch '^[A-Za-z0-9 _-]{1,12}$') {
         $owner = (Read-Host 'Your in-game account name (it becomes the developer rank; 1-12 letters, digits, spaces, - or _)').Trim()
     }
     $toml = Get-Content "$Game\config\server.toml" -Raw
     $toml = $toml -replace 'developers = \["bot\*"\]', "developers = [`"$owner`"]"
-    # UTF-8 without a byte-order mark (Windows PowerShell's -Encoding UTF8 writes one, which TOML rejects).
-    [IO.File]::WriteAllText($Config, $toml, (New-Object Text.UTF8Encoding $false))
-    Done "Saved $Config ($owner is developer; edit this file to change settings)"
+    Write-Text $Config $toml
 }
+if (-not (Test-Path $OwnerFile)) {
+    # Installs from before the hub split: the name is in server.toml's developers list.
+    $m = Select-String -Path $Config -Pattern '^developers = \["([^"]+)"' | Select-Object -First 1
+    if (-not $m) { throw "Put your account name in $OwnerFile (one line), then run the installer again." }
+    Write-Text $OwnerFile $m.Matches[0].Groups[1].Value
+}
+$Owner = (Get-Content $OwnerFile -Raw).Trim()
+Done "Settings: $Config (developer: $Owner)"
 
 Step 'Building the Lotus client (takes a few minutes)'
 Invoke-Gradle @('setupClient', 'releaseClient', "-PforkJavaHome=$Jdk21")
@@ -189,60 +310,174 @@ Copy-Item $jar.FullName "$Game\.data\update\Lotus.jar" -Force
 Copy-Item $jar.FullName "$Root\Lotus.jar" -Force
 Done 'Client built: C:\lotus\Lotus.jar'
 
-Stop-Lotus
+Step 'Database (PostgreSQL 17, local only)'
+Protect-Dir $PgDir @()
+if (-not (Test-Path "$PgDir\superuser")) { Write-Text "$PgDir\superuser" (New-Secret) }
+$superPw = (Get-Content "$PgDir\superuser" -Raw).Trim()
+# pgpass for the backup task and this script: host:port:db:user:password
+Write-Text "$PgDir\pgpass.conf" "127.0.0.1:5432:*:postgres:$superPw`n"
+$env:PGPASSFILE = "$PgDir\pgpass.conf"
+if (-not (Test-Path "$PgData\PG_VERSION")) {
+    $pwFile = "$PgDir\initdb.pw"
+    Write-Text $pwFile $superPw
+    & "$Tools\pgsql\bin\initdb.exe" -D $PgData -U postgres --pwfile=$pwFile -A scram-sha-256 -E UTF8 --locale=C | Out-Host
+    Remove-Item $pwFile -Force
+    if ($LASTEXITCODE -ne 0) { throw 'initdb failed.' }
+    Add-Content -Path "$PgData\postgresql.conf" -Value "`nlisten_addresses = '127.0.0.1'`nport = 5432`n"
+    Done 'Database created'
+}
+Protect-Dir $PgData @("${NetworkService}:(OI)(CI)M")
+if (-not (Get-Service 'lotus-postgresql' -ErrorAction SilentlyContinue)) {
+    & "$Tools\pgsql\bin\pg_ctl.exe" register -N lotus-postgresql -D $PgData -S auto | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw 'Could not register the database service.' }
+}
+Start-Service lotus-postgresql
+for ($i = 0; $i -lt 30; $i++) {
+    & "$Tools\pgsql\bin\pg_isready.exe" -h 127.0.0.1 -p 5432 | Out-Null
+    if ($LASTEXITCODE -eq 0) { break }
+    Start-Sleep -Seconds 1
+}
+Protect-Dir $HubDir @()
+New-Item -ItemType Directory -Force "$HubDir\certs" | Out-Null
+if (-not (Test-Path "$HubDir\db-password")) { Write-Text "$HubDir\db-password" (New-Secret) }
+$hubPw = (Get-Content "$HubDir\db-password" -Raw).Trim()
+$panelDbPw = if (Test-Path "$PgDir\panel-db-password") { (Get-Content "$PgDir\panel-db-password" -Raw).Trim() } else { New-Secret }
+Write-Text "$PgDir\panel-db-password" $panelDbPw
+foreach ($role in @(@('lotus_hub', $hubPw, 'lotus'), @('lotus_panel', $panelDbPw, 'lotus_panel'))) {
+    $name = $role[0]; $pw = $role[1]; $db = $role[2]
+    if (-not (Invoke-Psql "SELECT 1 FROM pg_roles WHERE rolname = '$name'")) { Invoke-Psql "CREATE ROLE $name LOGIN PASSWORD '$pw'" | Out-Null }
+    else { Invoke-Psql "ALTER ROLE $name PASSWORD '$pw'" | Out-Null }
+    if (-not (Invoke-Psql "SELECT 1 FROM pg_database WHERE datname = '$db'")) { Invoke-Psql "CREATE DATABASE $db OWNER $name" | Out-Null }
+}
+Done 'Databases lotus (game) and lotus_panel ready'
 
-Step 'Building the server'
-Invoke-Gradle @(':server:installDist')
-Done 'Server built'
+Step 'Panel certificates and settings'
+if ($HavePanel) {
+    Protect-Dir $Pki @()
+    if (-not (Test-Path "$Pki\ca.pem")) { & "$Tools\lotus-panel.exe" certs --out $Pki | Out-Host; if ($LASTEXITCODE -ne 0) { throw 'Could not make the panel certificates.' } }
+    Copy-Item "$Pki\ca.pem", "$Pki\hub.pem", "$Pki\hub.key.pem" "$HubDir\certs\" -Force
+    New-Item -ItemType Directory -Force "$PanelDir\certs" | Out-Null
+    Copy-Item "$Pki\ca.pem", "$Pki\panel.pem" "$PanelDir\certs\" -Force
+    $caPath = "$PanelDir\certs\ca.pem" -replace '\\', '/'
+    $certPath = "$PanelDir\certs\panel.pem" -replace '\\', '/'
+    $secretsPath = "$PanelDir\secrets" -replace '\\', '/'
+    Write-Text "$PanelDir\panel.toml" @"
+# Lotus control panel (panel/docs/brief.md section 9). Secrets live in [paths] secrets, never here.
+[server]
+bind = "127.0.0.1:8088"
+public_url = "https://$PanelDomain"
+allowed_networks = []
 
-Step 'Opening the game ports in Windows Firewall (43594 game, 8080 website and downloads)'
+[hub]
+endpoint = "https://127.0.0.1:50051"
+ca = "$caPath"
+cert = "$certPath"
+key_credential = "panel-hub-key"
+
+[database]
+url_credential = "panel-db-url"
+
+[paths]
+secrets = "$secretsPath"
+"@
+    Protect-Dir "$PanelDir\secrets" @()
+    & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-hub-key --from-file "$Pki\panel.key.pem" | Out-Host
+    $dbUrl = "postgres://lotus_panel:$panelDbPw@127.0.0.1:5432/lotus_panel"
+    $dbUrl | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-db-url | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw 'Could not store the panel secrets.' }
+    New-Item -ItemType Directory -Force $CaddyDir, "$CaddyDir\data" | Out-Null
+    Write-Text "$CaddyDir\Caddyfile" @"
+# HTTPS for the Lotus panel (panel brief section 8): only port 443. The certificate comes from Let's Encrypt over
+# TLS-ALPN on 443, so port 80 stays closed.
+{
+	admin off
+}
+
+$PanelDomain {
+	tls {
+		issuer acme {
+			disable_http_challenge
+		}
+	}
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8088
+}
+"@
+    Done "Panel settings in $PanelDir"
+} else {
+    Done 'Skipped (panel not downloaded)'
+}
+
+Step 'Stopping the game (everyone online is saved first)'
+foreach ($s in 'lotus-caddy', 'lotus-panel', 'lotus', 'lotus-hub') { Stop-IfRunning $s }
+
+Step 'Building the server and the hub'
+Invoke-Gradle @(':server:installDist', ':hub:installDist')
+Done 'Built'
+
+Step 'Opening ports in Windows Firewall (43594 game, 8080 website and downloads, 443 panel)'
 Set-Firewall 'Lotus game' 43594
 Set-Firewall 'Lotus http' 8080
+if ($HavePanel) { Set-Firewall 'Lotus panel https' 443 }
 Done 'Ports open'
 
-Step 'Installing the "lotus" Windows service'
+Step 'Installing the services'
 $ramGb = [math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
-$heapGb = [math]::Max(1, [math]::Min(4, [math]::Floor($ramGb / 2)))
-$lib = "$Game\server\build\install\world-node\lib\*"
-$java = "$Jdk25\bin\java.exe -Xms${heapGb}g -Xmx${heapGb}g -XX:+UseZGC -cp $lib tp.server.MainKt --public-host $PublicHost --config $Config"
-# Stop: Ctrl+C first, so the server saves every player, waiting up to 60 s. Any other exit (a crash, or ::update
-# reaching zero) restarts it after 10 s. Server output goes to C:\lotus\logs\server_rCURRENT.log.
-$bin = "$Shawl run --name $Service --restart --restart-delay 10000 --stop-timeout 60000 --cwd $Game " +
-    "--log-dir $Logs --log-cmd-as server --log-rotate bytes=10485760 --log-retain 5 -- $java"
-if (Get-Service $Service -ErrorAction SilentlyContinue) {
-    sc.exe config $Service binPath= $bin start= auto | Out-Null
-} else {
-    sc.exe create $Service binPath= $bin start= auto DisplayName= "Lotus game server" | Out-Null
+$worldHeap = [math]::Max(1, [math]::Min(4, [math]::Floor($ramGb * 0.4)))
+$hubHeap = 1
+$java = "$Jdk25\bin\java.exe"
+$hubCerts = "$HubDir\certs"
+$hubArgs = "--db jdbc:postgresql://127.0.0.1:5432/lotus --db-user lotus_hub --db-password-file $HubDir\db-password " +
+    "--http-port 8080 --grpc-port 43600 --auto-register --bootstrap developer=$($Owner.Replace(' ', '_')) --public-url http://${PublicHost}:8080"
+if ($HavePanel) { $hubArgs += " --panel-cert $hubCerts\hub.pem --panel-key $hubCerts\hub.key.pem --panel-ca $hubCerts\ca.pem" }
+Set-ShawlService 'lotus-hub' 'Lotus hub' $Game "$java -Xms${hubHeap}g -Xmx${hubHeap}g -cp $Game\hub\build\install\hub\lib\* tp.hub.HubMainKt $hubArgs" 'lotus-postgresql'
+Set-ShawlService 'lotus' 'Lotus game world' $Game ("$java -Xms${worldHeap}g -Xmx${worldHeap}g -XX:+UseZGC -cp $Game\server\build\install\world-node\lib\* " +
+    "tp.server.MainKt --hub 127.0.0.1:43600 --public-host $PublicHost --config $Config") 'lotus-hub'
+if ($HavePanel) {
+    Set-ShawlService 'lotus-panel' 'Lotus control panel' $PanelDir "$Tools\lotus-panel.exe --config $PanelDir\panel.toml serve" 'lotus-hub'
+    Set-ShawlService 'lotus-caddy' 'Lotus panel HTTPS (Caddy)' $CaddyDir "$Tools\caddy\caddy.exe run --config $CaddyDir\Caddyfile --adapter caddyfile" 'lotus-panel'
+    # Caddy keeps its certificates here instead of the service account's profile.
+    $caddyKey = 'HKLM:\SYSTEM\CurrentControlSet\Services\lotus-caddy'
+    Set-ItemProperty -Path $caddyKey -Name Environment -Type MultiString -Value @("XDG_DATA_HOME=$CaddyDir\data", "XDG_CONFIG_HOME=$CaddyDir\data")
 }
-if ($LASTEXITCODE -ne 0) { throw 'Could not create the lotus service.' }
-sc.exe description $Service "Lotus world and hub. Stop it with Stop-Service lotus so everyone is saved." | Out-Null
-# Run as its own virtual account, not SYSTEM: it may write only the game folder and the logs.
-sc.exe config $Service obj= "NT SERVICE\$Service" | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'Could not set the service account.' }
-icacls $Root /grant "NT SERVICE\${Service}:(OI)(CI)RX" /Q | Out-Null
-icacls $Game /grant "NT SERVICE\${Service}:(OI)(CI)M" /Q | Out-Null
-icacls $Logs /grant "NT SERVICE\${Service}:(OI)(CI)M" /Q | Out-Null
-Done "Service set up (Java heap ${heapGb} GB of ${ramGb} GB RAM)"
 
-Step 'Daily backup of accounts and saves (04:00, kept 30 days, in C:\lotus\backups)'
-$backup = "`$d = Get-Date -Format yyyy-MM-dd; Copy-Item '$Game\.data\accounts\hub-store.json' ('$Backups\hub-store-' + `$d + '.json') -ErrorAction SilentlyContinue; " +
-    "Get-ChildItem '$Backups' -Filter 'hub-store-*.json' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item"
+Step 'Permissions (each service reads and writes only what it needs)'
+$svcAccounts = @('lotus', 'lotus-hub') + $(if ($HavePanel) { @('lotus-panel', 'lotus-caddy') } else { @() })
+foreach ($a in $svcAccounts) { icacls $Root /grant "NT SERVICE\${a}:(OI)(CI)RX" /Q | Out-Null }
+icacls $Tools /grant "${NetworkService}:(OI)(CI)RX" /Q | Out-Null
+foreach ($a in $svcAccounts) {
+    New-Item -ItemType Directory -Force "$Logs\$a" | Out-Null
+    icacls "$Logs\$a" /grant "NT SERVICE\${a}:(OI)(CI)M" /Q | Out-Null
+}
+# The game folder holds the login key: only the world (writes .data) and the hub (reads) may open it.
+Protect-Dir $Game @('NT SERVICE\lotus:(OI)(CI)M', 'NT SERVICE\lotus-hub:(OI)(CI)RX')
+Protect-Dir $HubDir @('NT SERVICE\lotus-hub:(OI)(CI)R')
+if ($HavePanel) {
+    Protect-Dir "$PanelDir\secrets" @('NT SERVICE\lotus-panel:(OI)(CI)R')
+    icacls $CaddyDir /grant 'NT SERVICE\lotus-caddy:(OI)(CI)M' /Q | Out-Null
+}
+Done 'Permissions set'
+
+Step 'Daily database backup (04:00, kept 30 days, in C:\lotus\backups)'
+$backup = "`$env:PGPASSFILE = '$PgDir\pgpass.conf'; `$d = Get-Date -Format yyyy-MM-dd; " +
+    "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus-' + `$d + '.dump') lotus; " +
+    "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus_panel-' + `$d + '.dump') lotus_panel; " +
+    "Get-ChildItem '$Backups' -Filter '*.dump' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item"
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -Command `"$backup`""
 Register-ScheduledTask -TaskName 'Lotus backup' -Action $action -Trigger (New-ScheduledTaskTrigger -Daily -At 4am) -User SYSTEM -Force | Out-Null
 Done 'Backup scheduled'
 
-Step 'Starting the server'
-Start-Service $Service
-$ok = $false
-for ($i = 0; $i -lt 90; $i++) {
-    Start-Sleep -Seconds 2
-    try {
-        $r = Invoke-WebRequest -Uri 'http://127.0.0.1:8080/jav_config.ws' -UseBasicParsing -TimeoutSec 3
-        if ($r.StatusCode -eq 200) { $ok = $true; break }
-    } catch { }
+Step 'Starting everything'
+Start-Service lotus-hub
+Wait-Http 'http://127.0.0.1:8080/health' 'The hub'
+Start-Service lotus
+Wait-Http 'http://127.0.0.1:8080/runelite/worlds.js' 'The game world' '"id":1'
+if ($HavePanel) {
+    Start-Service lotus-panel
+    Wait-Http 'http://127.0.0.1:8088/healthz' 'The control panel'
+    Start-Service lotus-caddy
+    Done "Caddy started; the HTTPS certificate for $PanelDomain arrives within a minute or two"
 }
-if (-not $ok) { throw "The server did not come up within 3 minutes. Look at the log: Get-Content $Logs\server_rCURRENT.log -Tail 50" }
-Done 'Server is running'
 
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor Green
@@ -250,9 +485,10 @@ Write-Host ' Lotus is installed and running.' -ForegroundColor Green
 Write-Host '============================================================' -ForegroundColor Green
 Write-Host " Players download the client:  http://${PublicHost}:8080/update/Lotus.jar"
 Write-Host '   (they need Java 21 or newer; adoptium.net)'
-Write-Host " Server log:      Get-Content $Logs\server_rCURRENT.log -Wait -Tail 50"
-Write-Host ' Stop / start:    Stop-Service lotus   /   Start-Service lotus'
+if ($HavePanel) { Write-Host " Control panel:   https://$PanelDomain" }
+Write-Host " Logs:            $Logs\<service>\<service>_rCURRENT.log"
+Write-Host ' Restart the game: Restart-Service lotus   (the hub and database keep running)'
 Write-Host " Settings:        $Config  (then: Restart-Service lotus)"
 Write-Host ' Update later:    run the same install command again'
 Write-Host ''
-Write-Host ' If your VPS provider has its own firewall in its website, open TCP 43594 and 8080 there too.' -ForegroundColor Yellow
+Write-Host ' If your VPS provider has its own firewall in its website, open TCP 43594, 8080 and 443 there too.' -ForegroundColor Yellow

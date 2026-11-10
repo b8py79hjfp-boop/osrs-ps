@@ -249,7 +249,13 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   result (new `audit_log` columns in all three stores). World-facing gRPC now binds 127.0.0.1 (`--grpc-bind`).
   Checked end to end over mTLS on the memory store, the embedded world node and PostgreSQL 16. Fixed on the way:
   `lastIp` crashed on PostgreSQL for accounts that never logged in (broke `::lookup`); botswarm detekt.
-- [ ] Phase 2: Rust skeleton, certs/secrets CLI, Windows install script, JSON store to PostgreSQL import.
+- [x] Phase 2 (2026-11-10): `panel/` Rust workspace (1.99.1, edition 2024, unsafe forbidden, clippy -D warnings,
+  cargo deny), `lotus-panel` serve/certs/secret/check, `panel` schema migration, strict-CSP status page; CI builds the
+  Windows exe (release `panel-latest`). The installer now sets up PostgreSQL 17.11, a standalone `lotus-hub`, the world
+  (`--hub`), `lotus-panel` and Caddy on `https://lotusps.duckdns.org` (TLS-ALPN, 443 only), each service under its own
+  virtual account, with daily `pg_dump`. Fresh database by the owner's choice (no JSON import). Checked here: certs,
+  mTLS, migrations, headers, generated panel.toml and Caddyfile; the Windows-only steps first run on the VPS.
+- [ ] Phase 3: sign-in through VerifyStaff, TOTP and WebAuthn, sessions, CSRF, permissions; tests 1 and 2.
 - Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
 
 ## Next

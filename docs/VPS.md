@@ -11,9 +11,15 @@ irm https://raw.githubusercontent.com/b8py79hjfp-boop/osrs-ps/main/deploy/window
 ```
 
 It asks one question: your in-game account name, which becomes the developer rank. The first run takes about 15–30
-minutes. At the end it prints the client download link.
+minutes. At the end it prints the client download link and the control panel address
+(`https://lotusps.duckdns.org`).
 
-If your VPS provider has its own firewall in its website, open **TCP 43594** and **TCP 8080** there too.
+If your VPS provider has its own firewall in its website, open **TCP 43594**, **TCP 8080** and **TCP 443** there
+too.
+
+Accounts and saves live in PostgreSQL (database `lotus`). An earlier install kept them in
+`C:\lotus\game\.data\accounts\hub-store.json`; that file is left untouched but no longer used (the owner chose a
+fresh database, 2026-11-10).
 
 ## Update
 
@@ -36,10 +42,12 @@ The client is built on the VPS, with the VPS's own login key. A client you build
 
 | What | Command |
 |---|---|
-| Watch the server log | `Get-Content C:\lotus\logs\server_rCURRENT.log -Wait -Tail 50` |
-| Stop (saves everyone first) | `Stop-Service lotus` |
-| Start | `Start-Service lotus` |
-| Restart | `Restart-Service lotus` |
+| Watch the game log | `Get-Content C:\lotus\logs\lotus\lotus_rCURRENT.log -Wait -Tail 50` |
+| Watch the hub log | `Get-Content C:\lotus\logs\lotus-hub\lotus-hub_rCURRENT.log -Wait -Tail 50` |
+| Stop the game (saves everyone first) | `Stop-Service lotus` |
+| Start the game | `Start-Service lotus` |
+| Restart the game | `Restart-Service lotus` (the hub and database keep running) |
+| Restart everything | `Restart-Service lotus-hub -Force` (restarts the game and panel too) |
 | Change settings | edit `C:\lotus\server.toml`, then `Restart-Service lotus` |
 
 Never stop the server by killing `java.exe` in Task Manager: that skips the final save. A crash, or `::update` reaching
@@ -49,16 +57,21 @@ zero, restarts the server automatically after 10 seconds.
 
 | Where | What |
 |---|---|
-| `C:\lotus\tools` | Java 25 (server) and 21 (client build), Eclipse Temurin; MinGit; Shawl (the service wrapper, pinned by checksum) |
-| `C:\lotus\game` | The code (git clone), the cache, the login key (`.data\rsa`, keep it secret), accounts and saves (`.data\accounts\hub-store.json`) |
-| `C:\lotus\server.toml` | Your settings, made once from `config\server.toml` with your name as developer. Updates never overwrite it. |
-| `C:\lotus\logs` | Server log, rotated at 10 MB, 5 kept |
-| `C:\lotus\backups` | `hub-store-<date>.json`, made daily at 04:00 and kept 30 days. Copy these off the VPS now and then. |
-| Service `lotus` | Starts with Windows. It runs as its own restricted account (`NT SERVICE\lotus`), not as Administrator, with a Java heap of half the RAM (1–4 GB). |
-| Windows Firewall | TCP 43594 (game) and 8080 (website, world list, client download) open |
+| `C:\lotus\tools` | Java 25 (server) and 21 (client build), Eclipse Temurin; MinGit; Shawl (service wrapper); PostgreSQL 17.11; Caddy 2.11.9; `lotus-panel.exe` (built by CI). Pinned downloads are checked against their SHA-256. |
+| `C:\lotus\game` | The code (git clone), the cache and the login key (`.data\rsa`). Only Administrators, the game and the hub can open it. |
+| `C:\lotus\pgdata` | The database files (`lotus` for the game, `lotus_panel` for the panel), listening on 127.0.0.1 only |
+| `C:\lotus\pg`, `C:\lotus\pki` | The database superuser password and the panel's certificate authority: Administrators only |
+| `C:\lotus\hub`, `C:\lotus\panel` | The hub's and the panel's certificates and secrets, each readable only by its own service |
+| `C:\lotus\server.toml`, `owner.txt` | Your settings and your account name. Updates never overwrite them. |
+| `C:\lotus\logs\<service>` | Each service's log, rotated at 10 MB, 5 kept |
+| `C:\lotus\backups` | `lotus-<date>.dump` and `lotus_panel-<date>.dump` (`pg_dump`), daily at 04:00, kept 30 days. Copy these off the VPS now and then. |
+| Services | `lotus-postgresql` → `lotus-hub` → `lotus` (game) → `lotus-panel` → `lotus-caddy`, each under its own restricted account, none as Administrator |
+| Windows Firewall | TCP 43594 (game), 8080 (website, world list, client download) and 443 (panel) open |
 
-The server address comes from `site` in `client/runelite/release.properties` (now `194.238.27.209`). The control
-panel (panel/) will later move accounts to PostgreSQL. That needs no action now.
+The server address comes from `site` in `client/runelite/release.properties` (now `194.238.27.209`). The panel
+address is `$PanelDomain` at the top of the installer (`lotusps.duckdns.org`, which must point at the VPS on
+duckdns.org). Its HTTPS certificate comes from Let's Encrypt through port 443 alone. Signing in to the panel arrives
+with its next update (panel phase 3); until then it shows a status page.
 
 ## Troubleshooting
 
@@ -66,6 +79,8 @@ panel (panel/) will later move accounts to PostgreSQL. That needs no action now.
 |---|---|
 | "Run this in PowerShell opened with Run as administrator" | Close PowerShell; open it again with right-click, Run as administrator. |
 | A download failed | Check the VPS's internet access and run the command again; finished steps are skipped. |
-| "The server did not come up" | Read the last log lines: `Get-Content C:\lotus\logs\server_rCURRENT.log -Tail 50`. |
+| "... did not come up within 3 minutes" | Read that service's log in `C:\lotus\logs\<service>\`. |
+| "The control panel isn't available yet" | The panel's Windows build hasn't been published yet; the game installs anyway. Run the installer again later. |
+| The panel page shows a certificate warning | Let's Encrypt takes a minute or two. Check `lotusps.duckdns.org` points at the VPS and TCP 443 is open at the provider. |
 | Players can't connect, but it works on the VPS | Open TCP 43594 and 8080 in the provider's firewall (their website). |
 | "git pull failed" | Something changed files in `C:\lotus\game`. Run `git -C C:\lotus\game status`, then `git -C C:\lotus\game checkout .`. |
