@@ -51,6 +51,7 @@ val forkClient =
         tag = providers.gradleProperty("osrs.runeliteTag")
         gradleArgs = providers.gradleProperty("forkGradleArgs")
         plugins = providers.gradleProperty("forkPlugins")
+        javaHome = providers.gradleProperty("forkJavaHome")
     }
 
 tasks.register<tp.build.MergeClientTask>("releaseClient") {

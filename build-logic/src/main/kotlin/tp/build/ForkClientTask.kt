@@ -43,6 +43,11 @@ public abstract class ForkClientTask : DefaultTask() {
     @get:Optional
     public abstract val gradleArgs: Property<String>
 
+    /** JDK for RuneLite's own Gradle build (`-PforkJavaHome=...`), when the one running this build is too new for it. */
+    @get:Input
+    @get:Optional
+    public abstract val javaHome: Property<String>
+
     /** Plugin mode, `allowlist` or `open` (`-PforkPlugins=...`); overrides `plugins` in `release.properties`. */
     @get:Input
     @get:Optional
@@ -113,7 +118,7 @@ public abstract class ForkClientTask : DefaultTask() {
         val windows = System.getProperty("os.name").lowercase().startsWith("windows")
         val wrapper = if (windows) listOf("cmd", "/c", "gradlew.bat") else listOf("sh", "gradlew")
         val extra = gradleArgs.orNull?.split(' ')?.filter { it.isNotBlank() }.orEmpty()
-        run(src, wrapper + extra + listOf("--no-daemon", ":client:assemble", "-x", "javadoc"), BUILD_TIMEOUT_MINUTES)
+        run(src, wrapper + extra + listOf("--no-daemon", ":client:assemble", "-x", "javadoc"), BUILD_TIMEOUT_MINUTES, javaHome.orNull)
         val version = Properties().apply { File(src, "gradle.properties").reader().use { load(it) } }.getProperty("project.build.version")
         val jar = File(src, "runelite-client/build/libs/client-$version-shaded.jar")
         if (!jar.isFile) throw GradleException("expected $jar was not produced")
@@ -129,9 +134,11 @@ public abstract class ForkClientTask : DefaultTask() {
 
     private fun git(dir: File, vararg args: String): String = run(dir, listOf("git") + args, GIT_TIMEOUT_MINUTES)
 
-    private fun run(dir: File, command: List<String>, timeoutMinutes: Long): String {
+    private fun run(dir: File, command: List<String>, timeoutMinutes: Long, jdk: String? = null): String {
         logger.info("> ${command.joinToString(" ")}")
-        val process = ProcessBuilder(command).directory(dir).redirectErrorStream(true).start()
+        val builder = ProcessBuilder(command).directory(dir).redirectErrorStream(true)
+        if (jdk != null) builder.environment()["JAVA_HOME"] = jdk
+        val process = builder.start()
         val output = StringBuilder()
         process.inputStream.bufferedReader().forEachLine { line ->
             output.appendLine(line)
