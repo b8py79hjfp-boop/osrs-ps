@@ -1468,3 +1468,13 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   authoritative, so this is an information advantage only. The hub serves manifests per RuneLite version (1.13.6), so a
   hub plugin that needs a newer RuneLite API does not appear.
 
+
+## D-100 Control panel on Windows Server 2025 with PostgreSQL (2026-11-10, the owner's request)
+
+- **Why.** The panel brief (panel/docs/brief.md) assumes Linux (systemd, journald, polkit, systemd credentials). The live
+  VPS is Windows Server 2025, and the owner chose to keep it.
+- **Choice.** Keep the brief, map each Linux mechanism to its Windows equivalent: SCM services (`windows-service` crate),
+  WinSW or Shawl wrappers, log files, DPAPI secrets, a virtual service account with per-service rights, NTFS ACLs, Job
+  Object limits, directory junctions for releases, Caddy for Windows. The full table and the hub API gap list are in
+  panel/docs/plan.md. The game moves from the JSON file store to PostgreSQL with a standalone hub, by the owner's choice.
+- **Status.** Phase 1 (hub RPCs) is paused while the one-command installer (deploy/windows/install-lotus.ps1) ships first.
