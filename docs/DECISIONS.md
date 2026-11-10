@@ -1478,3 +1478,5 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   Object limits, directory junctions for releases, Caddy for Windows. The full table and the hub API gap list are in
   panel/docs/plan.md. The game moves from the JSON file store to PostgreSQL with a standalone hub, by the owner's choice.
 - **Status.** Phase 1 (hub RPCs) is paused while the one-command installer (deploy/windows/install-lotus.ps1) ships first.
+- **Windows only (2026-11-10, the owner's rule).** Lotus is hosted, installed and built for Windows only: no Linux
+  hosting path is documented or supported, and the panel's CI checks and builds on a Windows runner.

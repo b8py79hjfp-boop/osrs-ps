@@ -1,5 +1,9 @@
 # Lotus control panel — plan
 
+**Lotus runs on Windows only** (the owner's rule, 2026-11-10): the VPS, the installer, the services and the panel's
+CI build are all Windows. Linux is neither supported nor needed; the brief's Linux terms below are only mapped to
+their Windows equivalents.
+
 Brief: [brief.md](brief.md) (saved verbatim). This plan adapts it to the live VPS, **Windows Server 2025**, on the
 owner's instruction (2026-11-10). The game moves from the JSON file store to **PostgreSQL**, with the hub as its own
 process. Where the brief names a Linux mechanism, the table below gives the Windows equivalent. Everything else in the
