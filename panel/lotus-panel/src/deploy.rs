@@ -129,9 +129,30 @@ pub fn keygen(password: Option<String>) -> anyhow::Result<(String, String)> {
     Ok((kp.pk.to_base64(), kp.sk.to_box(None)?.into_string()))
 }
 
-/// Unpacks a verified zip into `<releases>\<version>` (version from its `release.json`) and marks it verified.
-pub fn install(zip: &Path, sha256: &str, releases: &Path) -> anyhow::Result<String> {
-    let mut archive = zip::ZipArchive::new(fs::File::open(zip)?)?;
+/// Brief §6: checks the signature and unpacks from the same open file, so the zip can't be swapped in between
+/// (security review F2). Unpacks into `<releases>\<version>` (version from its `release.json`), marks it verified
+/// and returns (version, SHA-256).
+pub fn verify_and_install(
+    zip: &Path,
+    signature: &str,
+    public_key: &str,
+    releases: &Path,
+) -> anyhow::Result<(String, String)> {
+    let pk = minisign::PublicKey::from_base64(public_key.trim())
+        .map_err(|e| anyhow::anyhow!("the release public key in panel.toml is not valid: {e}"))?;
+    let sig = minisign::SignatureBox::from_string(signature).map_err(|e| anyhow::anyhow!("bad signature file: {e}"))?;
+    let mut f = fs::File::open(zip)?;
+    minisign::verify(&pk, &sig, &mut f, true, false, false)
+        .map_err(|e| anyhow::anyhow!("the signature does not match: {e}"))?;
+    f.rewind()?;
+    let sha = sha256_of(&mut f)?;
+    f.rewind()?;
+    let version = install_from(f, &sha, releases)?;
+    Ok((version, sha))
+}
+
+fn install_from(file: fs::File, sha256: &str, releases: &Path) -> anyhow::Result<String> {
+    let mut archive = zip::ZipArchive::new(file)?;
     fs::create_dir_all(releases)?;
     let staging = releases.join(format!(".staging-{}", &sha256[..sha256.len().min(16)]));
     if staging.exists() {

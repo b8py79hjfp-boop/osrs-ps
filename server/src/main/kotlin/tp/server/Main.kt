@@ -77,7 +77,7 @@ fun main(args: Array<String>) {
     val traceOut = options["--trace"]?.let { Files.newBufferedWriter(Path.of(it)) }
     val recordOut = options["--record"]?.let { Files.newBufferedWriter(Path.of(it)) }
 
-    val remoteHub = options["--hub"]?.let { GrpcHubClient(it.substringBefore(':'), it.substringAfter(':').toInt()) }
+    val remoteHub = remoteHub(options)
     val embeddedHub = if (remoteHub != null) null else embeddedHub(options, config)
     val hub: HubServices = remoteHub ?: embeddedHub ?: error("no hub")
     val worlds =
@@ -148,6 +148,12 @@ private class NodeOptions(options: Map<String, String?>) {
 
     fun portOf(i: Int): Int = if (loopback) gamePort else gamePort + i
 }
+
+/** `--hub host:port` (a standalone hub), with the world token from `--hub-token-file` when the hub requires one. */
+private fun remoteHub(options: Map<String, String?>): GrpcHubClient? =
+    options["--hub"]?.let {
+        GrpcHubClient(it.substringBefore(':'), it.substringAfter(':').toInt(), tp.services.WorldToken.read(options["--hub-token-file"]))
+    }
 
 private fun embeddedHub(options: Map<String, String?>, config: ServerConfig): Hub {
     val store =

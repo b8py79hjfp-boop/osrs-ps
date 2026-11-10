@@ -119,14 +119,37 @@ pub fn clear_cookie(name: &str) -> String {
 
 // ---------------------------------------------------------------- lockout
 
-/// Sign-in failures per account and per address (in memory: one panel process; a restart forgets, the hub's own
-/// throttle still applies).
+/// Game account names are at most 12 characters; anything longer is cut before it becomes a key.
+const MAX_NAME: usize = 32;
+/// Lockout entries kept at most (memory bound under a flood of names or addresses).
+const MAX_ENTRIES: usize = 10_000;
+
+/// Sign-in failures per account from one address, and per address (in memory: one panel process; a restart forgets).
+/// An account lock is per address (security review F8): a stranger can't lock a staff member out from elsewhere,
+/// and the hub's own per-account throttle still slows guessing spread over many addresses.
 #[derive(Default)]
 pub struct Lockout(Mutex<HashMap<String, VecDeque<OffsetDateTime>>>);
 
 impl Lockout {
     fn with<T>(&self, f: impl FnOnce(&mut HashMap<String, VecDeque<OffsetDateTime>>) -> T) -> T {
         f(&mut self.0.lock().unwrap_or_else(std::sync::PoisonError::into_inner))
+    }
+
+    fn account_key(account: &str, ip: &str) -> String {
+        // Bounded: an attacker chooses the name.
+        let name: String = account.to_lowercase().chars().take(MAX_NAME).collect();
+        format!("acct:{name}@{ip}")
+    }
+
+    /// Keeps memory bounded: expired entries go, and past [`MAX_ENTRIES`] everything is forgotten (a flood).
+    fn trim(map: &mut HashMap<String, VecDeque<OffsetDateTime>>, now: OffsetDateTime) {
+        if map.len() < MAX_ENTRIES {
+            return;
+        }
+        map.retain(|_, q| q.back().is_some_and(|t| now - *t <= LOCK_FOR));
+        if map.len() >= MAX_ENTRIES {
+            map.clear();
+        }
     }
 
     fn count(map: &mut HashMap<String, VecDeque<OffsetDateTime>>, key: &str, now: OffsetDateTime) -> usize {
@@ -141,7 +164,7 @@ impl Lockout {
     /// Whether a sign-in for [account] from [ip] is refused right now.
     pub fn locked(&self, account: &str, ip: &str, now: OffsetDateTime) -> bool {
         self.with(|m| {
-            Self::count(m, &format!("acct:{}", account.to_lowercase()), now) >= ACCOUNT_FAILURES
+            Self::count(m, &Self::account_key(account, ip), now) >= ACCOUNT_FAILURES
                 || Self::count(m, &format!("ip:{ip}"), now) >= IP_FAILURES
         })
     }
@@ -149,15 +172,16 @@ impl Lockout {
     /// Records a failure; returns true when it is the one that locks the account.
     pub fn fail(&self, account: &str, ip: &str, now: OffsetDateTime) -> bool {
         self.with(|m| {
-            let key = format!("acct:{}", account.to_lowercase());
+            Self::trim(m, now);
+            let key = Self::account_key(account, ip);
             m.entry(key.clone()).or_default().push_back(now);
             m.entry(format!("ip:{ip}")).or_default().push_back(now);
             Self::count(m, &key, now) == ACCOUNT_FAILURES
         })
     }
 
-    pub fn succeed(&self, account: &str) {
-        self.with(|m| m.remove(&format!("acct:{}", account.to_lowercase())));
+    pub fn succeed(&self, account: &str, ip: &str) {
+        self.with(|m| m.remove(&Self::account_key(account, ip)));
     }
 }
 

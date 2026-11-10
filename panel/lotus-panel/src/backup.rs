@@ -1,9 +1,9 @@
 //! Database backups (brief §6 step 2, §7).
 //!
 //! - **Dump.** `pg_dump --format=custom` of the game database as the read-only `lotus_backup` role (made by the
-//!   installer); its password is a DPAPI secret passed through `PGPASSWORD`, never the command line.
+//!   installer); its password is a panel secret file passed through `PGPASSWORD`, never the command line.
 //! - **Encrypt.** The dump is encrypted with age to the owner's public key(s), set on the Settings page, and to the
-//!   panel's own key (a DPAPI secret), so the panel can verify and restore without the owner's key. Only the `.age`
+//!   panel's own key (a panel secret file), so the panel can verify and restore without the owner's key. Only the `.age`
 //!   file stays on disk.
 //! - **Rotate.** Nightly backups are kept 14 daily, 8 weekly and 6 monthly (the newest of each day, ISO week and month);
 //!   pre-deploy backups, the newest five.

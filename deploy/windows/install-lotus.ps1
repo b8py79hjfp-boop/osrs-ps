@@ -39,6 +39,7 @@ $Pki = "$Root\pki"           # the panel CA and its key (Administrators only)
 $HubDir = "$Root\hub"        # the hub's certificates and database password
 $PanelDir = "$Root\panel"
 $CaddyDir = "$Root\caddy"
+$Link = "$Root\link"          # the hub <-> world shared token (hub and world services only)
 $RepoUrl = 'https://github.com/b8py79hjfp-boop/osrs-ps.git'
 $PanelDomain = 'lotusps.duckdns.org'
 $PanelExeUrl = 'https://github.com/b8py79hjfp-boop/osrs-ps/releases/download/panel-latest/lotus-panel.exe'
@@ -486,11 +487,11 @@ $hubHeap = 1
 $java = "$Jdk25\bin\java.exe"
 $hubCerts = "$HubDir\certs"
 $hubArgs = "--db jdbc:postgresql://127.0.0.1:5432/lotus --db-user lotus_hub --db-password-file $HubDir\db-password " +
-    "--http-port 8080 --grpc-port 43600 --auto-register --bootstrap developer=$($Owner.Replace(' ', '_')) --public-url http://${PublicHost}:8080"
+    "--world-token-file $Link\world-token --http-port 8080 --grpc-port 43600 --auto-register --bootstrap developer=$($Owner.Replace(' ', '_')) --public-url http://${PublicHost}:8080"
 if ($HavePanel) { $hubArgs += " --panel-cert $hubCerts\hub.pem --panel-key $hubCerts\hub.key.pem --panel-ca $hubCerts\ca.pem" }
 Set-ShawlService 'lotus-hub' 'Lotus hub' $Game "$java -Xms${hubHeap}g -Xmx${hubHeap}g -cp $Nodes\lotus-hub\hub\lib\* tp.hub.HubMainKt $hubArgs" 'lotus-postgresql'
 Set-ShawlService 'lotus' 'Lotus game world' $Game ("$java -Xms${worldHeap}g -Xmx${worldHeap}g -XX:+UseZGC -cp $Nodes\lotus\world\lib\* " +
-    "tp.server.MainKt --hub 127.0.0.1:43600 --public-host $PublicHost --config $Config") 'lotus-hub'
+    "tp.server.MainKt --hub 127.0.0.1:43600 --hub-token-file $Link\world-token --public-host $PublicHost --config $Config") 'lotus-hub'
 if ($HavePanel) {
     Set-ShawlService 'lotus-panel' 'Lotus control panel' $PanelDir "$Tools\lotus-panel.exe --config $PanelDir\panel.toml serve" 'lotus-hub'
     Set-ShawlService 'lotus-caddy' 'Lotus panel HTTPS (Caddy)' $CaddyDir "$Tools\caddy\caddy.exe run --config $CaddyDir\Caddyfile --adapter caddyfile" 'lotus-panel'
@@ -501,14 +502,23 @@ if ($HavePanel) {
 
 Step 'Permissions (each service reads and writes only what it needs)'
 $svcAccounts = @('lotus', 'lotus-hub') + $(if ($HavePanel) { @('lotus-panel', 'lotus-caddy') } else { @() })
-foreach ($a in $svcAccounts) { icacls $Root /grant "NT SERVICE\${a}:(OI)(CI)RX" /Q | Out-Null }
+# C:\lotus inherits nothing from C:\ (security review F2): Administrators and SYSTEM, and read-only for the services.
+Protect-Dir $Root @($svcAccounts | ForEach-Object { "NT SERVICE\${_}:(OI)(CI)RX" })
 icacls $Tools /grant "${NetworkService}:(OI)(CI)RX" /Q | Out-Null
 foreach ($a in $svcAccounts) {
     New-Item -ItemType Directory -Force "$Logs\$a" | Out-Null
     icacls "$Logs\$a" /grant "NT SERVICE\${a}:(OI)(CI)M" /Q | Out-Null
 }
-# The game folder holds the login key: only the world (writes .data) and the hub (reads) may open it.
-Protect-Dir $Game @('NT SERVICE\lotus:(OI)(CI)M', 'NT SERVICE\lotus-hub:(OI)(CI)RX')
+# The game folder holds the login key: only the world and the hub may open it, and only .data is writable (the
+# installer builds from this tree as Administrator, so the world must not be able to change its sources).
+Protect-Dir $Game @('NT SERVICE\lotus:(OI)(CI)RX', 'NT SERVICE\lotus-hub:(OI)(CI)RX')
+New-Item -ItemType Directory -Force "$Game\.data" | Out-Null
+icacls "$Game\.data" /grant 'NT SERVICE\lotus:(OI)(CI)M' /Q | Out-Null
+# The hub <-> world token: only those two services (and Administrators) can read it.
+Protect-Dir $Link @('NT SERVICE\lotus:(OI)(CI)R', 'NT SERVICE\lotus-hub:(OI)(CI)R')
+if (-not (Test-Path "$Link\world-token")) { Write-Text "$Link\world-token" (New-Secret) }
+# Backups: the panel writes them; no other service reads them.
+Protect-Dir $Backups $(if ($HavePanel) { @('NT SERVICE\lotus-panel:(OI)(CI)M') } else { @() })
 Protect-Dir $HubDir @('NT SERVICE\lotus-hub:(OI)(CI)R')
 if ($HavePanel) {
     Protect-Dir "$PanelDir\secrets" @('NT SERVICE\lotus-panel:(OI)(CI)R')
@@ -524,7 +534,7 @@ if ($HavePanel) {
     # writes pre-deploy and nightly database backups.
     icacls $Releases /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
     icacls $Nodes /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
-    icacls $Backups /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
+
     # Service control (panel brief section 3): the panel may query, start and stop exactly these services, nothing else.
     $panelSid = (New-Object Security.Principal.NTAccount 'NT SERVICE\lotus-panel').Translate([Security.Principal.SecurityIdentifier]).Value
     foreach ($svc in 'lotus-postgresql', 'lotus-hub', 'lotus') {
@@ -545,8 +555,8 @@ Step 'Daily database backup (04:00, kept 30 days, in C:\lotus\backups)'
 # then keeps only the panel's own database (its settings and keys). Without the panel it backs up both.
 $gameDump = if ($HavePanel) { '' } else { "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus-' + `$d + '.dump') lotus; " }
 $backup = "`$env:PGPASSFILE = '$PgDir\pgpass.conf'; `$d = Get-Date -Format yyyy-MM-dd; " + $gameDump +
-    "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus_panel-' + `$d + '.dump') lotus_panel; " +
-    "Get-ChildItem '$Backups' -Filter '*.dump' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item"
+    "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$PgDir\lotus_panel-' + `$d + '.dump') lotus_panel; " +
+    "Get-ChildItem '$Backups', '$PgDir' -Filter '*.dump' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item"
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -Command `"$backup`""
 Register-ScheduledTask -TaskName 'Lotus backup' -Action $action -Trigger (New-ScheduledTaskTrigger -Daily -At 4am) -User SYSTEM -Force | Out-Null
 Done 'Backup scheduled'

@@ -302,7 +302,11 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   minutes, disk over 85 %, backup/deploy/restore failures, repeated sign-in failures; plus a test button. Checked here
   against PostgreSQL 16: backup, encryption, verify ("restored; 3 accounts"), owner key. Not run here: the live
   restore (it stops Windows services), real Discord/SMTP delivery, the S3 upload.
-- [ ] Phase 9: operations.md, verifier review of §8, staging run.
+- [~] Phase 9 (2026-11-10): `panel/docs/operations.md` (install, upgrades and deploys, rollback, a forgotten password
+  via the new `AdminKt --setPassword`, backups and restore with and without the panel, alerts, the panel being down,
+  what is untested). An independent security review of brief §8 found eight issues; the fixes are in D-104, the
+  largest being a token on the hub's world-facing gRPC (any local process could call staff RPCs before). Still to
+  do: a full run on a scratch Windows Server VM (none here), so the first VPS install is that run.
 
 ## Next
 

@@ -1520,7 +1520,7 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
 - **Why.** Panel brief §7: backups are encrypted with age to an owner-held key, and "verify" restores the latest into
   a scratch database. A panel holding only the owner's public key could never decrypt to verify or restore.
 - **Choice.** Every backup is encrypted to two kinds of recipient: the owner's keys (the Settings page makes one and
-  hands over the secret half once; it never stays on the server) and the panel's own key (a DPAPI secret). The owner's
+  hands over the secret half once; it never stays on the server) and the panel's own key (a secret file only the panel can read). The owner's
   key keeps off-site copies readable without the VPS; the panel's key lets it verify and restore. Someone who controls
   the VPS can read the backups, but they can read the live database too, so nothing is lost there.
 - **Roles.** Dumps and verifies run as `lotus_backup` (`pg_read_all_data`, `CREATEDB` for the scratch database);
@@ -1529,4 +1529,38 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   unmaintained compile-time macro crate (ignored in deny.toml with the reason).
 - **Alert targets** (Discord webhook, SMTP) live in the panel database's settings, edited on the Settings page with the
   password asked again; the SMTP password is never shown back.
+
+## D-104 Phase 9 security review (brief §8) and what changed (2026-11-10)
+
+An independent read-only review of the panel against brief §8. Findings and what was done:
+
+- **Fixed: the hub's world-facing gRPC took any local caller.** It is plaintext on loopback and serves staff RPCs
+  (`setRank`, `systemUpdate`) keyed by an account id, so any process on the VPS could call them. Worlds now send a
+  shared token (`--world-token-file` on the hub, `--hub-token-file` on the world; `WorldToken`); the hub refuses calls
+  without it (UNAUTHENTICATED). The installer writes it to `C:\lotus\link`, readable by the hub and world only.
+- **Fixed: weak folder rights.**
+  - `C:\lotus` now inherits nothing from `C:\` and is read-only for the services.
+  - The world can write only `game\.data`, not the sources the installer builds as Administrator.
+  - Backups are readable by the panel only.
+  - The panel database's daily dump (which holds alert and S3 credentials) moved to the Administrators-only `C:\lotus\pg`.
+- **Fixed: a release could be swapped between the signature check and unpacking.** Both now read one open file handle.
+- **Fixed: the console skipped the password re-ask.** Bans, rank and name changes, and server-wide owner commands
+  typed in the console now ask for the password like their buttons.
+- **Fixed: the Discord webhook URL (its token) could reach the log** through a delivery error. Errors are stripped of
+  the URL.
+- **Fixed: anyone could lock a staff member out.** Five failures locked the account from everywhere. The account lock
+  is now per account and address (the address limit and the hub's own throttle remain), and the table is bounded.
+- **Fixed, smaller items:**
+  - administrators' views of IP and device scopes on the moderation list are audited;
+  - `--all` typed into a one-world broadcast no longer widens it;
+  - `cargo deny` also runs weekly.
+- **Accepted, documented:**
+  - **Restore uses the hub's database owner password.** The panel holds it, an exception to "no direct writes"
+    (brief §5), because brief §7 asks for restore from the panel.
+  - **Unsigned panel exe.** The installer runs it (and builds `main`) as Administrator, so push access to the
+    repository means control of the VPS (as with any CI deploy).
+  - **Caddy's private key.** The panel can read it, for the certificate expiry check.
+  - **No restricted service SIDs or Job Object caps.** They need trying on the VPS first.
+- **Corrected docs.** Secrets are ACL-protected files, not DPAPI (plan §1a), and the plan's hardening row no longer
+  claims what isn't done.
 

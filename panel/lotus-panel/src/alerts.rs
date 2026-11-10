@@ -85,8 +85,10 @@ pub async fn send_discord(http: &reqwest::Client, webhook: &str, title: &str, bo
         .json_body(&payload)?
         .timeout(Duration::from_secs(10))
         .send()
-        .await?
-        .error_for_status()?;
+        .await
+        .and_then(reqwest::Response::error_for_status)
+        // The webhook URL is the secret: never let it into an error (and so the log).
+        .map_err(reqwest::Error::without_url)?;
     Ok(())
 }
 

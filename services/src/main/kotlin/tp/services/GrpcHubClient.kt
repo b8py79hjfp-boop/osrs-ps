@@ -51,8 +51,22 @@ import tp.services.grpc.World as PbWorld
  * [HubServices] over gRPC (hub.proto): what a world-node uses to talk to a remote hub. Streams (social events, kicks,
  * broadcasts) are collected on a background scope and re-subscribed after a short pause if the hub restarts.
  */
-class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
-    private val channel: ManagedChannel = NettyChannelBuilder.forAddress(host, port).usePlaintext().build()
+class GrpcHubClient(host: String, port: Int, token: String = "") : HubServices, AutoCloseable {
+    private val channel: ManagedChannel =
+        NettyChannelBuilder
+            .forAddress(host, port)
+            .usePlaintext()
+            .apply {
+                // The hub refuses world calls without the shared world token when it has one (WorldToken).
+                if (token.isNotEmpty()) {
+                    val headers = io.grpc.Metadata()
+                    headers.put(WorldToken.HEADER, token)
+                    intercept(
+                        io.grpc.stub.MetadataUtils
+                            .newAttachHeadersInterceptor(headers),
+                    )
+                }
+            }.build()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val accountsStub = AccountsGrpcKt.AccountsCoroutineStub(channel)
     private val worldsStub = WorldsGrpcKt.WorldsCoroutineStub(channel)
@@ -863,4 +877,26 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
         const val RESUBSCRIBE_MS = 2_000L
         const val SHUTDOWN_SECONDS = 5L
     }
+}
+
+/**
+ * The shared secret world nodes send the hub on every call (panel security review F1): the world-facing listener is
+ * plaintext on loopback, so without it any local process could call staff RPCs such as `setRank`. The installer puts
+ * it in a file only the hub and world services can read.
+ */
+object WorldToken {
+    val HEADER: io.grpc.Metadata.Key<String> =
+        io.grpc.Metadata.Key
+            .of("x-lotus-world-token", io.grpc.Metadata.ASCII_STRING_MARSHALLER)
+
+    /** Reads a token file (`--hub-token-file`, `--world-token-file`); empty when none is given. */
+    fun read(path: String?): String =
+        path
+            ?.let {
+                java.nio.file.Files
+                    .readString(
+                        java.nio.file.Path
+                            .of(it),
+                    ).trim()
+            }.orEmpty()
 }

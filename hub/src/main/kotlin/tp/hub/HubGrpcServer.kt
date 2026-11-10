@@ -99,12 +99,14 @@ private fun maybe(o: tp.services.GeOffer?): MaybeOffer =
 
 /**
  * Serves [hub] over gRPC (hub.proto) to world nodes. [bind]: loopback by default; world nodes on other hosts need the
- * private address (`--grpc-bind`). Unauthenticated, so never a public interface.
+ * private address (`--grpc-bind`). Plaintext, so never a public interface; with a [token] (`--world-token-file`) every
+ * call must carry it (WorldToken), so other local processes can't call staff RPCs.
  */
-class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127.0.0.1") : AutoCloseable {
+class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127.0.0.1", token: String = "") : AutoCloseable {
     private val server: Server =
         NettyServerBuilder
             .forAddress(java.net.InetSocketAddress(bind, port))
+            .apply { if (token.isNotEmpty()) intercept(TokenCheck(token)) }
             .addService(Accounts())
             .addService(Worlds())
             .addService(Social())
@@ -671,3 +673,25 @@ class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127
 
 /** Upper bound on one trading post search reply (a client asking for more gets this many). */
 private const val MAX_TP_RESULTS = 200
+
+/** Refuses a call whose world token is missing or wrong (constant-time compare). */
+private class TokenCheck(token: String) : io.grpc.ServerInterceptor {
+    private val expected = token.toByteArray()
+
+    override fun <Q, R> interceptCall(
+        call: io.grpc.ServerCall<Q, R>,
+        headers: io.grpc.Metadata,
+        next: io.grpc.ServerCallHandler<Q, R>,
+    ): io.grpc.ServerCall.Listener<Q> {
+        val given = headers.get(tp.services.WorldToken.HEADER)?.toByteArray() ?: ByteArray(0)
+        if (!java.security.MessageDigest.isEqual(given, expected)) {
+            call.close(
+                io.grpc.Status.UNAUTHENTICATED
+                    .withDescription("world token"),
+                io.grpc.Metadata(),
+            )
+            return object : io.grpc.ServerCall.Listener<Q>() {}
+        }
+        return next.startCall(call, headers)
+    }
+}

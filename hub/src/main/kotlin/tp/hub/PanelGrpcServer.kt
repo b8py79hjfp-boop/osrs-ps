@@ -383,6 +383,9 @@ class PanelGrpcServer(
                     .filter { !request.activeOnly || it.active(now) }
                     .take(request.limit.coerceIn(1, MAX_ROWS))
                     .toList()
+            // Brief §8: every view of an IP or device id is audited.
+            val scoped = records.count { it.scope.isNotEmpty() }
+            if (admin && scoped > 0) audit(row, request.actor, "panel view sanction scopes", "", "$scoped record(s)", "ok")
             val ids = records.map { it.accountId }.distinct()
             val names =
                 hub.db {

@@ -329,13 +329,10 @@ async fn verify_and_install(
         d.settings.public_key.clone(),
         d.releases.clone(),
     );
-    let sha = tokio::task::spawn_blocking({
-        let zip = zip.clone();
-        move || deploy::verify_signature(&zip, &sig, &key)
-    })
-    .await??;
+    let (version, sha) =
+        tokio::task::spawn_blocking(move || deploy::verify_and_install(&zip, &sig, &key, &releases)).await??;
     let _ = st.jobs.append(job, &format!("good signature; sha256 {sha}")).await;
-    tokio::task::spawn_blocking(move || deploy::install(&zip, &sha, &releases)).await?
+    Ok(version)
 }
 
 /// Verifies and unpacks every `<name>.zip` with a `<name>.zip.minisig` in the incoming folder, as a job.

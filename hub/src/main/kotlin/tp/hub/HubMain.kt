@@ -54,7 +54,8 @@ fun main(args: Array<String>) {
     val bootstrap = bootstrapRanks(options["--bootstrap"])
     val hub = Hub(store, HubConfig(autoRegister = "--auto-register" in options, admins = admins, bootstrap = bootstrap))
     val grpcPort = options["--grpc-port"]?.toIntOrNull() ?: DEFAULT_GRPC_PORT
-    val grpc = HubGrpcServer(hub, grpcPort, options["--grpc-bind"] ?: "127.0.0.1").start()
+    val worldToken = tp.services.WorldToken.read(options["--world-token-file"])
+    val grpc = HubGrpcServer(hub, grpcPort, options["--grpc-bind"] ?: "127.0.0.1", worldToken).start()
     val panel = PanelGrpcServer.fromOptions(hub, options)
     val httpPort = options["--http-port"]?.toIntOrNull() ?: DEFAULT_HTTP_PORT
     val http =

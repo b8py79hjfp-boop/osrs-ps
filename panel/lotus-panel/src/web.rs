@@ -507,7 +507,7 @@ async fn login_submit(State(state): State<Shared>, req: Request) -> Response {
             &login_page(&state, form.csrf, Some(SIGN_IN_FAILED.into()), name).await,
         );
     };
-    state.lockout.succeed(&name);
+    state.lockout.succeed(&name, &ip);
     let token = new_token();
     let session = Session {
         id_hash: hash_token(&token),

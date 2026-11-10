@@ -463,6 +463,32 @@ struct RunForm {
     line: String,
     #[serde(default)]
     world: i32,
+    #[serde(default)]
+    password: String,
+}
+
+/// Console commands that ask for the password again, like their buttons elsewhere in the panel (security review F3):
+/// bans, rank and name changes, and the owner commands that affect every player.
+pub const DANGEROUS: [&str; 12] = [
+    "ban",
+    "ipban",
+    "deviceban",
+    "setrank",
+    "rename",
+    "update",
+    "cancelupdate",
+    "kickall",
+    "lockworld",
+    "command",
+    "config",
+    "confirm",
+];
+
+/// Whether `line` (no `::`) starts with a command that asks for the password again (aliases resolve in the game, so
+/// the check is on the typed word).
+pub fn needs_password_line(line: &str) -> bool {
+    let word = line.split_whitespace().next().unwrap_or_default().to_lowercase();
+    DANGEROUS.contains(&word.as_str())
 }
 
 async fn console_run(State(state): State<Shared>, Extension(Auth(s)): Extension<Auth>, req: Request) -> Response {
@@ -479,6 +505,13 @@ async fn console_run(State(state): State<Shared>, Extension(Auth(s)): Extension<
         .collect();
     if line.trim().is_empty() || line.chars().count() > MAX_LINE || f.world < 0 {
         return Redirect::to("/console?error=Type+a+command.").into_response();
+    }
+    if needs_password_line(&line) && !confirm_password(&state, &s, &f.password, &ip).await {
+        audit(&state, &s, &ip, "panel command", "", line.trim(), "refused: password").await;
+        return back_with_error(
+            "/console",
+            "That command needs your password: fill in the password box.",
+        );
     }
     let id = spawn_command(&state, &s, &ip, f.world, line.trim());
     Redirect::to(&format!("/console?run={id}")).into_response()
@@ -822,7 +855,11 @@ async fn broadcast(State(state): State<Shared>, Extension(Auth(s)): Extension<Au
     let Ok(Form(f)) = Form::<BroadcastForm>::from_request(req, &state).await else {
         return StatusCode::BAD_REQUEST.into_response();
     };
-    let text = clean_text(&f.text);
+    // `--all` is the command's own flag: typed text can't widen a one-world broadcast.
+    let mut text = clean_text(&f.text);
+    while let Some(t) = text.strip_suffix("--all") {
+        text = t.trim_end().to_owned();
+    }
     if text.is_empty() || f.world < 0 {
         return back_with_error("/chat", "Write the broadcast first.");
     }

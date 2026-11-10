@@ -12,6 +12,7 @@
       <label>World <select name="world"><option value="0">Any</option>{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select></label>
     </div>
     <label>Command <input name="line" value="{{ line }}" maxlength="300" placeholder="::lookup Big_Bob" autocomplete="off" required autofocus></label>
+    <label>Your password (only for bans, rank changes and server-wide commands) <input name="password" type="password" autocomplete="current-password" maxlength="20"></label>
     <button type="submit">Run</button>
   </form>
 </section>

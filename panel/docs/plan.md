@@ -17,8 +17,8 @@ brief stands as written. The decision is recorded in docs/DECISIONS.md D-100.
 | `zbus` → systemd over D-Bus | The `windows-service` crate (SCM API: open, query, start, stop, query config). Status comes from `QueryServiceStatusEx`; crash counts come from the panel's own job log plus the WinSW wrapper log. | Still never shells out. |
 | polkit rule: only `lotus-*.service` | The panel runs as the virtual account `NT SERVICE\lotus-panel`. The install script grants it SERVICE_START, SERVICE_STOP and SERVICE_QUERY_* on each `lotus-*` service only (a service security descriptor set with `sc sdset`) and nothing on any other service. | It isn't an Administrator and has no other service rights. |
 | journald logs | WinSW writes `<unit>.out.log` / `.err.log` to `C:\lotus\logs\<unit>\`, rolled by size, and the game's Logback writes JSON lines there too. The panel tails and searches these files. The panel's own logs go to its own directory. | The Event Log is used only for the panel's own start/stop and fatal errors. |
-| `LoadCredential=` secrets | Secret files under `C:\lotus\panel\secrets\`, each encrypted with DPAPI (`CryptProtectData`, machine scope plus a per-file entropy) and readable only by `NT SERVICE\lotus-panel` (ACL). `lotus-panel secret set <name>` writes them, run elevated once. | Same rule as the brief: never in the TOML file. |
-| `ProtectSystem`, `ProtectHome`, `NoNewPrivileges`, … | Virtual service account, no admin group. NTFS ACLs: read-only on `C:\lotus\releases`; read-write only on `C:\lotus\panel\data`, `C:\lotus\logs`, `C:\lotus\dumps`, `C:\lotus\current` (the junction) and the backup directory. A Job Object caps panel memory (the brief's `MemoryMax`). Service SID type restricted, and the service gets only the privileges it needs (`SeChangeNotifyPrivilege`). | The verifier checks this list in phase 9. |
+| `LoadCredential=` secrets | Secret files under `C:\lotus\panel\secrets\`, readable only by `NT SERVICE\lotus-panel` and Administrators (ACL, inheritance removed; DPAPI was dropped, §1a). `lotus-panel secret set <name>` writes them, run elevated once. | Same rule as the brief: never in the TOML file. |
+| `ProtectSystem`, `ProtectHome`, `NoNewPrivileges`, … | Virtual service account, no admin group. `C:\lotus` inherits nothing from `C:\` and is read-only for the services. The panel writes only `C:\lotus\releases` and `C:\lotus\nodes` (it unpacks verified releases and switches the junctions: deploying code is its job), `C:\lotus\backups`, the dumps folder and its logs. The world writes only `C:\lotus\game\.data` and its logs. **Not done** (phase 9 review): a Job Object memory cap and a restricted service SID type. They need testing on the VPS first, since a wrong setting stops a service. | Reviewed in phase 9 (security review, D-104). |
 | `/opt/lotus/releases/<v>`, `current` symlink | `C:\lotus\releases\<v>\`, and `C:\lotus\current` as a **directory junction**. Junctions need no symlink privilege; switching one is a rename of a new junction over the old, so the switch is atomic. | |
 | Caddy on 443 | Caddy for Windows as its own service (`lotus-caddy`), automatic HTTPS. Without a domain, Let's Encrypt can still issue a short-lived certificate for the bare IP 194.238.27.209; Caddy supports this. Fallback: Tailscale-only access (`allowed_networks`). | Open question for the owner, phase 2: domain, IP certificate or Tailscale. |
 | `pg_dump` + `age` | PostgreSQL 17 for Windows (EDB installer, as a service). The panel runs `pg_dump.exe` (custom format) through `std::process::Command` (the one allowed process: a named, absolute binary path from config, no shell). It encrypts with the `age` crate. | §7 unchanged otherwise. |
@@ -143,7 +143,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
        `cargo deny`) has typed config, an sqlx `panel` schema with migrations, assets embedded with `rust-embed`, and an
        askama + htmx shell;
      - `lotus-panel certs` (rcgen) makes the panel CA plus the hub and panel certificates;
-     - `lotus-panel secret set` stores DPAPI secrets;
+     - `lotus-panel secret set` stores secret files (ACL-protected; DPAPI dropped, §1a);
      - `deploy/windows/install.ps1` creates the services (WinSW XMLs), ACLs, SDDL rights and firewall rules, and the
        Caddyfile;
      - `importStore` moves the JSON store to PostgreSQL;
@@ -182,7 +182,9 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - verify restores into a scratch database;
      - restore is developer-only;
      - Discord and email alerts work.
-9. **Staging run.**
+9. **Staging run.** Partly done 2026-11-10: operations.md is written and the security review is done, with its
+   fixes (D-104). The full run on a scratch Windows Server VM is still to do; there is none in this environment, so
+   the first VPS install is that run (operations.md §8 lists what to try first).
    - Done when:
      - `panel/docs/operations.md` covers install, upgrade, a forgotten staff password and restore;
      - the verifier has reviewed §8;
