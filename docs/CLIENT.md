@@ -86,8 +86,9 @@ Phase 6 extends this document with the release client's build, signing and updat
 
 ## Test the release client locally (dev settings, no branding or signing)
 
-Everything defaults to `127.0.0.1`, so the release client can be tested on one machine before any branding,
-certificates, URLs or keys exist. Requirements:
+`client/runelite/release.properties` now points at the live VPS (`194.238.27.209`). To test on one machine, set
+`site=http://127.0.0.1:8080` and `api=http://127.0.0.1:8080/runelite` there for the build and do not commit it
+(the launcher's `updateUrl` likewise). Requirements:
 - a JDK 21+ on `PATH`;
 - git;
 - internet access.
@@ -129,7 +130,7 @@ What should happen:
 3. Log in with any name and password (the dev hub auto-registers).
 4. The RuneLite world hopper lists your worlds (127.0.0.1 and 127.0.0.2), and hopping works.
 
-The client keeps its own data in `~/.tickperfect`, so your normal RuneLite is untouched.
+The client keeps its own data in `~/.lotus`, so your normal RuneLite is untouched.
 
 **B. Through the launcher** (signed update, the way players would get it). Do this after A.
 
@@ -157,7 +158,7 @@ With the server still running, start the launcher:
 ./gradlew :client:launcher:run
 ```
 
-The launcher downloads and verifies the jars into `~/.tickperfect/repository`, then starts the client. A dev launcher
+The launcher downloads and verifies the jars into `~/.lotus/repository`, then starts the client. A dev launcher
 build trusts `.data/manifest/manifest-public.key` automatically.
 
 ## Release client: the RuneLite fork (Phase 6)
@@ -180,7 +181,7 @@ java -jar .data/client/fork/client-1.13.6-shaded.jar --help
   (client/runelite/README.md "Plugin modes"). Telemetry, RuneLite accounts, Jagex Account sign-in, Discord, the wiki
   and third-party XP trackers are gone in both modes.
 - Hosting on a VPS: docs/VPS.md.
-- The client keeps its settings in `~/.<name>` (placeholder `~/.tickperfect`), separate from a stock RuneLite.
+- The client keeps its settings in `~/.<name>` (`~/.lotus` for Lotus), separate from a stock RuneLite.
 - Login is the normal username/password screen against our login service.
 
 ### Release client troubleshooting

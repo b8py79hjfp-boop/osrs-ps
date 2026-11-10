@@ -28,7 +28,7 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
     fun start(): WorldLinks {
         val id = world.config.id
         scheduler.execute {
-            runCatching { runBlocking { hub.worlds.register(WorldInfo(id, host, port, "tickperfect", MEMBERS, 0)) } }
+            runCatching { runBlocking { hub.worlds.register(WorldInfo(id, host, port, "Lotus", MEMBERS, 0)) } }
                 .onFailure { logger.warn(it) { "world $id: hub registration failed" } }
         }
         scheduler.scheduleAtFixedRate({

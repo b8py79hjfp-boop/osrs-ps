@@ -176,7 +176,7 @@ private fun worldListServer(
         javConfigTemplate = Path.of(".data", "client", "jav_config.ws"),
         worlds = {
             worlds.mapIndexed { i, w ->
-                WorldEntry(w.config.id, hostOf(i), "tickperfect dev", ClientConfigServer.FLAG_MEMBERS, population = w.playerCount)
+                WorldEntry(w.config.id, hostOf(i), "Lotus", ClientConfigServer.FLAG_MEMBERS, population = w.playerCount)
             }
         },
         initialWorld = firstWorld,

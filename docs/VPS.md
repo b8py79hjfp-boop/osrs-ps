@@ -90,11 +90,13 @@ The server holds the private key. The client has the public modulus built in. Bo
 
 ## 4. Build the client for the VPS address (on your PC)
 
-Set the address players will use in `client/runelite/release.properties`:
+Set the address players will use in `client/runelite/release.properties`, and in `updateUrl` in
+`client/launcher/src/main/resources/tp/client/launcher/launcher.properties` (both already point at the Lotus VPS,
+`194.238.27.209`):
 
 ```properties
-site=http://play.example.com:8080
-api=http://play.example.com:8080/runelite
+site=http://194.238.27.209:8080
+api=http://194.238.27.209:8080/runelite
 ```
 
 `plugins=open` (Plugin Hub on, every plugin loads) is the current setting; see client/runelite/README.md "Plugin modes".
