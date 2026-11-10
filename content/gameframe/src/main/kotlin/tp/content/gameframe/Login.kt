@@ -17,7 +17,7 @@ public class Login : ContentPlugin {
     }
 
     private fun PlayerRef.login() {
-        message("Welcome to world $worldId.")
+        message("Welcome to Lotus.")
         // Chat input is locked until the client knows the display name (RS Mod `chatboxUnlocked`).
         setVarbit(Varbits.HAS_DISPLAYNAME_TRANSMITTER, 1)
         // New-account defaults only: a setting the player changed later is saved with their varps and kept.
