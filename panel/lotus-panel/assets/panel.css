@@ -1,0 +1,26 @@
+/* Lotus panel. Colours follow the Lotus emblem (client/runelite/branding/lotus.py). */
+:root {
+  --bg: #0f1020; --card: #1b1a34; --text: #ece8f4; --muted: #a39fbd; --accent: #e7a6c8; --gold: #deb252;
+  --ok: #5cc98a; --down: #e0645c; --border: #2d2b52;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f3fa; --card: #ffffff; --text: #1b1a34; --muted: #5d5878; --border: #ddd6ea; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.top { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; }
+main { max-width: 28rem; margin: 2rem auto; padding: 0 1rem; display: grid; gap: 1rem; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; }
+h1 { margin: 0 0 .3rem; font-size: 1.4rem; } h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+.muted { color: var(--muted); } .small { font-size: .85rem; }
+.stack { display: grid; gap: .8rem; }
+label { display: grid; gap: .3rem; font-size: .9rem; }
+input { font: inherit; padding: .55rem .7rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+button { font: inherit; font-weight: 600; padding: .6rem; border-radius: 8px; border: 0; background: var(--gold); color: #1b1a34; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: .5rem; }
+.dot.ok { background: var(--ok); } .dot.down { background: var(--down); }
+a { color: var(--accent); }
+/* htmx's indicator styles, here instead of its inline <style> (the CSP has no 'unsafe-inline'). */
+.htmx-indicator { opacity: 0; } .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; transition: opacity 200ms ease-in; }

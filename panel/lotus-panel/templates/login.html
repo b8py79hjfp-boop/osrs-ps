@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Lotus panel{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Sign in</h1>
+  <p class="muted">Staff only: moderator and above, with your game account.</p>
+  <form method="post" action="/login" class="stack">
+    <label>Account name <input name="username" autocomplete="username" required maxlength="12"></label>
+    <label>Password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit" disabled>Sign in</button>
+    <p class="muted small">Sign-in with two-factor authentication arrives with the next panel update.</p>
+  </form>
+</section>
+<section class="card status">
+  <h2>Status</h2>
+  <ul>
+    <li><span class="dot {% if hub_up %}ok{% else %}down{% endif %}"></span>Game hub {% if hub_up %}reachable{% else %}not reachable{% endif %}</li>
+    <li><span class="dot {% if db_up %}ok{% else %}down{% endif %}"></span>Panel database {% if db_up %}ok{% else %}not reachable{% endif %}</li>
+  </ul>
+</section>
+{% endblock %}

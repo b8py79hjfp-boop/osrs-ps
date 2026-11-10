@@ -1,0 +1,75 @@
+name: panel
+
+# The Lotus control panel (panel/): format, clippy (-D warnings), tests, cargo deny, then the Windows binary the
+# VPS installer downloads (deploy/windows/install-lotus.ps1). Pushes to main publish it as the "panel-latest" release.
+
+on:
+  push:
+    paths:
+      - "panel/**"
+      - "services/src/main/proto/**"
+      - ".github/workflows/panel.yml"
+  pull_request:
+    paths:
+      - "panel/**"
+      - "services/src/main/proto/**"
+      - ".github/workflows/panel.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Checked queries compile from panel/.sqlx (cargo sqlx prepare), with no database in CI.
+  SQLX_OFFLINE: "true"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: panel
+    steps:
+      - uses: actions/checkout@v7
+      # rust-toolchain.toml pins the toolchain; rustup installs it on first use.
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: panel/Cargo.toml
+
+  windows:
+    needs: check
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: panel
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - run: cargo build --locked --release
+      - name: Checksum
+        run: |
+          cp target/release/lotus-panel.exe lotus-panel.exe
+          sha256sum lotus-panel.exe | cut -d' ' -f1 > lotus-panel.exe.sha256
+          cat lotus-panel.exe.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lotus-panel-windows
+          path: |
+            panel/lotus-panel.exe
+            panel/lotus-panel.exe.sha256
+      - name: Publish panel-latest
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete panel-latest --yes --cleanup-tag || true
+          gh release create panel-latest lotus-panel.exe lotus-panel.exe.sha256 --prerelease \
+            --title "Lotus panel (latest main)" --notes "Built from ${GITHUB_SHA}. Installed by deploy/windows/install-lotus.ps1."

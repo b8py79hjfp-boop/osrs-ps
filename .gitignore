@@ -20,3 +20,6 @@ out/
 .claude/settings.local.json
 __pycache__/
 .claude/worktrees/
+
+# Control panel build output
+panel/target/

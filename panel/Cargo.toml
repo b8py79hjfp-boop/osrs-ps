@@ -1,0 +1,26 @@
+[workspace]
+resolver = "3"
+members = ["lotus-panel"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+# Panel brief §0.4: no unsafe anywhere, clippy warnings are errors (CI runs clippy with -D warnings).
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"

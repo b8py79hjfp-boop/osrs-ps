@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="same-origin">
+  <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false}'>
+  <title>{% block title %}Lotus panel{% endblock %}</title>
+  <link rel="stylesheet" href="/assets/panel.css">
+  <link rel="icon" href="/assets/lotus.png">
+  <script src="/assets/htmx.min.js" defer></script>
+</head>
+<body>
+  <header class="top"><img src="/assets/lotus.png" alt="" width="28" height="28"><span>Lotus panel</span></header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

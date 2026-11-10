@@ -1,0 +1,6 @@
+# Latest stable Rust on 2026-11-10 (panel brief §0.4).
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+components = ["clippy", "rustfmt"]
+targets = ["x86_64-pc-windows-msvc"]
