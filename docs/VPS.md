@@ -10,7 +10,10 @@ your PC".
 ## 0. What you need
 
 - Windows Server 2025 (Desktop Experience) with 2 or more cores and 4 GB RAM or more. Give the server a 2–3 GB heap.
-- Its public IP, or a domain that points at it (for example `play.example.com`). Players use this address.
+- Its public IP, or a domain that points at it. Players use this address. The steps write `play.example.com`; with no
+  domain, put the IP there everywhere instead, for example `site=http://203.0.113.10:8080` and
+  `--public-host 203.0.113.10`. The cost of a bare IP: if it ever changes, every player needs a new client. A free
+  DNS name (for example DuckDNS) avoids that and can be added later; switching to it needs one more client build.
 - Open ports: **43594/tcp** (game and JS5 cache) and **8080/tcp** (jav_config, world list, client API, updates).
   Keep **9090** (health and metrics) closed to the internet. Many VPS providers also have their own firewall in the
   web panel; open the two ports there as well.
