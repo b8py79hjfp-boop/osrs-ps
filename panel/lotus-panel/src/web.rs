@@ -48,6 +48,8 @@ pub struct AppState {
     pub paths: PanelPaths,
     /// The panel's host name (for the TLS expiry check).
     pub domain: String,
+    pub metrics: Arc<dyn crate::metrics::MetricsStore>,
+    pub alerts: Arc<dyn crate::jobs::Alerts>,
 }
 
 /// Directories the panel reads (logs, dumps) or reports on (backups, releases, certificates).
@@ -101,6 +103,7 @@ impl RouteSpec {
 pub fn routes() -> Vec<RouteSpec> {
     let mut all = core_routes();
     all.extend(crate::control_web::routes());
+    all.extend(crate::pages::routes());
     all
 }
 
@@ -536,23 +539,15 @@ fn signed_out() -> Response {
     r
 }
 
-#[derive(Template)]
-#[template(path = "dashboard.html")]
-struct DashboardPage {
-    nav: Option<Nav>,
-    name: String,
-    rank: Rank,
-}
-
-async fn dashboard(Extension(Auth(s)): Extension<Auth>) -> Response {
-    render(
-        StatusCode::OK,
-        &DashboardPage {
-            nav: Some(nav(&s)),
-            name: s.display_name.clone(),
-            rank: s.rank,
-        },
-    )
+async fn dashboard(State(state): State<Shared>, Extension(Auth(s)): Extension<Auth>) -> Response {
+    let live = crate::pages::dashboard_live(&state, &s).await;
+    let page = crate::pages::DashboardPage {
+        nav: Some(nav(&s)),
+        name: s.display_name.clone(),
+        rank: s.rank,
+        live,
+    };
+    render(StatusCode::OK, &page)
 }
 
 pub struct SessionRow {

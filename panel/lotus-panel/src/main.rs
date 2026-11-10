@@ -17,7 +17,9 @@ use clap::{Parser, Subcommand};
 use lotus_panel::control::{Controller, Scope, Topology, WorldUnit};
 use lotus_panel::hub::HubApi;
 use lotus_panel::jobs::{JobState, JobStore};
-use lotus_panel::{auth, certs, clock, config, control, control_web, db, hub, jobs, secrets, store, units, web};
+use lotus_panel::{
+    auth, certs, clock, config, control, control_web, db, hub, jobs, metrics, secrets, store, units, web,
+};
 use tokio::io::AsyncBufReadExt;
 
 #[derive(Parser)]
@@ -182,6 +184,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
     let sessions: Arc<dyn store::SessionStore> = Arc::new(store::PgSessions(pool.clone()));
     let jobs: Arc<dyn JobStore> = Arc::new(jobs::PgJobs(pool.clone()));
     let clock: Arc<dyn clock::Clock> = Arc::new(clock::SystemClock);
+    let alerts: Arc<dyn jobs::Alerts> = Arc::new(jobs::DbAlerts(pool.clone()));
     let probe = Arc::new(control::LiveProbe {
         sessions: sessions.clone(),
         hub: hub.clone(),
@@ -193,7 +196,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         probe,
         hub.clone(),
         jobs.clone(),
-        Arc::new(jobs::LogAlerts),
+        alerts.clone(),
         clock.clone(),
     );
     let c = &config.control;
@@ -210,7 +213,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         allowed: config.server.allowed_networks.clone(),
         control: Arc::new(controller),
         jobs,
-        settings: Arc::new(jobs::PgSettings(pool)),
+        settings: Arc::new(jobs::PgSettings(pool.clone())),
         paths: web::PanelPaths {
             logs: c.logs.clone(),
             dumps: c.dumps.clone(),
@@ -219,6 +222,8 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
             certificates: c.certificates.clone(),
         },
         domain: domain_of(&config.server.public_url),
+        metrics: Arc::new(metrics::PgMetrics(pool.clone())),
+        alerts: alerts.clone(),
     })
 }
 
@@ -354,6 +359,7 @@ async fn serve(path: &std::path::Path) -> anyhow::Result<()> {
         tracing::warn!(endpoint = %config.hub.endpoint, "hub not reachable yet; the panel starts anyway");
     }
     control_web::spawn_background(state.clone());
+    spawn_metrics(state.clone());
     let app = web::router(state).into_make_service_with_connect_info::<SocketAddr>();
     let listener = tokio::net::TcpListener::bind(config.server.bind).await?;
     tracing::info!(
@@ -382,4 +388,34 @@ async fn shutdown() {
     let term = std::future::pending::<()>();
     tokio::select! { () = ctrl_c => {}, () = term => {} }
     tracing::info!("shutting down");
+}
+
+/// Brief §7: scrape every world node and the VPS every 15 s; downsample and prune hourly.
+fn spawn_metrics(state: Arc<web::AppState>) {
+    let urls: Vec<(i32, String)> = state
+        .control
+        .topology
+        .worlds
+        .iter()
+        .map(|w| (w.world_id, metrics::metrics_url(&w.health_url)))
+        .collect();
+    let s = state.clone();
+    tokio::spawn(async move {
+        let mut scraper = metrics::Scraper::default();
+        loop {
+            let samples = scraper.sample(&urls).await;
+            if let Err(e) = s.metrics.insert(s.clock.now(), &samples).await {
+                tracing::warn!(error = %e, "could not store metrics");
+            }
+            tokio::time::sleep(metrics::SCRAPE_EVERY).await;
+        }
+    });
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(metrics::PRUNE_EVERY).await;
+            if let Err(e) = state.metrics.prune().await {
+                tracing::warn!(error = %e, "could not prune metrics");
+            }
+        }
+    });
 }

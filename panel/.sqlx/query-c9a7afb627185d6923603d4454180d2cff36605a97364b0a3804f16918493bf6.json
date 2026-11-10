@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM panel.metrics WHERE NOT minute AND ts < now() - interval '24 hours'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "c9a7afb627185d6923603d4454180d2cff36605a97364b0a3804f16918493bf6"
+}

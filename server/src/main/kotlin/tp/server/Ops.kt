@@ -109,6 +109,18 @@ class Ops(private val worlds: List<World>, port: Int, bind: String = "127.0.0.1"
         }
         sb.append("tp_save_last_ms ${SaveMetrics.lastNanos / NANOS_PER_MS}\n")
         sb.append("tp_save_max_ms ${SaveMetrics.maxNanos / NANOS_PER_MS}\n")
+        // Panel brief §4 (dashboard, metrics): JVM pauses, uptime and the running build.
+        val gcs =
+            java.lang.management.ManagementFactory
+                .getGarbageCollectorMXBeans()
+        sb.append("tp_gc_ms_total ${gcs.sumOf { it.collectionTime.coerceAtLeast(0) }}\n")
+        sb.append("tp_gc_count_total ${gcs.sumOf { it.collectionCount.coerceAtLeast(0) }}\n")
+        sb.append(
+            "tp_uptime_seconds ${java.lang.management.ManagementFactory
+                .getRuntimeMXBean()
+                .uptime / MS_PER_SECOND}\n",
+        )
+        sb.append("tp_build_info{version=\"${System.getProperty("tp.version", "dev")}\"} 1\n")
         reply(ex, HTTP_OK, sb.toString())
     }
 
@@ -128,6 +140,7 @@ class Ops(private val worlds: List<World>, port: Int, bind: String = "127.0.0.1"
         const val DEFAULT_PORT = 9090
         private const val P99 = 0.99
         private const val NANOS_PER_MS = 1_000_000L
+        private const val MS_PER_SECOND = 1_000L
         private const val NANOS_PER_US = 1_000L
         private const val HTTP_OK = 200
         private const val HTTP_UNAVAILABLE = 503

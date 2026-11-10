@@ -53,3 +53,18 @@ select { font: inherit; padding: .5rem .6rem; border-radius: 8px; border: 1px so
 label.check { display: flex; flex-direction: row; align-items: center; gap: .5rem; }
 pre.log { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .8rem; overflow: auto; max-height: 28rem; font-size: .85rem; white-space: pre-wrap; }
 h2 { margin-top: .4rem; }
+.table { overflow-x: auto; } table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; } td.bad { color: var(--down); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .8rem; }
+.stats li { display: grid; gap: .1rem; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+figure { margin: 0; } figcaption { font-size: .9rem; margin-bottom: .3rem; }
+svg.chart { width: 100%; height: 7.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+svg.chart .line { stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
+svg.chart .budget { stroke: var(--down); stroke-width: 1; stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
+.tabs { display: flex; gap: .8rem; margin: .4rem 0 1rem; } .tabs a[aria-current] { color: var(--text); font-weight: 600; }
+.button-link { padding: .5rem .8rem; border-radius: 8px; background: var(--border); color: var(--text); text-decoration: none; }
+.wide-wrap { display: grid; gap: 1rem; }
+main:has(.wide-wrap) { max-width: 52rem; }
+h3 { margin: .6rem 0 .3rem; font-size: .95rem; }

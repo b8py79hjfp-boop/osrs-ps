@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Logs · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Logs</h1>
+  <form method="get" action="/logs" class="inline">
+    <select name="unit" aria-label="Service">{% for u in units %}<option value="{{ u.0 }}" {% if u.1 %}selected{% endif %}>{{ u.0 }}</option>{% endfor %}</select>
+    <select name="level" aria-label="Level"><option value="">Any level</option>{% for l in levels %}<option value="{{ l.0 }}" {% if l.1 %}selected{% endif %}>{{ l.0 }} and worse</option>{% endfor %}</select>
+    <input name="text" value="{{ text }}" placeholder="Search" aria-label="Search">
+    <input name="since" value="{{ since }}" placeholder="From HH:MM" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5" aria-label="From time">
+    <button type="submit" class="secondary">Show</button>
+  </form>
+  {% if let Some(e) = error %}<p class="error">{{ e }}</p>{% endif %}
+  <pre class="log" hx-ext="sse" sse-connect="{{ stream }}" sse-swap="lines" hx-swap="beforeend">{% for l in lines %}{{ l }}
+{% endfor %}</pre>
+  <p class="muted small">New lines appear as they are written.</p>
+</section>
+{% endblock %}

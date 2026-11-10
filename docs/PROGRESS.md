@@ -268,7 +268,13 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   last 200 log lines), job pages, `lotus-panel ctl`. Diagnostics go hub → world over a new WorldOps channel (thread
   dump, heap dump, JFR, tick capture into `.data/dumps`, downloadable); housekeeping shows disk use, TLS expiry and
   the firewall's open ports. The world's ops port now binds 127.0.0.1. Test 3 (`control`) passes.
-- [ ] Phase 5: read-only pages (dashboard, players, moderation, metrics, logs, audit).
+- [x] Phase 5 (2026-11-10): the live dashboard (SSE: world state, players, tick p50/p99 against budget, uptime,
+  build, VPS CPU/memory/disk/network, latest alerts), players (search, world and rank filters) and the player card
+  (sanctions, history, notes; IPs and alts for administrators, audited by the hub), moderation (active and past
+  sanctions by type and staff), metrics (scraped every 15 s, 1-minute rows after 24 h, 30 days; SVG charts with budget
+  lines), logs (per service, level/text/time filters, live tail over SSE, escaped) and the audit log (filters, paging,
+  CSV with formula cells defused). Worlds now export GC, uptime and build metrics.
+- [ ] Phase 6: actions through the game (console, moderation actions, broadcast, world lock, staff ranks, tickets).
 - Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
 
 ## Next

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Players · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Players online <span class="badge">{{ total }}</span></h1>
+  {% if let Some(e) = error %}<p class="error">{{ e }}</p>{% endif %}
+  <form method="get" action="/players" class="inline">
+    <input name="q" value="{{ q }}" placeholder="Name" aria-label="Name">
+    <select name="world" aria-label="World"><option value="">Any world</option>{% for w in worlds %}<option value="{{ w }}" {% if world == w.to_string() %}selected{% endif %}>World {{ w }}</option>{% endfor %}</select>
+    <select name="rank" aria-label="Rank"><option value="">Any rank</option>
+      {% for r in ["PLAYER", "MODERATOR", "ADMIN", "OWNER", "DEVELOPER"] %}<option value="{{ r }}" {% if rank == *r %}selected{% endif %}>{{ r|lower }}</option>{% endfor %}</select>
+    <button type="submit" class="secondary">Filter</button>
+  </form>
+  <div class="table"><table>
+    <thead><tr><th>Name</th><th>World</th><th>Rank</th></tr></thead>
+    <tbody>{% for p in rows %}<tr><td><a href="/players/{{ p.name|urlencode }}">{{ p.name }}</a>{% if p.invisible %} <span class="badge">hidden</span>{% endif %}</td><td>{{ p.world }}</td><td>{{ p.rank }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

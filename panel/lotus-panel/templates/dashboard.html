@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · Lotus panel{% endblock %}
 {% block content %}
-<section class="card">
+<section class="card wide">
   <p class="min-rank">Moderator and above</p>
-  <h1>Welcome, {{ name }}</h1>
-  <p class="muted">You're signed in as {{ rank }}. Server controls arrive with the next panel update, then the live
-    dashboard, players, moderation and logs.</p>
+  <h1>Hello, {{ name }}</h1>
+  <p class="muted small">Signed in as {{ rank }}. This page updates by itself.</p>
 </section>
+<div hx-ext="sse" sse-connect="/events/dashboard" sse-swap="dashboard" class="wide-wrap">
+  {% let l = live %}{% include "dashboard_live.html" %}
+</div>
 {% endblock %}

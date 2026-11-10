@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO panel.metrics (ts, series, value, minute) SELECT date_trunc('minute', ts), series, avg(value), true FROM panel.metrics WHERE NOT minute AND ts < now() - interval '24 hours' GROUP BY 1, 2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "7dd4ab369476681f3379be6bb0e313e16068fe5866d04dbb10959975f7414fd1"
+}

@@ -162,7 +162,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
        diagnostics (#14) work;
      - the `lotus-panel ctl` twin exists;
      - test 3 (`control`) passes.
-5. **Read-only pages.**
+5. **Read-only pages.** Done 2026-11-10 (tickets and reports: phase 6 / OPEN).
    - Done when the dashboard (SSE), players, moderation, metrics, logs and audit pages work at phone width.
 6. **Actions.**
    - Done when:

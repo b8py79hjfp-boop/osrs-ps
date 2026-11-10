@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Audit log · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Audit log</h1>
+  {% if let Some(e) = error %}<p class="error">{{ e }}</p>{% endif %}
+  <form method="get" action="/audit" class="inline">
+    <input name="actor" value="{{ actor }}" placeholder="Staff member" aria-label="Staff member">
+    <input name="target" value="{{ target }}" placeholder="Player or target" aria-label="Target">
+    <input name="action" value="{{ action }}" placeholder="Action" aria-label="Action">
+    <select name="source" aria-label="Source"><option value="">Any source</option><option value="GAME" {% if source == "GAME" %}selected{% endif %}>In game</option><option value="PANEL" {% if source == "PANEL" %}selected{% endif %}>Panel</option></select>
+    <input name="text" value="{{ text }}" placeholder="Contains" aria-label="Contains">
+    <input name="since" value="{{ since }}" type="date" aria-label="From">
+    <input name="until" value="{{ until }}" type="date" aria-label="To">
+    <button type="submit" class="secondary">Search</button>
+    <a href="{{ csv }}" class="button-link">Export CSV</a>
+  </form>
+  <div class="table"><table>
+    <thead><tr><th>Time (UTC)</th><th>Who</th><th>Action</th><th>Target</th><th>Detail</th><th>Source</th><th>IP</th><th>Result</th></tr></thead>
+    <tbody>{% for v in rows %}<tr><td>{{ v.at }}</td><td>{{ v.row.actor }}</td><td>{{ v.row.action }}</td><td>{{ v.row.target }}</td><td>{{ v.row.detail }}</td><td>{{ v.row.source|lower }}</td><td>{{ v.row.ip }}</td><td>{{ v.row.result }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if let Some(n) = next %}<p><a href="{{ n }}">Older</a></p>{% endif %}
+</section>
+{% endblock %}

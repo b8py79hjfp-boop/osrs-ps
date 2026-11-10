@@ -164,6 +164,37 @@ impl HubApi for FakeHub {
             .await;
         Ok(rx)
     }
+
+    async fn list_online(&self, _actor: &Actor) -> Result<Vec<lotus_panel::hub::OnlinePlayer>, HubError> {
+        Ok(Vec::new())
+    }
+
+    async fn lookup(&self, _actor: &Actor, target: &str) -> Result<lotus_panel::hub::PlayerCard, HubError> {
+        Err(HubError::Refused(format!("There is no account called {target}.")))
+    }
+
+    async fn history(&self, _actor: &Actor, _target: &str) -> Result<Vec<lotus_panel::hub::ModRecord>, HubError> {
+        Ok(Vec::new())
+    }
+
+    async fn list_sanctions(
+        &self,
+        _actor: &Actor,
+        _kind: &str,
+        _staff: &str,
+        _active_only: bool,
+        _limit: i32,
+    ) -> Result<Vec<(lotus_panel::hub::ModRecord, String)>, HubError> {
+        Ok(Vec::new())
+    }
+
+    async fn query_audit(
+        &self,
+        _actor: &Actor,
+        _filter: &lotus_panel::hub::AuditFilter,
+    ) -> Result<Vec<lotus_panel::hub::AuditRow>, HubError> {
+        Ok(Vec::new())
+    }
 }
 
 /// Windows services, faked: start makes a unit running, stop stops it; calls go into the shared log.
@@ -309,6 +340,8 @@ impl Harness {
             settings: Arc::new(MemorySettings::default()),
             paths,
             domain: "panel.test".into(),
+            metrics: Arc::new(lotus_panel::metrics::MemoryMetrics::default()),
+            alerts: alerts.clone(),
         };
         Self {
             app: router(Arc::new(state)),

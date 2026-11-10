@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Moderation · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Moderation</h1>
+  {% if let Some(e) = error %}<p class="error">{{ e }}</p>{% endif %}
+  <form method="get" action="/moderation" class="inline">
+    <select name="kind" aria-label="Type"><option value="">Any type</option>{% for k in kinds %}<option value="{{ k.0 }}" {% if k.1 %}selected{% endif %}>{{ k.0|lower }}</option>{% endfor %}</select>
+    <input name="staff" value="{{ staff }}" placeholder="Staff member" aria-label="Staff member">
+    <label class="check"><input type="checkbox" name="all" {% if all %}checked{% endif %}> Include expired and lifted</label>
+    <button type="submit" class="secondary">Filter</button>
+  </form>
+  <ul class="rows">
+    {% for s in rows %}<li><div><a href="/players/{{ s.account|urlencode }}"><strong>{{ s.account }}</strong></a> · {{ s.record.kind }}{% if s.record.active %} <span class="badge">in force</span>{% endif %}
+      <div>{{ s.record.reason }}</div><div class="muted small">by {{ s.record.actor }} · {{ s.record.start }}{% if !s.record.expires.is_empty() %} · until {{ s.record.expires }}{% endif %}{% if !s.record.lifted.is_empty() %} · {{ s.record.lifted }}{% endif %}</div></div></li>{% endfor %}
+  </ul>
+  {% if rows.is_empty() %}<p class="muted">Nothing matches.</p>{% endif %}
+</section>
+<section class="card wide">
+  <h2>Help tickets and reports</h2>
+  <p class="muted">Tickets are still kept by each world (in game: <code>::tickets</code>); they move to the panel with its next update. The game doesn't record report-abuse submissions yet.</p>
+</section>
+{% endblock %}

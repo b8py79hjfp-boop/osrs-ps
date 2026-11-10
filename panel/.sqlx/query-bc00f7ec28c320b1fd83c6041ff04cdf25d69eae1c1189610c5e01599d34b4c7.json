@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT ON (series) series, value FROM panel.metrics WHERE ts > now() - interval '2 minutes' ORDER BY series, ts DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "series",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "panel.metrics",
+            "name": "series"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Float8",
+        "origin": {
+          "Table": {
+            "table": "panel.metrics",
+            "name": "value"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "bc00f7ec28c320b1fd83c6041ff04cdf25d69eae1c1189610c5e01599d34b4c7"
+}

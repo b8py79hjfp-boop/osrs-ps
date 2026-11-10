@@ -67,6 +67,106 @@ pub struct OpLine {
     pub error: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnlinePlayer {
+    pub account_id: i64,
+    pub name: String,
+    pub world: i32,
+    pub rank: Rank,
+    pub invisible: bool,
+}
+
+/// A moderation record (`moderation_records`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModRecord {
+    pub id: i64,
+    pub account_id: i64,
+    pub kind: String,
+    pub actor: String,
+    pub reason: String,
+    pub start_ms: i64,
+    /// -1 = permanent.
+    pub expires_ms: i64,
+    /// IP or device for those bans (shown to administrators only; the hub blanks it for others).
+    pub scope: String,
+    pub lifted_by: String,
+    pub lifted_at_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayerCard {
+    pub account_id: i64,
+    pub name: String,
+    pub rank: Rank,
+    pub world: i32,
+    pub muted_until: i64,
+    pub mute_reason: String,
+    pub jailed_until: i64,
+    pub jail_reason: String,
+    pub banned_until: i64,
+    pub records: i32,
+    /// Administrators and above only (the hub blanks it otherwise, and audits every view).
+    pub last_ip: String,
+    pub donator: String,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct AuditFilter {
+    pub actor: String,
+    pub target: String,
+    pub action: String,
+    pub source: String,
+    pub text: String,
+    pub since_ms: i64,
+    pub until_ms: i64,
+    pub before_id: i64,
+    pub limit: i32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuditRow {
+    pub id: i64,
+    pub at_ms: i64,
+    pub actor: String,
+    pub action: String,
+    pub target: String,
+    pub detail: String,
+    pub source: String,
+    pub ip: String,
+    pub result: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StaffMember {
+    pub account_id: i64,
+    pub name: String,
+    pub rank: Rank,
+    pub world: i32,
+}
+
+fn record_of(r: pb::ModRecordPb) -> ModRecord {
+    ModRecord {
+        id: r.id,
+        account_id: r.account_id,
+        kind: r.r#type,
+        actor: r.actor,
+        reason: r.reason,
+        start_ms: r.start,
+        expires_ms: r.expires,
+        scope: r.scope,
+        lifted_by: r.lifted_by,
+        lifted_at_ms: r.lifted_at,
+    }
+}
+
+fn check(error: String) -> Result<(), HubError> {
+    if error.is_empty() {
+        Ok(())
+    } else {
+        Err(HubError::Refused(error))
+    }
+}
+
 fn unsupported<T>() -> Result<T, HubError> {
     Err(HubError::Unavailable("not supported here".into()))
 }
@@ -114,6 +214,42 @@ pub trait HubApi: Send + Sync {
         _kind: &str,
         _args: &str,
     ) -> Result<tokio::sync::mpsc::Receiver<OpLine>, HubError> {
+        unsupported()
+    }
+    async fn list_online(&self, _actor: &Actor) -> Result<Vec<OnlinePlayer>, HubError> {
+        unsupported()
+    }
+    async fn lookup(&self, _actor: &Actor, _target: &str) -> Result<PlayerCard, HubError> {
+        unsupported()
+    }
+    async fn history(&self, _actor: &Actor, _target: &str) -> Result<Vec<ModRecord>, HubError> {
+        unsupported()
+    }
+    /// `alts`, `ips` (administrators) or `audit` (owners); every call is audited by the hub.
+    async fn investigate(
+        &self,
+        _actor: &Actor,
+        _target: &str,
+        _kind: &str,
+        _filter: &str,
+    ) -> Result<Vec<String>, HubError> {
+        unsupported()
+    }
+    /// (record, account name), newest first.
+    async fn list_sanctions(
+        &self,
+        _actor: &Actor,
+        _kind: &str,
+        _staff: &str,
+        _active_only: bool,
+        _limit: i32,
+    ) -> Result<Vec<(ModRecord, String)>, HubError> {
+        unsupported()
+    }
+    async fn query_audit(&self, _actor: &Actor, _filter: &AuditFilter) -> Result<Vec<AuditRow>, HubError> {
+        unsupported()
+    }
+    async fn list_staff(&self, _actor: &Actor) -> Result<Vec<StaffMember>, HubError> {
         unsupported()
     }
 }
@@ -379,5 +515,177 @@ impl HubApi for GrpcHub {
             }
         });
         Ok(rx)
+    }
+
+    async fn list_online(&self, actor: &Actor) -> Result<Vec<OnlinePlayer>, HubError> {
+        let r = self
+            .client()
+            .list_online(actor_pb(actor))
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.players
+            .into_iter()
+            .map(|p| OnlinePlayer {
+                account_id: p.account_id,
+                name: p.name,
+                world: p.world_id,
+                rank: Rank::parse(&p.rank).unwrap_or(Rank::Player),
+                invisible: p.invisible,
+            })
+            .collect())
+    }
+
+    async fn lookup(&self, actor: &Actor, target: &str) -> Result<PlayerCard, HubError> {
+        let req = pb::PanelTargetRequest {
+            actor: Some(actor_pb(actor)),
+            target: target.to_owned(),
+            ..Default::default()
+        };
+        let r = self
+            .client()
+            .lookup(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        let s = r.sanctions.unwrap_or_default();
+        Ok(PlayerCard {
+            account_id: r.account_id,
+            name: r.name,
+            rank: Rank::parse(&r.rank).unwrap_or(Rank::Player),
+            world: r.world,
+            muted_until: s.muted_until,
+            mute_reason: s.mute_reason,
+            jailed_until: s.jailed_until,
+            jail_reason: s.jail_reason,
+            banned_until: r.banned_until,
+            records: r.records,
+            last_ip: r.last_ip,
+            donator: r.donator,
+        })
+    }
+
+    async fn history(&self, actor: &Actor, target: &str) -> Result<Vec<ModRecord>, HubError> {
+        let req = pb::PanelTargetRequest {
+            actor: Some(actor_pb(actor)),
+            target: target.to_owned(),
+            ..Default::default()
+        };
+        let r = self
+            .client()
+            .history(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.records.into_iter().map(record_of).collect())
+    }
+
+    async fn investigate(
+        &self,
+        actor: &Actor,
+        target: &str,
+        kind: &str,
+        filter: &str,
+    ) -> Result<Vec<String>, HubError> {
+        let req = pb::PanelTargetRequest {
+            actor: Some(actor_pb(actor)),
+            target: target.to_owned(),
+            kind: kind.to_owned(),
+            filter: filter.to_owned(),
+        };
+        let r = self
+            .client()
+            .investigate(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.lines)
+    }
+
+    async fn list_sanctions(
+        &self,
+        actor: &Actor,
+        kind: &str,
+        staff: &str,
+        active_only: bool,
+        limit: i32,
+    ) -> Result<Vec<(ModRecord, String)>, HubError> {
+        let req = pb::SanctionsQuery {
+            actor: Some(actor_pb(actor)),
+            r#type: kind.to_owned(),
+            staff: staff.to_owned(),
+            active_only,
+            limit,
+        };
+        let r = self
+            .client()
+            .list_sanctions(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.rows
+            .into_iter()
+            .map(|row| (record_of(row.record.unwrap_or_default()), row.account_name))
+            .collect())
+    }
+
+    async fn query_audit(&self, actor: &Actor, f: &AuditFilter) -> Result<Vec<AuditRow>, HubError> {
+        let req = pb::AuditQuery {
+            actor: Some(actor_pb(actor)),
+            by: f.actor.clone(),
+            target: f.target.clone(),
+            action: f.action.clone(),
+            source: f.source.clone(),
+            text: f.text.clone(),
+            since_ms: f.since_ms,
+            until_ms: f.until_ms,
+            before_id: f.before_id,
+            limit: f.limit,
+        };
+        let r = self
+            .client()
+            .query_audit(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.rows
+            .into_iter()
+            .map(|a| AuditRow {
+                id: a.id,
+                at_ms: a.at_ms,
+                actor: a.actor,
+                action: a.action,
+                target: a.target,
+                detail: a.detail,
+                source: a.source,
+                ip: a.ip,
+                result: a.result,
+            })
+            .collect())
+    }
+
+    async fn list_staff(&self, actor: &Actor) -> Result<Vec<StaffMember>, HubError> {
+        let r = self
+            .client()
+            .list_staff(actor_pb(actor))
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.staff
+            .into_iter()
+            .map(|m| StaffMember {
+                account_id: m.account_id,
+                name: m.name,
+                rank: Rank::parse(&m.rank).unwrap_or(Rank::Player),
+                world: m.world_id,
+            })
+            .collect())
     }
 }

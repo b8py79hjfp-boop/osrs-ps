@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  {% if let Some(c) = card %}
+  <h1>{{ c.name }} <span class="badge">{{ c.rank }}</span></h1>
+  <ul class="stats">
+    <li><span class="muted small">World</span><strong>{% if c.world == 0 %}offline{% else %}{{ c.world }}{% endif %}</strong></li>
+    <li><span class="muted small">Muted</span><strong>{% if muted.is_empty() %}no{% else %}{{ muted }}{% endif %}</strong></li>
+    <li><span class="muted small">Jailed</span><strong>{% if jailed.is_empty() %}no{% else %}{{ jailed }}{% endif %}</strong></li>
+    <li><span class="muted small">Banned</span><strong>{% if banned.is_empty() %}no{% else %}{{ banned }}{% endif %}</strong></li>
+    <li><span class="muted small">Records</span><strong>{{ c.records }}</strong></li>
+    <li><span class="muted small">Donator</span><strong>{{ c.donator|lower }}</strong></li>
+  </ul>
+  {% if !c.mute_reason.is_empty() %}<p class="muted small">Mute reason: {{ c.mute_reason }}</p>{% endif %}
+  {% if !c.jail_reason.is_empty() %}<p class="muted small">Jail reason: {{ c.jail_reason }}</p>{% endif %}
+  {% else %}
+  <h1>{{ name }}</h1>
+  <p class="error">{% if let Some(e) = error %}{{ e }}{% else %}Not found.{% endif %}</p>
+  {% endif %}
+</section>
+{% if card.is_some() %}
+<section class="card wide">
+  <h2>Moderation history</h2>
+  {% if records.is_empty() %}<p class="muted">None.</p>{% endif %}
+  <ul class="rows">{% for r in records %}<li><div><strong>{{ r.kind }}</strong>{% if r.active %} <span class="badge">in force</span>{% endif %} <span class="muted small">by {{ r.actor }} · {{ r.start }}{% if !r.expires.is_empty() %} · until {{ r.expires }}{% endif %}</span>
+    <div>{{ r.reason }}</div>{% if !r.scope.is_empty() %}<div class="muted small">{{ r.scope }}</div>{% endif %}{% if !r.lifted.is_empty() %}<div class="muted small">{{ r.lifted }}</div>{% endif %}</div></li>{% endfor %}</ul>
+</section>
+<section class="card wide">
+  <h2>Notes</h2>
+  {% if notes.is_empty() %}<p class="muted">None.</p>{% endif %}
+  <ul class="rows">{% for r in notes %}<li><div>{{ r.reason }}<div class="muted small">{{ r.actor }} · {{ r.start }}</div></div></li>{% endfor %}</ul>
+</section>
+{% if admin %}
+<section class="card wide">
+  <p class="min-rank">Administrator and above · every view is audited</p>
+  <h2>Addresses and alts</h2>
+  {% if let Some(c) = card %}{% if !c.last_ip.is_empty() %}<p>Last IP: <code>{{ c.last_ip }}</code></p>{% endif %}{% endif %}
+  <h3>IPs</h3><ul class="rows">{% for i in ips %}<li><code>{{ i }}</code></li>{% endfor %}</ul>
+  <h3>Alts</h3><ul class="rows">{% for a in alts %}<li>{{ a }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

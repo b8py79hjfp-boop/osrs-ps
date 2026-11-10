@@ -22,6 +22,13 @@ missing_errors_doc = "allow"
 must_use_candidate = "allow"
 missing_panics_doc = "allow"
 
+# Small debug builds: line tables for our code, none for dependencies.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

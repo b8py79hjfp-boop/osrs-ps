@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Metrics · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Metrics</h1>
+  <nav class="tabs">{% for r in ranges %}<a href="/metrics?range={{ r.0 }}" {% if r.1 %}aria-current="page"{% endif %}>{{ r.0 }}</a>{% endfor %}</nav>
+  <div class="charts">
+    {% for c in charts %}<figure><figcaption>{{ c.title }} <span class="muted small">{{ c.last }}</span></figcaption>{{ c.svg|safe }}</figure>{% endfor %}
+  </div>
+</section>
+{% endblock %}

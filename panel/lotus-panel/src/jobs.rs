@@ -64,6 +64,34 @@ pub trait Settings: Send + Sync {
 #[async_trait]
 pub trait Alerts: Send + Sync {
     async fn alert(&self, title: &str, body: &str);
+    /// The newest [n] alerts: (time, title, body).
+    async fn recent(&self, _n: i64) -> Vec<(OffsetDateTime, String, String)> {
+        Vec::new()
+    }
+}
+
+/// Alerts stored in `panel.alerts` (dashboard) and logged; phase 8 sends the unsent ones out.
+pub struct DbAlerts(pub sqlx::PgPool);
+
+#[async_trait]
+impl Alerts for DbAlerts {
+    async fn alert(&self, title: &str, body: &str) {
+        tracing::warn!(alert = true, title, body, "alert");
+        if let Err(e) = sqlx::query!("INSERT INTO panel.alerts (title, body) VALUES ($1, $2)", title, body)
+            .execute(&self.0)
+            .await
+        {
+            tracing::error!(error = %e, "could not store an alert");
+        }
+    }
+
+    async fn recent(&self, n: i64) -> Vec<(OffsetDateTime, String, String)> {
+        sqlx::query!("SELECT at, title, body FROM panel.alerts ORDER BY at DESC LIMIT $1", n)
+            .fetch_all(&self.0)
+            .await
+            .map(|rows| rows.into_iter().map(|r| (r.at, r.title, r.body)).collect())
+            .unwrap_or_default()
+    }
 }
 
 /// Alerts into the log, for the phase 8 channels to pick up.

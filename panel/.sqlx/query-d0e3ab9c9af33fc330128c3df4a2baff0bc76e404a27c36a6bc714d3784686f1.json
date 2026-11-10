@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM panel.metrics WHERE ts < now() - interval '30 days'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d0e3ab9c9af33fc330128c3df4a2baff0bc76e404a27c36a6bc714d3784686f1"
+}
