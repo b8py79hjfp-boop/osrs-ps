@@ -52,6 +52,8 @@ pub struct AppState {
     pub alerts: Arc<dyn crate::jobs::Alerts>,
     /// Console output in memory (brief §5).
     pub console: Arc<crate::actions::ConsoleRuns>,
+    /// Releases and deploys (brief §6).
+    pub deployer: Arc<crate::deploy::Deployer>,
 }
 
 /// Directories the panel reads (logs, dumps) or reports on (backups, releases, certificates).
@@ -107,6 +109,7 @@ pub fn routes() -> Vec<RouteSpec> {
     all.extend(crate::control_web::routes());
     all.extend(crate::pages::routes());
     all.extend(crate::actions::routes());
+    all.extend(crate::deploy_web::routes());
     all
 }
 

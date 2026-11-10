@@ -7,6 +7,7 @@
 //! - `bootstrap --account <name>`: make the first owner (only while there is none; brief §2, run on the VPS).
 //! - `ctl <start|stop|restart|status|lock|unlock> [world]`: server control from the VPS, same code and rules as the
 //!   web panel (brief §3 CLI twin), for when the panel is unreachable.
+//! - `release keygen|sign|verify`: the release signing key (brief §6), used by the release build and its owner.
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -18,7 +19,8 @@ use lotus_panel::control::{Controller, Scope, Topology, WorldUnit};
 use lotus_panel::hub::HubApi;
 use lotus_panel::jobs::{JobState, JobStore};
 use lotus_panel::{
-    auth, certs, clock, config, control, control_web, db, hub, jobs, metrics, secrets, store, units, web,
+    auth, backup, certs, clock, config, control, control_web, db, deploy, hub, jobs, metrics, secrets, store, units,
+    web,
 };
 use tokio::io::AsyncBufReadExt;
 
@@ -74,6 +76,36 @@ enum Command {
         #[arg(long = "as")]
         as_account: Option<String>,
     },
+    /// Release signing (brief §6): make the key pair, sign a release zip, check one.
+    Release {
+        #[command(subcommand)]
+        action: ReleaseAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum ReleaseAction {
+    /// Make a key pair: the secret key file goes to `--out`, the public key to `<out>.pub` and standard output (it
+    /// belongs in panel.toml `[deploy] public_key`). The password comes from `LOTUS_RELEASE_KEY_PASSWORD`.
+    Keygen {
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Sign a zip; writes `<zip>.minisig`. The secret key comes from `--key` (a file) or `LOTUS_RELEASE_KEY`, its
+    /// password from `LOTUS_RELEASE_KEY_PASSWORD`.
+    Sign {
+        zip: PathBuf,
+        #[arg(long)]
+        key: Option<PathBuf>,
+        #[arg(long, default_value = "")]
+        comment: String,
+    },
+    /// Check a zip against `<zip>.minisig` and a public key; prints its SHA-256.
+    Verify {
+        zip: PathBuf,
+        #[arg(long)]
+        public_key: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -95,9 +127,12 @@ fn main() -> anyhow::Result<()> {
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info,sqlx=warn".into()),
         )
         .init();
+    // reqwest (release downloads) and tonic share the ring provider; no other TLS backend is built in.
+    let _ = rustls::crypto::ring::default_provider().install_default();
     let config_path = cli.config.unwrap_or_else(config::default_path);
     let runtime = tokio::runtime::Runtime::new()?;
     match cli.command {
+        Command::Release { action } => release(action),
         Command::Certs { out, force } => {
             certs::generate(&out, force)?;
             println!("wrote {} certificates to {}", certs::FILES.len(), out.display());
@@ -132,6 +167,52 @@ fn main() -> anyhow::Result<()> {
             as_account.as_deref(),
         )),
         Command::Serve => runtime.block_on(serve(&config_path)),
+    }
+}
+
+fn release(action: ReleaseAction) -> anyhow::Result<()> {
+    let password = std::env::var("LOTUS_RELEASE_KEY_PASSWORD")
+        .ok()
+        .filter(|p| !p.is_empty());
+    match action {
+        ReleaseAction::Keygen { out } => {
+            anyhow::ensure!(!out.exists(), "{} already exists", out.display());
+            let (public, secret) = deploy::keygen(password)?;
+            std::fs::write(&out, secret)?;
+            let mut pub_path = out.into_os_string();
+            pub_path.push(".pub");
+            std::fs::write(&pub_path, format!("{public}\n"))?;
+            println!("{public}");
+            Ok(())
+        }
+        ReleaseAction::Sign { zip, key, comment } => {
+            let secret = match key {
+                Some(k) => std::fs::read_to_string(k)?,
+                None => std::env::var("LOTUS_RELEASE_KEY").context("no --key and no LOTUS_RELEASE_KEY")?,
+            };
+            let name = zip
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            let comment = if comment.is_empty() {
+                format!("file:{name}")
+            } else {
+                comment
+            };
+            let sig = deploy::sign(&zip, &secret, password, &comment)?;
+            let mut out = zip.clone().into_os_string();
+            out.push(".minisig");
+            std::fs::write(&out, sig)?;
+            println!("signed {name}");
+            Ok(())
+        }
+        ReleaseAction::Verify { zip, public_key } => {
+            let mut sig = zip.clone().into_os_string();
+            sig.push(".minisig");
+            let sha = deploy::verify_signature(&zip, &std::fs::read_to_string(sig)?, &public_key)?;
+            println!("good signature; sha256 {sha}");
+            Ok(())
+        }
     }
 }
 
@@ -200,6 +281,27 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         clock.clone(),
     );
     let c = &config.control;
+    let control = Arc::new(controller);
+    let backup_password = secrets::read(&config.paths.secrets, &config.backups.password_credential).unwrap_or_default();
+    let deployer = Arc::new(deploy::Deployer {
+        control: control.clone(),
+        links: Arc::new(deploy::FsLinks {
+            releases: c.releases.clone(),
+            nodes: config.deploy.nodes.clone(),
+        }),
+        backup: Arc::new(backup::PgDump::from_config(
+            &config.backups,
+            backup_password,
+            &c.backups,
+        )),
+        releases: c.releases.clone(),
+        settings: deploy::DeploySettings {
+            public_key: config.deploy.public_key.clone(),
+            ci_repo: config.deploy.ci_repo.clone(),
+            incoming: config.deploy.incoming.clone(),
+            timer_seconds: config.deploy.update_timer_seconds,
+        },
+    });
     Ok(web::AppState {
         hub,
         sessions,
@@ -211,7 +313,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
             &config.server.public_url,
         ),
         allowed: config.server.allowed_networks.clone(),
-        control: Arc::new(controller),
+        control,
         jobs,
         settings: Arc::new(jobs::PgSettings(pool.clone())),
         paths: web::PanelPaths {
@@ -225,6 +327,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         metrics: Arc::new(metrics::PgMetrics(pool.clone())),
         alerts: alerts.clone(),
         console: Arc::default(),
+        deployer,
     })
 }
 

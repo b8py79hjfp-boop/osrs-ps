@@ -3,6 +3,7 @@
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::missing_panics_doc)]
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
@@ -228,14 +229,29 @@ impl Units for FakeUnits {
     }
 }
 
-/// Health follows the fake service state, unless a unit is forced down (a crash).
+/// Health follows the fake service state, unless a unit is forced down (a crash) or runs a release marked broken.
 pub struct FakeProbe {
     pub units: Arc<FakeUnits>,
     pub crashed: Mutex<Vec<String>>,
+    /// (unit, release): that unit fails its health check while it runs that release.
+    pub broken: Mutex<Vec<(String, String)>>,
+    pub nodes: PathBuf,
 }
 
 impl FakeProbe {
     fn up(&self, unit: &str) -> bool {
+        let running = std::fs::read_link(self.nodes.join(unit))
+            .ok()
+            .and_then(|t| t.file_name().map(|n| n.to_string_lossy().into_owned()));
+        if self
+            .broken
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|(u, v)| u == unit && running.as_deref() == Some(v.as_str()))
+        {
+            return false;
+        }
         *self
             .units
             .states
@@ -277,8 +293,31 @@ pub fn topology() -> Topology {
     }
 }
 
+/// The pre-deploy backup, faked: records the call.
+pub struct FakeBackup {
+    pub calls: Arc<Mutex<Vec<String>>>,
+    pub fail: Mutex<bool>,
+}
+
+#[async_trait]
+impl lotus_panel::deploy::Backup for FakeBackup {
+    async fn before_deploy(&self, version: &str) -> anyhow::Result<String> {
+        self.calls.lock().unwrap().push(format!("backup {version}"));
+        if *self.fail.lock().unwrap() {
+            anyhow::bail!("disk full");
+        }
+        Ok(format!("pre-deploy-{version}.dump"))
+    }
+}
+
+static HARNESSES: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+
 pub struct Harness {
     pub app: Router,
+    pub deployer: Arc<lotus_panel::deploy::Deployer>,
+    pub backup: Arc<FakeBackup>,
+    pub releases: PathBuf,
+    pub nodes: PathBuf,
     pub hub: Arc<FakeHub>,
     pub clock: Arc<ManualClock>,
     pub units: Arc<FakeUnits>,
@@ -290,6 +329,17 @@ pub struct Harness {
 
 impl Harness {
     pub fn new() -> Self {
+        Self::with_topology(topology())
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub fn with_topology(topology: Topology) -> Self {
+        let n = HARNESSES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!("lotus-panel-h{}-{n}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let releases = root.join("releases");
+        let nodes = root.join("nodes");
+        std::fs::create_dir_all(&releases).unwrap();
         let hub = Arc::new(FakeHub::default());
         let clock = Arc::new(ManualClock::new(
             OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap(),
@@ -298,17 +348,22 @@ impl Harness {
             states: Mutex::new(HashMap::new()),
             calls: hub.calls.clone(),
         });
-        for u in ["lotus-postgresql", "lotus-hub", "lotus"] {
-            units.states.lock().unwrap().insert(u.into(), ServiceState::Stopped);
+        let all_units = [topology.database.clone(), topology.hub.clone()]
+            .into_iter()
+            .chain(topology.worlds.iter().map(|w| w.unit.clone()));
+        for u in all_units {
+            units.states.lock().unwrap().insert(u, ServiceState::Stopped);
         }
         let probe = Arc::new(FakeProbe {
             units: units.clone(),
             crashed: Mutex::new(Vec::new()),
+            broken: Mutex::new(Vec::new()),
+            nodes: nodes.clone(),
         });
         let jobs = Arc::new(MemoryJobs::default());
         let alerts = Arc::new(MemoryAlerts::default());
         let control = Arc::new(Controller::new(
-            topology(),
+            topology,
             units.clone(),
             probe.clone(),
             hub.clone(),
@@ -328,6 +383,25 @@ impl Harness {
             releases: dumps.clone(),
             certificates: dumps,
         };
+        let backup = Arc::new(FakeBackup {
+            calls: hub.calls.clone(),
+            fail: Mutex::new(false),
+        });
+        let deployer = Arc::new(lotus_panel::deploy::Deployer {
+            control: control.clone(),
+            links: Arc::new(lotus_panel::deploy::FsLinks {
+                releases: releases.clone(),
+                nodes: nodes.clone(),
+            }),
+            backup: backup.clone(),
+            releases: releases.clone(),
+            settings: lotus_panel::deploy::DeploySettings {
+                public_key: String::new(),
+                ci_repo: String::new(),
+                incoming: root.join("incoming"),
+                timer_seconds: 300,
+            },
+        });
         let state = AppState {
             hub: hub.clone(),
             sessions: Arc::new(MemorySessions::default()),
@@ -343,9 +417,14 @@ impl Harness {
             metrics: Arc::new(lotus_panel::metrics::MemoryMetrics::default()),
             alerts: alerts.clone(),
             console: Arc::default(),
+            deployer: deployer.clone(),
         };
         Self {
             app: router(Arc::new(state)),
+            deployer,
+            backup,
+            releases,
+            nodes,
             hub,
             clock,
             units,
@@ -354,6 +433,30 @@ impl Harness {
             jobs,
             alerts,
         }
+    }
+
+    /// A verified release on disk with this schema (one statement per entry).
+    pub fn add_release(&self, version: &str, built_at: &str, schema: &[&str]) {
+        let dir = self.releases.join(version);
+        for sub in ["hub/lib", "world/lib"] {
+            std::fs::create_dir_all(dir.join(sub)).unwrap();
+        }
+        let manifest = lotus_panel::deploy::Manifest {
+            version: version.into(),
+            commit: format!("c-{version}"),
+            built_at: built_at.into(),
+            commits: vec![format!("change in {version}")],
+        };
+        std::fs::write(dir.join("release.json"), serde_json::to_vec(&manifest).unwrap()).unwrap();
+        std::fs::write(dir.join("schema.sql"), schema.join("\n")).unwrap();
+        std::fs::write(dir.join(".verified"), "00ff").unwrap();
+    }
+
+    /// Which release `unit` runs (its link's target).
+    pub fn running(&self, unit: &str) -> Option<String> {
+        std::fs::read_link(self.nodes.join(unit))
+            .ok()
+            .and_then(|t| t.file_name().map(|n| n.to_string_lossy().into_owned()))
     }
 
     pub async fn send(&self, req: Request<Body>) -> Response<Body> {

@@ -770,9 +770,13 @@ class PostgresStore(jdbcUrl: String, user: String, password: String) : HubStore 
 
     override fun close() = ds.close()
 
-    private companion object {
-        const val POOL_SIZE = 16
+    internal companion object {
+        private const val POOL_SIZE = 16
 
+        /**
+         * Applied at every start, in order; each statement is idempotent. A release ships this list (`--print-schema`)
+         * so the panel can show which statements a deploy adds (panel brief §6).
+         */
         val SCHEMA =
             listOf(
                 "CREATE TABLE IF NOT EXISTS meta (key text PRIMARY KEY, value text NOT NULL)",

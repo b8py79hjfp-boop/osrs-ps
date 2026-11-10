@@ -1499,3 +1499,19 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   to staff. Report-abuse submissions are still not recorded, so there is no report queue (OPEN).
 - **Chat.** The hub keeps the last 300 yell, staff chat and broadcast lines in memory for the panel's chat page.
 
+## D-102 Deploys: signed release zips, one junction per service (2026-11-10)
+
+- **Why.** Panel brief §6 wants releases on disk, a symlink to the active one, signature checks, a backup before
+  migrations, an ordered restart with health checks and rollback. On Windows (D-100) symlinks need a privilege the
+  panel's virtual account doesn't have.
+- **Choice.** A release is a zip with the hub and world jars, `release.json` and the hub's schema statements
+  (`hub --print-schema`), signed with minisign (pure-Rust `minisign` crate; the release workflow signs with
+  `lotus-panel release sign`). Each service runs through its own directory junction in `C:\lotus\nodes` (no privilege
+  needed), so a failed health check can leave the remaining worlds on the old release, as the brief asks. Game data
+  stays in `C:\lotus\game\.data`. The hub's schema is additive and applied at start, so "migrations" are the statements
+  a release adds; a backup (`pg_dump` as the read-only `lotus_backup` role) is taken first when there are any, and a
+  statement that drops or rewrites data blocks one-click rollback.
+- **Key.** The installer makes the key pair on the VPS once; the owner copies the secret half into two GitHub secrets
+  (this session can't set repository secrets). The installer trusts its own source builds (`src-<commit>`, marked
+  verified) so the first deploy has a rollback target.
+

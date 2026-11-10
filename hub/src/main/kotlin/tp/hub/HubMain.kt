@@ -16,8 +16,25 @@ private val logger = KotlinLogging.logger {}
  * `/health`. `--bootstrap developer=Name,owner=Other` gives first ranks (commands brief §1; the standalone twin of
  * `[ranks.bootstrap]`, once per account, audited). `--db-password-file` reads the password from a file instead of the
  * command line. Control panel API (mTLS, loopback): `--panel-cert` `--panel-key` `--panel-ca` [`--panel-port` 50051].
+ * `--print-schema [file]` writes the PostgreSQL schema statements, one per line, and exits (the release build ships them).
  */
 fun main(args: Array<String>) {
+    if ("--print-schema" in args) {
+        // To a file when one is given: stdout also carries the logging library's start-up line.
+        val lines = PostgresStore.SCHEMA.joinToString("\n", postfix = "\n") { it.replace(Regex("\\s+"), " ").trim() }
+        val out = args.getOrNull(args.indexOf("--print-schema") + 1)?.takeUnless { it.startsWith("--") }
+        if (out == null) {
+            print(lines)
+        } else {
+            java.nio.file.Files
+                .writeString(
+                    java.nio.file.Path
+                        .of(out),
+                    lines,
+                )
+        }
+        return
+    }
     val options =
         args.toList().windowed(2, 1, partialWindows = true).filter { it[0].startsWith("--") }.associate {
             it[0] to

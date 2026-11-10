@@ -14,7 +14,9 @@
 #       lotus-panel       the control panel (127.0.0.1:8088)
 #       lotus-caddy       HTTPS for the panel on https://lotusps.duckdns.org (:443)
 #   - the Lotus client, built here with this server's own login key (served at :8080/update/Lotus.jar);
-#   - firewall rules for 43594, 8080 and 443; a daily database backup.
+#   - firewall rules for 43594, 8080 and 443; a daily database backup;
+#   - each build as a release in C:\lotus\releases (the services run it through C:\lotus\nodes), so the panel can
+#     deploy signed releases and roll back.
 # Run it again at any time to update: it pulls the latest code, rebuilds and restarts (players are disconnected for a
 # few minutes; warn them with ::update 60 first).
 
@@ -27,6 +29,8 @@ $Tools = "$Root\tools"
 $Game = "$Root\game"
 $Logs = "$Root\logs"
 $Backups = "$Root\backups"
+$Releases = "$Root\releases"  # one folder per game release (panel brief section 6)
+$Nodes = "$Root\nodes"        # one junction per service, pointing at the release it runs
 $Config = "$Root\server.toml"
 $OwnerFile = "$Root\owner.txt"
 $PgData = "$Root\pgdata"
@@ -349,7 +353,13 @@ foreach ($role in @(@('lotus_hub', $hubPw, 'lotus'), @('lotus_panel', $panelDbPw
     else { Invoke-Psql "ALTER ROLE $name PASSWORD '$pw'" | Out-Null }
     if (-not (Invoke-Psql "SELECT 1 FROM pg_database WHERE datname = '$db'")) { Invoke-Psql "CREATE DATABASE $db OWNER $name" | Out-Null }
 }
-Done 'Databases lotus (game) and lotus_panel ready'
+# Backups (panel brief section 7): a read-only role the panel runs pg_dump as.
+$backupPw = if (Test-Path "$PgDir\backup-db-password") { (Get-Content "$PgDir\backup-db-password" -Raw).Trim() } else { New-Secret }
+Write-Text "$PgDir\backup-db-password" $backupPw
+if (-not (Invoke-Psql "SELECT 1 FROM pg_roles WHERE rolname = 'lotus_backup'")) { Invoke-Psql "CREATE ROLE lotus_backup LOGIN PASSWORD '$backupPw'" | Out-Null }
+else { Invoke-Psql "ALTER ROLE lotus_backup PASSWORD '$backupPw'" | Out-Null }
+Invoke-Psql 'GRANT pg_read_all_data TO lotus_backup' | Out-Null
+Done 'Databases lotus (game) and lotus_panel ready' 
 
 Step 'Panel certificates and settings'
 if ($HavePanel) {
@@ -361,6 +371,17 @@ if ($HavePanel) {
     $caPath = "$PanelDir\certs\ca.pem" -replace '\\', '/'
     $certPath = "$PanelDir\certs\panel.pem" -replace '\\', '/'
     $secretsPath = "$PanelDir\secrets" -replace '\\', '/'
+    # The release signing key (panel brief section 6): made here once; its secret half and password stay in the
+    # Administrators-only PKI folder until the owner copies them into GitHub (see the message at the end).
+    if (-not (Test-Path "$Pki\release.key")) {
+        Write-Text "$Pki\release-key-password" (New-Secret)
+        $env:LOTUS_RELEASE_KEY_PASSWORD = (Get-Content "$Pki\release-key-password" -Raw).Trim()
+        & "$Tools\lotus-panel.exe" release keygen --out "$Pki\release.key" | Out-Null
+        Remove-Item Env:\LOTUS_RELEASE_KEY_PASSWORD
+        if ($LASTEXITCODE -ne 0) { throw 'Could not make the release signing key.' }
+        $NewReleaseKey = $true
+    }
+    $releaseKey = ((Get-Content "$Pki\release.key.pub") | Where-Object { $_ -match '^RW' } | Select-Object -First 1).Trim()
     Write-Text "$PanelDir\panel.toml" @"
 # Lotus control panel (panel/docs/brief.md section 9). Secrets live in [paths] secrets, never here.
 [server]
@@ -379,11 +400,16 @@ url_credential = "panel-db-url"
 
 [paths]
 secrets = "$secretsPath"
+
+[deploy]
+# The release signing key's public half (deploy/release-key.pub in the repository); empty = deploys are off.
+public_key = "$releaseKey"
 "@
     Protect-Dir "$PanelDir\secrets" @()
     & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-hub-key --from-file "$Pki\panel.key.pem" | Out-Host
     $dbUrl = "postgres://lotus_panel:$panelDbPw@127.0.0.1:5432/lotus_panel"
     $dbUrl | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-db-url | Out-Host
+    $backupPw | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set backup-db-password | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'Could not store the panel secrets.' }
     # The `lotus-panel ctl` token: only Administrators and the panel can read it (panel brief section 3, CLI twin).
     if (-not (Test-Path "$PanelDir\secrets\ctl-token")) {
@@ -419,6 +445,26 @@ Step 'Building the server and the hub'
 Invoke-Gradle @(':server:installDist', ':hub:installDist')
 Done 'Built'
 
+Step 'Installing the build as a release'
+# This build becomes release src-<commit> (the installer trusts what it built itself); the services run it through
+# their junctions, and the panel's Deploys page can roll back to it later.
+$short = (git -C $Game rev-parse --short=7 HEAD).Trim()
+$version = "src-$short"
+New-Item -ItemType Directory -Force $Releases, $Nodes, "$Releases\incoming" | Out-Null
+& "$Game\deploy\windows\make-release.ps1" -Repo $Game -Version $version -Out "$Releases\$version" -Commits @(git -C $Game log --format=%s -n 20)
+Write-Text "$Releases\$version\.verified" 'built by the installer'
+foreach ($svc in 'lotus-hub', 'lotus') {
+    $link = "$Nodes\$svc"
+    if (Test-Path $link) { cmd /c rmdir "$link" | Out-Null }
+    New-Item -ItemType Junction -Path $link -Target "$Releases\$version" | Out-Null
+}
+$historyFile = "$Releases\history.json"
+$history = @(if (Test-Path $historyFile) { Get-Content $historyFile -Raw | ConvertFrom-Json } else { @() })
+$entry = [pscustomobject]@{ version = $version; at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); actor = 'installer' }
+$history = @($entry) + @($history | Where-Object { $_.version -ne $version }) | Select-Object -First 50
+[IO.File]::WriteAllText($historyFile, (ConvertTo-Json @($history) -Depth 3), (New-Object Text.UTF8Encoding $false))
+Done "Release $version is live"
+
 Step 'Opening ports in Windows Firewall (43594 game, 8080 website and downloads, 443 panel)'
 Set-Firewall 'Lotus game' 43594
 Set-Firewall 'Lotus http' 8080
@@ -434,8 +480,8 @@ $hubCerts = "$HubDir\certs"
 $hubArgs = "--db jdbc:postgresql://127.0.0.1:5432/lotus --db-user lotus_hub --db-password-file $HubDir\db-password " +
     "--http-port 8080 --grpc-port 43600 --auto-register --bootstrap developer=$($Owner.Replace(' ', '_')) --public-url http://${PublicHost}:8080"
 if ($HavePanel) { $hubArgs += " --panel-cert $hubCerts\hub.pem --panel-key $hubCerts\hub.key.pem --panel-ca $hubCerts\ca.pem" }
-Set-ShawlService 'lotus-hub' 'Lotus hub' $Game "$java -Xms${hubHeap}g -Xmx${hubHeap}g -cp $Game\hub\build\install\hub\lib\* tp.hub.HubMainKt $hubArgs" 'lotus-postgresql'
-Set-ShawlService 'lotus' 'Lotus game world' $Game ("$java -Xms${worldHeap}g -Xmx${worldHeap}g -XX:+UseZGC -cp $Game\server\build\install\world-node\lib\* " +
+Set-ShawlService 'lotus-hub' 'Lotus hub' $Game "$java -Xms${hubHeap}g -Xmx${hubHeap}g -cp $Nodes\lotus-hub\hub\lib\* tp.hub.HubMainKt $hubArgs" 'lotus-postgresql'
+Set-ShawlService 'lotus' 'Lotus game world' $Game ("$java -Xms${worldHeap}g -Xmx${worldHeap}g -XX:+UseZGC -cp $Nodes\lotus\world\lib\* " +
     "tp.server.MainKt --hub 127.0.0.1:43600 --public-host $PublicHost --config $Config") 'lotus-hub'
 if ($HavePanel) {
     Set-ShawlService 'lotus-panel' 'Lotus control panel' $PanelDir "$Tools\lotus-panel.exe --config $PanelDir\panel.toml serve" 'lotus-hub'
@@ -466,6 +512,11 @@ if ($HavePanel) {
     icacls $Game /grant 'NT SERVICE\lotus-panel:RX' /Q | Out-Null
     icacls "$Game\.data" /grant 'NT SERVICE\lotus-panel:RX' /Q | Out-Null
     icacls "$CaddyDir\data" /grant 'NT SERVICE\lotus-panel:(OI)(CI)RX' /Q | Out-Null
+    # Deploys (panel brief section 6): the panel unpacks verified releases and switches the service junctions; it
+    # writes pre-deploy and nightly database backups.
+    icacls $Releases /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
+    icacls $Nodes /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
+    icacls $Backups /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
     # Service control (panel brief section 3): the panel may query, start and stop exactly these services, nothing else.
     $panelSid = (New-Object Security.Principal.NTAccount 'NT SERVICE\lotus-panel').Translate([Security.Principal.SecurityIdentifier]).Value
     foreach ($svc in 'lotus-postgresql', 'lotus-hub', 'lotus') {
@@ -515,3 +566,11 @@ Write-Host " Settings:        $Config  (then: Restart-Service lotus)"
 Write-Host ' Update later:    run the same install command again'
 Write-Host ''
 Write-Host ' If your VPS provider has its own firewall in its website, open TCP 43594, 8080 and 443 there too.' -ForegroundColor Yellow
+if ($HavePanel -and $NewReleaseKey) {
+    Write-Host ''
+    Write-Host ' One-time step for panel deploys: let GitHub sign releases with this server''s key.' -ForegroundColor Yellow
+    Write-Host '   On github.com open the repository > Settings > Secrets and variables > Actions > New repository secret:'
+    Write-Host "     LOTUS_RELEASE_KEY           = the text of $Pki\release.key   (notepad $Pki\release.key)"
+    Write-Host "     LOTUS_RELEASE_KEY_PASSWORD  = the text of $Pki\release-key-password"
+    Write-Host '   Then Actions > game-release > Run workflow builds a release the panel can deploy.'
+}

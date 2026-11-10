@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Release {{ version }} · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  {% if let Some(p) = plan %}
+  <h1>Release <code>{{ p.release.manifest.version }}</code>{% if rollback %} <span class="badge">rollback</span>{% endif %}</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  <ul class="stats">
+    <li><span class="muted small">Commit</span><strong><code>{{ p.release.short_commit() }}</code></strong></li>
+    <li><span class="muted small">Built</span><strong>{{ p.release.manifest.built_at }}</strong></li>
+    <li><span class="muted small">Signature</span><strong>{% if p.release.verified() %}verified{% else %}not verified{% endif %}</strong></li>
+  </ul>
+  {% if p.release.verified() %}<p class="muted small">SHA-256 <code>{{ p.release.sha256 }}</code></p>{% endif %}
+  <h2>Running now</h2>
+  <ul class="rows">{% for r in p.running %}<li><strong>{{ r.0 }}</strong><code>{% if let Some(v) = r.1 %}{{ v }}{% else %}no link{% endif %}</code></li>{% endfor %}</ul>
+  <h2>Changes</h2>
+  {% if p.release.manifest.commits.is_empty() %}<p class="muted">The build listed no commits.</p>{% endif %}
+  <ul class="rows">{% for c in p.release.manifest.commits %}<li>{{ c }}</li>{% endfor %}</ul>
+  <h2>Database</h2>
+  {% if p.schema.added.is_empty() %}<p class="muted">No schema changes: no backup is needed.</p>
+  {% else %}<p>{{ p.schema.added.len() }} new schema statement(s); the hub applies them when it starts. A database backup is taken first.</p>
+  <pre class="log">{% for st in p.schema.added %}{{ st }}
+{% endfor %}</pre>{% endif %}
+  {% if !p.schema.irreversible.is_empty() %}<p class="error">This release changes data in a way the current release can't run on: rolling back afterwards will mean restoring the backup.</p>{% endif %}
+  {% if let Some(b) = p.rollback_blocked %}<p class="error">{{ b }}</p>{% endif %}
+  {% else %}
+  <h1>Release <code>{{ version }}</code></h1>
+  <p class="error">There is no such release on this server.</p>
+  {% endif %}
+</section>
+{% if let Some(p) = plan %}
+<section class="card wide">
+  <h2>{% if rollback %}Roll back to this release{% else %}Deploy{% endif %}</h2>
+  {% if let Some(b) = p.blocked %}<p class="notice">{{ b }}</p>{% else %}{% if p.rollback_blocked.is_none() %}
+  <p class="muted small">Locks logins, runs the in-game update timer (players are told and saved), stops the worlds and the hub, switches them to this release one by one and checks each one's health. If one fails, it goes back to its old release and the rest stay there too; then logins open again.</p>
+  <form method="post" action="/deploys/release/{{ p.release.manifest.version|urlencode }}" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Update timer (seconds) <input name="seconds" type="number" min="1" max="3600" value="{{ timer }}"></label>
+    <label>Message to players (optional) <input name="message" maxlength="200" placeholder="Updating to a new version"></label>
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit" class="big">{% if rollback %}Roll back{% else %}Deploy {{ p.release.manifest.version }}{% endif %}</button>
+  </form>
+  {% endif %}{% endif %}
+</section>
+{% endif %}
+{% endblock %}

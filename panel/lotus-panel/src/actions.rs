@@ -551,7 +551,7 @@ fn back_with_error(to: &str, error: &str) -> Response {
     Redirect::to(&format!("{to}{sep}error={}", urlencoding(error))).into_response()
 }
 
-fn urlencoding(s: &str) -> String {
+pub fn urlencoding(s: &str) -> String {
     s.bytes().fold(String::new(), |mut out, b| {
         if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) {
             out.push(char::from(b));

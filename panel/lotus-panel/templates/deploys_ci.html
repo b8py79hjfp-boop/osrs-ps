@@ -1,0 +1,6 @@
+{% if let Some(e) = error %}<p class="error">{{ e }}</p>{% endif %}
+{% if tags.is_empty() && error.is_none() %}<p class="muted">No CI releases yet.</p>{% endif %}
+<ul class="rows">{% for t in tags %}<li><div><code>{{ t.0 }}</code> <span class="muted small">{{ t.1 }}</span></div>
+  {% if t.2 %}<span class="muted small">on this server</span>{% else %}<form method="post" action="/deploys/fetch" class="inline">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="tag" value="{{ t.0 }}">
+    <button type="submit" class="secondary">Download and verify</button></form>{% endif %}</li>{% endfor %}</ul>

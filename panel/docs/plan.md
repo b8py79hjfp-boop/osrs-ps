@@ -169,7 +169,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - ExecuteCommand (#13) and the remote actor are in place;
      - the console, moderation actions, broadcast, world lock and staff ranks work;
      - tickets are moved to the hub.
-7. **Deploys.**
+7. **Deploys.** Done 2026-11-10 (D-102). Not yet run on the VPS: junctions and the SCM path are Windows-only.
    - Done when:
      - releases are signed with minisign;
      - the diff, migration-with-backup, lock, countdown, junction switch, ordered restart, health check and rollback all

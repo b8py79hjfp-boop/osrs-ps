@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Deploys · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Deploys</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  {% if let Some(j) = job %}<p class="notice">A control job is running: <a href="/control/jobs/{{ j }}">job #{{ j }}</a>.</p>{% endif %}
+  {% if !keyed %}<p class="notice">Deploys are off until the release public key is set in <code>panel.toml</code> (<code>[deploy] public_key</code>). See the operations guide.</p>{% endif %}
+  <h2>Running now</h2>
+  <ul class="rows">{% for r in running %}<li><strong>{{ r.0 }}</strong><span><code>{{ r.1 }}</code></span></li>{% endfor %}</ul>
+  {% if let Some(v) = rollback %}<p>Previous release: <a href="/deploys/release/{{ v|urlencode }}"><code>{{ v }}</code></a> (roll back from there).</p>{% endif %}
+</section>
+
+<section class="card wide">
+  <h2>Get a release</h2>
+  <p class="muted small">Every release is signed by the build. The panel checks the signature before it opens anything, and refuses a release that doesn't match.</p>
+  <h3>From the CI builds</h3>
+  <div hx-get="/deploys/ci" hx-trigger="load" hx-swap="innerHTML"><p class="muted">Loading the latest builds…</p></div>
+  <h3>From the incoming folder</h3>
+  <p class="muted small">Copy <code>lotus.zip</code> and <code>lotus.zip.minisig</code> (any name, same pair) into <code>{{ incoming }}</code>, then:</p>
+  <form method="post" action="/deploys/incoming" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <button type="submit" class="secondary" {% if !keyed %}disabled{% endif %}>Check the incoming folder</button>
+  </form>
+</section>
+
+<section class="card wide">
+  <h2>Releases on this server</h2>
+  {% if releases.is_empty() %}<p class="muted">None yet.</p>{% endif %}
+  <ul class="rows">{% for r in releases %}<li><div><a href="/deploys/release/{{ r.version|urlencode }}"><strong>{{ r.version }}</strong></a>{% if !r.verified %} <span class="badge">not verified</span>{% endif %}{% if !r.running.is_empty() %} <span class="state ok">{{ r.running }}</span>{% endif %}
+    <div class="muted small">commit <code>{{ r.commit }}</code> · built {{ r.built }}</div></div></li>{% endfor %}</ul>
+  {% if !removable.is_empty() %}
+  <form method="post" action="/deploys/clean" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <span class="muted small">Keeps the newest five, the running release and the rollback target. Removes: {% for v in removable %}<code>{{ v }}</code>{% if !loop.last %}, {% endif %}{% endfor %}.</span>
+    <input name="password" type="password" maxlength="20" placeholder="Your password" required autocomplete="current-password" aria-label="Your password">
+    <button type="submit" class="secondary">Remove old releases</button>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card wide">
+  <h2>Deploy history</h2>
+  {% if history.is_empty() %}<p class="muted">Nothing deployed through the panel yet.</p>{% endif %}
+  <ul class="rows">{% for h in history %}<li><code>{{ h.version }}</code><span class="muted small">{{ h.actor }} · {{ h.at }}</span></li>{% endfor %}</ul>
+</section>
+{% endblock %}

@@ -282,7 +282,17 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   tickets (new `::tickets`, `::claimticket`, `::closeticket`), chat (hub keeps the last 300 yell/staff/broadcast
   lines) and broadcast, worlds (per-world login lock, command toggles), staff ranks (`::setrank`). Password re-checks
   are audited as such, not as logins. Checked end to end against a PostgreSQL hub and a world node.
-- [ ] Phase 7: deploys (releases, minisign, migrations with backup, rollback; test 4).
+- [x] Phase 7 (2026-11-10): deploys (D-102). A release is a minisign-signed zip (hub and world jars, release.json,
+  the hub's schema.sql from the new `hub --print-schema`), built and signed by the `game-release` workflow on Windows.
+  The panel fetches it from the CI releases or the incoming folder, checks the signature before opening it, unpacks
+  it into `C:\lotus\releases\<version>` and shows the plan (commits, new schema statements, rollback warnings). A
+  deploy: backup first if the schema changes, lock, in-game timer, stop, then switch each service's junction in
+  `C:\lotus\nodes` (hub, then each world) with a health check; a failure puts that service back and leaves the rest
+  on the old release. Rollback is the same flow to the previous release; data-dropping statements block it.
+  Housekeeping keeps the newest five releases. The installer now installs each build as a release, runs the services
+  through the junctions, makes the signing key once and a read-only `lotus_backup` role. Test 4 (`deploy`) passes;
+  checked here with a real 119 MB release (good and tampered signatures). The junction switch and service restarts
+  only run on Windows, so they're untested until the VPS.
 - [ ] Phases 8–9: backups and alerts; operations.md, verifier review, staging run.
 
 ## Next

@@ -19,6 +19,111 @@ pub struct Config {
     pub paths: Paths,
     #[serde(default)]
     pub control: Control,
+    #[serde(default)]
+    pub deploy: Deploy,
+    #[serde(default)]
+    pub backups: Backups,
+}
+
+/// Brief §6 / §9 `[deploy]`.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Deploy {
+    /// One directory junction per service, pointing into `[control] releases`.
+    #[serde(default = "Deploy::default_nodes")]
+    pub nodes: PathBuf,
+    /// Zips (and their `.minisig`) copied here by hand are offered on the Deploys page.
+    #[serde(default = "Deploy::default_incoming")]
+    pub incoming: PathBuf,
+    /// The base64 line of the minisign public key releases are signed with; empty = deploys are off.
+    #[serde(default)]
+    pub public_key: String,
+    /// GitHub `owner/repo` whose releases (`lotus-<version>`) the panel can fetch.
+    #[serde(default = "Deploy::default_repo")]
+    pub ci_repo: String,
+    /// Brief §6: the in-game update timer, 5 minutes by default.
+    #[serde(default = "Deploy::default_timer")]
+    pub update_timer_seconds: i32,
+}
+
+impl Deploy {
+    fn default_nodes() -> PathBuf {
+        PathBuf::from(r"C:\lotus\nodes")
+    }
+    fn default_incoming() -> PathBuf {
+        PathBuf::from(r"C:\lotus\releases\incoming")
+    }
+    fn default_repo() -> String {
+        "b8py79hjfp-boop/osrs-ps".into()
+    }
+    const fn default_timer() -> i32 {
+        300
+    }
+}
+
+impl Default for Deploy {
+    fn default() -> Self {
+        Self {
+            nodes: Self::default_nodes(),
+            incoming: Self::default_incoming(),
+            public_key: String::new(),
+            ci_repo: Self::default_repo(),
+            update_timer_seconds: Self::default_timer(),
+        }
+    }
+}
+
+/// Brief §7 `[backups]`: how the panel reaches the game database with `pg_dump`.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Backups {
+    #[serde(default = "Backups::default_pg_bin")]
+    pub pg_bin: PathBuf,
+    #[serde(default = "Backups::default_host")]
+    pub host: String,
+    #[serde(default = "Backups::default_port")]
+    pub port: u16,
+    #[serde(default = "Backups::default_database")]
+    pub database: String,
+    /// A role with `pg_read_all_data` (the installer makes `lotus_backup`).
+    #[serde(default = "Backups::default_user")]
+    pub user: String,
+    #[serde(default = "Backups::default_password_credential")]
+    pub password_credential: String,
+}
+
+impl Backups {
+    fn default_pg_bin() -> PathBuf {
+        PathBuf::from(r"C:\lotus\tools\pgsql\bin")
+    }
+    fn default_host() -> String {
+        "127.0.0.1".into()
+    }
+    const fn default_port() -> u16 {
+        5432
+    }
+    fn default_database() -> String {
+        "lotus".into()
+    }
+    fn default_user() -> String {
+        "lotus_backup".into()
+    }
+    fn default_password_credential() -> String {
+        "backup-db-password".into()
+    }
+}
+
+impl Default for Backups {
+    fn default() -> Self {
+        Self {
+            pg_bin: Self::default_pg_bin(),
+            host: Self::default_host(),
+            port: Self::default_port(),
+            database: Self::default_database(),
+            user: Self::default_user(),
+            password_credential: Self::default_password_credential(),
+        }
+    }
 }
 
 /// Brief §3: the units the panel controls and how to check them. Defaults match deploy/windows/install-lotus.ps1.

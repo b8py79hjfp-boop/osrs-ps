@@ -198,7 +198,7 @@ impl Controller {
         lock(&self.running).as_ref().map(|r| r.job)
     }
 
-    async fn begin(&self, kind: &str, actor_name: &str) -> Result<(i64, CancellationToken), ControlError> {
+    pub(crate) async fn begin(&self, kind: &str, actor_name: &str) -> Result<(i64, CancellationToken), ControlError> {
         if let Some(r) = lock(&self.running).as_ref() {
             return Err(ControlError::Busy(r.job));
         }
@@ -215,7 +215,7 @@ impl Controller {
         Ok((job, cancel))
     }
 
-    async fn end(&self, job: i64, state: JobState) {
+    pub(crate) async fn end(&self, job: i64, state: JobState) {
         let _ = self.jobs.finish(job, state).await;
         let mut running = lock(&self.running);
         if running.as_ref().is_some_and(|r| r.job == job) {
@@ -223,7 +223,7 @@ impl Controller {
         }
     }
 
-    async fn log(&self, job: i64, line: &str) {
+    pub(crate) async fn log(&self, job: i64, line: &str) {
         tracing::info!(job, "{line}");
         let _ = self.jobs.append(job, line).await;
     }
@@ -322,7 +322,7 @@ impl Controller {
     }
 
     /// Brief §3 Start: database check, then the hub, then the worlds; each must be healthy before the next.
-    async fn start_sequence(&self, job: i64, worlds: &[WorldUnit], with_core: bool) -> bool {
+    pub(crate) async fn start_sequence(&self, job: i64, worlds: &[WorldUnit], with_core: bool) -> bool {
         let t = self.topology.clone();
         if with_core {
             if self.units.state(&t.database).await != ServiceState::Running && !self.start_unit(job, &t.database).await
@@ -376,7 +376,7 @@ impl Controller {
 
     // ---------------------------------------------------------------- stop / restart
 
-    async fn stop_unit(&self, job: i64, unit: &str) -> bool {
+    pub(crate) async fn stop_unit(&self, job: i64, unit: &str) -> bool {
         lock(&self.expected_down).insert(unit.to_owned());
         if let Err(e) = self.units.stop(unit).await {
             self.log(job, &format!("could not stop {unit}: {e}")).await;
@@ -446,41 +446,8 @@ impl Controller {
             Scope::All => 0,
             Scope::World(id) => id,
         };
-        let hub_reachable = match self.hub.set_login_lock(actor, lock_world, true, "Restarting").await {
-            Ok(()) => {
-                self.log(job, "logins locked (staff only)").await;
-                true
-            }
-            Err(e) => {
-                self.log(
-                    job,
-                    &format!("could not lock logins ({e}); stopping without the in-game timer"),
-                )
-                .await;
-                false
-            }
-        };
-        if hub_reachable {
-            match self.hub.system_update(actor, seconds, message).await {
-                Ok(()) => self.log(job, &format!("update timer started: {seconds} s")).await,
-                Err(e) => self.log(job, &format!("could not start the update timer: {e}")).await,
-            }
-            let mut left = seconds;
-            while left > 0 {
-                tokio::select! {
-                    () = cancel.cancelled() => {
-                        let _ = self.hub.cancel_update(actor).await;
-                        let _ = self.hub.set_login_lock(actor, lock_world, false, "").await;
-                        self.log(job, "cancelled: the timer is cleared and logins are unlocked").await;
-                        return JobState::Cancelled;
-                    }
-                    () = tokio::time::sleep(Duration::from_secs(1)) => {}
-                }
-                left -= 1;
-                if left > 0 && (left % 60 == 0 || left == 30 || left == 10) {
-                    self.log(job, &format!("{left} s left")).await;
-                }
-            }
+        if !self.countdown(job, cancel, lock_world, seconds, message, actor).await {
+            return JobState::Cancelled;
         }
         let mut ok = true;
         for w in self.worlds_in(scope).iter().rev() {
@@ -507,6 +474,56 @@ impl Controller {
             self.log(job, "logins unlocked").await;
         }
         JobState::Succeeded
+    }
+
+    /// Brief §3: lock logins on `lock_world` (0 = every world), start the in-game update timer and wait it out.
+    /// False when cancelled (the timer is cleared and logins unlocked). Without the hub it goes on with no timer.
+    pub(crate) async fn countdown(
+        &self,
+        job: i64,
+        cancel: &CancellationToken,
+        lock_world: i32,
+        seconds: i32,
+        message: &str,
+        actor: &Actor,
+    ) -> bool {
+        let hub_reachable = match self.hub.set_login_lock(actor, lock_world, true, "Restarting").await {
+            Ok(()) => {
+                self.log(job, "logins locked (staff only)").await;
+                true
+            }
+            Err(e) => {
+                self.log(
+                    job,
+                    &format!("could not lock logins ({e}); stopping without the in-game timer"),
+                )
+                .await;
+                false
+            }
+        };
+        if hub_reachable {
+            match self.hub.system_update(actor, seconds, message).await {
+                Ok(()) => self.log(job, &format!("update timer started: {seconds} s")).await,
+                Err(e) => self.log(job, &format!("could not start the update timer: {e}")).await,
+            }
+            let mut left = seconds;
+            while left > 0 {
+                tokio::select! {
+                    () = cancel.cancelled() => {
+                        let _ = self.hub.cancel_update(actor).await;
+                        let _ = self.hub.set_login_lock(actor, lock_world, false, "").await;
+                        self.log(job, "cancelled: the timer is cleared and logins are unlocked").await;
+                        return false;
+                    }
+                    () = tokio::time::sleep(Duration::from_secs(1)) => {}
+                }
+                left -= 1;
+                if left > 0 && (left % 60 == 0 || left == 30 || left == 10) {
+                    self.log(job, &format!("{left} s left")).await;
+                }
+            }
+        }
+        true
     }
 
     /// Brief §3 Emergency stop: no countdown. The wrapper's Ctrl+C is the game's save-all-then-shut-down; after its 60 s

@@ -3,12 +3,15 @@
 
 pub mod actions;
 pub mod auth;
+pub mod backup;
 pub mod certs;
 pub mod clock;
 pub mod config;
 pub mod control;
 pub mod control_web;
 pub mod db;
+pub mod deploy;
+pub mod deploy_web;
 pub mod housekeeping;
 pub mod hub;
 pub mod jobs;

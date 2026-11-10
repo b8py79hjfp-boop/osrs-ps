@@ -64,6 +64,7 @@ zero, restarts the server automatically after 10 seconds.
 | `C:\lotus\hub`, `C:\lotus\panel` | The hub's and the panel's certificates and secrets, each readable only by its own service |
 | `C:\lotus\server.toml`, `owner.txt` | Your settings and your account name. Updates never overwrite them. |
 | `C:\lotus\logs\<service>` | Each service's log, rotated at 10 MB, 5 kept |
+| `C:\lotus\releases`, `C:\lotus\nodes` | Each installed build or deployed release, and one junction per service pointing at the release it runs (panel Deploys page) |
 | `C:\lotus\backups` | `lotus-<date>.dump` and `lotus_panel-<date>.dump` (`pg_dump`), daily at 04:00, kept 30 days. Copy these off the VPS now and then. |
 | Services | `lotus-postgresql` → `lotus-hub` → `lotus` (game) → `lotus-panel` → `lotus-caddy`, each under its own restricted account, none as Administrator |
 | Windows Firewall | TCP 43594 (game), 8080 (website, world list, client download) and 443 (panel) open |
@@ -72,6 +73,12 @@ The server address comes from `site` in `client/runelite/release.properties` (no
 address is `$PanelDomain` at the top of the installer (`lotusps.duckdns.org`, which must point at the VPS on
 duckdns.org). Its HTTPS certificate comes from Let's Encrypt through port 443 alone. Signing in to the panel arrives
 with its next update (panel phase 3); until then it shows a status page.
+
+**One-time step for deploys from the panel.** The first install makes a release signing key on the VPS and prints
+what to do with it: on github.com, open the repository's Settings > Secrets and variables > Actions and add
+`LOTUS_RELEASE_KEY` (the text of `C:\lotus\pki\release.key`) and `LOTUS_RELEASE_KEY_PASSWORD` (the text of
+`C:\lotus\pki\release-key-password`). After that, Actions > game-release > Run workflow builds a signed release, and
+the panel's Deploys page can download and deploy it.
 
 ## Troubleshooting
 
