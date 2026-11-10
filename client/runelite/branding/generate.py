@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Generates the neutral placeholder branding images in resources/ (needs Pillow).
-
-These are stand-ins until the project picks a name, icon and splash (docs/plans/phase-6.md, "Needs from the user").
-Replace the PNGs in resources/ with the real artwork, keeping file names and sizes; build.sh copies the whole
-resources/ tree over the fork's client resources. No RuneLite artwork is used.
+"""Generates the client branding images in resources/ (needs Pillow): the Lotus emblem (lotus.py) as window icon and
+splash, plus two neutral info-panel glyphs. build.sh copies the whole resources/ tree over the fork's client
+resources; file names and sizes must stay. No RuneLite artwork is used.
 """
 import os
+import sys
 from PIL import Image, ImageDraw
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lotus  # noqa: E402
+
+# The splash wordmark font; any bold serif works. Without one the splash shows the emblem only.
+SPLASH_FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "net", "runelite", "client")
 SCALE = 8  # supersample for smooth edges
@@ -23,22 +28,6 @@ def canvas(size):
 def finish(img, size, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.resize((size, size), Image.LANCZOS).save(path, optimize=True)
-
-
-def emblem(size, ring_width):
-    """A dark disc with a gold ring and a hollow diamond."""
-    s = size * SCALE
-    img = canvas(size)
-    d = ImageDraw.Draw(img)
-    d.ellipse([0, 0, s - 1, s - 1], fill=RING)
-    rw = ring_width * SCALE
-    d.ellipse([rw, rw, s - 1 - rw, s - 1 - rw], fill=BG)
-    c = s // 2
-    r = s // 3
-    d.polygon([(c, c - r), (c + r, c), (c, c + r), (c - r, c)], fill=MARK)
-    r2 = r // 2
-    d.polygon([(c, c - r2), (c + r2, c), (c, c + r2), (c - r2, c)], fill=BG)
-    return img
 
 
 def glyph_chat(size):
@@ -59,8 +48,9 @@ def glyph_flag(size):
     return img
 
 
-finish(emblem(128, 6), 128, os.path.join(OUT, "ui", "runelite_128.png"))
-finish(emblem(16, 1), 16, os.path.join(OUT, "ui", "runelite_16.png"))
-finish(emblem(200, 8), 200, os.path.join(OUT, "ui", "runelite_splash.png"))
+lotus.emblem(128).save(os.path.join(OUT, "ui", "runelite_128.png"), optimize=True)
+lotus.small_icon(16).save(os.path.join(OUT, "ui", "runelite_16.png"), optimize=True)
+lotus.splash(200, SPLASH_FONT if os.path.isfile(SPLASH_FONT) else None).save(
+    os.path.join(OUT, "ui", "runelite_splash.png"), optimize=True)
 finish(glyph_chat(30), 30, os.path.join(OUT, "plugins", "info", "discord_icon.png"))
 finish(glyph_flag(30), 30, os.path.join(OUT, "plugins", "info", "github_icon.png"))
