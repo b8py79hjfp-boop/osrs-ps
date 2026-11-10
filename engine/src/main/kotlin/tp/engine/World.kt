@@ -1391,6 +1391,33 @@ class World(
         logger.info { "login: $player ($playerCount online)" }
     }
 
+    /** Panel actors by account id (panel brief §3): kept so `::confirm` and late hub replies find the same actor. */
+    private val remoteActors = HashMap<Long, Player>()
+
+    /**
+     * The remote actor for a panel staff member (panel brief §3 ExecuteCommand): a [Player] that never joins the player
+     * list, standing at the spawn, with the rank the hub just checked. Replies go to [session]. World thread only.
+     */
+    fun remoteActor(accountId: Long, username: String, rank: tp.util.Rank, session: tp.protocol.api.ClientSession): Player {
+        val known = remoteActors[accountId]
+        val actor =
+            if (known != null && known.session === session) {
+                known
+            } else {
+                newPlayer(0, username, session, config.spawn).also {
+                    it.accountId = accountId
+                    it.remote = true
+                    remoteActors[accountId] = it
+                }
+            }
+        actor.rank = rank
+        return actor
+    }
+
+    /** Whether a hub reply for [accountId] should still reach [player]: the account's live player or its panel actor. */
+    fun stillHere(accountId: Long, player: Player): Boolean =
+        playerByAccount(accountId) === player || (player.remote && remoteActors[accountId] === player)
+
     /** Creates a player bound to [session] in [slot] (scenario runner / replay: no network login). */
     fun newPlayer(slot: Int, username: String, session: tp.protocol.api.ClientSession, at: CoordGrid): Player =
         Player(this, slot, username, session, at, PlayerVars(data.configs.varps.size, data.configs.varbits))

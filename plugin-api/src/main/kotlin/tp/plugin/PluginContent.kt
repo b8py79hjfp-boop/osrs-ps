@@ -154,6 +154,15 @@ public class PluginContent private constructor(private val h: Handlers) : Conten
             }
         }
 
+    /**
+     * Runs [line] (no `::`) for a panel actor from [tp.engine.World.remoteActor] through the same pipeline as a typed
+     * command, as [tp.plugin.commands.Source.PANEL] (panel brief §3). World thread only.
+     */
+    public fun runRemote(actor: Player, line: String): tp.plugin.commands.CommandDispatcher.Outcome {
+        require(actor.remote) { "not a panel actor" }
+        return dispatcher.dispatch(ref(actor), line, tp.plugin.commands.Source.PANEL)
+    }
+
     override fun onCommandLine(player: Player, line: String): Boolean {
         // Every line is answered by the pipeline (unknown included), so the engine's own reply never shows.
         dispatcher.dispatch(ref(player), line)

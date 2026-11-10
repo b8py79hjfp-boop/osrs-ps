@@ -690,6 +690,7 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
     override val broadcasts: BroadcastService =
         object : BroadcastService {
             override suspend fun broadcast(text: String) {
+                remember(ChatLine(System.currentTimeMillis(), "broadcast", "", 0, text))
                 broadcastSinks.forEach { runCatching { it(Broadcast.Message(text)) } }
             }
 
@@ -707,6 +708,7 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
             ) {
                 // D-096: staff chat only from staff; a forged flag from a world is dropped here too.
                 if (staff && !rank.isStaff) return
+                remember(ChatLine(System.currentTimeMillis(), if (staff) "staff" else "yell", from, worldId, text))
                 broadcastSinks.forEach { runCatching { it(Broadcast.Yell(from, rank, worldId, text, donator, staff)) } }
             }
 
@@ -724,6 +726,23 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
                 return AutoCloseable { broadcastSinks -= sink }
             }
         }
+
+    // ---------------------------------------------------------------- recent chat (panel brief §4)
+
+    /** One line the panel's chat page shows. */
+    internal data class ChatLine(val atMs: Long, val kind: String, val from: String, val worldId: Int, val text: String)
+
+    private val chat = ArrayDeque<ChatLine>()
+
+    private fun remember(line: ChatLine) {
+        synchronized(chat) {
+            chat.addLast(line)
+            while (chat.size > RECENT_CHAT) chat.removeFirst()
+        }
+    }
+
+    /** The last [RECENT_CHAT] yell, staff chat and broadcast lines, oldest first; lost on a restart. */
+    internal fun recentChat(): List<ChatLine> = synchronized(chat) { chat.toList() }
 
     // ---------------------------------------------------------------- world operations
 
@@ -753,7 +772,9 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
      * the operation id, or null when no world [worldId] is listening (nothing was sent). The caller checked the actor.
      */
     internal fun routeWorldOp(worldId: Int, kind: String, actor: AccountRow, args: String, onLine: (WorldOpLine) -> Unit): Long? {
-        val sinks = opSinks[worldId]?.takeIf { it.isNotEmpty() } ?: return null
+        // World 0: any connected world (panel plan §3 #13: a command for an offline target runs on the lowest world).
+        val id = if (worldId == 0) opSinks.filterValues { it.isNotEmpty() }.keys.minOrNull() ?: return null else worldId
+        val sinks = opSinks[id]?.takeIf { it.isNotEmpty() } ?: return null
         val op = WorldOp(opIds.incrementAndGet(), kind, actor.id, actor.displayName, actor.rights, args)
         opWaiters[op.id] = onLine
         // One world node per world id; the first live subscription answers.
@@ -776,6 +797,8 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
     }
 
     private companion object {
+        /** Lines the panel's chat page keeps (our bound: a few screens). */
+        const val RECENT_CHAT = 300
         const val MAX_NAME = 12
         const val MIN_PASSWORD = 5
         const val MAX_PASSWORD = 20

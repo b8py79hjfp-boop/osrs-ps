@@ -224,6 +224,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         domain: domain_of(&config.server.public_url),
         metrics: Arc::new(metrics::PgMetrics(pool.clone())),
         alerts: alerts.clone(),
+        console: Arc::default(),
     })
 }
 

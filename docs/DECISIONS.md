@@ -1484,3 +1484,18 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   dropped: staff sign in with their game password, and dangerous actions ask for the password again instead of a
   code. The game's planned 2FA follow-up is dropped too. Lockout, audit, short sessions and `allowed_networks` remain
   (panel/docs/plan.md §1a, §4).
+
+## D-101 Panel actions run as a remote staff actor; tickets stay on their world (2026-11-10)
+
+- **Why.** Panel brief §5: every panel action goes through the same command pipeline as `::` commands. The pipeline
+  needs a `PlayerRef`, and staff using the panel are usually not in the game.
+- **Choice.** `World.remoteActor` makes a `Player` that never joins the player list, stands at the spawn and has the
+  rank the hub just checked; its session only collects chat lines. Commands opt in with `remote = true` (sanctions,
+  records, investigations, broadcast, freeze, owner operations except `::shutdown`, tickets, `::raids`); the
+  dispatcher refuses everything else from `Source.PANEL`, and ECONOMY or CONVENIENCE always. Late hub replies reach the
+  actor through `World.stillHere`. A command runs on the target's world when they are online, otherwise any world.
+- **Tickets.** The plan said tickets move to the hub. They stay on the world they were opened on (memory only, as
+  before) and the panel reaches them through new remote-safe commands; moving them would change the game for no gain
+  to staff. Report-abuse submissions are still not recorded, so there is no report queue (OPEN).
+- **Chat.** The hub keeps the last 300 yell, staff chat and broadcast lines in memory for the panel's chat page.
+

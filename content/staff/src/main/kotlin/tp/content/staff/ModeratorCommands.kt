@@ -44,6 +44,7 @@ public class ModeratorCommands : ContentPlugin {
         command("sc", Rank.MODERATOR, Category.MODERATION, Impact.SOCIAL) {
             aliases("staffchat")
             description("Sends a line to every member of staff online, on every world.")
+            remote = true
             example("::sc can someone check world 2?")
             val message = text("message")
             signature(message) { ctx ->
@@ -149,11 +150,13 @@ public class ModeratorCommands : ContentPlugin {
 
     private fun ContentScope.movement() {
         mod("teleto", "Teleports you to the player; on another world, offers a hop first.", "::teleto Big_Bob", Impact.MODERATION) {
+            remote = false
             aliases("goto")
             val who = player("player", allowOffline = true)
             signature(who) { ctx -> teleTo(ctx.player, ctx[who]) }
         }
         mod("teletome", "Brings the player to you (same world); ::return sends them back.", "::teletome Big_Bob", Impact.MODERATION) {
+            remote = false
             aliases("bring")
             val who = player("player")
             signature(who) { ctx ->
@@ -166,6 +169,7 @@ public class ModeratorCommands : ContentPlugin {
             }
         }
         mod("return", "Sends a player you brought back to where they were.", "::return Big_Bob", Impact.MODERATION) {
+            remote = false
             val who = player("player")
             signature(who) { ctx ->
                 val target = online(ctx[who]) ?: return@signature ctx.fail("${ctx[who].name} is not on this world.")
@@ -197,6 +201,7 @@ public class ModeratorCommands : ContentPlugin {
             Triple("checkbank", Invs.BANK, "bank"),
         )) {
             mod(name, "Read-only view of an online player's $label.", "::$name Big_Bob", Impact.MODERATION) {
+                remote = false
                 val who = player("player")
                 signature(who) { ctx ->
                     val target = online(ctx[who]) ?: return@signature ctx.fail("${ctx[who].name} is not on this world.")
@@ -228,6 +233,8 @@ public class ModeratorCommands : ContentPlugin {
             example(example)
             target()
             crossWorld = true
+            // Sanctions and records act through the hub on a name; movement and views opt out (they need a body).
+            remote = true
             block()
         }
     }

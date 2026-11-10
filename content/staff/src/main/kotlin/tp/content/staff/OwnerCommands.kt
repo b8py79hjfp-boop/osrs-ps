@@ -84,6 +84,7 @@ public class OwnerCommands : ContentPlugin {
         }
         owner("shutdown", "Stops this world gracefully, saving everyone first.", "::shutdown 60") {
             confirm = true
+            remote = false
             val seconds = int("seconds", optional = true, min = 0, max = MAX_UPDATE_SECONDS.toLong())
             signature(seconds) { ctx ->
                 ctx.player.shutdownWorld(ctx.opt(seconds) ?: 0)
@@ -204,6 +205,8 @@ public class OwnerCommands : ContentPlugin {
         command(name, Rank.OWNER, Category.OPERATIONS, Impact.OPERATIONS) {
             description(description)
             example(example)
+            // None of these needs a body; ::shutdown opts out (the panel stops services through its own controls).
+            remote = true
             block()
         }
     }

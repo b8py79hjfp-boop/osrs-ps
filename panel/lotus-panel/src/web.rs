@@ -50,6 +50,8 @@ pub struct AppState {
     pub domain: String,
     pub metrics: Arc<dyn crate::metrics::MetricsStore>,
     pub alerts: Arc<dyn crate::jobs::Alerts>,
+    /// Console output in memory (brief §5).
+    pub console: Arc<crate::actions::ConsoleRuns>,
 }
 
 /// Directories the panel reads (logs, dumps) or reports on (backups, releases, certificates).
@@ -104,6 +106,7 @@ pub fn routes() -> Vec<RouteSpec> {
     let mut all = core_routes();
     all.extend(crate::control_web::routes());
     all.extend(crate::pages::routes());
+    all.extend(crate::actions::routes());
     all
 }
 
@@ -672,7 +675,7 @@ pub async fn confirm_password(state: &AppState, s: &Session, password: &str, ip:
     if state.lockout.locked(&s.username, ip, now) {
         return false;
     }
-    match state.hub.verify_staff(&s.username, password, ip).await {
+    match state.hub.recheck_password(&s.username, password, ip).await {
         Ok(Verified::Ok { account_id, .. }) if account_id == s.account_id => true,
         Ok(_) => {
             state.lockout.fail(&s.username, ip, now);

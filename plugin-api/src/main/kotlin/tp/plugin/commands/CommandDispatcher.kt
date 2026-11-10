@@ -5,6 +5,7 @@ import tp.plugin.AttrKey
 import tp.plugin.PlayerRef
 import tp.util.Rank
 import tp.util.commands.CommandsConfig
+import tp.util.commands.Impact
 
 /**
  * The execution pipeline (commands brief §4), shared by typed commands and the `::commands` interface: parse, resolve
@@ -39,6 +40,7 @@ public class CommandDispatcher internal constructor(
         val config = world.commands
         if (!allowedByRate(player, world.tick, config)) return Outcome.Dropped
         val def = registry.find(name)
+        if (source == Source.PANEL) panelProblem(def, player, config)?.let { return refuse(player, it) }
         if (def == null || !registry.usable(def, player.rank, config)) {
             // §2: a command the player may not use gets exactly the unknown reply. The legacy path (rank-checked) and
             // the official fallbacks (`::bank`, emote names) still answer, so a same-named staff command never hides them.
@@ -104,6 +106,25 @@ public class CommandDispatcher internal constructor(
         }
         return null
     }
+
+    /**
+     * Panel brief §3: the console runs only commands marked remote, never ECONOMY or CONVENIENCE ones (the panel never
+     * creates items, coins or XP), and only ones this actor may use; anything else gets one plain refusal.
+     */
+    private fun panelProblem(def: CommandDef?, player: PlayerRef, config: CommandsConfig): String? =
+        when {
+            def == null || !registry.usable(def, player.rank, config) -> {
+                "Unknown command (or not one you may use)."
+            }
+
+            !def.remote || def.impact == Impact.ECONOMY || def.impact == Impact.CONVENIENCE -> {
+                "::${def.name} needs you in the game; it can't run from the panel."
+            }
+
+            else -> {
+                null
+            }
+        }
 
     private fun cooldownProblem(player: PlayerRef, def: CommandDef, tick: Long): String? {
         val until = cooldowns(player)[def.name] ?: return null

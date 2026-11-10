@@ -687,6 +687,7 @@ message VerifyStaffRequest {
   string username = 1;
   string password = 2;
   string ip = 3;
+  bool recheck = 4; // the password asked again before a dangerous action, not a sign-in (audited as such)
 }
 
 message VerifyStaffReply {
@@ -882,4 +883,19 @@ service Panel {
   rpc ListStaff(PanelActor) returns (StaffRows);
   rpc BootstrapOwner(BootstrapOwnerRequest) returns (ErrorReply);
   rpc WorldOp(PanelWorldOpRequest) returns (stream OpOutput);
+  // Panel brief §4 Chat & broadcast: the hub's last yell, staff chat and broadcast lines (memory only).
+  rpc RecentChat(PanelActor) returns (ChatRows);
+}
+
+message ChatRowPb {
+  int64 at_ms = 1;
+  string kind = 2; // yell | staff | broadcast
+  string from = 3;
+  int32 world_id = 4;
+  string text = 5;
+}
+
+message ChatRows {
+  string error = 1;
+  repeated ChatRowPb rows = 2;
 }

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Staff · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Staff</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  <ul class="rows">{% for m in staff %}<li><a href="/players/{{ m.name|urlencode }}"><strong>{{ m.name }}</strong></a><span class="badge">{{ m.rank }}</span><span class="muted small">{% if m.world == 0 %}offline{% else %}world {{ m.world }}{% endif %}</span></li>{% endfor %}</ul>
+  {% if staff.is_empty() %}<p class="muted">No staff yet.</p>{% endif %}
+  <p class="muted small">Signed-in panel sessions: <a href="/staff/sessions">Staff sessions</a> (revoke there).</p>
+</section>
+<section class="card wide">
+  <h2>Set a rank</h2>
+  <p class="muted small">Runs <code>::setrank</code> as you: owners can give up to administrator, developers any rank. Takes effect at once in game and within a minute in the panel.</p>
+  <form method="post" action="/staff/rank" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <div class="inline">
+      <label>Account <input name="name" maxlength="12" required></label>
+      <label>Rank <select name="rank">{% for r in ranks %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select></label>
+    </div>
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit">Set rank</button>
+  </form>
+</section>
+{% endblock %}

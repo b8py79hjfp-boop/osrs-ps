@@ -7,6 +7,13 @@ import jdk.jfr.Recording
 import kotlinx.coroutines.runBlocking
 import tp.engine.World
 import tp.engine.tick.TickInspector
+import tp.plugin.PluginContent
+import tp.plugin.commands.CommandDispatcher.Outcome
+import tp.plugin.commands.CommandResult
+import tp.protocol.api.AvatarState
+import tp.protocol.api.ClientCommand
+import tp.protocol.api.ClientSession
+import tp.protocol.api.ServerMessage
 import tp.services.HubServices
 import tp.services.WorldOp
 import tp.services.WorldOpLine
@@ -16,7 +23,11 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,8 +55,21 @@ internal class WorldOpsHandler(private val world: World, private val hub: HubSer
 
     @Volatile private var recording: Recording? = null
 
+    /** One reply sink per panel actor, kept so a `::confirm` reaches the same stand-in. */
+    private val sessions = ConcurrentHashMap<Long, RemoteSession>()
+
+    /** Panel commands run on their own thread, so a long diagnostic (a tick capture) never holds up the console. */
+    private val commands =
+        Executors.newSingleThreadExecutor(
+            Thread
+                .ofPlatform()
+                .name("world-ops-commands")
+                .daemon()
+                .factory(),
+        )
+
     fun handle(op: WorldOp) {
-        pool.execute {
+        (if (op.kind == "command") commands else pool).execute {
             runCatching { run(op) }.onFailure {
                 logger.warn(it) { "world op ${op.kind} failed" }
                 reply(op, "Failed: ${it.javaClass.simpleName}: ${it.message}", done = true, error = true)
@@ -62,16 +86,72 @@ internal class WorldOpsHandler(private val world: World, private val hub: HubSer
         if (op.kind.startsWith("diag.") && !op.actorRank.atLeast(Rank.DEVELOPER)) {
             return reply(op, "Diagnostics are for developers.", done = true, error = true)
         }
-        Files.createDirectories(dumps)
+        if (op.kind.startsWith("diag.")) Files.createDirectories(dumps)
         when (op.kind) {
             "diag.threads" -> threads(op)
             "diag.heap" -> heap(op)
             "diag.jfr.start" -> jfrStart(op)
             "diag.jfr.stop" -> jfrStop(op)
             "diag.tick" -> tick(op)
-            "command" -> reply(op, "Panel commands arrive with panel phase 6.", done = true, error = true)
+            "command" -> command(op)
             else -> reply(op, "Unknown operation ${op.kind}.", done = true, error = true)
         }
+    }
+
+    /**
+     * Panel brief §3 ExecuteCommand: [op]'s line runs on the world thread for the actor's remote stand-in, through the
+     * typed-command pipeline as `Source.PANEL` (rank, targeting, policy, rate limit, confirmation, audit). Every chat
+     * line the pipeline sends that actor comes back as output; a command answered later by the hub (Pending) gets
+     * [PENDING_WAIT_MS] for its reply.
+     */
+    private fun command(op: WorldOp) {
+        val content =
+            world.content as? PluginContent
+                ?: return reply(op, "This world has no command pipeline.", done = true, error = true)
+        val session = sessions.computeIfAbsent(op.actorAccount) { RemoteSession() }
+        session.lines.clear()
+        val outcome = CompletableFuture<Outcome>()
+        world.execute {
+            runCatching {
+                val actor = world.remoteActor(op.actorAccount, op.actorName, op.actorRank, session)
+                content.runRemote(actor, op.args.trim().removePrefix("::"))
+            }.fold(outcome::complete, outcome::completeExceptionally)
+        }
+        val result = outcome.get(WORLD_WAIT_MS, TimeUnit.MILLISECONDS)
+        val pending =
+            result is Outcome.Ran && result.result is CommandResult.Pending
+        val failed =
+            result is Outcome.Refused ||
+                result is Outcome.Unknown ||
+                (result is Outcome.Ran && result.result is CommandResult.Failed)
+        val sent = forward(op, session, pending)
+        val end =
+            when {
+                result is Outcome.Dropped -> "Too many commands; slow down."
+                result is Outcome.AwaitingConfirm -> "Waiting: send ::confirm to run it."
+                pending && sent == 0 -> "Sent; no reply yet (the hub may still be working)."
+                failed -> "Refused."
+                else -> "Done."
+            }
+        reply(op, end, done = true, error = failed || result is Outcome.Dropped)
+    }
+
+    /** Sends the actor's chat lines to the panel; a Pending command also gets its later hub reply. Returns the count. */
+    private fun forward(op: WorldOp, session: RemoteSession, pending: Boolean): Int {
+        var sent = 0
+        while (true) {
+            val line = session.lines.poll() ?: break
+            reply(op, ChatMarkup.plain(line))
+            sent++
+        }
+        if (!pending) return sent
+        val deadline = System.currentTimeMillis() + PENDING_WAIT_MS
+        while (System.currentTimeMillis() < deadline) {
+            val line = session.lines.poll(if (sent == 0) PENDING_WAIT_MS else QUIET_MS, TimeUnit.MILLISECONDS) ?: break
+            reply(op, ChatMarkup.plain(line))
+            sent++
+        }
+        return sent
     }
 
     private fun file(prefix: String, ext: String): Path =
@@ -157,6 +237,7 @@ internal class WorldOpsHandler(private val world: World, private val hub: HubSer
     override fun close() {
         recording?.close()
         pool.shutdownNow()
+        commands.shutdownNow()
     }
 
     private companion object {
@@ -173,7 +254,50 @@ internal class WorldOpsHandler(private val world: World, private val hub: HubSer
         const val DEFAULT_TICKS = 100
         const val MAX_TICKS = 1_000
 
+        /** How long the world thread may take to run one panel command (a few ticks at most). */
+        const val WORLD_WAIT_MS = 5_000L
+
+        /** A Pending command's hub reply: up to 5 s for the first line, then 300 ms of quiet ends it (our values). */
+        const val PENDING_WAIT_MS = 5_000L
+        const val QUIET_MS = 300L
+
         /** Game tick length (brief §5.3: 600 ms). */
         const val TICK_MS = 600L
     }
+}
+
+/**
+ * The panel actor's "client" (panel brief §3): it has no game screen, so it keeps only chat lines, for the panel to
+ * show. Every other message is dropped. Lines are added on the world thread and read by the ops thread.
+ */
+internal class RemoteSession : ClientSession {
+    val lines = LinkedBlockingQueue<String>(MAX_LINES)
+
+    override val isOpen: Boolean get() = true
+
+    override fun pollCommands(sink: (ClientCommand) -> Unit) = Unit
+
+    override fun beginGame(state: AvatarState) = Unit
+
+    override fun send(message: ServerMessage) {
+        if (message is ServerMessage.GameMessage) lines.offer(message.text)
+    }
+
+    override fun syncAvatar(coord: AvatarState) = Unit
+
+    override fun flushInfos() = Unit
+
+    override fun close() = Unit
+
+    private companion object {
+        /** Bounds one command's output (the longest lists, `::audit`, are far below this). */
+        const val MAX_LINES = 500
+    }
+}
+
+/** Chat markup out of a line for the panel (it escapes the rest as HTML itself). */
+internal object ChatMarkup {
+    private val TAG = Regex("<(/?col(=[0-9a-fA-F]{6})?|/?shad(=[0-9a-fA-F]{6})?|br|img=\\d+|/?u|/?str)>")
+
+    fun plain(line: String): String = TAG.replace(line, "").replace("<lt>", "<").replace("<gt>", ">")
 }

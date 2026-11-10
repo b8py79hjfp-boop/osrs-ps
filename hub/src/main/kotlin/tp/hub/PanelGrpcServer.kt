@@ -15,6 +15,8 @@ import tp.services.grpc.AuditQuery
 import tp.services.grpc.AuditRowPb
 import tp.services.grpc.AuditRows
 import tp.services.grpc.BootstrapOwnerRequest
+import tp.services.grpc.ChatRowPb
+import tp.services.grpc.ChatRows
 import tp.services.grpc.ErrorReply
 import tp.services.grpc.HistoryReply
 import tp.services.grpc.LinesReply
@@ -115,6 +117,7 @@ class PanelGrpcServer(
             fun reply(result: String) = VerifyStaffReply.newBuilder().setResult(result).build()
             val name = request.username.trim()
             val key = "acct:${name.lowercase()}"
+            val what = if (request.recheck) "panel password check" else "panel login"
             if (name.isEmpty() || name.length > MAX_NAME) return reply(INVALID)
             if (hub.failures.count("ip:${request.ip}") >= hub.maxFailuresPerIp ||
                 hub.failures.count(key) >= hub.maxFailuresPerAccount
@@ -132,7 +135,7 @@ class PanelGrpcServer(
             if (row == null || !hub.db { hub.hashing { Passwords.verify(request.password, row.passwordHash) } }) {
                 hub.failures.add("ip:${request.ip}")
                 hub.failures.add(key)
-                hub.db { hub.store.auditEntry(name, "panel login", name, "", SOURCE, request.ip, "failed") }
+                hub.db { hub.store.auditEntry(name, what, name, "", SOURCE, request.ip, "failed") }
                 return reply(INVALID)
             }
             if (row.bannedUntil < 0 || row.bannedUntil > System.currentTimeMillis()) return reply(BANNED)
@@ -140,10 +143,10 @@ class PanelGrpcServer(
             // logging in to the game (commands brief §1: once per account, audited).
             val rank = hub.withBootstrap(row, name).rights
             if (!rank.isStaff) {
-                hub.db { hub.store.auditEntry(row.displayName, "panel login", row.displayName, "", SOURCE, request.ip, "not staff") }
+                hub.db { hub.store.auditEntry(row.displayName, what, row.displayName, "", SOURCE, request.ip, "not staff") }
                 return reply(NOT_STAFF)
             }
-            hub.db { hub.store.auditEntry(row.displayName, "panel login", row.displayName, rank.stored, SOURCE, request.ip, "ok") }
+            hub.db { hub.store.auditEntry(row.displayName, what, row.displayName, rank.stored, SOURCE, request.ip, "ok") }
             return VerifyStaffReply
                 .newBuilder()
                 .setResult(OK)
@@ -431,9 +434,8 @@ class PanelGrpcServer(
                     close()
                     return@callbackFlow
                 }
-                if (request.kind != "command") {
-                    audit(row, request.actor, "panel ${request.kind}", "world ${request.worldId}", request.args, "requested")
-                }
+                // The world audits the command itself (source=panel); this row carries the panel's IP.
+                audit(row, request.actor, "panel ${request.kind}", "world ${request.worldId}", request.args, "requested")
                 val id =
                     hub.routeWorldOp(request.worldId, request.kind, row, request.args) { l ->
                         trySend(
@@ -472,6 +474,25 @@ class PanelGrpcServer(
                 )
             }
             return err(null)
+        }
+
+        override suspend fun recentChat(request: PanelActor): ChatRows {
+            val (row, refused) = actor(request, Rank.MODERATOR)
+            if (row == null) return ChatRows.newBuilder().setError(refused).build()
+            return ChatRows
+                .newBuilder()
+                .addAllRows(
+                    hub.recentChat().map {
+                        ChatRowPb
+                            .newBuilder()
+                            .setAtMs(it.atMs)
+                            .setKind(it.kind)
+                            .setFrom(it.from)
+                            .setWorldId(it.worldId)
+                            .setText(it.text)
+                            .build()
+                    },
+                ).build()
         }
 
         override suspend fun listStaff(request: PanelActor): StaffRows {

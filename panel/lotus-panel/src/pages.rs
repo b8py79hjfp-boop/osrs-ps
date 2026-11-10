@@ -313,6 +313,8 @@ async fn players(
 }
 
 pub struct RecordRow {
+    /// The record type as the game names it (`yell_mute`), for lift and extend.
+    pub code: String,
     pub kind: String,
     pub actor: String,
     pub reason: String,
@@ -329,6 +331,7 @@ fn record_row(r: &crate::hub::ModRecord, now_ms: i64) -> RecordRow {
         "MUTE" | "YELL_MUTE" | "JAIL" | "BAN" | "IP_BAN" | "DEVICE_BAN"
     );
     RecordRow {
+        code: r.kind.to_lowercase(),
         kind: r.kind.to_lowercase().replace('_', " "),
         actor: r.actor.clone(),
         reason: r.reason.clone(),
@@ -365,6 +368,8 @@ struct PlayerCardPage {
     muted: String,
     jailed: String,
     banned: String,
+    /// (command, timed) the viewer's rank offers (brief §5: the game decides again).
+    actions: Vec<(&'static str, bool)>,
 }
 
 fn until(ms: i64, now_ms: i64) -> String {
@@ -428,6 +433,11 @@ async fn player_card(
         muted,
         jailed,
         banned,
+        actions: crate::actions::SANCTIONS
+            .iter()
+            .filter(|a| s.rank >= a.1)
+            .map(|a| (a.0, a.2))
+            .collect(),
     };
     render(StatusCode::OK, &page)
 }

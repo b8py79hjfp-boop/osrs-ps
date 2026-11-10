@@ -32,6 +32,20 @@
   {% if notes.is_empty() %}<p class="muted">None.</p>{% endif %}
   <ul class="rows">{% for r in notes %}<li><div>{{ r.reason }}<div class="muted small">{{ r.actor }} · {{ r.start }}</div></div></li>{% endfor %}</ul>
 </section>
+<section class="card wide">
+  <h2>Act on {{ name }}</h2>
+  <p class="muted small">Runs the game command as you (same rules as in game); the result opens in the console. Bans ask for your password.</p>
+  <form method="post" action="/players/{{ name|urlencode }}/act" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <div class="inline">
+      <label>Action <select name="action">{% for a in actions %}<option value="{{ a.0 }}">{{ a.0 }}{% if a.1 %} (timed){% endif %}</option>{% endfor %}</select></label>
+      <label>Duration <input name="duration" maxlength="8" placeholder="1h, 7d, perm"></label>
+    </div>
+    <label>Reason or note <input name="reason" maxlength="200"></label>
+    {% if admin %}<label>Your password (bans only) <input name="password" type="password" autocomplete="current-password" maxlength="20"></label>{% endif %}
+    <button type="submit">Run</button>
+  </form>
+</section>
 {% if admin %}
 <section class="card wide">
   <p class="min-rank">Administrator and above · every view is audited</p>

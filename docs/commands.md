@@ -41,6 +41,8 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::checkbank` | `::checkbank <player>` | — | MODERATION | yes | Read-only view of an online player's bank. (cross-world) |
 | `::checkequip` | `::checkequip <player>` | — | MODERATION | yes | Read-only view of an online player's equipment. (cross-world) |
 | `::checkinv` | `::checkinv <player>` | — | MODERATION | yes | Read-only view of an online player's inventory. (cross-world) |
+| `::claimticket` | `::claimticket <id> [off]` | — | MODERATION | — | Claims a help ticket, or releases it with off. |
+| `::closeticket` | `::closeticket <id> [note…]` | — | MODERATION | — | Closes a help ticket; the note is shown to the player. |
 | `::history` | `::history <player>` | — | MODERATION | yes | Shows the player's moderation record. (cross-world) |
 | `::jail` | `::jail <player> <duration> <reason…>` | — | MODERATION | yes | Sends the player to the jail with no way out until it expires; applied at their next login if offline. (cross-world) |
 | `::kick` | `::kick <player> [reason…]` | — | MODERATION | yes | Logs the player out. Works cross-world. (cross-world) |
@@ -52,6 +54,7 @@ raise or lower a command's rank, or disable it; impact classes it does not enabl
 | `::sc` | `::sc <message…>` | `::staffchat` | SOCIAL | — | Sends a line to every member of staff online, on every world. |
 | `::teleto` | `::teleto <player>` | `::goto` | MODERATION | yes | Teleports you to the player; on another world, offers a hop first. (cross-world) |
 | `::teletome` | `::teletome <player>` | `::bring` | MODERATION | yes | Brings the player to you (same world); ::return sends them back. (cross-world) |
+| `::tickets` | `::tickets` | — | MODERATION | — | Lists this world's open help tickets. |
 | `::unjail` | `::unjail <player> [reason…]` | — | MODERATION | yes | Releases a jailed player. (cross-world) |
 | `::unmute` | `::unmute <player> [reason…]` | — | MODERATION | yes | Lifts a mute. (cross-world) |
 | `::unyellmute` | `::unyellmute <player> [reason…]` | — | MODERATION | yes | Lifts a yell mute. (cross-world) |

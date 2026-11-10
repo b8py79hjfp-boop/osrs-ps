@@ -286,7 +286,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val answer = call("moderate") { listOf(hub.moderation.apply(account, target, sanction, durationMs, reason)) }
             val result = if (answer == null) "The hub did not answer." else answer[0]
-            world.execute { if (world.playerByAccount(account) === player) reply(result) }
+            world.execute { if (world.stillHere(account, player)) reply(result) }
         }
     }
 
@@ -296,9 +296,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val a = call("history") { hub.moderation.history(account, target) }
             world.execute {
-                if (world.playerByAccount(account) ===
-                    player
-                ) {
+                if (world.stillHere(account, player)) {
                     reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value.orEmpty())
                 }
             }
@@ -311,9 +309,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val a = call("investigate") { hub.moderation.investigate(account, target, kind, filter) }
             world.execute {
-                if (world.playerByAccount(account) ===
-                    player
-                ) {
+                if (world.stillHere(account, player)) {
                     reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value.orEmpty())
                 }
             }
@@ -337,9 +333,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val a = call("donation") { hub.moderation.recordDonation(account, target, cents, note) }
             world.execute {
-                if (world.playerByAccount(account) ===
-                    player
-                ) {
+                if (world.stillHere(account, player)) {
                     reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value)
                 }
             }
@@ -356,7 +350,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val a = call(what) { listOf(block(account)) }
             val result = if (a == null) "The hub did not answer." else a[0]
-            world.execute { if (world.playerByAccount(account) === player) reply(result) }
+            world.execute { if (world.stillHere(account, player)) reply(result) }
         }
     }
 
@@ -366,9 +360,7 @@ class HubAccountBridge(private val hub: HubServices, private val worldId: Int, p
         io.execute {
             val a = call("lookup") { hub.moderation.lookup(account, target) }
             world.execute {
-                if (world.playerByAccount(account) ===
-                    player
-                ) {
+                if (world.stillHere(account, player)) {
                     reply(a?.error ?: if (a == null) "The hub did not answer." else null, a?.value)
                 }
             }

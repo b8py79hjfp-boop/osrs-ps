@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Worlds · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Worlds</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  {% if let Some(m) = all_locked %}<p class="notice">Every world is locked ({{ m }}). Only staff can log in.</p>{% endif %}
+  <ul class="rows">
+    {% for w in worlds %}<li><div><strong>World {{ w.id }}</strong> <span class="state {% if w.online %}ok{% else %}down{% endif %}">{% if w.online %}online{% else %}not connected{% endif %}</span>
+      <div class="muted small">{{ w.players }} players{% if w.locked %} · locked{% if !w.message.is_empty() %} ({{ w.message }}){% endif %}{% endif %}</div></div>
+      <form method="post" action="/worlds/lock" class="inline">
+        <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+        <input type="hidden" name="world" value="{{ w.id }}">
+        {% if w.locked %}<button type="submit" name="locked" value="off" class="secondary">Unlock logins</button>
+        {% else %}<input name="message" maxlength="30" placeholder="Maintenance" aria-label="World list message"><button type="submit" name="locked" value="on" class="secondary">Lock logins</button>{% endif %}
+      </form></li>{% endfor %}
+  </ul>
+  <p class="muted small">Start, stop and restart are on the <a href="/control">Server</a> page.</p>
+</section>
+<section class="card wide">
+  <h2>Turn a command on or off</h2>
+  <p class="muted small">Until that world restarts (<code>::command</code>). The game never turns an economy command on.</p>
+  <form method="post" action="/worlds/command" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <select name="world" aria-label="World">{% for w in worlds %}<option value="{{ w.id }}">World {{ w.id }}</option>{% endfor %}</select>
+    <select name="action" aria-label="Enable or disable"><option value="disable">Disable</option><option value="enable">Enable</option></select>
+    <input name="command" maxlength="32" placeholder="yell" required aria-label="Command">
+    <button type="submit" class="secondary">Apply</button>
+  </form>
+</section>
+{% endblock %}

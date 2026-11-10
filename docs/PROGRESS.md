@@ -274,8 +274,16 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   sanctions by type and staff), metrics (scraped every 15 s, 1-minute rows after 24 h, 30 days; SVG charts with budget
   lines), logs (per service, level/text/time filters, live tail over SSE, escaped) and the audit log (filters, paging,
   CSV with formula cells defused). Worlds now export GC, uptime and build metrics.
-- [ ] Phase 6: actions through the game (console, moderation actions, broadcast, world lock, staff ranks, tickets).
-- Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
+- [x] Phase 6 (2026-11-10): actions through the game (D-101). The hub routes a `command` world op to the target's
+  world (or any world); the world runs the line for a remote stand-in of the staff member (`World.remoteActor`: never
+  in the player list) through the typed-command pipeline as `Source.PANEL`, which runs only commands marked `remote`
+  and never ECONOMY or CONVENIENCE ones, and returns the chat replies. Pages: console (output over SSE, memory only),
+  player-card actions (bans and rank changes ask for the password again), lift/extend on the moderation page, help
+  tickets (new `::tickets`, `::claimticket`, `::closeticket`), chat (hub keeps the last 300 yell/staff/broadcast
+  lines) and broadcast, worlds (per-world login lock, command toggles), staff ranks (`::setrank`). Password re-checks
+  are audited as such, not as logins. Checked end to end against a PostgreSQL hub and a world node.
+- [ ] Phase 7: deploys (releases, minisign, migrations with backup, rollback; test 4).
+- [ ] Phases 8–9: backups and alerts; operations.md, verifier review, staging run.
 
 ## Next
 

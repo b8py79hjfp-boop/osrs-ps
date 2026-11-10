@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Console · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Console</h1>
+  <p class="muted small">Runs a game command as you, through the same rules as typing it in game: your rank, who you may target, the world's policy and the audit log. Only commands that don't need you standing in the game work here; nothing creates items, coins or XP.</p>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  <form method="post" action="/console/run" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <div class="inline">
+      <label>World <select name="world"><option value="0">Any</option>{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select></label>
+    </div>
+    <label>Command <input name="line" value="{{ line }}" maxlength="300" placeholder="::lookup Big_Bob" autocomplete="off" required autofocus></label>
+    <button type="submit">Run</button>
+  </form>
+</section>
+{% if let Some(r) = run %}
+<section class="card wide">
+  <h2>{{ r.1 }}</h2>
+  <div class="console" hx-ext="sse" sse-connect="/events/console/{{ r.0 }}" sse-swap="line" sse-close="done" hx-swap="beforeend"></div>
+</section>
+{% endif %}
+{% if !recent.is_empty() %}
+<section class="card wide">
+  <h2>Your recent commands</h2>
+  <ul class="rows">{% for c in recent %}<li><a href="/console?run={{ c.0 }}">{{ c.1 }}</a><span class="muted small">{% if c.2 %}finished{% else %}running{% endif %}</span></li>{% endfor %}</ul>
+  <p class="muted small">Output is kept in memory for 10 minutes and never stored.</p>
+</section>
+{% endif %}
+{% endblock %}

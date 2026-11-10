@@ -62,6 +62,67 @@ internal fun ContentScope.tickets() {
         val text = text("message")
         signature(text) { ctx -> openTicket(ctx.player, ctx[text]) }
     }
+    staffTicketCommands()
+}
+
+/**
+ * The staff side as commands (panel brief §4 Moderation: the panel's ticket queue runs through the pipeline like every
+ * panel action). `::tickets` prints one line per ticket in a fixed form, `#id | owner | open or claimer | minutes | text`,
+ * which the panel reads; the same actions exist in the Tickets tab.
+ */
+private fun ContentScope.staffTicketCommands() {
+    command("tickets", STAFF_RANK, Category.MODERATION, Impact.MODERATION) {
+        description("Lists this world's open help tickets.")
+        example("::tickets")
+        remote = true
+        signature { ctx ->
+            val open =
+                ctx.player
+                    .ticketBoard()
+                    .open.values
+            if (open.isEmpty()) return@signature ctx.done("No open tickets.")
+            for (t in open) {
+                val minutes = (ctx.player.tick - t.openedTick) * MS_PER_TICK / MS_PER_MINUTE
+                val by = t.claimedBy.ifEmpty { "open" }
+                ctx.player.message("#${t.id} | ${Tags.escape(t.owner)} | ${Tags.escape(by)} | $minutes | ${Tags.escape(t.text)}")
+            }
+            ctx.done()
+        }
+    }
+    command("claimticket", STAFF_RANK, Category.MODERATION, Impact.MODERATION) {
+        description("Claims a help ticket, or releases it with off.")
+        example("::claimticket 3", "::claimticket 3 off")
+        remote = true
+        val id = int("id", min = 1)
+        val off = choice("off", "off", optional = true)
+        signature(id, off) { ctx ->
+            val t = ctx.player.ticketBoard().open[ctx[id]] ?: return@signature ctx.fail("There is no open ticket #${ctx[id]}.")
+            val take = ctx.opt(off) == null
+            if (take && t.claimedBy.isNotEmpty()) return@signature ctx.fail("Ticket #${t.id} is claimed by ${Tags.escape(t.claimedBy)}.")
+            t.claimedBy = if (take) ctx.player.username else ""
+            ctx.done(if (take) "You claimed ticket #${t.id}." else "Released ticket #${t.id}.")
+        }
+    }
+    command("closeticket", STAFF_RANK, Category.MODERATION, Impact.MODERATION) {
+        description("Closes a help ticket; the note is shown to the player.")
+        example("::closeticket 3 the door is fixed now")
+        remote = true
+        val id = int("id", min = 1)
+        val note = text("note", optional = true)
+        signature(id, note) { ctx ->
+            val t =
+                ctx.player
+                    .ticketBoard()
+                    .open
+                    .remove(ctx[id]) ?: return@signature ctx.fail("There is no open ticket #${ctx[id]}.")
+            val text = typedText(ctx.opt(note).orEmpty(), MAX_TICKET_CHARS)
+            val by = Tags.escape(ctx.player.username)
+            ctx.player
+                .onlinePlayer(t.owner)
+                ?.message("Your help ticket #${t.id} was closed by $by${if (text.isEmpty()) "." else ": ${Tags.escape(text)}"}")
+            ctx.done("Closed ticket #${t.id}.")
+        }
+    }
 }
 
 private fun openTicket(p: PlayerRef, raw: String): CommandResult {

@@ -64,7 +64,7 @@ Typed commands and interface clicks run through the same pipeline (§4):
 6. **Run:** the command runs on the world thread, in the input phase. Hub work replies through the pre-tick inbox.
 7. **Audit:** moderator-and-above commands, and sensitive player commands with their arguments redacted, go to the
    hub's append-only audit log. Each row records actor, rank, command, arguments, target, world, tick, outcome and
-   source (typed or interface).
+   source (typed, interface or panel).
 
 ## Moderation
 
@@ -98,6 +98,9 @@ Typed commands and interface clicks run through the same pipeline (§4):
 
 - **Rank is checked on the server for every execution.** Interface buttons carry no rights; a guided run is a command
   line dispatched as `Source.INTERFACE`.
+- **The control panel** runs a line as `Source.PANEL` for a remote stand-in of the signed-in staff member with the
+  rank the hub checked. Only commands marked `remote` (no position, inventory or interface needed) run that way, and
+  never ECONOMY or CONVENIENCE ones (D-101).
 - **Escaping.** Everything user-typed is escaped before it is shown (yells, reasons, notes, names), so `<col>`,
   `<img>` and `<br>` can't fake a crown or a rank tag.
 - **Privacy.** IP addresses, device ids and alt links are administrator-only, audited on every view, and never shown

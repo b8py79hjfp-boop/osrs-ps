@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Chat · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Chat</h1>
+  <p class="muted small">The latest yell, staff chat and broadcasts across every world, newest first. The hub keeps them in memory only, so a hub restart clears them.</p>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  <p><a href="/chat" class="button-link">Refresh</a></p>
+  {% if rows.is_empty() %}<p class="muted">Nothing yet.</p>{% endif %}
+  <ul class="rows">{% for c in rows %}<li><div><span class="badge">{{ c.kind }}</span> {% if !c.from.is_empty() %}<strong>{{ c.from }}</strong>{% endif %}{% if c.world != 0 %} <span class="muted small">world {{ c.world }}</span>{% endif %}<div>{{ c.text }}</div></div><span class="muted small">{{ c.at }}</span></li>{% endfor %}</ul>
+</section>
+{% if can_broadcast %}
+<section class="card wide">
+  <p class="min-rank">Administrator and above</p>
+  <h2>Send a broadcast</h2>
+  <form method="post" action="/chat/broadcast" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Where <select name="world"><option value="0">Every world</option>{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select></label>
+    <label>Message <input name="text" maxlength="200" required></label>
+    <button type="submit">Broadcast</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

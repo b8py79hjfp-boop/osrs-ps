@@ -19,8 +19,11 @@ public enum class AuditLevel {
     FULL,
 }
 
-/** Where an invocation came from: typed in chat, or built by the `::commands` interface (§4: otherwise identical). */
-public enum class Source { TYPED, INTERFACE }
+/**
+ * Where an invocation came from: typed in chat, built by the `::commands` interface (§4: otherwise identical), or sent
+ * from the control panel's console (panel brief §3: only commands marked [CommandBuilder.remote]).
+ */
+public enum class Source { TYPED, INTERFACE, PANEL }
 
 /** What a handler reports; the pipeline turns it into the one-line reply and the audit outcome (§4). */
 public sealed interface CommandResult {
@@ -86,6 +89,8 @@ public class CommandDef internal constructor(
     public val owner: String,
     /** Whether the world's config offers the command at all (e.g. `::discord` only with a configured URL). */
     public val available: (tp.util.commands.CommandsConfig) -> Boolean,
+    /** Runs from the panel console: needs no position, inventory or interface of its actor (panel brief §3). */
+    public val remote: Boolean = false,
 ) {
     /** `::name <a> [b]` for each signature. */
     public val usages: List<String> get() = signatures.map(::usageOf)
@@ -111,6 +116,12 @@ public class CommandBuilder internal constructor(
     public var confirm: Boolean = false
     public var cooldownTicks: Int = 0
     public var audit: AuditLevel = if (rank.isStaff) AuditLevel.FULL else AuditLevel.NONE
+
+    /**
+     * The panel console may run it (panel brief §3): the handler needs no body (position, inventory, interfaces) of its
+     * actor. Never set on a command that creates items, coins or XP (ECONOMY is refused regardless).
+     */
+    public var remote: Boolean = false
     private var predicate: ((PlayerRef) -> String?)? = null
     private var available: (tp.util.commands.CommandsConfig) -> Boolean = { true }
 
@@ -203,6 +214,7 @@ public class CommandBuilder internal constructor(
             predicate,
             owner,
             available,
+            remote,
         )
 }
 

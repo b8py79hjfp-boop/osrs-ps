@@ -136,6 +136,16 @@ pub struct AuditRow {
     pub result: String,
 }
 
+/// One line of the hub's recent chat (brief §4 Chat & broadcast): `yell`, `staff` or `broadcast`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChatLine {
+    pub at_ms: i64,
+    pub kind: String,
+    pub from: String,
+    pub world: i32,
+    pub text: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StaffMember {
     pub account_id: i64,
@@ -184,6 +194,10 @@ pub struct AuditEntry<'a> {
 #[async_trait]
 pub trait HubApi: Send + Sync {
     async fn verify_staff(&self, username: &str, password: &str, ip: &str) -> Result<Verified, HubError>;
+    /// The password asked again before a dangerous action: the same check, audited as a re-check, not a sign-in.
+    async fn recheck_password(&self, username: &str, password: &str, ip: &str) -> Result<Verified, HubError> {
+        self.verify_staff(username, password, ip).await
+    }
     async fn get_rank(&self, account_id: i64) -> Result<RankInfo, HubError>;
     async fn audit(&self, entry: AuditEntry<'_>) -> Result<(), HubError>;
     async fn bootstrap_owner(&self, username: &str) -> Result<(), HubError>;
@@ -252,6 +266,9 @@ pub trait HubApi: Send + Sync {
     async fn list_staff(&self, _actor: &Actor) -> Result<Vec<StaffMember>, HubError> {
         unsupported()
     }
+    async fn recent_chat(&self, _actor: &Actor) -> Result<Vec<ChatLine>, HubError> {
+        unsupported()
+    }
 }
 
 fn actor_pb(a: &Actor) -> pb::PanelActor {
@@ -266,6 +283,35 @@ pub struct GrpcHub {
 }
 
 impl GrpcHub {
+    async fn verify(&self, username: &str, password: &str, ip: &str, recheck: bool) -> Result<Verified, HubError> {
+        let req = pb::VerifyStaffRequest {
+            username: username.to_owned(),
+            password: password.to_owned(),
+            ip: ip.to_owned(),
+            recheck,
+        };
+        let reply = self
+            .client()
+            .verify_staff(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        Ok(match reply.result.as_str() {
+            "OK" => match Rank::parse(&reply.rank) {
+                Some(rank) => Verified::Ok {
+                    account_id: reply.account_id,
+                    display_name: reply.display_name,
+                    rank,
+                },
+                None => Verified::NotStaff,
+            },
+            "THROTTLED" => Verified::Throttled,
+            "BANNED" => Verified::Banned,
+            "NOT_STAFF" => Verified::NotStaff,
+            _ => Verified::InvalidCredentials,
+        })
+    }
+
     /// A lazily connecting channel: the panel starts (and shows the hub as down) even while the hub is stopped.
     pub fn connect(endpoint: &str, ca: &Path, cert: &Path, key_pem: &str) -> anyhow::Result<Self> {
         let tls = ClientTlsConfig::new()
@@ -301,31 +347,11 @@ fn refused(error: String) -> Result<(), HubError> {
 #[async_trait]
 impl HubApi for GrpcHub {
     async fn verify_staff(&self, username: &str, password: &str, ip: &str) -> Result<Verified, HubError> {
-        let req = pb::VerifyStaffRequest {
-            username: username.to_owned(),
-            password: password.to_owned(),
-            ip: ip.to_owned(),
-        };
-        let reply = self
-            .client()
-            .verify_staff(req)
-            .await
-            .map_err(|s| unavailable(&s))?
-            .into_inner();
-        Ok(match reply.result.as_str() {
-            "OK" => match Rank::parse(&reply.rank) {
-                Some(rank) => Verified::Ok {
-                    account_id: reply.account_id,
-                    display_name: reply.display_name,
-                    rank,
-                },
-                None => Verified::NotStaff,
-            },
-            "THROTTLED" => Verified::Throttled,
-            "BANNED" => Verified::Banned,
-            "NOT_STAFF" => Verified::NotStaff,
-            _ => Verified::InvalidCredentials,
-        })
+        self.verify(username, password, ip, false).await
+    }
+
+    async fn recheck_password(&self, username: &str, password: &str, ip: &str) -> Result<Verified, HubError> {
+        self.verify(username, password, ip, true).await
     }
 
     async fn get_rank(&self, account_id: i64) -> Result<RankInfo, HubError> {
@@ -685,6 +711,26 @@ impl HubApi for GrpcHub {
                 name: m.name,
                 rank: Rank::parse(&m.rank).unwrap_or(Rank::Player),
                 world: m.world_id,
+            })
+            .collect())
+    }
+
+    async fn recent_chat(&self, actor: &Actor) -> Result<Vec<ChatLine>, HubError> {
+        let r = self
+            .client()
+            .recent_chat(actor_pb(actor))
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        check(r.error)?;
+        Ok(r.rows
+            .into_iter()
+            .map(|c| ChatLine {
+                at_ms: c.at_ms,
+                kind: c.kind,
+                from: c.from,
+                world: c.world_id,
+                text: c.text,
             })
             .collect())
     }

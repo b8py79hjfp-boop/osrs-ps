@@ -12,6 +12,7 @@ internal object CoreCommands {
             description("Runs the destructive command waiting for confirmation (within 30 seconds).")
             example("::confirm")
             audit = AuditLevel.NONE
+            remote = true
             signature { ctx ->
                 val content = ctx.player.p.world.content as? PluginContent
                 content?.dispatcher?.confirm(ctx.player)

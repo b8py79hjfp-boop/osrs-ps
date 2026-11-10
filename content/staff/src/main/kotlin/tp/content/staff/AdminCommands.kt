@@ -37,6 +37,7 @@ public class AdminCommands : ContentPlugin {
         }
         command("freeze", Rank.ADMINISTRATOR, Category.ADMINISTRATION, Impact.MODERATION) {
             description("Stops the player moving while you investigate.")
+            remote = true
             example("::freeze Big_Bob")
             target()
             val who = player("player")
@@ -50,6 +51,7 @@ public class AdminCommands : ContentPlugin {
         }
         command("unfreeze", Rank.ADMINISTRATOR, Category.ADMINISTRATION, Impact.MODERATION) {
             description("Lets a frozen player move again.")
+            remote = true
             example("::unfreeze Big_Bob")
             target()
             val who = player("player")
@@ -81,6 +83,7 @@ public class AdminCommands : ContentPlugin {
         }
         command("broadcast", Rank.ADMINISTRATOR, Category.ADMINISTRATION, Impact.OPERATIONS) {
             description("A game broadcast on this world; end with --all for every world.")
+            remote = true
             example("::broadcast Double xp starts in 10 minutes --all")
             val text = text("message")
             signature(text) { ctx ->
@@ -97,6 +100,7 @@ public class AdminCommands : ContentPlugin {
     private fun ContentScope.investigation(name: String, kind: String, description: String, title: String) {
         command(name, Rank.ADMINISTRATOR, Category.ADMINISTRATION, Impact.MODERATION) {
             description("$description Audited.")
+            remote = true
             example("::$name Big_Bob")
             target()
             crossWorld = true

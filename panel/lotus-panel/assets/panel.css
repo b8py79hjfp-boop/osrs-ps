@@ -68,3 +68,5 @@ svg.chart .budget { stroke: var(--down); stroke-width: 1; stroke-dasharray: 4 4;
 .wide-wrap { display: grid; gap: 1rem; }
 main:has(.wide-wrap) { max-width: 52rem; }
 h3 { margin: .6rem 0 .3rem; font-size: .95rem; }
+.console { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .8rem; font: .9rem/1.45 ui-monospace, Consolas, monospace; display: grid; gap: .2rem; min-height: 3rem; overflow-wrap: anywhere; }
+.console .error { padding: .2rem .5rem; }

@@ -27,6 +27,7 @@ public class RaidCommands : ContentPlugin {
         command("raids", Rank.OWNER, Category.RAIDS, Impact.OPERATIONS) {
             description("Lists this world's active runs: raid, mode, party, room, elapsed time and run id.")
             example("::raids")
+            remote = true
             signature { ctx -> list(ctx.player) }
         }
         command("raid", Rank.OWNER, Category.RAIDS, Impact.OPERATIONS) {

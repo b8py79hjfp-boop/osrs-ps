@@ -16,11 +16,20 @@ public class CommandListView(public val player: PlayerRef, public val title: Str
     }
 }
 
+/** A staff member acting from the control panel: no body in the world, replies go to the panel (panel brief §3). */
+public val PlayerRef.isRemote: Boolean get() = p.remote
+
 /**
  * Shows [rows] under [title]: in the interface, or the first rows in chat. A [private] list (IP addresses, device
  * ids, alt links: commands brief §8) never falls back to chat.
  */
 public fun PlayerRef.showList(title: String, rows: List<String>, private: Boolean = false) {
+    if (isRemote) {
+        // The panel shows every row to the signed-in actor only (panel brief §3); no interface to open.
+        message("$title (${rows.size}):")
+        rows.forEach(::message)
+        return
+    }
     val view = CommandListView(this, title, rows)
     events.publish(view)
     if (view.handled) return

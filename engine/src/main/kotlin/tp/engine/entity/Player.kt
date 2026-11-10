@@ -60,6 +60,13 @@ class Player internal constructor(
     /** Staff rank (commands brief §1), set at login and changed live through the hub. */
     var rank: tp.util.Rank = tp.util.Rank.PLAYER
 
+    /**
+     * A staff member acting from the control panel (panel brief §3 ExecuteCommand): never in the world's player list,
+     * never indexed or saved; its session only collects the replies. Content that needs a body checks this.
+     */
+    var remote: Boolean = false
+        internal set
+
     /** Hidden staff (`::invisible`, commands brief §1): left out of player lists for lower ranks. */
     var invisible: Boolean = false
 

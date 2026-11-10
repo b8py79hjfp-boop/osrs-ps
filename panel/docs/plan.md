@@ -164,7 +164,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - test 3 (`control`) passes.
 5. **Read-only pages.** Done 2026-11-10 (tickets and reports: phase 6 / OPEN).
    - Done when the dashboard (SSE), players, moderation, metrics, logs and audit pages work at phone width.
-6. **Actions.**
+6. **Actions.** Done 2026-11-10 (D-101: tickets stay on their world, reached through `::tickets`; no report queue).
    - Done when:
      - ExecuteCommand (#13) and the remote actor are in place;
      - the console, moderation actions, broadcast, world lock and staff ranks work;

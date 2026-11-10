@@ -342,6 +342,7 @@ impl Harness {
             domain: "panel.test".into(),
             metrics: Arc::new(lotus_panel::metrics::MemoryMetrics::default()),
             alerts: alerts.clone(),
+            console: Arc::default(),
         };
         Self {
             app: router(Arc::new(state)),

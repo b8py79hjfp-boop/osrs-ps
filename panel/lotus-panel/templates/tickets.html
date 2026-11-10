@@ -1,0 +1,15 @@
+{% for e in errors %}<p class="error">{{ e }}</p>{% endfor %}
+{% if tickets.is_empty() %}<p class="muted">No open tickets.</p>{% endif %}
+<ul class="rows">
+  {% for t in tickets %}<li><div><a href="/players/{{ t.owner|urlencode }}"><strong>{{ t.owner }}</strong></a> · world {{ t.world }} · #{{ t.id }} · {{ t.minutes }} min ago{% if !t.claimed_by.is_empty() %} · <span class="badge">claimed by {{ t.claimed_by }}</span>{% endif %}
+    <div>{{ t.text }}</div></div>
+    <form method="post" action="/moderation/tickets" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="world" value="{{ t.world }}">
+      <input type="hidden" name="id" value="{{ t.id }}">
+      {% if t.claimed_by.is_empty() %}<button type="submit" name="action" value="claim" class="secondary">Claim</button>
+      {% else if t.claimed_by == me %}<button type="submit" name="action" value="release" class="secondary">Release</button>{% endif %}
+      <input name="note" maxlength="200" placeholder="Closing note" aria-label="Closing note">
+      <button type="submit" name="action" value="close" class="secondary">Close</button>
+    </form></li>{% endfor %}
+</ul>
