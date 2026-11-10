@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE panel.sessions SET rank = $2, rank_checked_at = $3 WHERE id_hash = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3fc8ba279ab064400a1c6e0e17781e2543250d47d7e1e892b788fbb751dbcc68"
+}

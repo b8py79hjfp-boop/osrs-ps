@@ -4,14 +4,7 @@
 //! - `certs`: the panel ↔ hub mTLS certificates.
 //! - `secret set <name>`: store a secret (value read from standard input).
 //! - `check`: validate the config, the secrets, the database and the hub link, for the install script.
-
-mod certs;
-mod config;
-mod db;
-mod hub;
-mod net;
-mod secrets;
-mod web;
+//! - `bootstrap --account <name>`: make the first owner (only while there is none; brief §2, run on the VPS).
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -19,6 +12,8 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
+use lotus_panel::hub::HubApi;
+use lotus_panel::{auth, certs, clock, config, db, hub, secrets, store, web};
 use tokio::io::AsyncBufReadExt;
 
 #[derive(Parser)]
@@ -51,6 +46,11 @@ enum Command {
     },
     /// Check the config, secrets, database and hub link; exits non-zero on a problem.
     Check,
+    /// Make the first owner. Refused once any account is an owner or developer; there is no web path to this.
+    Bootstrap {
+        #[arg(long)]
+        account: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -93,6 +93,7 @@ fn main() -> anyhow::Result<()> {
             Ok(())
         }
         Command::Check => runtime.block_on(check(&config_path)),
+        Command::Bootstrap { account } => runtime.block_on(bootstrap(&config_path, &account)),
         Command::Serve => runtime.block_on(serve(&config_path)),
     }
 }
@@ -105,16 +106,33 @@ async fn read_line() -> anyhow::Result<String> {
     Ok(line.trim_end_matches(['\r', '\n']).to_owned())
 }
 
+fn hub_of(config: &config::Config) -> anyhow::Result<hub::GrpcHub> {
+    let key = secrets::read(&config.paths.secrets, &config.hub.key_credential)?;
+    hub::GrpcHub::connect(&config.hub.endpoint, &config.hub.ca, &config.hub.cert, &key).context("hub link")
+}
+
 async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
     let url = secrets::read(&config.paths.secrets, &config.database.url_credential)?;
-    let db = db::connect(&url).await.context("panel database")?;
-    let key = secrets::read(&config.paths.secrets, &config.hub.key_credential)?;
-    let hub = hub::connect(&config.hub.endpoint, &config.hub.ca, &config.hub.cert, &key).context("hub link")?;
+    let pool = db::connect(&url).await.context("panel database")?;
     Ok(web::AppState {
-        db,
-        hub,
+        hub: Arc::new(hub_of(config)?),
+        sessions: Arc::new(store::PgSessions(pool)),
+        clock: Arc::new(clock::SystemClock),
+        lockout: auth::Lockout::default(),
+        auth: auth::AuthSettings::new(
+            config.sessions.idle_minutes,
+            config.sessions.absolute_hours,
+            &config.server.public_url,
+        ),
         allowed: config.server.allowed_networks.clone(),
     })
+}
+
+async fn bootstrap(path: &std::path::Path, account: &str) -> anyhow::Result<()> {
+    let config = config::Config::load(path)?;
+    hub_of(&config)?.bootstrap_owner(account).await?;
+    println!("{account} is now an owner");
+    Ok(())
 }
 
 async fn check(path: &std::path::Path) -> anyhow::Result<()> {
@@ -122,7 +140,7 @@ async fn check(path: &std::path::Path) -> anyhow::Result<()> {
     let state = state(&config).await?;
     println!("config ok, database ok (migrations applied)");
     anyhow::ensure!(
-        hub::healthy(&state.hub).await,
+        state.hub.healthy().await,
         "the hub's panel API at {} does not answer",
         config.hub.endpoint
     );
@@ -133,7 +151,7 @@ async fn check(path: &std::path::Path) -> anyhow::Result<()> {
 async fn serve(path: &std::path::Path) -> anyhow::Result<()> {
     let config = config::Config::load(path)?;
     let state = Arc::new(state(&config).await?);
-    if !hub::healthy(&state.hub).await {
+    if !state.hub.healthy().await {
         tracing::warn!(endpoint = %config.hub.endpoint, "hub not reachable yet; the panel starts anyway");
     }
     let app = web::router(state).into_make_service_with_connect_info::<SocketAddr>();

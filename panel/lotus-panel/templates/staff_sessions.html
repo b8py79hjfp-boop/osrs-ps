@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Staff sessions · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Staff sessions</h1>
+  <p class="muted">Everyone signed in to the panel. Signing someone out ends all of their sessions and needs your
+    password.</p>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  <ul class="rows">
+    {% for r in rows %}
+    <li>
+      <div><strong>{{ r.name }}</strong> <span class="badge">{{ r.rank }}</span>{% if r.current %} <span class="badge">you, this device</span>{% endif %}
+        <div class="muted small">{{ r.ip }} · {{ r.user_agent }}</div>
+        <div class="muted small">Signed in {{ r.created }} · last active {{ r.last_seen }}</div></div>
+      <form method="post" action="/staff/sessions/revoke" class="inline">
+        <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+        <input type="hidden" name="account_id" value="{{ r.account_id }}">
+        <input name="password" type="password" placeholder="Your password" autocomplete="current-password" required maxlength="20">
+        <button type="submit" class="danger">Sign out everywhere</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

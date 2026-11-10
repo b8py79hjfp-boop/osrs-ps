@@ -254,8 +254,14 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   (`--hub`), `lotus-panel` and Caddy on `https://lotusps.duckdns.org` (TLS-ALPN, 443 only), each service under its own
   virtual account, with daily `pg_dump`. Fresh database by the owner's choice (no JSON import). Checked here: certs,
   mTLS, migrations, headers, generated panel.toml and Caddyfile; the Windows-only steps first run on the VPS.
-- [ ] Phase 3: sign-in through VerifyStaff (password only: no 2FA, the owner's decision), password re-check for
-  dangerous actions, sessions, CSRF, permissions; tests 1 and 2.
+- [x] Phase 3 (2026-11-10): sign-in through VerifyStaff (password only, no 2FA by the owner's decision), server-side
+  sessions (hashed `__Host-` cookie, 30 min idle / 12 h absolute, list and revoke your own; owners sign anyone out
+  after re-entering their password), CSRF on every state change plus an Origin check, a route table where every route
+  declares its minimum rank (pages above your rank answer 404), the rank re-checked with the hub every 60 s, lockout
+  after 5 failures for 15 minutes, `lotus-panel bootstrap` (first owner only). Tests 1 (`permissions`, generated from
+  the route table) and 2 (`auth`) pass; checked end to end in a browser against a PostgreSQL-backed hub.
+- [ ] Phase 4: server control (start/stop/restart/emergency stop, crash loop, maintenance mode, schedules,
+  diagnostics) and `lotus-panel ctl`; test 3.
 - Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
 
 ## Next

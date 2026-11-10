@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Lotus panel{% endblock %}
+{% block content %}
+<section class="card">
+  <p class="min-rank">Moderator and above</p>
+  <h1>Welcome, {{ name }}</h1>
+  <p class="muted">You're signed in as {{ rank }}. Server controls arrive with the next panel update, then the live
+    dashboard, players, moderation and logs.</p>
+</section>
+{% endblock %}

@@ -814,6 +814,12 @@ message StaffRowPb {
   int32 world_id = 4; // 0 = offline
 }
 
+// `lotus-panel bootstrap --account <name>` (panel brief §2): the first owner, run on the VPS. Refused once any account
+// is an owner or a developer, so it can never be used to promote anyone later.
+message BootstrapOwnerRequest {
+  string username = 1;
+}
+
 message StaffRows {
   string error = 1;
   repeated StaffRowPb staff = 2;
@@ -838,4 +844,5 @@ service Panel {
   rpc SetRank(PanelSetRankRequest) returns (ErrorReply);
   rpc ListSanctions(SanctionsQuery) returns (SanctionRows);
   rpc ListStaff(PanelActor) returns (StaffRows);
+  rpc BootstrapOwner(BootstrapOwnerRequest) returns (ErrorReply);
 }

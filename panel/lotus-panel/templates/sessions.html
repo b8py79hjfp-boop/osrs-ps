@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My sessions · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Moderator and above</p>
+  <h1>My sessions</h1>
+  <p class="muted">Where you're signed in. Sign out of any you don't recognise, then change your game password with
+    <code>::changepassword</code>.</p>
+  <ul class="rows">
+    {% for r in rows %}
+    <li>
+      <div><strong>{{ r.ip }}</strong>{% if r.current %} <span class="badge">this device</span>{% endif %}
+        <div class="muted small">{{ r.user_agent }}</div>
+        <div class="muted small">Signed in {{ r.created }} · last active {{ r.last_seen }}</div></div>
+      <form method="post" action="/sessions/revoke">
+        <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+        <input type="hidden" name="id" value="{{ r.handle }}">
+        <button type="submit" class="secondary">Sign out</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

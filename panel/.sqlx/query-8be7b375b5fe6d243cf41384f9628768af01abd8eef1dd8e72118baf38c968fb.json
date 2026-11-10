@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE panel.sessions SET last_seen_at = $2 WHERE id_hash = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8be7b375b5fe6d243cf41384f9628768af01abd8eef1dd8e72118baf38c968fb"
+}

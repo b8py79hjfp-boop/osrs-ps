@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE panel.sessions SET revoked_at = $2 WHERE id_hash = $1 AND revoked_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "080b9c736d7c34393f39bf8f6ebb58b4e4c9db74e555ee232943c99070e4f64b"
+}

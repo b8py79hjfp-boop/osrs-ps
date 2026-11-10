@@ -11,7 +11,19 @@
   <script src="/assets/htmx.min.js" defer></script>
 </head>
 <body>
-  <header class="top"><img src="/assets/lotus.png" alt="" width="28" height="28"><span>Lotus panel</span></header>
+  <header class="top">
+    <a class="brand" href="/"><img src="/assets/lotus.png" alt="" width="28" height="28"><span>Lotus panel</span></a>
+    {% if let Some(n) = nav %}
+    <nav>
+      {% for l in n.links %}<a href="{{ l.href }}">{{ l.label }}</a>{% endfor %}
+    </nav>
+    <form method="post" action="/logout" class="who">
+      <span>{{ n.name }} <span class="badge">{{ n.rank }}</span></span>
+      <input type="hidden" name="csrf" value="{{ n.csrf }}">
+      <button type="submit" class="link">Sign out</button>
+    </form>
+    {% endif %}
+  </header>
   <main>{% block content %}{% endblock %}</main>
 </body>
 </html>

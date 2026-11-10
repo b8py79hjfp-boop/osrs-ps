@@ -148,7 +148,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
        Caddyfile;
      - `importStore` moves the JSON store to PostgreSQL;
      - the panel starts as a service and serves a logged-out page over HTTPS.
-3. **Auth.**
+3. **Auth.** Done 2026-11-10 (alerts on repeated failures go to the log until phase 8 adds the channels).
    - Done when:
      - login through `VerifyStaff` works (game account name and password; no second factor, §1a);
      - dangerous actions ask for the password again;

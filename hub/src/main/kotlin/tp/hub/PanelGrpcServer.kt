@@ -10,6 +10,7 @@ import tp.services.grpc.AccountRef
 import tp.services.grpc.AuditQuery
 import tp.services.grpc.AuditRowPb
 import tp.services.grpc.AuditRows
+import tp.services.grpc.BootstrapOwnerRequest
 import tp.services.grpc.ErrorReply
 import tp.services.grpc.HistoryReply
 import tp.services.grpc.LinesReply
@@ -401,6 +402,26 @@ class PanelGrpcServer(
                             .build()
                     },
                 ).build()
+        }
+
+        override suspend fun bootstrapOwner(request: BootstrapOwnerRequest): ErrorReply {
+            val name = request.username.trim()
+            val owners = hub.db { hub.store.staffAccounts() }.filter { it.rights.atLeast(Rank.OWNER) }
+            if (owners.isNotEmpty()) return err("An owner already exists (${owners.first().displayName}); ranks change on the Staff page.")
+            val row = hub.db { hub.store.accountByName(name) } ?: return err("There is no account called $name.")
+            hub.db {
+                hub.store.setRights(row.id, Rank.OWNER)
+                hub.store.auditEntry(
+                    "panel",
+                    "panel bootstrap owner",
+                    row.displayName,
+                    "${row.rights.stored} -> OWNER",
+                    SOURCE,
+                    "local",
+                    "ok",
+                )
+            }
+            return err(null)
         }
 
         override suspend fun listStaff(request: PanelActor): StaffRows {

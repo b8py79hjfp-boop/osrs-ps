@@ -18,6 +18,9 @@ unwrap_used = "warn"
 expect_used = "warn"
 module_name_repetitions = "allow"
 missing_errors_doc = "allow"
+# The library exists for the tests (lib.rs); it isn't a public API, so these two are noise.
+must_use_candidate = "allow"
+missing_panics_doc = "allow"
 
 [profile.release]
 lto = "thin"
