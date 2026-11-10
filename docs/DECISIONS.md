@@ -1480,3 +1480,7 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
 - **Status.** Phase 1 (hub RPCs) is paused while the one-command installer (deploy/windows/install-lotus.ps1) ships first.
 - **Windows only (2026-11-10, the owner's rule).** Lotus is hosted, installed and built for Windows only: no Linux
   hosting path is documented or supported, and the panel's CI checks and builds on a Windows runner.
+- **No two-factor authentication (2026-11-10, the owner's decision).** The panel brief's 2FA requirement (§2) is
+  dropped: staff sign in with their game password, and dangerous actions ask for the password again instead of a
+  code. The game's planned 2FA follow-up is dropped too. Lockout, audit, short sessions and `allowed_networks` remain
+  (panel/docs/plan.md §1a, §4).

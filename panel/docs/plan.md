@@ -44,6 +44,14 @@ brief stands as written. The decision is recorded in docs/DECISIONS.md D-100.
   `panel-latest` with its SHA-256). The VPS needs no Rust or Visual Studio toolchain. Signing (minisign) arrives with
   deploys in phase 7.
 
+- **No two-factor authentication** (the owner's decision, 2026-11-10; brief §2 overridden). Staff sign in with their
+  game account name and password through `VerifyStaff`. Wherever the brief asks for the 2FA code again (restart, stop,
+  emergency stop, deploy, rollback, rank changes, bans, restore, reset of another user's sessions), the panel asks for
+  the **password again** instead; it is checked through `VerifyStaff`, so it is throttled and audited the same way. The
+  rest of the brief's protections stay: per-IP and per-account lockout, alerts on repeated failures, short sessions,
+  CSRF, the 60 s rank re-check, and the optional `allowed_networks` (for example Tailscale) to keep the panel off the
+  public internet entirely.
+
 ## 2. What the hub already offers
 
 - **Accounts:** `Accounts.Login` creates a game session, so the panel can't use it; there is no check of credentials
@@ -115,8 +123,9 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
   fails the panel is unreachable until it succeeds. The `ctl` CLI on the VPS is the fallback.
 - **One VPS.** The panel, hub, worlds and database share 2 or more cores. The panel's scrape and SSE costs are capped
   (15 s scrape, bounded fan-out).
-- **2FA recovery.** A lost authenticator for the only owner needs a local path: `lotus-panel 2fa reset --account <name>`,
-  run on the VPS. It is documented in operations.md.
+- **Password-only sign-in.** A leaked staff password is enough to get in. Mitigations: strong passwords (the game's
+  rules), lockout, the password asked again for dangerous actions, audit of every panel login with its IP, owner
+  alerts on failures, and `allowed_networks` when the panel should not be public at all.
 
 ## 5. Phases (brief §11) and done-when
 
@@ -141,7 +150,8 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - the panel starts as a service and serves a logged-out page over HTTPS.
 3. **Auth.**
    - Done when:
-     - login through `VerifyStaff` works with TOTP and WebAuthn enrolment and verification (secrets encrypted at rest);
+     - login through `VerifyStaff` works (game account name and password; no second factor, §1a);
+     - dangerous actions ask for the password again;
      - sessions have idle and absolute expiry and can be listed and revoked;
      - CSRF protection, per-route minimum ranks, the 60 s re-check, lockout and the owner bootstrap CLI are in place;
      - tests 1 (`permissions`) and 2 (`auth`) pass.
@@ -173,7 +183,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - Discord and email alerts work.
 9. **Staging run.**
    - Done when:
-     - `panel/docs/operations.md` covers install, upgrade, 2FA recovery and restore;
+     - `panel/docs/operations.md` covers install, upgrade, a forgotten staff password and restore;
      - the verifier has reviewed §8;
      - a full run has been done on a scratch Windows Server VM.
 
