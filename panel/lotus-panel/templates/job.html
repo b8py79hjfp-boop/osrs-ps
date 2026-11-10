@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ id }} · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  {% if found %}
+  <h1>Job #{{ id }}: {{ kind }}</h1>
+  <p class="muted">Started by {{ actor }}.</p>
+  {% include "job_log.html" %}
+  {% if can_cancel %}
+  <form method="post" action="/control/cancel">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <button type="submit" class="secondary">Cancel</button>
+  </form>
+  {% endif %}
+  {% else %}
+  <h1>Job #{{ id }}</h1><p class="muted">There is no such job.</p>
+  {% endif %}
+  <p><a href="/control">Back to the server page</a></p>
+</section>
+{% endblock %}

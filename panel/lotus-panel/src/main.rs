@@ -5,6 +5,8 @@
 //! - `secret set <name>`: store a secret (value read from standard input).
 //! - `check`: validate the config, the secrets, the database and the hub link, for the install script.
 //! - `bootstrap --account <name>`: make the first owner (only while there is none; brief §2, run on the VPS).
+//! - `ctl <start|stop|restart|status|lock|unlock> [world]`: server control from the VPS, same code and rules as the
+//!   web panel (brief §3 CLI twin), for when the panel is unreachable.
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -12,8 +14,10 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
+use lotus_panel::control::{Controller, Scope, Topology, WorldUnit};
 use lotus_panel::hub::HubApi;
-use lotus_panel::{auth, certs, clock, config, db, hub, secrets, store, web};
+use lotus_panel::jobs::{JobState, JobStore};
+use lotus_panel::{auth, certs, clock, config, control, control_web, db, hub, jobs, secrets, store, units, web};
 use tokio::io::AsyncBufReadExt;
 
 #[derive(Parser)]
@@ -50,6 +54,23 @@ enum Command {
     Bootstrap {
         #[arg(long)]
         account: String,
+    },
+    /// Server control from the VPS (brief §3 CLI twin). Needs the local ctl token (Administrators and the panel's
+    /// service account can read it); lock, unlock and a graceful stop or restart also need an owner (`--as`, password
+    /// from standard input).
+    Ctl {
+        #[arg(value_parser = ["start", "stop", "restart", "status", "lock", "unlock"])]
+        action: String,
+        /// A world id; everything when left out.
+        world: Option<i32>,
+        /// Update timer for stop and restart.
+        #[arg(long, default_value_t = control::DEFAULT_TIMER_SECONDS)]
+        seconds: i32,
+        #[arg(long, default_value = "")]
+        message: String,
+        /// Owner account to act as (the hub checks the rank and audits the action).
+        #[arg(long = "as")]
+        as_account: Option<String>,
     },
 }
 
@@ -94,6 +115,20 @@ fn main() -> anyhow::Result<()> {
         }
         Command::Check => runtime.block_on(check(&config_path)),
         Command::Bootstrap { account } => runtime.block_on(bootstrap(&config_path, &account)),
+        Command::Ctl {
+            action,
+            world,
+            seconds,
+            message,
+            as_account,
+        } => runtime.block_on(ctl(
+            &config_path,
+            &action,
+            world,
+            seconds,
+            &message,
+            as_account.as_deref(),
+        )),
         Command::Serve => runtime.block_on(serve(&config_path)),
     }
 }
@@ -111,13 +146,61 @@ fn hub_of(config: &config::Config) -> anyhow::Result<hub::GrpcHub> {
     hub::GrpcHub::connect(&config.hub.endpoint, &config.hub.ca, &config.hub.cert, &key).context("hub link")
 }
 
+fn topology(config: &config::Config) -> Topology {
+    let c = &config.control;
+    Topology {
+        database: c.database_unit.clone(),
+        hub: c.hub_unit.clone(),
+        worlds: c
+            .worlds
+            .iter()
+            .map(|w| WorldUnit {
+                unit: w.unit.clone(),
+                world_id: w.world_id,
+                game_port: w.game_port,
+                health_url: w.health_url.clone(),
+            })
+            .collect(),
+        logs: c.logs.clone(),
+    }
+}
+
+fn domain_of(url: &str) -> String {
+    url.split("://")
+        .nth(1)
+        .unwrap_or(url)
+        .split(['/', ':'])
+        .next()
+        .unwrap_or("")
+        .to_owned()
+}
+
 async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
     let url = secrets::read(&config.paths.secrets, &config.database.url_credential)?;
     let pool = db::connect(&url).await.context("panel database")?;
+    let hub: Arc<dyn HubApi> = Arc::new(hub_of(config)?);
+    let sessions: Arc<dyn store::SessionStore> = Arc::new(store::PgSessions(pool.clone()));
+    let jobs: Arc<dyn JobStore> = Arc::new(jobs::PgJobs(pool.clone()));
+    let clock: Arc<dyn clock::Clock> = Arc::new(clock::SystemClock);
+    let probe = Arc::new(control::LiveProbe {
+        sessions: sessions.clone(),
+        hub: hub.clone(),
+        http: reqwest::Client::new(),
+    });
+    let controller = Controller::new(
+        topology(config),
+        Arc::new(units::SystemUnits),
+        probe,
+        hub.clone(),
+        jobs.clone(),
+        Arc::new(jobs::LogAlerts),
+        clock.clone(),
+    );
+    let c = &config.control;
     Ok(web::AppState {
-        hub: Arc::new(hub_of(config)?),
-        sessions: Arc::new(store::PgSessions(pool)),
-        clock: Arc::new(clock::SystemClock),
+        hub,
+        sessions,
+        clock,
         lockout: auth::Lockout::default(),
         auth: auth::AuthSettings::new(
             config.sessions.idle_minutes,
@@ -125,7 +208,123 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
             &config.server.public_url,
         ),
         allowed: config.server.allowed_networks.clone(),
+        control: Arc::new(controller),
+        jobs,
+        settings: Arc::new(jobs::PgSettings(pool)),
+        paths: web::PanelPaths {
+            logs: c.logs.clone(),
+            dumps: c.dumps.clone(),
+            backups: c.backups.clone(),
+            releases: c.releases.clone(),
+            certificates: c.certificates.clone(),
+        },
+        domain: domain_of(&config.server.public_url),
     })
+}
+
+/// The ctl actor: an owner who signs in on the console (the hub checks the rank and audits every action).
+async fn ctl_actor(state: &web::AppState, account: Option<&str>) -> anyhow::Result<(hub::Actor, String)> {
+    let Some(name) = account else {
+        return Ok((
+            hub::Actor {
+                account_id: 0,
+                ip: "local ctl".into(),
+            },
+            "local ctl".into(),
+        ));
+    };
+    eprint!("Password for {name}: ");
+    let password = read_line().await?;
+    match state.hub.verify_staff(name, &password, "local ctl").await? {
+        hub::Verified::Ok {
+            account_id,
+            display_name,
+            rank,
+        } if rank >= lotus_panel::rank::Rank::Owner => Ok((
+            hub::Actor {
+                account_id,
+                ip: "local ctl".into(),
+            },
+            display_name,
+        )),
+        hub::Verified::Ok { .. } => anyhow::bail!("{name} is not an owner"),
+        other => anyhow::bail!("sign-in refused: {other:?}"),
+    }
+}
+
+async fn ctl(
+    path: &std::path::Path,
+    action: &str,
+    world: Option<i32>,
+    seconds: i32,
+    message: &str,
+    as_account: Option<&str>,
+) -> anyhow::Result<()> {
+    let config = config::Config::load(path)?;
+    // Brief §3: the CLI needs the local owner token file, readable only by the panel's account and Administrators.
+    secrets::read(&config.paths.secrets, "ctl-token")
+        .context("the ctl token (only Administrators and the panel can read it)")?;
+    let state = state(&config).await?;
+    let control = state.control.clone();
+    let scope = world.map_or(Scope::All, Scope::World);
+    if action == "status" {
+        for (label, unit, view) in control.views().await {
+            println!("{label:<10} {unit:<18} {}", view.label());
+        }
+        if let Some(job) = control.running_job() {
+            println!("control job #{job} is running");
+        }
+        return Ok(());
+    }
+    let (actor, name) = ctl_actor(&state, as_account).await?;
+    let job = match action {
+        "start" => control.start(scope, &name).await?,
+        "stop" | "restart" => {
+            anyhow::ensure!(
+                as_account.is_some(),
+                "a graceful {action} needs --as <owner> (for the lock and the countdown)"
+            );
+            control
+                .stop(scope, seconds, message.to_owned(), action == "restart", actor, &name)
+                .await?
+        }
+        "lock" | "unlock" => {
+            anyhow::ensure!(as_account.is_some(), "{action} needs --as <owner>");
+            control
+                .maintenance(
+                    &actor,
+                    action == "lock",
+                    if message.is_empty() { "Maintenance" } else { message },
+                )
+                .await?;
+            println!(
+                "logins {}",
+                if action == "lock" {
+                    "locked to staff"
+                } else {
+                    "unlocked"
+                }
+            );
+            return Ok(());
+        }
+        _ => anyhow::bail!("unknown action {action}"),
+    };
+    // Follow the job's log until it ends.
+    let mut shown = 0;
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        let Some(j) = state.jobs.get(job).await? else { continue };
+        let lines: Vec<&str> = j.log.lines().collect();
+        for l in &lines[shown.min(lines.len())..] {
+            println!("{l}");
+        }
+        shown = lines.len();
+        if j.state != JobState::Running {
+            println!("job #{job}: {}", j.state.stored());
+            anyhow::ensure!(j.state == JobState::Succeeded, "the job didn't succeed");
+            return Ok(());
+        }
+    }
 }
 
 async fn bootstrap(path: &std::path::Path, account: &str) -> anyhow::Result<()> {
@@ -154,6 +353,7 @@ async fn serve(path: &std::path::Path) -> anyhow::Result<()> {
     if !state.hub.healthy().await {
         tracing::warn!(endpoint = %config.hub.endpoint, "hub not reachable yet; the panel starts anyway");
     }
+    control_web::spawn_background(state.clone());
     let app = web::router(state).into_make_service_with_connect_info::<SocketAddr>();
     let listener = tokio::net::TcpListener::bind(config.server.bind).await?;
     tracing::info!(

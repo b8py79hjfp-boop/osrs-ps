@@ -1,0 +1,4 @@
+<div id="job-log" {% if running %}hx-get="/control/jobs/{{ id }}/log" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  <p>State: <span class="state">{{ state }}</span></p>
+  <pre class="log">{{ log }}</pre>
+</div>

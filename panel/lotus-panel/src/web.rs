@@ -42,6 +42,22 @@ pub struct AppState {
     pub lockout: Lockout,
     pub auth: AuthSettings,
     pub allowed: Vec<Cidr>,
+    pub control: Arc<crate::control::Controller>,
+    pub jobs: Arc<dyn crate::jobs::JobStore>,
+    pub settings: Arc<dyn crate::jobs::Settings>,
+    pub paths: PanelPaths,
+    /// The panel's host name (for the TLS expiry check).
+    pub domain: String,
+}
+
+/// Directories the panel reads (logs, dumps) or reports on (backups, releases, certificates).
+#[derive(Debug, Clone)]
+pub struct PanelPaths {
+    pub logs: std::path::PathBuf,
+    pub dumps: std::path::PathBuf,
+    pub backups: std::path::PathBuf,
+    pub releases: std::path::PathBuf,
+    pub certificates: std::path::PathBuf,
 }
 
 pub type Shared = Arc<AppState>;
@@ -61,16 +77,35 @@ pub struct RouteSpec {
     handler: fn() -> MethodRouter<Shared>,
 }
 
+impl RouteSpec {
+    pub fn new(
+        method: Method,
+        path: &'static str,
+        min_rank: Option<Rank>,
+        sample: &'static str,
+        nav: Option<&'static str>,
+        handler: fn() -> MethodRouter<Shared>,
+    ) -> Self {
+        Self {
+            method,
+            path,
+            min_rank,
+            sample,
+            nav,
+            handler,
+        }
+    }
+}
+
 /// Every route the panel serves.
 pub fn routes() -> Vec<RouteSpec> {
-    let r = |method, path, min_rank, sample, nav, handler| RouteSpec {
-        method,
-        path,
-        min_rank,
-        sample,
-        nav,
-        handler,
-    };
+    let mut all = core_routes();
+    all.extend(crate::control_web::routes());
+    all
+}
+
+fn core_routes() -> Vec<RouteSpec> {
+    let r = RouteSpec::new;
     vec![
         r(Method::GET, "/", Some(Rank::Moderator), "/", Some("Dashboard"), || {
             get(dashboard)
@@ -191,7 +226,7 @@ pub fn router(state: Shared) -> Router {
 
 // ---------------------------------------------------------------- guard
 
-fn peer_ip(req: &Request) -> std::net::IpAddr {
+pub fn peer_ip(req: &Request) -> std::net::IpAddr {
     let peer = req
         .extensions()
         .get::<ConnectInfo<SocketAddr>>()
@@ -297,7 +332,7 @@ pub struct Nav {
     pub links: Vec<NavLink>,
 }
 
-fn nav(s: &Session) -> Nav {
+pub fn nav(s: &Session) -> Nav {
     let links = routes()
         .into_iter()
         .filter(|r| r.method == Method::GET && r.min_rank.is_some_and(|m| s.rank >= m))
@@ -311,7 +346,7 @@ fn nav(s: &Session) -> Nav {
     }
 }
 
-fn when(t: OffsetDateTime) -> String {
+pub fn when(t: OffsetDateTime) -> String {
     format!(
         "{:04}-{:02}-{:02} {:02}:{:02} UTC",
         t.year(),
@@ -322,7 +357,12 @@ fn when(t: OffsetDateTime) -> String {
     )
 }
 
-fn render(status: StatusCode, page: &impl Template) -> Response {
+/// `HH:MM:SS` UTC, for log lines.
+pub fn clock_time(t: OffsetDateTime) -> String {
+    format!("{:02}:{:02}:{:02}", t.hour(), t.minute(), t.second())
+}
+
+pub fn render(status: StatusCode, page: &impl Template) -> Response {
     match page.render() {
         Ok(html) => (status, Html(html)).into_response(),
         Err(e) => {
@@ -332,7 +372,7 @@ fn render(status: StatusCode, page: &impl Template) -> Response {
     }
 }
 
-async fn audit(state: &AppState, s: &Session, ip: &str, action: &str, target: &str, detail: &str, result: &str) {
+pub async fn audit(state: &AppState, s: &Session, ip: &str, action: &str, target: &str, detail: &str, result: &str) {
     let entry = AuditEntry {
         actor_id: s.account_id,
         ip,
@@ -632,7 +672,7 @@ struct RevokeAccountForm {
 }
 
 /// Brief §2: dangerous actions ask again; with no second factor (plan §1a) that is the password.
-async fn confirm_password(state: &AppState, s: &Session, password: &str, ip: &str) -> bool {
+pub async fn confirm_password(state: &AppState, s: &Session, password: &str, ip: &str) -> bool {
     let now = state.clock.now();
     if state.lockout.locked(&s.username, ip, now) {
         return false;
@@ -670,7 +710,7 @@ async fn staff_sessions_revoke(
         let rows = live_rows(&state, None, &s).await;
         let error = Some("Your password didn't match, so nothing was changed.".to_owned());
         return render(
-            StatusCode::FORBIDDEN,
+            StatusCode::UNPROCESSABLE_ENTITY,
             &StaffSessionsPage {
                 nav: Some(nav(&s)),
                 rows,

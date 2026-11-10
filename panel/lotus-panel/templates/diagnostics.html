@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Diagnostics · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Developer</p>
+  <h1>Diagnostics</h1>
+  <p class="muted">For a world that misbehaves, without taking it down. A heap dump pauses the world while it is written.</p>
+  <form method="post" action="/diagnostics/run" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <div class="inline">
+      <label>World <select name="world">{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select></label>
+      <label>Take <select name="kind">
+        <option value="diag.threads">Thread dump</option>
+        <option value="diag.heap">Heap dump</option>
+        <option value="diag.jfr.start">Start JFR recording</option>
+        <option value="diag.jfr.stop">Stop JFR recording</option>
+        <option value="diag.tick">Tick inspector capture</option>
+      </select></label>
+      <label>Seconds or ticks (optional) <input name="args" maxlength="6" placeholder="120"></label>
+    </div>
+    <button type="submit">Run</button>
+  </form>
+</section>
+<section class="card wide">
+  <h2>Files</h2>
+  <ul class="rows">
+    {% for d in dumps %}<li><a href="/diagnostics/dumps/{{ d.name }}">{{ d.name }}</a><span class="muted small">{{ d.size }}</span></li>{% endfor %}
+  </ul>
+  {% if dumps.is_empty() %}<p class="muted">None yet.</p>{% endif %}
+</section>
+{% endblock %}

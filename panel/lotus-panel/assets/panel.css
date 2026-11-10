@@ -40,3 +40,16 @@ main:has(.wide) { max-width: 52rem; }
 form.inline { display: flex; gap: .5rem; flex-wrap: wrap; }
 form.inline input { width: 10rem; }
 code { background: var(--border); padding: .05rem .3rem; border-radius: 4px; }
+.notice { background: color-mix(in srgb, var(--gold) 16%, transparent); border: 1px solid var(--gold); padding: .6rem .8rem; border-radius: 8px; }
+.units li { display: flex; align-items: center; gap: .5rem; padding: .5rem 0; border-top: 1px solid var(--border); }
+.units li:first-child { border-top: 0; }
+.state { margin-left: auto; font-size: .85rem; padding: .1rem .55rem; border-radius: 999px; background: var(--border); }
+.state.ok { background: color-mix(in srgb, var(--ok) 25%, transparent); } .state.down { background: color-mix(in srgb, var(--down) 30%, transparent); }
+.state.busy { background: color-mix(in srgb, var(--gold) 25%, transparent); }
+.dot.busy { background: var(--gold); } .dot.off { background: var(--muted); }
+button.big { font-size: 1.05rem; padding: .75rem 1.4rem; } button.go { background: var(--ok); color: #0f1020; }
+.danger-zone { border-color: var(--down); }
+select { font: inherit; padding: .5rem .6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+label.check { display: flex; flex-direction: row; align-items: center; gap: .5rem; }
+pre.log { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .8rem; overflow: auto; max-height: 28rem; font-size: .85rem; white-space: pre-wrap; }
+h2 { margin-top: .4rem; }

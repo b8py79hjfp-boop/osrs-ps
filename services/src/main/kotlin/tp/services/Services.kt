@@ -18,6 +18,23 @@ interface HubServices {
     val hiscores: HiscoreService
     val moderation: ModerationService
     val broadcasts: BroadcastService
+    val worldOps: WorldOpsService
+}
+
+// ---------------------------------------------------------------- world operations
+
+/** Work the hub routes to one world (panel plan §3 #13, #14): diagnostics and panel commands. */
+class WorldOp(val id: Long, val kind: String, val actorAccount: Long, val actorName: String, val actorRank: Rank, val args: String)
+
+/** One line of a [WorldOp]'s answer; [done] closes it. */
+class WorldOpLine(val id: Long, val line: String, val done: Boolean, val error: Boolean = false)
+
+interface WorldOpsService {
+    /** World side: receive the operations routed to [worldId]. */
+    fun subscribe(worldId: Int, sink: (WorldOp) -> Unit): AutoCloseable
+
+    /** World side: answer a line. */
+    suspend fun reply(line: WorldOpLine)
 }
 
 // ---------------------------------------------------------------- accounts and saves

@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, kind, actor, state, log, created_at, finished_at FROM panel.jobs ORDER BY id DESC LIMIT $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "actor",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "actor"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "state",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "state"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "log",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "log"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "created_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "finished_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "panel.jobs",
+            "name": "finished_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "b0d62cc5ee920693139b0a09ff9758b349236758c73fedde16ca274ad9d892b7"
+}

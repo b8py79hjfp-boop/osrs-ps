@@ -385,6 +385,10 @@ secrets = "$secretsPath"
     $dbUrl = "postgres://lotus_panel:$panelDbPw@127.0.0.1:5432/lotus_panel"
     $dbUrl | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-db-url | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'Could not store the panel secrets.' }
+    # The `lotus-panel ctl` token: only Administrators and the panel can read it (panel brief section 3, CLI twin).
+    if (-not (Test-Path "$PanelDir\secrets\ctl-token")) {
+        (New-Secret) | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set ctl-token | Out-Host
+    }
     New-Item -ItemType Directory -Force $CaddyDir, "$CaddyDir\data" | Out-Null
     Write-Text "$CaddyDir\Caddyfile" @"
 # HTTPS for the Lotus panel (panel brief section 8): only port 443. The certificate comes from Let's Encrypt over
@@ -455,6 +459,25 @@ Protect-Dir $HubDir @('NT SERVICE\lotus-hub:(OI)(CI)R')
 if ($HavePanel) {
     Protect-Dir "$PanelDir\secrets" @('NT SERVICE\lotus-panel:(OI)(CI)R')
     icacls $CaddyDir /grant 'NT SERVICE\lotus-caddy:(OI)(CI)M' /Q | Out-Null
+    # The panel reads every service's log, the diagnostics dumps and Caddy's certificate (expiry check).
+    icacls $Logs /grant 'NT SERVICE\lotus-panel:(OI)(CI)RX' /Q | Out-Null
+    New-Item -ItemType Directory -Force "$Game\.data\dumps" | Out-Null
+    icacls "$Game\.data\dumps" /grant 'NT SERVICE\lotus-panel:(OI)(CI)M' /Q | Out-Null
+    icacls $Game /grant 'NT SERVICE\lotus-panel:RX' /Q | Out-Null
+    icacls "$Game\.data" /grant 'NT SERVICE\lotus-panel:RX' /Q | Out-Null
+    icacls "$CaddyDir\data" /grant 'NT SERVICE\lotus-panel:(OI)(CI)RX' /Q | Out-Null
+    # Service control (panel brief section 3): the panel may query, start and stop exactly these services, nothing else.
+    $panelSid = (New-Object Security.Principal.NTAccount 'NT SERVICE\lotus-panel').Translate([Security.Principal.SecurityIdentifier]).Value
+    foreach ($svc in 'lotus-postgresql', 'lotus-hub', 'lotus') {
+        $sddl = ((sc.exe sdshow $svc) | Where-Object { $_ -match '^D:' }) -join ''
+        if (-not $sddl) { throw "Could not read the permissions of $svc." }
+        if ($sddl -notlike "*$panelSid*") {
+            # CC query config, LC query status, SW list dependents, RP start, WP stop, LO interrogate, RC read.
+            $new = $sddl -replace '^D:', "D:(A;;CCLCSWRPWPLORC;;;$panelSid)"
+            sc.exe sdset $svc $new | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Could not let the panel control $svc." }
+        }
+    }
 }
 Done 'Permissions set'
 

@@ -108,7 +108,7 @@ fun main(args: Array<String>) {
     }
     // The embedded hub's HTTP side, and the control panel's mTLS API when its certificates are configured.
     val http = embeddedHub?.let { hubEndpoints(it, worlds, node, options) }
-    val ops = Ops(worlds, options["--ops-port"]?.toIntOrNull() ?: Ops.DEFAULT_PORT).start()
+    val ops = opsServer(worlds, options)
     Runtime.getRuntime().addShutdownHook(
         Thread {
             // Graceful shutdown (brief §12): every player is saved (final) before the process stops.
@@ -163,6 +163,10 @@ private fun embeddedHub(options: Map<String, String?>, config: ServerConfig): Hu
     val admins = options["--admins"]?.split(',')?.map { it.trim().replace('_', ' ') }?.toSet() ?: emptySet()
     return Hub(store, HubConfig(autoRegister = true, admins = admins, bootstrap = config.bootstrap()))
 }
+
+/** Health and metrics (`--ops-port`, default 9090; `--ops-bind`, default loopback). */
+private fun opsServer(worlds: List<tp.engine.World>, options: Map<String, String?>): Ops =
+    Ops(worlds, options["--ops-port"]?.toIntOrNull() ?: Ops.DEFAULT_PORT, options["--ops-bind"] ?: "127.0.0.1").start()
 
 /** [worldListServer] plus the panel API (panel/docs/plan.md §3), closed together. */
 private fun hubEndpoints(hub: Hub, worlds: List<tp.engine.World>, node: NodeOptions, options: Map<String, String?>): AutoCloseable {

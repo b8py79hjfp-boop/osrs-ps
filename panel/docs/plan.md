@@ -155,7 +155,7 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - sessions have idle and absolute expiry and can be listed and revoked;
      - CSRF protection, per-route minimum ranks, the 60 s re-check, lockout and the owner bootstrap CLI are in place;
      - tests 1 (`permissions`) and 2 (`auth`) pass.
-4. **Control.**
+4. **Control.** Done 2026-11-10.
    - Done when:
      - start (database, hub, then worlds, each health-gated), graceful stop/restart (lock logins, countdown with cancel,
        wait for exit 0, reverse order), emergency stop, crash-loop detection, maintenance mode, scheduled restarts and

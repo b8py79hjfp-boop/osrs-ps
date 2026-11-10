@@ -193,7 +193,7 @@ async fn owner_signs_others_out_with_password() {
         h.post("/staff/sessions/revoke", &cookies, &wrong, Some(ORIGIN))
             .await
             .status(),
-        StatusCode::FORBIDDEN
+        StatusCode::UNPROCESSABLE_ENTITY
     );
     assert_eq!(
         h.get("/", Some(&moderator)).await.status(),

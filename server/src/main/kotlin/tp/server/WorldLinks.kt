@@ -24,6 +24,7 @@ private val logger = KotlinLogging.logger {}
 class WorldLinks(private val world: World, private val hub: HubServices, private val host: String, private val port: Int) : AutoCloseable {
     private val scheduler = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory())
     private val subscriptions = ArrayList<AutoCloseable>()
+    private val ops = WorldOpsHandler(world, hub)
 
     fun start(): WorldLinks {
         val id = world.config.id
@@ -45,6 +46,8 @@ class WorldLinks(private val world: World, private val hub: HubServices, private
             runCatching { runBlocking { world.guidePrices = hub.exchange.guidePrices() } }
         }, 1, GUIDE_PRICE_SECONDS, TimeUnit.SECONDS)
         subscriptions += hub.social.subscribe(id) { e -> world.execute { onSocial(e) } }
+        subscriptions += ops
+        subscriptions += hub.worldOps.subscribe(id) { op -> ops.handle(op) }
         subscriptions +=
             hub.broadcasts.subscribe { b ->
                 world.execute {

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Server · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Server</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  {% if let Some(j) = running %}<p class="notice">A control job is running: <a href="/control/jobs/{{ j }}">job #{{ j }}</a>.</p>{% endif %}
+  <div id="units" hx-get="/control/units" hx-trigger="every 5s" hx-swap="innerHTML">{% include "units.html" %}</div>
+</section>
+
+<section class="card wide">
+  <h2>Start</h2>
+  <p class="muted small">Starts the database, then the hub, then the worlds; each must be healthy before the next.</p>
+  <form method="post" action="/control/start" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <select name="scope"><option value="all">Everything</option>{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select>
+    <button type="submit" class="big go">Start</button>
+  </form>
+</section>
+
+<section class="card wide">
+  <h2>Stop or restart</h2>
+  <p class="muted small">Locks logins, runs the in-game update timer, lets the game save everyone, then stops (and, for a restart, starts again). You can cancel while the timer runs.</p>
+  <form method="post" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <div class="inline">
+      <label>What <select name="scope"><option value="all">Everything</option>{% for w in worlds %}<option value="{{ w }}">World {{ w }}</option>{% endfor %}</select></label>
+      <label>Timer (seconds) <input name="seconds" type="number" min="1" max="3600" value="{{ timer }}"></label>
+    </div>
+    <label>Message to players (optional) <input name="message" maxlength="200" placeholder="Restarting for an update"></label>
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <div class="inline">
+      <button type="submit" formaction="/control/restart" class="big">Restart</button>
+      <button type="submit" formaction="/control/stop" class="big secondary">Stop</button>
+    </div>
+  </form>
+  {% if running.is_some() %}
+  <form method="post" action="/control/cancel" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <button type="submit" class="secondary">Cancel the running job</button>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card wide">
+  <h2>Maintenance mode</h2>
+  {% if locks.is_empty() %}<p class="muted">Off: everyone can log in.</p>
+  {% else %}<p>On: {% for l in locks %}{% if l.0 == 0 %}every world{% else %}world {{ l.0 }}{% endif %} ({{ l.1 }}){% if !loop.last %}, {% endif %}{% endfor %}. Only staff can log in.</p>{% endif %}
+  <form method="post" action="/control/maintenance" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <input name="message" maxlength="30" placeholder="Maintenance" aria-label="World list message">
+    <button type="submit" name="action" value="on" class="secondary">Turn on</button>
+    <button type="submit" name="action" value="off" class="secondary">Turn off</button>
+  </form>
+</section>
+
+<section class="card wide">
+  <h2>Scheduled restart</h2>
+  <form method="post" action="/control/schedule" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label class="check"><input type="checkbox" name="enabled" {% if schedule.enabled %}checked{% endif %}> Restart automatically</label>
+    <div class="inline">
+      <label>Every <select name="every">
+        {% for d in days %}<option value="{{ d.0 }}" {% if d.1 %}selected{% endif %}>{{ d.0 }}</option>{% endfor %}
+      </select></label>
+      <label>At (UTC) <input name="at" value="{{ schedule.at }}" pattern="[0-2][0-9]:[0-5][0-9]" maxlength="5"></label>
+      <label>Timer (seconds) <input name="seconds" type="number" min="1" max="3600" value="{{ schedule.seconds }}"></label>
+    </div>
+    <label>Message <input name="message" maxlength="200" value="{{ schedule.message }}"></label>
+    <button type="submit" class="secondary">Save schedule</button>
+  </form>
+</section>
+
+<section class="card wide danger-zone">
+  <h2>Emergency stop</h2>
+  <p class="muted small">Stops every world and the hub now, without a countdown. Everyone is still saved. Owners are alerted.</p>
+  <form method="post" action="/control/emergency" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Type <code>{{ phrase }}</code> <input name="confirm" autocomplete="off" required></label>
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit" class="big danger">Emergency stop</button>
+  </form>
+</section>
+
+<section class="card wide">
+  <h2>Recent jobs</h2>
+  <ul class="rows">
+    {% for j in jobs %}<li><a href="/control/jobs/{{ j.id }}">#{{ j.id }} {{ j.kind }}</a><span class="muted small">{{ j.actor }} · {{ j.when }}</span><span class="state">{{ j.state }}</span></li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

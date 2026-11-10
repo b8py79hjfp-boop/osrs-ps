@@ -652,6 +652,29 @@ service Broadcasts {
   rpc Subscribe(Empty) returns (stream BroadcastEvent);
 }
 
+// ---- world operations (panel plan §3 #13, #14): work the hub routes to one world, answered line by line.
+
+message WorldOpRequest {
+  int64 id = 1;
+  string kind = 2; // "diag.threads", "diag.heap", "diag.jfr.start", "diag.jfr.stop", "diag.tick", "command"
+  int64 actor_account = 3;
+  string actor_name = 4;
+  string actor_rank = 5; // tp.util.Rank stored value, checked by the hub before routing
+  string args = 6;
+}
+
+message WorldOpLine {
+  int64 id = 1;
+  string line = 2;
+  bool done = 3;
+  bool error = 4;
+}
+
+service WorldOps {
+  rpc Subscribe(WorldRef) returns (stream WorldOpRequest);
+  rpc Reply(WorldOpLine) returns (Empty);
+}
+
 // ---- control panel (panel/docs/plan.md §3). Served only on the hub's mTLS panel listener, never to world nodes.
 // The hub re-checks the actor's stored rank on every call; the panel's own checks are not trusted alone.
 
@@ -825,6 +848,19 @@ message StaffRows {
   repeated StaffRowPb staff = 2;
 }
 
+message PanelWorldOpRequest {
+  PanelActor actor = 1;
+  int32 world_id = 2;
+  string kind = 3;
+  string args = 4;
+}
+
+message OpOutput {
+  string line = 1;
+  bool done = 2;
+  bool error = 3;
+}
+
 service Panel {
   rpc VerifyStaff(VerifyStaffRequest) returns (VerifyStaffReply);
   rpc GetRank(AccountRef) returns (RankReply);
@@ -845,4 +881,5 @@ service Panel {
   rpc ListSanctions(SanctionsQuery) returns (SanctionRows);
   rpc ListStaff(PanelActor) returns (StaffRows);
   rpc BootstrapOwner(BootstrapOwnerRequest) returns (ErrorReply);
+  rpc WorldOp(PanelWorldOpRequest) returns (stream OpOutput);
 }

@@ -41,6 +41,36 @@ pub struct RankInfo {
     pub banned: bool,
 }
 
+/// The staff member a hub call acts for: the hub re-checks this account's stored rank on every call.
+#[derive(Debug, Clone)]
+pub struct Actor {
+    pub account_id: i64,
+    pub ip: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorldStatus {
+    pub id: i32,
+    pub host: String,
+    pub port: i32,
+    pub activity: String,
+    pub population: i32,
+    pub locked: bool,
+    pub last_beat_ms: i64,
+}
+
+/// One line of a world operation's answer (diagnostics, panel commands).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OpLine {
+    pub line: String,
+    pub done: bool,
+    pub error: bool,
+}
+
+fn unsupported<T>() -> Result<T, HubError> {
+    Err(HubError::Unavailable("not supported here".into()))
+}
+
 /// One panel action for the game's audit log (brief §8: actor, IP, action, target, result; the hub adds the time).
 pub struct AuditEntry<'a> {
     pub actor_id: i64,
@@ -58,6 +88,41 @@ pub trait HubApi: Send + Sync {
     async fn audit(&self, entry: AuditEntry<'_>) -> Result<(), HubError>;
     async fn bootstrap_owner(&self, username: &str) -> Result<(), HubError>;
     async fn healthy(&self) -> bool;
+
+    async fn list_worlds(&self, _actor: &Actor) -> Result<Vec<WorldStatus>, HubError> {
+        unsupported()
+    }
+    /// Maintenance mode per world (0 = every world): world id and message of each lock in force.
+    async fn login_locks(&self, _actor: &Actor) -> Result<Vec<(i32, String)>, HubError> {
+        unsupported()
+    }
+    async fn set_login_lock(&self, _actor: &Actor, _world: i32, _locked: bool, _message: &str) -> Result<(), HubError> {
+        unsupported()
+    }
+    /// The in-game update countdown on every world; the message is broadcast first when not empty.
+    async fn system_update(&self, _actor: &Actor, _seconds: i32, _message: &str) -> Result<(), HubError> {
+        unsupported()
+    }
+    async fn cancel_update(&self, _actor: &Actor) -> Result<(), HubError> {
+        unsupported()
+    }
+    /// Routes an operation to a world; its answer arrives line by line until one has `done`.
+    async fn world_op(
+        &self,
+        _actor: &Actor,
+        _world: i32,
+        _kind: &str,
+        _args: &str,
+    ) -> Result<tokio::sync::mpsc::Receiver<OpLine>, HubError> {
+        unsupported()
+    }
+}
+
+fn actor_pb(a: &Actor) -> pb::PanelActor {
+    pb::PanelActor {
+        account_id: a.account_id,
+        ip: a.ip.clone(),
+    }
 }
 
 pub struct GrpcHub {
@@ -177,5 +242,142 @@ impl HubApi for GrpcHub {
     /// `GetRank` of account 0, which never exists and changes nothing.
     async fn healthy(&self) -> bool {
         self.client().get_rank(pb::AccountRef { account_id: 0 }).await.is_ok()
+    }
+
+    async fn list_worlds(&self, actor: &Actor) -> Result<Vec<WorldStatus>, HubError> {
+        let reply = self
+            .client()
+            .list_worlds(actor_pb(actor))
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        if !reply.error.is_empty() {
+            return Err(HubError::Refused(reply.error));
+        }
+        Ok(reply
+            .worlds
+            .into_iter()
+            .map(|w| WorldStatus {
+                id: w.id,
+                host: w.host,
+                port: w.port,
+                activity: w.activity,
+                population: w.population,
+                locked: w.locked,
+                last_beat_ms: w.last_beat_ms,
+            })
+            .collect())
+    }
+
+    async fn login_locks(&self, actor: &Actor) -> Result<Vec<(i32, String)>, HubError> {
+        let reply = self
+            .client()
+            .get_login_lock(actor_pb(actor))
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        if !reply.error.is_empty() {
+            return Err(HubError::Refused(reply.error));
+        }
+        Ok(reply.locks.into_iter().map(|l| (l.world_id, l.message)).collect())
+    }
+
+    async fn set_login_lock(&self, actor: &Actor, world: i32, locked: bool, message: &str) -> Result<(), HubError> {
+        let req = pb::LoginLockRequest {
+            actor: Some(actor_pb(actor)),
+            world_id: world,
+            locked,
+            message: message.to_owned(),
+        };
+        refused(
+            self.client()
+                .set_login_lock(req)
+                .await
+                .map_err(|s| unavailable(&s))?
+                .into_inner()
+                .error,
+        )
+    }
+
+    async fn system_update(&self, actor: &Actor, seconds: i32, message: &str) -> Result<(), HubError> {
+        let req = pb::PanelUpdateRequest {
+            actor: Some(actor_pb(actor)),
+            seconds,
+            message: message.to_owned(),
+        };
+        refused(
+            self.client()
+                .system_update(req)
+                .await
+                .map_err(|s| unavailable(&s))?
+                .into_inner()
+                .error,
+        )
+    }
+
+    async fn cancel_update(&self, actor: &Actor) -> Result<(), HubError> {
+        refused(
+            self.client()
+                .cancel_update(actor_pb(actor))
+                .await
+                .map_err(|s| unavailable(&s))?
+                .into_inner()
+                .error,
+        )
+    }
+
+    async fn world_op(
+        &self,
+        actor: &Actor,
+        world: i32,
+        kind: &str,
+        args: &str,
+    ) -> Result<tokio::sync::mpsc::Receiver<OpLine>, HubError> {
+        let req = pb::PanelWorldOpRequest {
+            actor: Some(actor_pb(actor)),
+            world_id: world,
+            kind: kind.to_owned(),
+            args: args.to_owned(),
+        };
+        let mut stream = self
+            .client()
+            .world_op(req)
+            .await
+            .map_err(|s| unavailable(&s))?
+            .into_inner();
+        let (tx, rx) = tokio::sync::mpsc::channel(64);
+        tokio::spawn(async move {
+            loop {
+                match stream.message().await {
+                    Ok(Some(o)) => {
+                        let done = o.done;
+                        if tx
+                            .send(OpLine {
+                                line: o.line,
+                                done: o.done,
+                                error: o.error,
+                            })
+                            .await
+                            .is_err()
+                            || done
+                        {
+                            break;
+                        }
+                    }
+                    Ok(None) => break,
+                    Err(s) => {
+                        let _ = tx
+                            .send(OpLine {
+                                line: format!("The hub stopped answering: {}", s.message()),
+                                done: true,
+                                error: true,
+                            })
+                            .await;
+                        break;
+                    }
+                }
+            }
+        });
+        Ok(rx)
     }
 }

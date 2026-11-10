@@ -17,6 +17,88 @@ pub struct Config {
     #[serde(default)]
     pub sessions: Sessions,
     pub paths: Paths,
+    #[serde(default)]
+    pub control: Control,
+}
+
+/// Brief §3: the units the panel controls and how to check them. Defaults match deploy/windows/install-lotus.ps1.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Control {
+    #[serde(default = "Control::default_database")]
+    pub database_unit: String,
+    #[serde(default = "Control::default_hub")]
+    pub hub_unit: String,
+    #[serde(default = "Control::default_worlds")]
+    pub worlds: Vec<WorldConfig>,
+    #[serde(default = "Control::default_logs")]
+    pub logs: PathBuf,
+    #[serde(default = "Control::default_dumps")]
+    pub dumps: PathBuf,
+    /// Caddy's certificate store, for the TLS expiry check.
+    #[serde(default = "Control::default_certificates")]
+    pub certificates: PathBuf,
+    /// Directories whose size the housekeeping page shows.
+    #[serde(default = "Control::default_backups")]
+    pub backups: PathBuf,
+    #[serde(default = "Control::default_releases")]
+    pub releases: PathBuf,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorldConfig {
+    pub unit: String,
+    pub world_id: i32,
+    pub game_port: u16,
+    pub health_url: String,
+}
+
+impl Control {
+    fn default_database() -> String {
+        "lotus-postgresql".into()
+    }
+    fn default_hub() -> String {
+        "lotus-hub".into()
+    }
+    fn default_worlds() -> Vec<WorldConfig> {
+        vec![WorldConfig {
+            unit: "lotus".into(),
+            world_id: 1,
+            game_port: 43594,
+            health_url: "http://127.0.0.1:9090/health".into(),
+        }]
+    }
+    fn default_logs() -> PathBuf {
+        PathBuf::from(r"C:\lotus\logs")
+    }
+    fn default_dumps() -> PathBuf {
+        PathBuf::from(r"C:\lotus\game\.data\dumps")
+    }
+    fn default_certificates() -> PathBuf {
+        PathBuf::from(r"C:\lotus\caddy\data\caddy\certificates")
+    }
+    fn default_backups() -> PathBuf {
+        PathBuf::from(r"C:\lotus\backups")
+    }
+    fn default_releases() -> PathBuf {
+        PathBuf::from(r"C:\lotus\releases")
+    }
+}
+
+impl Default for Control {
+    fn default() -> Self {
+        Self {
+            database_unit: Self::default_database(),
+            hub_unit: Self::default_hub(),
+            worlds: Self::default_worlds(),
+            logs: Self::default_logs(),
+            dumps: Self::default_dumps(),
+            certificates: Self::default_certificates(),
+            backups: Self::default_backups(),
+            releases: Self::default_releases(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

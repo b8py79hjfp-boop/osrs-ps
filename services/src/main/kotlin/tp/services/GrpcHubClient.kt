@@ -64,6 +64,9 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
     private val hiscoresStub = HiscoresGrpcKt.HiscoresCoroutineStub(channel)
     private val moderationStub = ModerationGrpcKt.ModerationCoroutineStub(channel)
     private val broadcastsStub = BroadcastsGrpcKt.BroadcastsCoroutineStub(channel)
+    private val opsStub =
+        tp.services.grpc.WorldOpsGrpcKt
+            .WorldOpsCoroutineStub(channel)
 
     private fun err(s: String): String? = s.ifEmpty { null }
 
@@ -822,6 +825,33 @@ class GrpcHubClient(host: String, port: Int) : HubServices, AutoCloseable {
                         }
                     }
                 }
+        }
+
+    override val worldOps: WorldOpsService =
+        object : WorldOpsService {
+            override fun subscribe(worldId: Int, sink: (WorldOp) -> Unit): AutoCloseable =
+                stream({
+                    opsStub.subscribe(
+                        tp.services.grpc.WorldRef
+                            .newBuilder()
+                            .setWorldId(worldId)
+                            .build(),
+                    )
+                }) { r ->
+                    sink(WorldOp(r.id, r.kind, r.actorAccount, r.actorName, Rank.parseOrPlayer(r.actorRank), r.args))
+                }
+
+            override suspend fun reply(line: WorldOpLine) {
+                opsStub.reply(
+                    tp.services.grpc.WorldOpLine
+                        .newBuilder()
+                        .setId(line.id)
+                        .setLine(line.line)
+                        .setDone(line.done)
+                        .setError(line.error)
+                        .build(),
+                )
+            }
         }
 
     override fun close() {

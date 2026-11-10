@@ -1,0 +1,5 @@
+<ul class="units">
+  {% for u in units %}
+  <li><span class="dot {{ u.css }}"></span><strong>{{ u.label }}</strong> <span class="muted small">{{ u.unit }}</span><span class="state {{ u.css }}">{{ u.state }}</span></li>
+  {% endfor %}
+</ul>

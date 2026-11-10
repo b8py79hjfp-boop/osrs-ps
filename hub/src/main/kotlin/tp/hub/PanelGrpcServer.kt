@@ -5,6 +5,10 @@ import io.grpc.Server
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import tp.services.Broadcast
 import tp.services.grpc.AccountRef
 import tp.services.grpc.AuditQuery
@@ -19,6 +23,7 @@ import tp.services.grpc.LoginLockRequest
 import tp.services.grpc.LoginLockState
 import tp.services.grpc.LookupReply
 import tp.services.grpc.OnlineReply
+import tp.services.grpc.OpOutput
 import tp.services.grpc.PanelActor
 import tp.services.grpc.PanelAuditRequest
 import tp.services.grpc.PanelBroadcastRequest
@@ -28,6 +33,7 @@ import tp.services.grpc.PanelSetRankRequest
 import tp.services.grpc.PanelTargetRequest
 import tp.services.grpc.PanelUpdateRequest
 import tp.services.grpc.PanelWorld
+import tp.services.grpc.PanelWorldOpRequest
 import tp.services.grpc.PanelWorlds
 import tp.services.grpc.PresencePb
 import tp.services.grpc.RankReply
@@ -402,6 +408,50 @@ class PanelGrpcServer(
                             .build()
                     },
                 ).build()
+        }
+
+        /**
+         * Diagnostics (`diag.*`, developers) and panel commands (`command`, moderators: the world's own pipeline then
+         * applies the rank, targeting and world policy). The answer streams back line by line.
+         */
+        override fun worldOp(request: PanelWorldOpRequest): Flow<OpOutput> {
+            fun line(text: String, error: Boolean = false) =
+                OpOutput
+                    .newBuilder()
+                    .setLine(text)
+                    .setDone(true)
+                    .setError(error)
+                    .build()
+            val min = if (request.kind.startsWith("diag.")) Rank.DEVELOPER else Rank.MODERATOR
+            if (!request.kind.startsWith("diag.") && request.kind != "command") return flow { emit(line("Unknown operation.", true)) }
+            return callbackFlow {
+                val (row, refused) = actor(request.actor, min)
+                if (row == null) {
+                    trySend(line(refused.orEmpty(), true))
+                    close()
+                    return@callbackFlow
+                }
+                if (request.kind != "command") {
+                    audit(row, request.actor, "panel ${request.kind}", "world ${request.worldId}", request.args, "requested")
+                }
+                val id =
+                    hub.routeWorldOp(request.worldId, request.kind, row, request.args) { l ->
+                        trySend(
+                            OpOutput
+                                .newBuilder()
+                                .setLine(l.line)
+                                .setDone(l.done)
+                                .setError(l.error)
+                                .build(),
+                        )
+                        if (l.done) close()
+                    }
+                if (id == null) {
+                    trySend(line("World ${request.worldId} isn't connected to the hub.", true))
+                    close()
+                }
+                awaitClose { id?.let(hub::abandonWorldOp) }
+            }
         }
 
         override suspend fun bootstrapOwner(request: BootstrapOwnerRequest): ErrorReply {

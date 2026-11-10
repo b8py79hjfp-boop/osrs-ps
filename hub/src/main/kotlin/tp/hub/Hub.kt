@@ -32,6 +32,9 @@ import tp.services.TpTrade
 import tp.services.TradingPostService
 import tp.services.WorldDirectory
 import tp.services.WorldInfo
+import tp.services.WorldOp
+import tp.services.WorldOpLine
+import tp.services.WorldOpsService
 import tp.util.ModRecord
 import tp.util.PlayerCard
 import tp.util.Rank
@@ -721,6 +724,49 @@ class Hub(internal val store: HubStore, private val config: HubConfig = HubConfi
                 return AutoCloseable { broadcastSinks -= sink }
             }
         }
+
+    // ---------------------------------------------------------------- world operations
+
+    private val opSinks = ConcurrentHashMap<Int, CopyOnWriteArrayList<(WorldOp) -> Unit>>()
+    private val opWaiters = ConcurrentHashMap<Long, (WorldOpLine) -> Unit>()
+    private val opIds =
+        java.util.concurrent.atomic
+            .AtomicLong()
+
+    override val worldOps: WorldOpsService =
+        object : WorldOpsService {
+            override fun subscribe(worldId: Int, sink: (WorldOp) -> Unit): AutoCloseable {
+                val list = opSinks.getOrPut(worldId) { CopyOnWriteArrayList() }
+                list += sink
+                return AutoCloseable { list -= sink }
+            }
+
+            override suspend fun reply(line: WorldOpLine) {
+                val waiter = opWaiters[line.id] ?: return
+                waiter(line)
+                if (line.done) opWaiters.remove(line.id)
+            }
+        }
+
+    /**
+     * Routes an operation to [worldId] and calls [onLine] with each line of its answer until the last ([done]). Returns
+     * the operation id, or null when no world [worldId] is listening (nothing was sent). The caller checked the actor.
+     */
+    internal fun routeWorldOp(worldId: Int, kind: String, actor: AccountRow, args: String, onLine: (WorldOpLine) -> Unit): Long? {
+        val sinks = opSinks[worldId]?.takeIf { it.isNotEmpty() } ?: return null
+        val op = WorldOp(opIds.incrementAndGet(), kind, actor.id, actor.displayName, actor.rights, args)
+        opWaiters[op.id] = onLine
+        // One world node per world id; the first live subscription answers.
+        runCatching { sinks.first()(op) }.onFailure {
+            opWaiters.remove(op.id)
+            return null
+        }
+        return op.id
+    }
+
+    internal fun abandonWorldOp(id: Long) {
+        opWaiters.remove(id)
+    }
 
     /** Accounts holding a session lock (health/metrics). */
     val onlineCount: Int get() = online.size

@@ -19,8 +19,9 @@ private val logger = KotlinLogging.logger {}
  * - a tick missed its deadline;
  * - the slowest save took longer than [SAVE_ALERT_MS].
  */
-class Ops(private val worlds: List<World>, port: Int) : AutoCloseable {
-    private val http = HttpServer.create(InetSocketAddress(port), 0)
+class Ops(private val worlds: List<World>, port: Int, bind: String = "127.0.0.1") : AutoCloseable {
+    /** Loopback by default (`--ops-bind` for a monitoring host on the private network): health and metrics aren't public. */
+    private val http = HttpServer.create(InetSocketAddress(bind, port), 0)
     private val scheduler = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory())
     private val previous = HashMap<Int, Window>()
 

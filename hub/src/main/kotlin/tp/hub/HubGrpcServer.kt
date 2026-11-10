@@ -113,6 +113,7 @@ class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127
             .addService(Hiscores())
             .addService(Moderation())
             .addService(Broadcasts())
+            .addService(WorldOpsRpc())
             .build()
 
     fun start(): HubGrpcServer = apply { server.start() }
@@ -561,6 +562,32 @@ class HubGrpcServer(private val hub: HubServices, port: Int, bind: String = "127
                 val handle = hub.moderation.subscribeKicks(request.worldId) { trySend(Kick.newBuilder().setAccountId(it).build()) }
                 awaitClose { handle.close() }
             }
+    }
+
+    private inner class WorldOpsRpc : tp.services.grpc.WorldOpsGrpcKt.WorldOpsCoroutineImplBase() {
+        override fun subscribe(request: WorldRef): Flow<tp.services.grpc.WorldOpRequest> =
+            callbackFlow {
+                val handle =
+                    hub.worldOps.subscribe(request.worldId) { op ->
+                        trySend(
+                            tp.services.grpc.WorldOpRequest
+                                .newBuilder()
+                                .setId(op.id)
+                                .setKind(op.kind)
+                                .setActorAccount(op.actorAccount)
+                                .setActorName(op.actorName)
+                                .setActorRank(op.actorRank.stored)
+                                .setArgs(op.args)
+                                .build(),
+                        )
+                    }
+                awaitClose { handle.close() }
+            }
+
+        override suspend fun reply(request: tp.services.grpc.WorldOpLine): PbEmpty {
+            hub.worldOps.reply(tp.services.WorldOpLine(request.id, request.line, request.done, request.error))
+            return EMPTY
+        }
     }
 
     private inner class Broadcasts : BroadcastsGrpcKt.BroadcastsCoroutineImplBase() {

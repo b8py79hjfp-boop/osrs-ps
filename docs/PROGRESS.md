@@ -260,8 +260,15 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   declares its minimum rank (pages above your rank answer 404), the rank re-checked with the hub every 60 s, lockout
   after 5 failures for 15 minutes, `lotus-panel bootstrap` (first owner only). Tests 1 (`permissions`, generated from
   the route table) and 2 (`auth`) pass; checked end to end in a browser against a PostgreSQL-backed hub.
-- [ ] Phase 4: server control (start/stop/restart/emergency stop, crash loop, maintenance mode, schedules,
-  diagnostics) and `lotus-panel ctl`; test 3.
+- [x] Phase 4 (2026-11-10): server control through the Windows Service Control Manager (`windows-service`; the
+  installer grants the panel query/start/stop on exactly the three game services): start in order with health gates
+  (database, hub, then each world listening on its port with `/health` 200), graceful stop/restart (lock, in-game
+  timer, cancellable, then Ctrl+C stops in reverse order; the database stays up), emergency stop (password + typed
+  phrase, alert), maintenance mode, daily/weekly scheduled restarts, crash-loop detection (3 in 10 min: stop, alert,
+  last 200 log lines), job pages, `lotus-panel ctl`. Diagnostics go hub → world over a new WorldOps channel (thread
+  dump, heap dump, JFR, tick capture into `.data/dumps`, downloadable); housekeeping shows disk use, TLS expiry and
+  the firewall's open ports. The world's ops port now binds 127.0.0.1. Test 3 (`control`) passes.
+- [ ] Phase 5: read-only pages (dashboard, players, moderation, metrics, logs, audit).
 - Later phases: ExecuteCommand with a world-side remote actor (6), diagnostics RPC (4), tickets to the hub (6).
 
 ## Next

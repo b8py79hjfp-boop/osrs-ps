@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Housekeeping · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Housekeeping</h1>
+  {% if let Some(m) = message %}<p class="notice" role="status">{{ m }}</p>{% endif %}
+  <h2>Disk use</h2>
+  <ul class="rows">{% for s in sizes %}<li><strong>{{ s.0 }}</strong><span class="muted small">{{ s.1 }}</span><span>{{ s.2 }}</span></li>{% endfor %}</ul>
+  <form method="post" action="/housekeeping/clear-dumps" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <input name="password" type="password" placeholder="Your password" autocomplete="current-password" required maxlength="20">
+    <button type="submit" class="secondary">Delete dumps older than 7 days</button>
+  </form>
+</section>
+<section class="card wide">
+  <h2>HTTPS certificate</h2>
+  <p>{{ tls }}</p>
+  <h2>Open ports (Windows Firewall, inbound)</h2>
+  {% match firewall %}
+  {% when Ok(rules) %}<ul class="rows">{% for r in rules %}<li><span>{{ r.0 }}</span><span class="muted small">{{ r.1 }}</span><strong>{{ r.2 }}</strong></li>{% endfor %}</ul>
+  {% when Err(e) %}<p class="muted">{{ e }}</p>
+  {% endmatch %}
+</section>
+{% endblock %}
