@@ -1,7 +1,8 @@
 # Core plugins that may be loaded. One fully qualified class name per line; '#' starts a comment.
 # PluginManager refuses every plugin that is not listed here (core, sideloaded and external alike),
 # and a missing allowlist is fatal. build.sh copies this file into the jar as
-# net/runelite/client/plugins/allowlist.txt.
+# net/runelite/client/plugins/allowlist.txt. Only used in the `allowlist` plugin mode; `plugins=open` in
+# release.properties loads every plugin (README.md "Plugin modes").
 #
 # Policy: all core plugins except those that give a PvP information advantage beyond the vanilla game, or that
 # contact a third party. The server stays authoritative; this only limits information advantages.

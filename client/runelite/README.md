@@ -9,7 +9,8 @@ docs/DECISIONS.md D-028. What the client calls: [ENDPOINTS.md](ENDPOINTS.md).
 |---|---|
 | `patches/*.patch` | The source changes (below), in apply order. |
 | `release.properties` | Non-secret release tokens: `name`, `site`, `api`, and the commit the tag must resolve to. |
-| `allowlist.txt` | The plugins that may load, with the reasons for the ones that may not. Copied into the jar. |
+| `allowlist.txt` | The plugins that may load, with the reasons for the ones that may not. Copied into the jar (ignored in `open` mode). |
+| `patches-open/` | `open` plugin mode only (below): `restore-from-base.txt` (RuneLite's hub icons and manifest certificate, checked out from `base.commit` so the repository carries no RuneLite binaries), then `*.patch`. |
 | `LICENSES.txt` | RuneLite's BSD-2 notice and the bundled libraries. Copied into the jar root; shown by the Info panel's "About and open source licenses" entry. |
 | `branding/` | Placeholder icons and splash (`generate.py` makes them; replace the PNGs with real artwork). |
 | `build.sh` | Clone, patch, overlay, substitute, build, copy to `.data/client/fork/`. |
@@ -42,6 +43,19 @@ text). `build.sh` replaces them from `release.properties` and fails if any `@@..
 | `@@NAME@@` | Product name: window title, splash, About, user agent, data directory `~/.<name>` | `tickperfect` (placeholder) |
 | `@@SITE@@` | Hub HTTP base; jav_config is `{site}/jav_config.ws` | `http://127.0.0.1:8080` |
 | `@@API@@` | RuneLite API base the hub serves | `http://127.0.0.1:8080/runelite` |
+
+## Plugin modes
+
+`plugins` in `release.properties` (override: `PLUGINS=` for build.sh, `-PforkPlugins=` for Gradle):
+
+| Mode | Effect |
+|---|---|
+| `allowlist` | The hardened client: no Plugin Hub, only `allowlist.txt` loads, the HTTP client refuses every non-release host. |
+| `open` (current, owner's choice 2026-11-10) | `patches-open/` restores RuneLite's Plugin Hub (`repo.runelite.net/plugins`, signed manifests as upstream), loads every plugin (core, hub, sideloaded) and turns off the release-host check. The installed-plugin report stays off. |
+
+Open mode trades the allowlist's protection for choice: hub plugins are third-party code, can contact any host, and
+include PvP-information plugins the allowlist excluded. The server stays authoritative either way. The plugins the
+series deletes (Discord, Wiki, XP updater, ...) stay deleted in both modes. Why: docs/DECISIONS.md D-099.
 
 ## The patch series
 
@@ -80,5 +94,8 @@ Then update `osrs.runeliteTag` in `gradle.properties` and `base.commit` in `rele
 4. The client tests pass in the built tree: `cd <workdir>/src && ./gradlew :client:test` (needs network for the test
    dependencies).
 5. ENDPOINTS.md still matches what the client requests.
+
+Rebase `patches-open/*.patch` the same way, on top of the series and the restored files (export it with
+`git format-patch` excluding the paths in `restore-from-base.txt`).
 
 Patches are kept small and topic-based on purpose; do not fold unrelated edits into them.

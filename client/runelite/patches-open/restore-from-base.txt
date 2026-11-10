@@ -1,0 +1,8 @@
+# Files that open mode restores verbatim from the pinned RuneLite commit (base.commit) before applying the
+# patches in this directory. They are RuneLite's own binaries and certificate, which the repository does not carry.
+# One path per line, relative to the RuneLite checkout; '#' starts a comment.
+runelite-client/src/main/resources/net/runelite/client/externalplugins/externalplugins.crt
+runelite-client/src/main/resources/net/runelite/client/plugins/config/plugin_hub_icon.png
+runelite-client/src/main/resources/net/runelite/client/plugins/config/pluginhub_configure.png
+runelite-client/src/main/resources/net/runelite/client/plugins/config/pluginhub_help.png
+runelite-client/src/main/resources/net/runelite/client/plugins/config/pluginhub_missingicon.png

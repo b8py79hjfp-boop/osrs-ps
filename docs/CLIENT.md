@@ -175,9 +175,11 @@ java -jar .data/client/fork/client-1.13.6-shaded.jar --help
 - Release values (`name`, `site`, `api`) come from `client/runelite/release.properties`. `site` is the hub's HTTP
   base (`{site}/jav_config.ws`), `api` the RuneLite API base the hub serves (`worlds.js`, `item/prices.js`,
   `config.json`, `static/...`).
-- Only the plugins in `client/runelite/allowlist.txt` load; the plugin hub, telemetry, RuneLite accounts, Jagex
-  Account sign-in, Discord, the wiki and third-party XP trackers are gone, and the HTTP client refuses any host
-  other than the hub's.
+- Plugins: `plugins` in `release.properties`. `open` (current) has RuneLite's Plugin Hub and loads every plugin;
+  `allowlist` loads only `client/runelite/allowlist.txt` and refuses any host other than the hub's
+  (client/runelite/README.md "Plugin modes"). Telemetry, RuneLite accounts, Jagex Account sign-in, Discord, the wiki
+  and third-party XP trackers are gone in both modes.
+- Hosting on a VPS: docs/VPS.md.
 - The client keeps its settings in `~/.<name>` (placeholder `~/.tickperfect`), separate from a stock RuneLite.
 - Login is the normal username/password screen against our login service.
 
@@ -188,7 +190,8 @@ java -jar .data/client/fork/client-1.13.6-shaded.jar --help
 | Dialog "unable to connect to the game update server" at start | `{site}/jav_config.ws` is not reachable or lacks `codebase`, `initial_jar` or `initial_class`. |
 | `Refusing request to <host>: not a release host` in the log | Something tried to leave the hub's host; the request was blocked on purpose. Report the host. |
 | World hopper is empty | `{api}/worlds.js` is missing or malformed (ENDPOINTS.md has the exact shape). |
-| A plugin you expect is missing | It is not in `client/runelite/allowlist.txt`, or it was removed (the list says why). |
+| A plugin you expect is missing | `allowlist` mode: it is not in `client/runelite/allowlist.txt`. Either mode: it was removed by the patch series (the list says why). |
+| No "Plugin Hub" tab | The client was built in `allowlist` mode; set `plugins=open` and rebuild. |
 | `Plugin allowlist allowlist.txt is missing` | The jar was not built with `build.sh` (the allowlist is overlaid at build time). |
 
 ## Release client: packaging, signing and updates (Phase 6)

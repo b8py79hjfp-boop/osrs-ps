@@ -1453,3 +1453,18 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   temporarily or inside instances (the Restless Ghost, Tempoross), which the runtime check can't see.
 - **Rejected.** Matching by id (misses child vs. parent); a global per-id drop (loses the table's other, legitimate copies,
   e.g. the Varrock Mage of Zamorak, while the Wilderness one is the plugin's).
+
+## D-099 Open plugin mode for the release client (2026-11-10, the owner's request)
+
+- **Why.** The owner wants every plugin, including Plugin Hub ones such as 117 HD, on the release client for now.
+- **Choice.** A `plugins` release property, `allowlist` or `open`. `open` applies one extra patch (`client/runelite/patches-open/`)
+  after the normal series instead of dropping patches 2 and 3. The series stays the single hardened baseline, and
+  going back is one property change. The patch restores upstream's hub (client, manager, panel, tab, icons, manifest
+  certificate, so jars are still signature-checked), sets `runelite.pluginhub.url` to RuneLite's repository and
+  `runelite.plugins.open=true`, which skips the allowlist and the release-host check. Hub plugins are arbitrary code that
+  can open their own connections anyway, so a host check would only break them, not contain them. The installed-plugin
+  report stays off.
+- **Cost.** PvP-information plugins the allowlist excluded load again (opponentinfo, hub PvP tools). The server stays
+  authoritative, so this is an information advantage only. The hub serves manifests per RuneLite version (1.13.6), so a
+  hub plugin that needs a newer RuneLite API does not appear.
+

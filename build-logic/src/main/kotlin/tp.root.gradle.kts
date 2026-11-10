@@ -50,6 +50,7 @@ val forkClient =
         runeliteGit = providers.gradleProperty("runeliteGit").orElse("https://github.com/runelite/runelite.git")
         tag = providers.gradleProperty("osrs.runeliteTag")
         gradleArgs = providers.gradleProperty("forkGradleArgs")
+        plugins = providers.gradleProperty("forkPlugins")
     }
 
 tasks.register<tp.build.MergeClientTask>("releaseClient") {

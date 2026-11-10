@@ -8,6 +8,10 @@ The HTTP client refuses every request whose host is not the host of one of `{sit
 `{static}`, config, session and ws) or loopback (`RuneLiteProperties.isReleaseHost`), so nothing else can leave the
 machine. Anything not listed here is never requested.
 
+This page describes the `allowlist` plugin mode. In `open` mode (README.md "Plugin modes") the host check is off and the
+client also fetches the Plugin Hub from `https://repo.runelite.net/plugins` (manifest, plugin jars, icons); hub
+plugins may contact any host of their own.
+
 Behaviour on a missing endpoint is part of the contract: "required" means the client cannot start or the feature
 breaks; "optional" means a 404/5xx only disables the feature (the failure is logged).
 

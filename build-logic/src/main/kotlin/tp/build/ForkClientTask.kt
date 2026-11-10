@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * `./gradlew forkClient` builds the RuneLite fork (client/runelite):
- * 1. Clone the pinned tag outside the repository, check its commit and apply `patches/` with `git am`.
+ * 1. Clone the pinned tag outside the repository, check its commit and apply `patches/` with `git am` (plus
+ *    `patches-open/` when the plugin mode is `open`: Plugin Hub on, no allowlist; client/runelite/README.md).
  * 2. Overlay the allowlist, licenses and branding, and substitute the release tokens from `release.properties`.
  * 3. Build with RuneLite's own Gradle wrapper and copy the shaded jar to `.data/client/fork/`.
  *
@@ -42,6 +43,11 @@ public abstract class ForkClientTask : DefaultTask() {
     @get:Optional
     public abstract val gradleArgs: Property<String>
 
+    /** Plugin mode, `allowlist` or `open` (`-PforkPlugins=...`); overrides `plugins` in `release.properties`. */
+    @get:Input
+    @get:Optional
+    public abstract val plugins: Property<String>
+
     @TaskAction
     public fun run() {
         val repo = repoDir.get().asFile
@@ -53,6 +59,9 @@ public abstract class ForkClientTask : DefaultTask() {
                 "@@SITE@@" to release.required("site"),
                 "@@API@@" to release.required("api"),
             )
+        val mode = plugins.orNull ?: release.getProperty("plugins")?.trim()?.takeIf { it.isNotEmpty() } ?: "allowlist"
+        if (mode !in PLUGIN_MODES) throw GradleException("plugins must be one of $PLUGIN_MODES, not '$mode'")
+        logger.lifecycle("plugin mode: $mode")
         val work = workDir.get().asFile
         if (work.toPath().toAbsolutePath().startsWith(repo.toPath().toAbsolutePath())) throw GradleException("work dir must be outside the repository: $work")
         if (work.exists()) {
@@ -72,11 +81,18 @@ public abstract class ForkClientTask : DefaultTask() {
         git(src, "config", "user.name", "tickperfect build")
         git(src, "config", "user.email", "build@localhost")
         val patchDir = File(work, "patches").apply { mkdirs() }
-        val patches = File(here, "patches").listFiles { f -> f.name.endsWith(".patch") }?.sortedBy { it.name }.orEmpty()
-        if (patches.isEmpty()) throw GradleException("no patches in ${File(here, "patches")}")
+        val patches = patchesIn(File(here, "patches"))
         // Normalise to LF: a Windows checkout may have converted the patch files to CRLF.
         val normalised = patches.map { p -> File(patchDir, p.name).also { it.writeText(p.readText().replace("\r\n", "\n")) } }
         git(src, *(listOf("am", "--quiet", "--3way") + normalised.map { it.path }).toTypedArray())
+        if (mode == "open") {
+            // RuneLite's hub icons and manifest certificate come from the pinned commit, not from the repository.
+            val restore = File(here, "patches-open/restore-from-base.txt").readLines().map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }
+            git(src, *(listOf("checkout", expected, "--") + restore).toTypedArray())
+            git(src, "commit", "--quiet", "-m", "Open plugins: restore the Plugin Hub icons and manifest certificate")
+            val open = patchesIn(File(here, "patches-open")).map { p -> File(patchDir, p.name).also { it.writeText(p.readText().replace("\r\n", "\n")) } }
+            git(src, *(listOf("am", "--quiet", "--3way") + open.map { it.path }).toTypedArray())
+        }
 
         // 2. Overlay + tokens.
         val res = File(src, "runelite-client/src/main/resources")
@@ -106,6 +122,9 @@ public abstract class ForkClientTask : DefaultTask() {
         logger.lifecycle("built ${File(out, jar.name)} (game client not yet patched: run releaseClient)")
     }
 
+    private fun patchesIn(dir: File): List<File> =
+        dir.listFiles { f -> f.name.endsWith(".patch") }?.sortedBy { it.name }?.takeIf { it.isNotEmpty() } ?: throw GradleException("no patches in $dir")
+
     private fun Properties.required(key: String): String = getProperty(key)?.takeIf { it.isNotBlank() } ?: throw GradleException("$key is missing from client/runelite/release.properties")
 
     private fun git(dir: File, vararg args: String): String = run(dir, listOf("git") + args, GIT_TIMEOUT_MINUTES)
@@ -128,6 +147,7 @@ public abstract class ForkClientTask : DefaultTask() {
 
     private companion object {
         const val MARKER = ".tp-runelite-work"
+        val PLUGIN_MODES = setOf("allowlist", "open")
         val TOKEN = Regex("@@[A-Z]+@@")
         val TEXT_EXTENSIONS = setOf("java", "properties", "txt", "json", "kts")
         const val GIT_TIMEOUT_MINUTES = 10L

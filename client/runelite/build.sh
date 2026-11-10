@@ -10,6 +10,8 @@
 #   RUNELITE_GIT    clone source (default https://github.com/runelite/runelite.git; a local clone works offline)
 #   GRADLE_ARGS     extra arguments for the Gradle build in the clone (for example --offline)
 #   SKIP_BUILD=1    stop after patching and substitution (for checking the patches)
+#   PLUGINS         allowlist | open; overrides release.properties `plugins`. open also applies patches-open/
+#                   (Plugin Hub on, every plugin loads, no release-host check; README.md "Plugin modes")
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,6 +33,9 @@ NAME="$(prop "$HERE/release.properties" name)"
 SITE="$(prop "$HERE/release.properties" site)"
 API="$(prop "$HERE/release.properties" api)"
 BASE_COMMIT="$(prop "$HERE/release.properties" base.commit)"
+PLUGINS="${PLUGINS:-$(prop "$HERE/release.properties" plugins)}"
+PLUGINS="${PLUGINS:-allowlist}"
+case "$PLUGINS" in allowlist|open) ;; *) die "plugins must be allowlist or open, not '$PLUGINS'" ;; esac
 [ -n "$TAG" ] || die "osrs.runeliteTag is missing from gradle.properties"
 [ -n "$NAME" ] && [ -n "$SITE" ] && [ -n "$API" ] || die "name, site and api must be set in release.properties"
 [ -n "$BASE_COMMIT" ] || die "base.commit is missing from release.properties"
@@ -57,7 +62,17 @@ git config user.name "tickperfect build"
 git config user.email "build@localhost"
 PATCHES=("$HERE"/patches/*.patch)
 [ -e "${PATCHES[0]}" ] || die "no patches in $HERE/patches"
+echo "plugin mode: $PLUGINS"
 git am --quiet --3way "${PATCHES[@]}" || die "a patch did not apply (see README.md, 'Rebasing onto a new tag')"
+if [ "$PLUGINS" = open ]; then
+  # RuneLite's hub icons and manifest certificate come from the pinned commit, not from the repository.
+  mapfile -t RESTORE < <(grep -v '^[[:space:]]*\(#\|$\)' "$HERE/patches-open/restore-from-base.txt")
+  git checkout "$BASE_COMMIT" -- "${RESTORE[@]}" || die "cannot restore the open-mode files from $BASE_COMMIT"
+  git commit --quiet -m "Open plugins: restore the Plugin Hub icons and manifest certificate"
+  OPEN_PATCHES=("$HERE"/patches-open/*.patch)
+  [ -e "${OPEN_PATCHES[0]}" ] || die "no patches in $HERE/patches-open"
+  git am --quiet --3way "${OPEN_PATCHES[@]}" || die "an open-mode patch did not apply"
+fi
 
 # --- overlay: allowlist, licenses, branding, release tokens ---------------------------------------------------
 RES="runelite-client/src/main/resources"
