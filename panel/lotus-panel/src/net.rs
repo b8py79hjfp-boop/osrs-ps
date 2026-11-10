@@ -77,3 +77,14 @@ pub fn client_ip(peer: IpAddr, forwarded_for: Option<&str>) -> IpAddr {
         .and_then(|v| v.trim().parse().ok())
         .unwrap_or(peer)
 }
+
+/// Installs the ring TLS provider for reqwest and tonic, once (no other TLS backend is built in).
+pub fn tls_provider() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+}
+
+/// An HTTP client for outgoing calls (releases, alerts, off-site backups).
+pub fn http_client() -> reqwest::Client {
+    tls_provider();
+    reqwest::Client::new()
+}

@@ -142,7 +142,11 @@ async fn crash_loop_stops_retrying() {
         }
     }
     assert_eq!(calls(&h), ["unit stop lotus"], "the third crash in 10 minutes stops it");
-    assert_eq!(h.alerts.0.lock().unwrap().as_slice(), ["Crash loop: lotus"]);
+    // Each crash alerts owners (brief §7: a world is down); the third is the crash loop.
+    assert_eq!(
+        h.alerts.0.lock().unwrap().as_slice(),
+        ["lotus went down", "lotus went down", "Crash loop: lotus"]
+    );
     let views = h.control.views().await;
     assert_eq!(views.iter().find(|v| v.1 == "lotus").unwrap().2.label(), "failed");
 

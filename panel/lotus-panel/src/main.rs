@@ -19,8 +19,8 @@ use lotus_panel::control::{Controller, Scope, Topology, WorldUnit};
 use lotus_panel::hub::HubApi;
 use lotus_panel::jobs::{JobState, JobStore};
 use lotus_panel::{
-    auth, backup, certs, clock, config, control, control_web, db, deploy, hub, jobs, metrics, secrets, store, units,
-    web,
+    alerts, auth, backup, certs, clock, config, control, control_web, db, deploy, hub, jobs, metrics, secrets, store,
+    units, web,
 };
 use tokio::io::AsyncBufReadExt;
 
@@ -76,6 +76,9 @@ enum Command {
         #[arg(long = "as")]
         as_account: Option<String>,
     },
+    /// Prints a new age key pair for backups (brief §7): the identity on the first line, its public key on the second.
+    /// The installer stores the identity as the `backup-identity` secret.
+    BackupKey,
     /// Release signing (brief §6): make the key pair, sign a release zip, check one.
     Release {
         #[command(subcommand)]
@@ -128,11 +131,16 @@ fn main() -> anyhow::Result<()> {
         )
         .init();
     // reqwest (release downloads) and tonic share the ring provider; no other TLS backend is built in.
-    let _ = rustls::crypto::ring::default_provider().install_default();
+    lotus_panel::net::tls_provider();
     let config_path = cli.config.unwrap_or_else(config::default_path);
     let runtime = tokio::runtime::Runtime::new()?;
     match cli.command {
         Command::Release { action } => release(action),
+        Command::BackupKey => {
+            let (identity, public) = backup::new_identity();
+            println!("{identity}\n{public}");
+            Ok(())
+        }
         Command::Certs { out, force } => {
             certs::generate(&out, force)?;
             println!("wrote {} certificates to {}", certs::FILES.len(), out.display());
@@ -269,7 +277,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
     let probe = Arc::new(control::LiveProbe {
         sessions: sessions.clone(),
         hub: hub.clone(),
-        http: reqwest::Client::new(),
+        http: lotus_panel::net::http_client(),
     });
     let controller = Controller::new(
         topology(config),
@@ -282,18 +290,26 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
     );
     let c = &config.control;
     let control = Arc::new(controller);
-    let backup_password = secrets::read(&config.paths.secrets, &config.backups.password_credential).unwrap_or_default();
+    let b = &config.backups;
+    let secret = |name: &str| secrets::read(&config.paths.secrets, name).unwrap_or_default();
+    let mut writer = backup::PgTools::from_config(b, secret(&b.restore_password_credential));
+    writer.user.clone_from(&b.restore_user);
+    let settings: Arc<dyn jobs::Settings> = Arc::new(jobs::PgSettings(pool.clone()));
+    let backups = Arc::new(backup::Backups::new(
+        backup::PgTools::from_config(b, secret(&b.password_credential)),
+        writer,
+        secret(&b.identity_credential),
+        c.backups.clone(),
+        settings.clone(),
+        alerts.clone(),
+    ));
     let deployer = Arc::new(deploy::Deployer {
         control: control.clone(),
         links: Arc::new(deploy::FsLinks {
             releases: c.releases.clone(),
             nodes: config.deploy.nodes.clone(),
         }),
-        backup: Arc::new(backup::PgDump::from_config(
-            &config.backups,
-            backup_password,
-            &c.backups,
-        )),
+        backup: backups.clone(),
         releases: c.releases.clone(),
         settings: deploy::DeploySettings {
             public_key: config.deploy.public_key.clone(),
@@ -315,7 +331,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         allowed: config.server.allowed_networks.clone(),
         control,
         jobs,
-        settings: Arc::new(jobs::PgSettings(pool.clone())),
+        settings,
         paths: web::PanelPaths {
             logs: c.logs.clone(),
             dumps: c.dumps.clone(),
@@ -328,6 +344,7 @@ async fn state(config: &config::Config) -> anyhow::Result<web::AppState> {
         alerts: alerts.clone(),
         console: Arc::default(),
         deployer,
+        backups,
     })
 }
 
@@ -464,6 +481,7 @@ async fn serve(path: &std::path::Path) -> anyhow::Result<()> {
     }
     control_web::spawn_background(state.clone());
     spawn_metrics(state.clone());
+    spawn_backups_and_alerts(state.clone());
     let app = web::router(state).into_make_service_with_connect_info::<SocketAddr>();
     let listener = tokio::net::TcpListener::bind(config.server.bind).await?;
     tracing::info!(
@@ -495,6 +513,26 @@ async fn shutdown() {
 }
 
 /// Brief §7: scrape every world node and the VPS every 15 s; downsample and prune hourly.
+/// Brief §7: the nightly backup (checked every minute against its time) and alert delivery.
+fn spawn_backups_and_alerts(state: Arc<web::AppState>) {
+    let s = state.clone();
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            s.backups.tick(s.clock.now()).await;
+        }
+    });
+    tokio::spawn(async move {
+        let http = lotus_panel::net::http_client();
+        loop {
+            tokio::time::sleep(alerts::SEND_EVERY).await;
+            if let Err(e) = state.alerts.deliver(&*state.settings, &http).await {
+                tracing::warn!(error = %e, "alert delivery failed");
+            }
+        }
+    });
+}
+
 fn spawn_metrics(state: Arc<web::AppState>) {
     let urls: Vec<(i32, String)> = state
         .control
@@ -506,8 +544,11 @@ fn spawn_metrics(state: Arc<web::AppState>) {
     let s = state.clone();
     tokio::spawn(async move {
         let mut scraper = metrics::Scraper::default();
+        let watcher = alerts::Watcher::default();
+        let worlds: Vec<i32> = urls.iter().map(|(w, _)| *w).collect();
         loop {
             let samples = scraper.sample(&urls).await;
+            watcher.check(&samples, &worlds, s.clock.now(), &*s.alerts).await;
             if let Err(e) = s.metrics.insert(s.clock.now(), &samples).await {
                 tracing::warn!(error = %e, "could not store metrics");
             }

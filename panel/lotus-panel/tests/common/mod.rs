@@ -310,6 +310,18 @@ impl lotus_panel::deploy::Backup for FakeBackup {
     }
 }
 
+/// Never run in tests (backups only list their folder here).
+fn pg_tools() -> lotus_panel::backup::PgTools {
+    lotus_panel::backup::PgTools {
+        pg_bin: PathBuf::from("/nonexistent"),
+        host: "127.0.0.1".into(),
+        port: 5432,
+        database: "lotus".into(),
+        user: "lotus_backup".into(),
+        password: String::new(),
+    }
+}
+
 static HARNESSES: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
 
 pub struct Harness {
@@ -418,6 +430,14 @@ impl Harness {
             alerts: alerts.clone(),
             console: Arc::default(),
             deployer: deployer.clone(),
+            backups: Arc::new(lotus_panel::backup::Backups::new(
+                pg_tools(),
+                pg_tools(),
+                String::new(),
+                root.join("backups"),
+                Arc::new(MemorySettings::default()),
+                alerts.clone(),
+            )),
         };
         Self {
             app: router(Arc::new(state)),

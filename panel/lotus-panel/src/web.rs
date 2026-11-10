@@ -54,6 +54,8 @@ pub struct AppState {
     pub console: Arc<crate::actions::ConsoleRuns>,
     /// Releases and deploys (brief §6).
     pub deployer: Arc<crate::deploy::Deployer>,
+    /// Backups (brief §7).
+    pub backups: Arc<crate::backup::Backups>,
 }
 
 /// Directories the panel reads (logs, dumps) or reports on (backups, releases, certificates).
@@ -110,6 +112,7 @@ pub fn routes() -> Vec<RouteSpec> {
     all.extend(crate::pages::routes());
     all.extend(crate::actions::routes());
     all.extend(crate::deploy_web::routes());
+    all.extend(crate::backup_web::routes());
     all
 }
 
@@ -490,8 +493,14 @@ async fn login_submit(State(state): State<Shared>, req: Request) -> Response {
             );
         }
         if state.lockout.fail(&name, &ip, now) {
-            // Brief §2: repeated failures alert owners (the alert channels arrive in phase 8; the log carries it now).
-            tracing::warn!(alert = true, account = %name, %ip, "panel sign-in locked after repeated failures");
+            // Brief §2 and §7: repeated failures alert owners.
+            state
+                .alerts
+                .alert(
+                    "Panel sign-in locked",
+                    &format!("Repeated failed sign-ins for {name} from {ip}; locked for 15 minutes."),
+                )
+                .await;
         }
         return render(
             StatusCode::UNAUTHORIZED,

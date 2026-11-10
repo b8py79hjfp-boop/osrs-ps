@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Settings · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Developer only</p>
+  <h1>Settings</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  {% if saved %}<p class="notice">Saved.</p>{% endif %}
+  <p class="muted small">Every change asks for your password again and goes to the audit log. Server addresses, ports and certificates stay in <code>panel.toml</code>.</p>
+</section>
+
+<section class="card wide">
+  <h2>Alerts</h2>
+  <p class="muted small">Sent when a world or the hub goes down, tick time is over budget for 5 minutes, the disk is over 85 % full, a backup or deploy fails, or someone keeps failing to sign in.</p>
+  <form method="post" action="/settings/alerts" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Discord webhook (Server Settings › Integrations › Webhooks › Copy URL) <input name="discord_webhook" value="{{ alerts.discord_webhook }}" placeholder="https://discord.com/api/webhooks/..." autocomplete="off"></label>
+    <h3>Email (optional)</h3>
+    {% if let Some(e) = alerts.email %}
+    <div class="inline">
+      <label>SMTP server <input name="smtp_host" value="{{ e.host }}"></label>
+      <label>Port <input name="smtp_port" value="{{ e.port }}" inputmode="numeric"></label>
+    </div>
+    <div class="inline">
+      <label>Username <input name="smtp_username" value="{{ e.username }}" autocomplete="off"></label>
+      <label>Password <input name="smtp_password" type="password" placeholder="(unchanged)" autocomplete="new-password"></label>
+    </div>
+    <div class="inline">
+      <label>From <input name="email_from" value="{{ e.from }}"></label>
+      <label>To (comma-separated) <input name="email_to" value="{{ e.to }}"></label>
+    </div>
+    {% else %}
+    <div class="inline">
+      <label>SMTP server <input name="smtp_host" placeholder="smtp.gmail.com"></label>
+      <label>Port <input name="smtp_port" placeholder="587" inputmode="numeric"></label>
+    </div>
+    <div class="inline">
+      <label>Username <input name="smtp_username" autocomplete="off"></label>
+      <label>Password <input name="smtp_password" type="password" autocomplete="new-password"></label>
+    </div>
+    <div class="inline">
+      <label>From <input name="email_from" placeholder="Lotus &lt;alerts@example.com&gt;"></label>
+      <label>To (comma-separated) <input name="email_to"></label>
+    </div>
+    {% endif %}
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit">Save alerts</button>
+  </form>
+  <form method="post" action="/settings/test-alert" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <button type="submit" class="secondary">Send a test alert</button>
+  </form>
+</section>
+
+<section class="card wide">
+  <h2>Backups</h2>
+  <p class="muted small">Panel key (verify and restore use it): <code>{% if panel_key.is_empty() %}missing{% else %}{{ panel_key }}{% endif %}</code></p>
+  <form method="post" action="/settings/backups" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Owner keys (age public keys, one per line): whoever holds the matching secret key can decrypt every backup
+      <textarea name="owner_recipients" rows="3">{% for r in backups.owner_recipients %}{{ r }}
+{% endfor %}</textarea></label>
+    <label>Nightly backup time (UTC, HH:MM) <input name="time" value="{{ backups.time }}" maxlength="5" pattern="[0-2][0-9]:[0-5][0-9]"></label>
+    <h3>Off-site copy (optional, any S3-compatible bucket)</h3>
+    {% if let Some(s3) = backups.s3 %}
+    <div class="inline">
+      <label>Endpoint <input name="s3_endpoint" value="{{ s3.endpoint }}"></label>
+      <label>Region <input name="s3_region" value="{{ s3.region }}"></label>
+    </div>
+    <div class="inline">
+      <label>Bucket <input name="s3_bucket" value="{{ s3.bucket }}"></label>
+      <label>Folder prefix <input name="s3_prefix" value="{{ s3.prefix }}"></label>
+    </div>
+    <div class="inline">
+      <label>Access key <input name="s3_access_key" value="{{ s3.access_key }}" autocomplete="off"></label>
+      <label>Secret key <input name="s3_secret_key" type="password" placeholder="(unchanged)" autocomplete="new-password"></label>
+    </div>
+    {% else %}
+    <div class="inline">
+      <label>Endpoint <input name="s3_endpoint" placeholder="https://s3.eu-central-1.amazonaws.com"></label>
+      <label>Region <input name="s3_region" placeholder="eu-central-1"></label>
+    </div>
+    <div class="inline">
+      <label>Bucket <input name="s3_bucket"></label>
+      <label>Folder prefix <input name="s3_prefix" placeholder="lotus/"></label>
+    </div>
+    <div class="inline">
+      <label>Access key <input name="s3_access_key" autocomplete="off"></label>
+      <label>Secret key <input name="s3_secret_key" type="password" autocomplete="new-password"></label>
+    </div>
+    {% endif %}
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit">Save backup settings</button>
+  </form>
+  <h3>Make an owner key</h3>
+  <p class="muted small">Makes a new key pair: its public half is added above and its secret half downloads once as <code>lotus-backup-key.txt</code>. Keep that file off this server (a password manager or a USB stick); with it, any copy of a backup can be decrypted with the <code>age</code> tool.</p>
+  <form method="post" action="/settings/owner-key" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <input name="password" type="password" maxlength="20" placeholder="Your password" required autocomplete="current-password" aria-label="Your password">
+    <button type="submit" class="secondary">Make and download</button>
+  </form>
+</section>
+{% endblock %}

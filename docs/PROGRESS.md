@@ -293,7 +293,16 @@ spot-checks. CI on Temurin 25.0.5 shows the same, with checksums matching `242.s
   through the junctions, makes the signing key once and a read-only `lotus_backup` role. Test 4 (`deploy`) passes;
   checked here with a real 119 MB release (good and tampered signatures). The junction switch and service restarts
   only run on Windows, so they're untested until the VPS.
-- [ ] Phases 8–9: backups and alerts; operations.md, verifier review, staging run.
+- [x] Phase 8 (2026-11-10): backups and alerts (D-103). Nightly `pg_dump` (as the read-only `lotus_backup` role)
+  encrypted with age to the panel's key and the owner's keys (made on the Settings page; the secret half downloads
+  once), rotated 14 daily / 8 weekly / 6 monthly plus 5 pre-deploy, optional S3-compatible copy (SigV4). Backups page:
+  run now, download, verify (restore into a scratch database and count accounts), restore to live (developer,
+  password, typed confirmation, a control job that locks, counts down, stops, restores as the hub's role and starts
+  again). Alerts go to Discord and/or email from the Settings page: a world or hub down, tick p99 over budget for 5
+  minutes, disk over 85 %, backup/deploy/restore failures, repeated sign-in failures; plus a test button. Checked here
+  against PostgreSQL 16: backup, encryption, verify ("restored; 3 accounts"), owner key. Not run here: the live
+  restore (it stops Windows services), real Discord/SMTP delivery, the S3 upload.
+- [ ] Phase 9: operations.md, verifier review of §8, staging run.
 
 ## Next
 

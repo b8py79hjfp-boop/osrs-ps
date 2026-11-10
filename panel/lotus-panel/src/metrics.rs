@@ -149,7 +149,7 @@ impl Default for Scraper {
             system: sysinfo::System::new().ok(),
             networks: sysinfo::Networks::new_with_refreshed_list().ok(),
             gc_total: HashMap::new(),
-            http: reqwest::Client::new(),
+            http: crate::net::http_client(),
         }
     }
 }

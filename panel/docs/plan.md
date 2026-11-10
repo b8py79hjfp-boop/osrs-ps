@@ -175,7 +175,8 @@ Already enough: health and metrics (scraped directly from `127.0.0.1:9090+` and 
      - the diff, migration-with-backup, lock, countdown, junction switch, ordered restart, health check and rollback all
        work, with job rows;
      - test 4 (`deploy`) passes.
-8. **Backups and alerts.**
+8. **Backups and alerts.** Done 2026-11-10 (D-103). Alert delivery to real Discord/SMTP and the live restore run
+   only on the VPS.
    - Done when:
      - nightly `pg_dump` runs, encrypted with age and rotated 14/8/6, with optional S3 copies;
      - verify restores into a scratch database;

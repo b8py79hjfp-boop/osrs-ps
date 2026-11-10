@@ -189,7 +189,7 @@ async fn ci_fragment(State(state): State<Shared>, Extension(Auth(s)): Extension<
         d.settings.ci_repo
     );
     let result = async {
-        let r = reqwest::Client::new()
+        let r = crate::net::http_client()
             .get(&url)
             .header("User-Agent", "lotus-panel")
             .header("Accept", "application/vnd.github+json")
@@ -272,6 +272,7 @@ async fn fetch(State(state): State<Shared>, Extension(Auth(s)): Extension<Auth>,
 }
 
 async fn download_and_install(d: &deploy::Deployer, base: &str, st: &Shared, job: i64) -> anyhow::Result<String> {
+    crate::net::tls_provider();
     let http = reqwest::Client::builder().timeout(DOWNLOAD_TIMEOUT).build()?;
     let sig = http
         .get(format!("{base}{ASSET}.minisig"))

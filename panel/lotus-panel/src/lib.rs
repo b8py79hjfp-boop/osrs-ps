@@ -2,8 +2,10 @@
 //! library is everything else, so the brief §10 tests drive the real router with a fake hub.
 
 pub mod actions;
+pub mod alerts;
 pub mod auth;
 pub mod backup;
+pub mod backup_web;
 pub mod certs;
 pub mod clock;
 pub mod config;

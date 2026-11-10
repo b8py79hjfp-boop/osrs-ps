@@ -90,6 +90,14 @@ pub struct Backups {
     pub user: String,
     #[serde(default = "Backups::default_password_credential")]
     pub password_credential: String,
+    /// The role restores to live run as (the hub's: it owns the game tables).
+    #[serde(default = "Backups::default_restore_user")]
+    pub restore_user: String,
+    #[serde(default = "Backups::default_restore_password_credential")]
+    pub restore_password_credential: String,
+    /// The panel's own age key, so it can verify and restore.
+    #[serde(default = "Backups::default_identity_credential")]
+    pub identity_credential: String,
 }
 
 impl Backups {
@@ -111,6 +119,15 @@ impl Backups {
     fn default_password_credential() -> String {
         "backup-db-password".into()
     }
+    fn default_restore_user() -> String {
+        "lotus_hub".into()
+    }
+    fn default_restore_password_credential() -> String {
+        "restore-db-password".into()
+    }
+    fn default_identity_credential() -> String {
+        "backup-identity".into()
+    }
 }
 
 impl Default for Backups {
@@ -122,6 +139,9 @@ impl Default for Backups {
             database: Self::default_database(),
             user: Self::default_user(),
             password_credential: Self::default_password_credential(),
+            restore_user: Self::default_restore_user(),
+            restore_password_credential: Self::default_restore_password_credential(),
+            identity_credential: Self::default_identity_credential(),
         }
     }
 }

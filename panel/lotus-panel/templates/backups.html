@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Backups · Lotus panel{% endblock %}
+{% block content %}
+<section class="card wide">
+  <p class="min-rank">Owner and above</p>
+  <h1>Backups</h1>
+  {% if let Some(e) = error %}<p class="error" role="alert">{{ e }}</p>{% endif %}
+  {% if !keyed %}<p class="error">The panel has no backup key yet (the <code>backup-identity</code> secret); run the installer again.</p>{% endif %}
+  <p class="muted small">The game database is backed up every night at {{ time }} UTC, encrypted (age) to the panel's key{% if owner_keys > 0 %} and {{ owner_keys }} owner key(s){% else %}; add an owner key on the Settings page so you can decrypt backups without this server{% endif %}. Kept: 14 daily, 8 weekly and 6 monthly, plus the last 5 taken before deploys. Off-site copy: {% if offsite %}on{% else %}off{% endif %}.</p>
+  <form method="post" action="/backups/run" class="inline">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <button type="submit" {% if !keyed %}disabled{% endif %}>Back up now</button>
+  </form>
+</section>
+<section class="card wide">
+  <h2>On this server</h2>
+  {% if rows.is_empty() %}<p class="muted">No backups yet.</p>{% endif %}
+  <ul class="rows">{% for r in rows %}<li><div><strong>{{ r.name }}</strong> <span class="badge">{{ r.kind }}</span>
+    <div class="muted small">{{ r.at }} · {{ r.size }}{% if !r.verified.is_empty() %} · verified {{ r.verified }}{% endif %}</div></div>
+    <div class="inline">
+      <a class="button-link" href="/backups/download/{{ r.name|urlencode }}">Download</a>
+      <form method="post" action="/backups/verify" class="inline">
+        <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+        <input type="hidden" name="name" value="{{ r.name }}">
+        <button type="submit" class="secondary">Verify</button>
+      </form>
+    </div></li>{% endfor %}</ul>
+  <p class="muted small">Verify restores the backup into a scratch database, counts the accounts, then drops it. The live game isn't touched.</p>
+</section>
+{% if developer %}
+<section class="card wide danger-zone">
+  <p class="min-rank">Developer only</p>
+  <h2>Restore a backup over the live game</h2>
+  <p class="muted small">Locks logins, runs the in-game update timer, stops every world and the hub (everyone is saved first), replaces the whole game database with the backup, then starts everything again. Anything since the backup is lost. Take a fresh backup first.</p>
+  <form method="post" action="/backups/restore" class="stack">
+    <input type="hidden" name="csrf" value="{% if let Some(n) = nav %}{{ n.csrf }}{% endif %}">
+    <label>Backup <select name="name">{% for r in rows %}<option value="{{ r.name }}">{{ r.name }}</option>{% endfor %}</select></label>
+    <label><span>Type <code>{{ restore_word }}</code> and a space, then the backup's name</span><input name="confirm" autocomplete="off" required></label>
+    <label>Update timer (seconds) <input name="seconds" type="number" min="1" max="3600" value="{{ timer }}"></label>
+    <label>Your password <input name="password" type="password" autocomplete="current-password" required maxlength="20"></label>
+    <button type="submit" class="big danger" {% if rows.is_empty() %}disabled{% endif %}>Restore</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE panel.alerts SET sent = true WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "313fa853721b9260cbf62fe2ccfa59a3088116f8e0e4f87b24c2a26169aad131"
+}

@@ -616,6 +616,15 @@ impl Controller {
                 q.len()
             };
             tracing::warn!(unit, count, "crash detected");
+            // Brief §7: a world or the hub is down (the service wrapper restarts it; a loop stops that).
+            if count < CRASH_LOOP_COUNT {
+                self.alerts
+                    .alert(
+                        &format!("{unit} went down"),
+                        &format!("{unit} stopped unexpectedly; it restarts by itself."),
+                    )
+                    .await;
+            }
             if count >= CRASH_LOOP_COUNT {
                 self.crash_loop(&unit).await;
             }

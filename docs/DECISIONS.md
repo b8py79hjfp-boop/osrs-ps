@@ -1515,3 +1515,18 @@ icons in `mod_icons` (yell lines use them) and `::sc` staff chat (`[Staff]` game
   (this session can't set repository secrets). The installer trusts its own source builds (`src-<commit>`, marked
   verified) so the first deploy has a rollback target.
 
+## D-103 Backups encrypted to the owner's keys and the panel's own (2026-11-10)
+
+- **Why.** Panel brief §7: backups are encrypted with age to an owner-held key, and "verify" restores the latest into
+  a scratch database. A panel holding only the owner's public key could never decrypt to verify or restore.
+- **Choice.** Every backup is encrypted to two kinds of recipient: the owner's keys (the Settings page makes one and
+  hands over the secret half once; it never stays on the server) and the panel's own key (a DPAPI secret). The owner's
+  key keeps off-site copies readable without the VPS; the panel's key lets it verify and restore. Someone who controls
+  the VPS can read the backups, but they can read the live database too, so nothing is lost there.
+- **Roles.** Dumps and verifies run as `lotus_backup` (`pg_read_all_data`, `CREATEDB` for the scratch database);
+  restores run as the hub's role, which owns the tables.
+- **Dependencies.** age 0.11, not 0.12: 0.12 pulls in p256/crypto-bigint with a timing advisory; 0.11's only flag is an
+  unmaintained compile-time macro crate (ignored in deny.toml with the reason).
+- **Alert targets** (Discord webhook, SMTP) live in the panel database's settings, edited on the Settings page with the
+  password asked again; the SMTP password is never shown back.
+

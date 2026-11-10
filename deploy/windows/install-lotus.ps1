@@ -359,6 +359,8 @@ Write-Text "$PgDir\backup-db-password" $backupPw
 if (-not (Invoke-Psql "SELECT 1 FROM pg_roles WHERE rolname = 'lotus_backup'")) { Invoke-Psql "CREATE ROLE lotus_backup LOGIN PASSWORD '$backupPw'" | Out-Null }
 else { Invoke-Psql "ALTER ROLE lotus_backup PASSWORD '$backupPw'" | Out-Null }
 Invoke-Psql 'GRANT pg_read_all_data TO lotus_backup' | Out-Null
+# Verify restores into a scratch database (lotus_verify) it creates and drops.
+Invoke-Psql 'ALTER ROLE lotus_backup CREATEDB' | Out-Null
 Done 'Databases lotus (game) and lotus_panel ready' 
 
 Step 'Panel certificates and settings'
@@ -410,6 +412,12 @@ public_key = "$releaseKey"
     $dbUrl = "postgres://lotus_panel:$panelDbPw@127.0.0.1:5432/lotus_panel"
     $dbUrl | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set panel-db-url | Out-Host
     $backupPw | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set backup-db-password | Out-Host
+    # Restores to live run as the hub's role (it owns the game tables).
+    $hubPw | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set restore-db-password | Out-Host
+    # The panel's own backup key (age), made once: backups are encrypted to it and to the owner's keys.
+    if (-not (Test-Path "$PanelDir\secrets\backup-identity")) {
+        (& "$Tools\lotus-panel.exe" backup-key | Select-Object -First 1) | & "$Tools\lotus-panel.exe" --config "$PanelDir\panel.toml" secret set backup-identity | Out-Host
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Could not store the panel secrets.' }
     # The `lotus-panel ctl` token: only Administrators and the panel can read it (panel brief section 3, CLI twin).
     if (-not (Test-Path "$PanelDir\secrets\ctl-token")) {
@@ -533,8 +541,10 @@ if ($HavePanel) {
 Done 'Permissions set'
 
 Step 'Daily database backup (04:00, kept 30 days, in C:\lotus\backups)'
-$backup = "`$env:PGPASSFILE = '$PgDir\pgpass.conf'; `$d = Get-Date -Format yyyy-MM-dd; " +
-    "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus-' + `$d + '.dump') lotus; " +
+# With the panel, the game database is backed up by the panel (encrypted, rotated, verified: Backups page); this task
+# then keeps only the panel's own database (its settings and keys). Without the panel it backs up both.
+$gameDump = if ($HavePanel) { '' } else { "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus-' + `$d + '.dump') lotus; " }
+$backup = "`$env:PGPASSFILE = '$PgDir\pgpass.conf'; `$d = Get-Date -Format yyyy-MM-dd; " + $gameDump +
     "& '$Tools\pgsql\bin\pg_dump.exe' -h 127.0.0.1 -U postgres -Fc -f ('$Backups\lotus_panel-' + `$d + '.dump') lotus_panel; " +
     "Get-ChildItem '$Backups' -Filter '*.dump' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item"
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -Command `"$backup`""

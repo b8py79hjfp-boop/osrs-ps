@@ -68,9 +68,13 @@ pub trait Alerts: Send + Sync {
     async fn recent(&self, _n: i64) -> Vec<(OffsetDateTime, String, String)> {
         Vec::new()
     }
+    /// Sends the stored alerts that haven't gone out yet (brief §7; stores without delivery do nothing).
+    async fn deliver(&self, _settings: &dyn Settings, _http: &reqwest::Client) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
-/// Alerts stored in `panel.alerts` (dashboard) and logged; phase 8 sends the unsent ones out.
+/// Alerts stored in `panel.alerts` (dashboard) and logged; [`Alerts::deliver`] sends the unsent ones out.
 pub struct DbAlerts(pub sqlx::PgPool);
 
 #[async_trait]
@@ -83,6 +87,10 @@ impl Alerts for DbAlerts {
         {
             tracing::error!(error = %e, "could not store an alert");
         }
+    }
+
+    async fn deliver(&self, settings: &dyn Settings, http: &reqwest::Client) -> anyhow::Result<()> {
+        crate::alerts::send_pending(&self.0, settings, http).await
     }
 
     async fn recent(&self, n: i64) -> Vec<(OffsetDateTime, String, String)> {

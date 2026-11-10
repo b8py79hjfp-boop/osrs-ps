@@ -9,6 +9,9 @@ ignore = [
     # basic-toml is unmaintained (not a vulnerability). Only askama's derive macro uses it, at compile time, to read
     # askama's own config; no input from users reaches it. Revisit when askama replaces it.
     { id = "RUSTSEC-2026-0374", reason = "compile-time only, via askama_derive" },
+    # proc-macro-error2 is unmaintained (not a vulnerability): a compile-time helper of age's i18n macros. age 0.12
+    # would drop it but pulls in p256/crypto-bigint with RUSTSEC-2026-0387 (a real timing advisory), so 0.11 stays.
+    { id = "RUSTSEC-2026-0173", reason = "compile-time only, via age 0.11's i18n-embed-fl" },
 ]
 
 [licenses]
