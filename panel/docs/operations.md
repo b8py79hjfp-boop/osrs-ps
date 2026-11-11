@@ -40,10 +40,9 @@ Each runs under its own restricted Windows account (`NT SERVICE\<name>`), never 
 
    It asks for the owner's account name once. That account becomes a developer at its first sign-in to the game or
    the panel.
-4. **Deploy key (once).** The installer makes the release signing key and, at the end, prints two values for
-   GitHub. On github.com open the repository, then Settings › Secrets and variables › Actions › New repository secret:
-   - `LOTUS_RELEASE_KEY`: the text of `C:\lotus\pki\release.key` (`notepad C:\lotus\pki\release.key`);
-   - `LOTUS_RELEASE_KEY_PASSWORD`: the text of `C:\lotus\pki\release-key-password`.
+4. Nothing else is needed for deploys: the installer made this server's release signing key, and
+   `build-release.ps1` (section 3) uses it. (The optional GitHub `game-release` workflow needs that key copied into
+   two repository secrets, `LOTUS_RELEASE_KEY` and `LOTUS_RELEASE_KEY_PASSWORD`.)
 5. Sign in at `https://lotusps.duckdns.org` with the owner's game account. Then, on **Settings**:
    - **Make an owner key** for backups and keep the downloaded `lotus-backup-key.txt` off the server (a password
      manager or a USB stick);
@@ -54,9 +53,12 @@ Each runs under its own restricted Windows account (`NT SERVICE\<name>`), never 
 There are two ways. Both keep players' data, and both are logged.
 
 - **From the panel (normal).**
-  1. On GitHub: Actions › game-release › Run workflow. It builds and signs a release (about 15 minutes).
-  2. On the panel's **Deploys** page, press **Download and verify** next to it. The panel refuses anything whose
-     signature doesn't match.
+  1. On the VPS, in PowerShell opened as Administrator, run
+     `irm https://raw.githubusercontent.com/b8py79hjfp-boop/osrs-ps/main/deploy/windows/build-release.ps1 | iex`.
+     It pulls the latest code, builds it and signs it with this server's key into the incoming folder (about 10
+     minutes; the game keeps running). With GitHub access, Actions › game-release › Run workflow does the same.
+  2. On the panel's **Deploys** page, press **Check the incoming folder** (or **Download and verify** for a GitHub
+     build). The panel refuses anything whose signature doesn't match.
   3. Open the release. It shows the commits and any database changes; set the timer and press **Deploy**.
   4. Players get the in-game countdown and are saved. The hub and then each world switch over, each one
      health-checked. If one fails, it goes back to the old release and the others stay there too.

@@ -74,11 +74,15 @@ address is `$PanelDomain` at the top of the installer (`lotusps.duckdns.org`, wh
 duckdns.org). Its HTTPS certificate comes from Let's Encrypt through port 443 alone. Signing in to the panel arrives
 with its next update (panel phase 3); until then it shows a status page.
 
-**One-time step for deploys from the panel.** The first install makes a release signing key on the VPS and prints
-what to do with it: on github.com, open the repository's Settings > Secrets and variables > Actions and add
-`LOTUS_RELEASE_KEY` (the text of `C:\lotus\pki\release.key`) and `LOTUS_RELEASE_KEY_PASSWORD` (the text of
-`C:\lotus\pki\release-key-password`). After that, Actions > game-release > Run workflow builds a signed release, and
-the panel's Deploys page can download and deploy it.
+**Updating with a countdown and rollback (from the panel).** On the VPS, in PowerShell opened as Administrator:
+
+```powershell
+irm https://raw.githubusercontent.com/b8py79hjfp-boop/osrs-ps/main/deploy/windows/build-release.ps1 | iex
+```
+
+It builds the latest code into a release signed with this server's own key (the game keeps running). Then in the
+panel: Deploys › Check the incoming folder › open the release › Deploy. No GitHub settings are needed; the
+`game-release` GitHub workflow is an optional alternative for whoever can set the repository's secrets.
 
 ## Troubleshooting
 

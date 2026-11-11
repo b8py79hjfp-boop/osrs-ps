@@ -599,11 +599,9 @@ Write-Host " Settings:        $Config  (then: Restart-Service lotus)"
 Write-Host ' Update later:    run the same install command again'
 Write-Host ''
 Write-Host ' If your VPS provider has its own firewall in its website, open TCP 43594, 8080 and 443 there too.' -ForegroundColor Yellow
-if ($HavePanel -and $NewReleaseKey) {
+if ($HavePanel) {
     Write-Host ''
-    Write-Host ' One-time step for panel deploys: let GitHub sign releases with this server''s key.' -ForegroundColor Yellow
-    Write-Host '   On github.com open the repository > Settings > Secrets and variables > Actions > New repository secret:'
-    Write-Host "     LOTUS_RELEASE_KEY           = the text of $Pki\release.key   (notepad $Pki\release.key)"
-    Write-Host "     LOTUS_RELEASE_KEY_PASSWORD  = the text of $Pki\release-key-password"
-    Write-Host '   Then Actions > game-release > Run workflow builds a release the panel can deploy.'
+    Write-Host ' Updating later, with a countdown and rollback: run this on the VPS (Administrator PowerShell):' -ForegroundColor Yellow
+    Write-Host '   irm https://raw.githubusercontent.com/b8py79hjfp-boop/osrs-ps/main/deploy/windows/build-release.ps1 | iex'
+    Write-Host '   then in the panel: Deploys > Check the incoming folder > open the release > Deploy.'
 }

@@ -28,8 +28,12 @@ Copy-Item "$hubLib\*" "$Out\hub\lib\"
 Copy-Item "$worldLib\*" "$Out\world\lib\"
 
 # The hub's schema statements, one per line: the panel shows which ones a deploy adds.
+# The logging library prints a start-up line on stderr; Windows PowerShell would stop on it under 'Stop'.
+$ErrorActionPreference = 'Continue'
 & java -cp "$Out\hub\lib\*" tp.hub.HubMainKt --print-schema "$Out\schema.sql" 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path "$Out\schema.sql")) { throw 'Could not write schema.sql.' }
+$schemaExit = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
+if ($schemaExit -ne 0 -or -not (Test-Path "$Out\schema.sql")) { throw 'Could not write schema.sql.' }
 
 $commit = (git -C $Repo rev-parse HEAD).Trim()
 $manifest = [ordered]@{
