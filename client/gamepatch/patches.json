@@ -2,22 +2,174 @@
   "comment": "Game-client URL rewrites (brief §4.2 change set 2). Found by exact value; 'count' is how many constant sites must match (LDC operands + field values). {site} = our website/hub base URL, {host} = its host name. Note: rewriting '.runescape.com' to '' also makes the client's codebase host check (the class holding 'invalidhost') accept any host, which our own domains need (DECISIONS D-028).",
   "loginNagSites": 9,
   "urls": [
-    { "name": "support-home", "from": "https://support.runescape.com/hc/en-gb", "to": "{site}/support", "count": 5 },
-    { "name": "support-article-ja", "from": "https://support.runescape.com/hc/articles/34153372787857", "to": "{site}/support", "count": 1 },
-    { "name": "support-article-login", "from": "https://support.runescape.com/hc/en-gb/articles/360001552065", "to": "{site}/support", "count": 1 },
-    { "name": "support-unpaid-balance", "from": "https://support.runescape.com/hc/en-gb/articles/207256855-Settle-an-Unpaid-Balance", "to": "{site}/support", "count": 5 },
-    { "name": "legal-privacy", "from": "https://legal.jagex.com/docs/policies/privacy", "to": "{site}/legal/privacy", "count": 10 },
-    { "name": "legal-terms", "from": "https://legal.jagex.com/docs/terms", "to": "{site}/legal/terms", "count": 5 },
-    { "name": "legal-eula", "from": "https://legal.jagex.com/docs/terms/eula", "to": "{site}/legal/eula", "count": 5 },
-    { "name": "offence-appeal", "from": "https://secure.runescape.com/m=offence-appeal/account-history", "to": "{site}/support", "count": 5 },
-    { "name": "password-recovery", "from": "https://secure.runescape.com/m=accountappeal/passwordrecovery", "to": "{site}/support", "count": 5 },
-    { "name": "jagex-account-date", "from": "https://osrs.game/ja-date", "to": "{site}", "count": 1 },
-    { "name": "play-page", "from": "https://oldschool.runescape.com/play?utm_source=osrs_java&utm_medium=game_client", "to": "{site}", "count": 1 },
-    { "name": "displaynames-wtqa", "from": "https://secure-wtqa.runescape.com/m=displaynames", "to": "{site}/m=displaynames", "count": 4 },
-    { "name": "secure-prefix", "from": "https://secure", "to": "{site}", "count": 5 },
-    { "name": "runescape-domain", "from": ".runescape.com", "to": "", "count": 9 },
-    { "name": "runescape-host", "from": "runescape.com", "to": "{host}", "count": 5 },
-    { "name": "jagex-host", "from": "jagex.com", "to": "{host}", "count": 4 },
-    { "name": "jagex-domain", "from": ".jagex.com", "to": ".{host}", "count": 4 }
-  ]
+    {
+      "name": "support-home",
+      "from": "https://support.runescape.com/hc/en-gb",
+      "to": "{site}/support",
+      "count": 5
+    },
+    {
+      "name": "support-article-ja",
+      "from": "https://support.runescape.com/hc/articles/34153372787857",
+      "to": "{site}/support",
+      "count": 1
+    },
+    {
+      "name": "support-article-login",
+      "from": "https://support.runescape.com/hc/en-gb/articles/360001552065",
+      "to": "{site}/support",
+      "count": 1
+    },
+    {
+      "name": "support-unpaid-balance",
+      "from": "https://support.runescape.com/hc/en-gb/articles/207256855-Settle-an-Unpaid-Balance",
+      "to": "{site}/support",
+      "count": 5
+    },
+    {
+      "name": "legal-privacy",
+      "from": "https://legal.jagex.com/docs/policies/privacy",
+      "to": "{site}/legal/privacy",
+      "count": 10
+    },
+    {
+      "name": "legal-terms",
+      "from": "https://legal.jagex.com/docs/terms",
+      "to": "{site}/legal/terms",
+      "count": 5
+    },
+    {
+      "name": "legal-eula",
+      "from": "https://legal.jagex.com/docs/terms/eula",
+      "to": "{site}/legal/eula",
+      "count": 5
+    },
+    {
+      "name": "offence-appeal",
+      "from": "https://secure.runescape.com/m=offence-appeal/account-history",
+      "to": "{site}/support",
+      "count": 5
+    },
+    {
+      "name": "password-recovery",
+      "from": "https://secure.runescape.com/m=accountappeal/passwordrecovery",
+      "to": "{site}/support",
+      "count": 5
+    },
+    {
+      "name": "jagex-account-date",
+      "from": "https://osrs.game/ja-date",
+      "to": "{site}",
+      "count": 1
+    },
+    {
+      "name": "play-page",
+      "from": "https://oldschool.runescape.com/play?utm_source=osrs_java&utm_medium=game_client",
+      "to": "{site}",
+      "count": 1
+    },
+    {
+      "name": "displaynames-wtqa",
+      "from": "https://secure-wtqa.runescape.com/m=displaynames",
+      "to": "{site}/m=displaynames",
+      "count": 4
+    },
+    {
+      "name": "secure-prefix",
+      "from": "https://secure",
+      "to": "{site}",
+      "count": 5
+    },
+    {
+      "name": "runescape-domain",
+      "from": ".runescape.com",
+      "to": "",
+      "count": 9
+    },
+    {
+      "name": "runescape-host",
+      "from": "runescape.com",
+      "to": "{host}",
+      "count": 5
+    },
+    {
+      "name": "jagex-host",
+      "from": "jagex.com",
+      "to": "{host}",
+      "count": 4
+    },
+    {
+      "name": "jagex-domain",
+      "from": ".jagex.com",
+      "to": ".{host}",
+      "count": 4
+    },
+    {
+      "name": "welcome-title",
+      "from": "Welcome to RuneScape",
+      "to": "Welcome to Lotus",
+      "count": 1
+    },
+    {
+      "name": "welcome-line-1",
+      "from": "You'll soon need the Jagex Launcher and a Jagex Account",
+      "to": "New here? Choose New User to make an account.",
+      "count": 1
+    },
+    {
+      "name": "welcome-line-2",
+      "from": "to play. To avoid losing access, download the Launcher and",
+      "to": "Already playing? Choose Existing User to log in.",
+      "count": 1
+    },
+    {
+      "name": "welcome-line-3",
+      "from": "follow the prompts to migrate. Your character and progress",
+      "to": "",
+      "count": 1
+    },
+    {
+      "name": "welcome-line-4",
+      "from": "will carry over safely.",
+      "to": "",
+      "count": 1
+    },
+    {
+      "name": "welcome-upgraded-1",
+      "from": "If you have upgraded to a Jagex Account, you",
+      "to": "",
+      "count": 1
+    },
+    {
+      "name": "welcome-upgraded-2",
+      "from": "need to log in using the <u=ffd200><col=ffd200>Jagex Launcher</col></u> instead.",
+      "to": "",
+      "count": 1
+    },
+    {
+      "name": "welcome-download",
+      "from": "Download Launcher",
+      "to": "Website",
+      "count": 1
+    },
+    {
+      "name": "terms-intro",
+      "from": "Before using this app, please read and accept our",
+      "to": "Before playing Lotus, please read and accept our",
+      "count": 1
+    },
+    {
+      "name": "loading",
+      "from": "RuneScape is loading - please wait...",
+      "to": "Lotus is loading - please wait...",
+      "count": 1
+    },
+    {
+      "name": "updated",
+      "from": "RuneScape has been updated!",
+      "to": "Lotus has been updated!",
+      "count": 1
+    }
+  ],
+  "texts_comment": "Login-screen text (the owner's request: no Jagex wording). Same exact-value matching and pinned counts as the URL rules."
 }
