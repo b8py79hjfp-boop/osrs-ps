@@ -309,37 +309,33 @@ impl Links for FsLinks {
     }
 }
 
-#[cfg(windows)]
+/// Reads a junction (Windows) or symlink (elsewhere) with std, which opens it shared: the junction crate's reader
+/// opens it exclusively and fails whenever another process (the running JVM, an antivirus scan) has it open.
 fn read_link(link: &Path) -> Option<PathBuf> {
-    junction::get_target(link).ok()
+    match fs::read_link(link) {
+        Ok(t) => Some(t),
+        Err(e) => {
+            if e.kind() != io::ErrorKind::NotFound {
+                tracing::warn!(error = %e, link = %link.display(), "could not read a release link");
+            }
+            None
+        }
+    }
 }
 
-#[cfg(windows)]
+/// Removes the link itself, never its target: on Windows a junction is an empty directory to `RemoveDirectory`.
 fn remove_link(link: &Path) -> io::Result<()> {
-    if junction::exists(link).unwrap_or(false) {
-        junction::delete(link)?;
-        fs::remove_dir(link)?;
+    match fs::symlink_metadata(link) {
+        Ok(m) if cfg!(windows) || m.is_dir() && !m.file_type().is_symlink() => fs::remove_dir(link),
+        Ok(_) => fs::remove_file(link),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
     }
-    Ok(())
 }
 
 #[cfg(windows)]
 fn make_link(target: &Path, link: &Path) -> io::Result<()> {
     junction::create(target, link)
-}
-
-#[cfg(not(windows))]
-fn read_link(link: &Path) -> Option<PathBuf> {
-    fs::read_link(link).ok()
-}
-
-#[cfg(not(windows))]
-fn remove_link(link: &Path) -> io::Result<()> {
-    match fs::symlink_metadata(link) {
-        Ok(_) => fs::remove_file(link),
-        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(e),
-    }
 }
 
 #[cfg(not(windows))]
