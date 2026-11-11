@@ -71,7 +71,11 @@ public abstract class ForkClientTask : DefaultTask() {
         if (work.toPath().toAbsolutePath().startsWith(repo.toPath().toAbsolutePath())) throw GradleException("work dir must be outside the repository: $work")
         if (work.exists()) {
             if (!File(work, MARKER).isFile) throw GradleException("$work exists and was not created by forkClient; remove it or pick -PforkWorkDir")
-            work.deleteRecursively()
+            // Git leaves its pack files read-only, which Windows refuses to delete: clear the flag first.
+            work.walkBottomUp().forEach { it.setWritable(true) }
+            if (!work.deleteRecursively()) {
+                throw GradleException("could not remove the previous fork checkout $work (a file is in use?); close programs using it and retry")
+            }
         }
         work.mkdirs()
         File(work, MARKER).writeText("forkClient work dir\n")
