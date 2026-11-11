@@ -323,11 +323,24 @@ $superPw = (Get-Content "$PgDir\superuser" -Raw).Trim()
 Write-Text "$PgDir\pgpass.conf" "127.0.0.1:5432:*:postgres:$superPw`n"
 $env:PGPASSFILE = "$PgDir\pgpass.conf"
 if (-not (Test-Path "$PgData\PG_VERSION")) {
-    $pwFile = "$PgDir\initdb.pw"
+    # Run as Administrator, initdb drops the Administrators group from its own token, so it can only use what the
+    # signed-in user itself may open: the data folder and the password file are granted to that user explicitly.
+    $me = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    if ((Test-Path $PgData) -and (Get-ChildItem $PgData -Force | Select-Object -First 1)) {
+        # Left over from a failed attempt (no PG_VERSION, so no database in it): kept aside, never deleted.
+        Rename-Item $PgData "$PgData.failed-$(Get-Date -Format yyyyMMddHHmmss)"
+    }
+    New-Item -ItemType Directory -Force $PgData | Out-Null
+    icacls $PgData /grant "${me}:(OI)(CI)F" /Q | Out-Null
+    $pwDir = Join-Path ([IO.Path]::GetTempPath()) ("lotus-initdb-" + [Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Force $pwDir | Out-Null
+    icacls $pwDir /inheritance:r /grant:r "${me}:(OI)(CI)F" "${Admins}:(OI)(CI)F" "${System}:(OI)(CI)F" /Q | Out-Null
+    $pwFile = "$pwDir\initdb.pw"
     Write-Text $pwFile $superPw
     & "$Tools\pgsql\bin\initdb.exe" -D $PgData -U postgres --pwfile=$pwFile -A scram-sha-256 -E UTF8 --locale=C | Out-Host
-    Remove-Item $pwFile -Force
-    if ($LASTEXITCODE -ne 0) { throw 'initdb failed.' }
+    $initdbExit = $LASTEXITCODE
+    Remove-Item $pwDir -Recurse -Force
+    if ($initdbExit -ne 0) { throw 'initdb failed.' }
     Add-Content -Path "$PgData\postgresql.conf" -Value "`nlisten_addresses = '127.0.0.1'`nport = 5432`n"
     Done 'Database created'
 }
